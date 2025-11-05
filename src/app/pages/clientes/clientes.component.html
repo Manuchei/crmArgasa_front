@@ -1,0 +1,50 @@
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Listado de Clientes</h2>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input type="text" class="form-control" placeholder="Buscar por nombre o apellido" [(ngModel)]="textoBusqueda" (input)="buscar()" />
+    </div>
+
+    <div class="col-md-3">
+      <select class="form-select" [(ngModel)]="empresaSeleccionada" (change)="buscar()">
+        <option value="">Todas las empresas</option>
+        <option value="argasa">Argasa</option>
+        <option value="luga">Luga</option>
+      </select>
+    </div>
+  </div>
+
+  <table class="table table-striped text-center align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Empresa</th>
+        <th>Teléfono</th>
+        <th>Email</th>
+        <th>Debe (€)</th>
+        <th>Pagado (€)</th>
+        <th>Diferencia (€)</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of clientes">
+        <td>{{ c.nombre }}</td>
+        <td>{{ c.apellido }}</td>
+        <td>{{ c.empresa }}</td>
+        <td>{{ c.telefono }}</td>
+        <td>{{ c.email }}</td>
+        <td>{{ c.saldoDebe || 0 }}</td>
+        <td>{{ c.saldoPagado || 0 }}</td>
+        <td [ngClass]="{'text-success': (c.saldoPagado || 0) - (c.saldoDebe || 0) >= 0, 'text-danger': (c.saldoPagado || 0) - (c.saldoDebe || 0) < 0}">
+          {{ (c.saldoPagado || 0) - (c.saldoDebe || 0) | number:'1.2-2' }}
+        </td>
+        <td>
+          <button class="btn btn-sm btn-primary" (click)="verDetalles(c.id!)">Ver detalles</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
