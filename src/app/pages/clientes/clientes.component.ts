@@ -4,11 +4,12 @@ import { ICliente } from '../../interfaces/icliente';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-clientes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './clientes.component.html',
   styleUrls: ['./clientes.component.css']
 })

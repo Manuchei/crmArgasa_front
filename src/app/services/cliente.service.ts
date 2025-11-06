@@ -22,7 +22,7 @@ export class ClienteService {
     return this.http.get<ICliente[]>(`${this.apiUrl}/buscar${params}`);
   }
 
-  crear(cliente: ICliente): Observable<ICliente> {
+  crear(cliente: any): Observable<ICliente> {
     return this.http.post<ICliente>(this.apiUrl, cliente);
   }
 
