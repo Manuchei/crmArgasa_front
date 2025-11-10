@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ClienteService } from '../../services/cliente.service';
-import { ICliente } from '../../interfaces/icliente';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
+import { ClienteService } from '../../services/cliente.service';
+import { ICliente } from '../../interfaces/icliente';
 
 @Component({
   selector: 'app-clientes',
@@ -15,30 +14,42 @@ import { RouterModule } from '@angular/router';
 })
 export class ClientesComponent implements OnInit {
   clientes: ICliente[] = [];
-  textoBusqueda = '';
-  empresaSeleccionada = '';
+  clientesFiltrados: ICliente[] = [];
 
-  constructor(private clienteService: ClienteService, private router: Router) {}
+  textoBusqueda: string = '';
+  empresaSeleccionada: string = '';
+
+  constructor(private clienteService: ClienteService) {}
 
   ngOnInit(): void {
     this.cargarClientes();
   }
 
   cargarClientes(): void {
-    this.clienteService.listar().subscribe((data) => (this.clientes = data));
+    this.clienteService.listar().subscribe({
+      next: (data) => {
+        this.clientes = data;
+        this.clientesFiltrados = data;
+      },
+      error: (err) => console.error('Error al cargar los clientes:', err)
+    });
   }
 
   buscar(): void {
-    if (this.textoBusqueda.trim()) {
-      this.clienteService
-        .buscar(this.textoBusqueda, this.empresaSeleccionada)
-        .subscribe((data) => (this.clientes = data));
-    } else {
-      this.cargarClientes();
-    }
+    const texto = this.textoBusqueda.toLowerCase();
+
+    this.clientesFiltrados = this.clientes.filter(c => {
+      const coincideTexto =
+        (c.nombre + ' ' + (c.apellido || '')).toLowerCase().includes(texto);
+
+      const coincideEmpresa =
+        !this.empresaSeleccionada || c.empresa === this.empresaSeleccionada;
+
+      return coincideTexto && coincideEmpresa;
+    });
   }
 
-  verDetalles(clienteId: number): void {
-    this.router.navigate(['/clientes', clienteId]);
+  verDetalles(id: number): void {
+    console.log('Ver detalles del cliente con ID:', id);
   }
 }

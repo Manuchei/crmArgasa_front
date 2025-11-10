@@ -40,6 +40,9 @@ export class NuevoClienteComponent {
     this.calcularTotales();
   }
 
+    empresas: string[] = ['Argasa', 'Luga', 'ByDominguez', 'Otra'];
+
+
   eliminarCompra(index: number): void {
     this.compras.splice(index, 1);
     this.calcularTotales();

@@ -4,21 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-interface Trabajo {
-  id?: number;
-  descripcion: string;
-  precio: number;
-}
-
-interface Cliente {
-  id: number;
-  nombre: string;
-  apellido: string;
-  empresa: string;
-  telefono: string;
-  email: string;
-}
-
 @Component({
   selector: 'app-cliente-detalle',
   standalone: true,
@@ -27,9 +12,9 @@ interface Cliente {
   styleUrls: ['./cliente-detalle.component.css']
 })
 export class ClienteDetalleComponent implements OnInit {
-  cliente?: Cliente;
-  trabajos: Trabajo[] = [];
-  nuevoTrabajo: Trabajo = { descripcion: '', precio: 0 };
+  cliente: any;
+  trabajos: any[] = [];
+  nuevoTrabajo = { descripcion: '', precio: 0 };
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {}
 
@@ -40,28 +25,38 @@ export class ClienteDetalleComponent implements OnInit {
   }
 
   cargarCliente(id: number): void {
-    this.http.get<Cliente>(`http://localhost:9018/api/clientes/${id}`).subscribe((data) => (this.cliente = data));
+    this.http.get(`http://localhost:9018/api/clientes/${id}`).subscribe({
+      next: (data) => (this.cliente = data),
+      error: (err) => console.error('Error al cargar cliente:', err)
+    });
   }
 
   cargarTrabajos(clienteId: number): void {
-    this.http.get<Trabajo[]>(`http://localhost:9018/api/trabajos/cliente/${clienteId}`).subscribe((data) => (this.trabajos = data));
+    this.http.get(`http://localhost:9018/api/trabajos/cliente/${clienteId}`).subscribe({
+      next: (data: any) => (this.trabajos = data),
+      error: (err) => console.error('Error al cargar trabajos:', err)
+    });
   }
 
   agregarTrabajo(): void {
-    if (!this.cliente || !this.nuevoTrabajo.descripcion || this.nuevoTrabajo.precio <= 0) return;
+    if (!this.cliente) return;
+    if (!this.nuevoTrabajo.descripcion || this.nuevoTrabajo.precio <= 0) return;
 
-    this.http
-      .post<Trabajo>(`http://localhost:9018/api/trabajos/cliente/${this.cliente.id}`, this.nuevoTrabajo)
-      .subscribe(() => {
-        this.cargarTrabajos(this.cliente!.id);
-        this.nuevoTrabajo = { descripcion: '', precio: 0 };
+    this.http.post(`http://localhost:9018/api/trabajos/cliente/${this.cliente.id}`, this.nuevoTrabajo)
+      .subscribe({
+        next: () => {
+          this.cargarTrabajos(this.cliente.id);
+          this.nuevoTrabajo = { descripcion: '', precio: 0 };
+        },
+        error: (err) => console.error('Error al agregar trabajo:', err)
       });
   }
 
   eliminarTrabajo(id: number): void {
     if (confirm('¿Seguro que deseas eliminar este trabajo?')) {
-      this.http.delete(`http://localhost:9018/api/trabajos/${id}`).subscribe(() => {
-        this.trabajos = this.trabajos.filter((t) => t.id !== id);
+      this.http.delete(`http://localhost:9018/api/trabajos/${id}`).subscribe({
+        next: () => this.trabajos = this.trabajos.filter(t => t.id !== id),
+        error: (err) => console.error('Error al eliminar trabajo:', err)
       });
     }
   }

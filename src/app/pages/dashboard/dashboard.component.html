@@ -1,35 +1,41 @@
-<div class="d-flex" id="wrapper">
-  <!-- Sidebar -->
-  <div class="bg-dark text-white p-3" id="sidebar">
-    <h4 class="text-center mb-4">CRM Argasa / Luga</h4>
-    <ul class="nav flex-column">
-      <li class="nav-item">
-        <a class="nav-link text-white" routerLink="/clientes" routerLinkActive="active">👥 Clientes</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white" routerLink="/proveedores" routerLinkActive="active">🔧 Proveedores</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white" routerLink="/facturas" routerLinkActive="active">📄 Facturas</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white" routerLink="/informes" routerLinkActive="active">📊 Informes</a>
-      </li>
-    </ul>
-  </div>
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">Panel principal</h2>
 
-  <!-- Page Content -->
-  <div id="page-content" class="flex-grow-1">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-      <div class="container-fluid">
-        <button class="btn btn-outline-secondary" id="menu-toggle">☰</button>
-        <span class="ms-auto me-3 fw-bold">Bienvenido, {{ usuario?.email }}</span>
-        <button class="btn btn-danger btn-sm" (click)="logout()">Cerrar sesión</button>
+  <div class="row text-center">
+    <div class="col-md-3 mb-3">
+      <div class="card bg-primary text-white shadow">
+        <div class="card-body">
+          <h5>Total Clientes</h5>
+          <p class="display-6">42</p>
+        </div>
       </div>
-    </nav>
+    </div>
 
-    <div class="p-4">
-      <router-outlet></router-outlet>
+    <div class="col-md-3 mb-3">
+      <div class="card bg-success text-white shadow">
+        <div class="card-body">
+          <h5>Proveedores</h5>
+          <p class="display-6">12</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card bg-warning text-dark shadow">
+        <div class="card-body">
+          <h5>Facturas</h5>
+          <p class="display-6">25</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card bg-danger text-white shadow">
+        <div class="card-body">
+          <h5>Pagos pendientes</h5>
+          <p class="display-6">5</p>
+        </div>
+      </div>
     </div>
   </div>
 </div>

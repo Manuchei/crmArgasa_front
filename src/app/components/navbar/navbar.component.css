@@ -1,0 +1,8 @@
+.navbar .nav-link.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+body {
+  padding-top: 70px; /* para que el contenido no quede debajo del navbar fijo */
+}
