@@ -1,0 +1,104 @@
+<div class="container mt-4">
+  <h3 class="text-center mb-4 fw-bold">📞 Calendario de Llamadas</h3>
+
+  <div class="calendar-layout">
+    <!-- 📅 Calendario -->
+    <div class="calendar-panel">
+      <full-calendar [options]="calendarOptions"></full-calendar>
+    </div>
+
+    <!-- 📋 Detalles del día -->
+    <div class="details-panel" *ngIf="fechaSeleccionada">
+      <h5 class="fw-semibold">Llamadas del {{ fechaSeleccionada }}</h5>
+
+      <!-- Lista de llamadas -->
+      <ul class="list-group mb-3 mt-3">
+        <li *ngFor="let l of llamadasDelDia" class="list-group-item shadow-sm">
+          <div class="d-flex justify-content-between align-items-center">
+            <strong>{{ l.motivo }}</strong>
+            <span
+              class="badge"
+              [ngClass]="{
+                'bg-warning text-dark': l.estado === 'pendiente',
+                'bg-success': l.estado === 'realizada',
+                'bg-danger': l.estado === 'cancelada'
+              }"
+            >
+              {{ l.estado | uppercase }}
+            </span>
+          </div>
+          <div class="mt-1 small text-muted">
+            🕒 {{ l.fechaHora | date: 'shortTime' }}
+          </div>
+          <div class="mt-1">
+            🗒️ {{ l.observaciones || 'Sin observaciones' }}
+          </div>
+        </li>
+
+        <li *ngIf="llamadasDelDia.length === 0" class="list-group-item text-muted">
+          No hay llamadas para este día.
+        </li>
+      </ul>
+
+      <!-- Formulario de nueva llamada -->
+      <div class="card p-3 shadow-sm">
+        <h6 class="fw-semibold mb-3">➕ Añadir nueva llamada</h6>
+        <form (ngSubmit)="guardarLlamada()" #formLlamada="ngForm">
+          <div class="mb-2">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Motivo"
+              [(ngModel)]="nuevaLlamada.motivo"
+              name="motivo"
+              required
+            />
+          </div>
+
+          <div class="mb-2">
+            <input
+              type="datetime-local"
+              class="form-control"
+              [(ngModel)]="nuevaLlamada.fechaHora"
+              name="fechaHora"
+              required
+            />
+          </div>
+
+          <div class="mb-2">
+            <select
+              class="form-select"
+              [(ngModel)]="nuevaLlamada.estado"
+              name="estado"
+              required
+            >
+              <option value="pendiente">Pendiente</option>
+              <option value="realizada">Realizada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+
+          <div class="mb-2">
+            <textarea
+              class="form-control"
+              placeholder="Observaciones"
+              [(ngModel)]="nuevaLlamada.observaciones"
+              name="observaciones"
+              rows="2"
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">
+            Guardar llamada
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="details-panel-empty" *ngIf="!fechaSeleccionada">
+      <p class="text-muted mt-4 text-center">
+        Selecciona un día en el calendario para ver o añadir llamadas.
+      </p>
+    </div>
+  </div>
+</div>

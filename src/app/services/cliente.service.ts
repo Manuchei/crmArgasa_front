@@ -1,56 +1,45 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ICliente } from '../interfaces/icliente';
+import { ITrabajo } from '../interfaces/itrabajo';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ClienteService {
+export class ClientesService {
+
   private apiUrl = 'http://localhost:9018/api/clientes';
 
   constructor(private http: HttpClient) {}
 
-  // ✅ Método auxiliar para crear cabeceras con token si existe
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-    return headers;
+  getClientes(): Observable<ICliente[]> {
+    return this.http.get<ICliente[]>(this.apiUrl);
   }
 
-  // ✅ Obtener lista de clientes
-  listar(): Observable<ICliente[]> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<ICliente[]>(this.apiUrl, { headers });
+  getCliente(id: number): Observable<ICliente> {
+    return this.http.get<ICliente>(`${this.apiUrl}/${id}`);
   }
 
-  // ✅ Buscar clientes por texto y empresa
-  buscar(texto: string, empresa: string): Observable<ICliente[]> {
-    const headers = this.getAuthHeaders();
-    const params = empresa
-      ? `?texto=${texto}&empresa=${empresa}`
-      : `?texto=${texto}`;
-    return this.http.get<ICliente[]>(`${this.apiUrl}/buscar${params}`, { headers });
+  crearCliente(cliente: ICliente): Observable<ICliente> {
+    return this.http.post<ICliente>(this.apiUrl, cliente);
   }
 
-  // ✅ Crear cliente
-  crear(cliente: ICliente): Observable<ICliente> {
-    const headers = this.getAuthHeaders();
-    return this.http.post<ICliente>(this.apiUrl, cliente, { headers });
+  actualizarCliente(id: number, cliente: ICliente): Observable<ICliente> {
+    return this.http.put<ICliente>(`${this.apiUrl}/${id}`, cliente);
   }
 
-  // ✅ Actualizar cliente
-  actualizar(id: number, cliente: ICliente): Observable<ICliente> {
-    const headers = this.getAuthHeaders();
-    return this.http.put<ICliente>(`${this.apiUrl}/${id}`, cliente, { headers });
+  eliminarCliente(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  // ✅ Eliminar cliente
-  eliminar(id: number): Observable<void> {
-    const headers = this.getAuthHeaders();
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers });
+  buscarClientes(texto: string, empresa?: string): Observable<ICliente[]> {
+    const params = empresa ? `?texto=${texto}&empresa=${empresa}` : `?texto=${texto}`;
+    return this.http.get<ICliente[]>(`${this.apiUrl}/buscar${params}`);
+  }
+
+  // ✅ Añadir un trabajo nuevo a un cliente existente
+  agregarTrabajo(idCliente: number, trabajo: ITrabajo): Observable<ICliente> {
+    return this.http.post<ICliente>(`${this.apiUrl}/${idCliente}/trabajos`, trabajo);
   }
 }

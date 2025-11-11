@@ -1,113 +1,62 @@
 <div class="container mt-4">
-  <h3 class="mb-4 text-center">Nuevo Cliente</h3>
+  <h3 class="text-center mb-4">Nuevo Cliente</h3>
 
-  <form (ngSubmit)="guardar()" #clienteForm="ngForm" class="shadow p-4 rounded bg-light">
+  <form (ngSubmit)="guardarCliente()" #formCliente="ngForm">
+
     <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="nombre" class="form-label fw-semibold">Nombre</label>
-        <input
-          id="nombre"
-          type="text"
-          class="form-control"
-          [(ngModel)]="cliente.nombre"
-          name="nombre"
-          placeholder="Ej. Manuel"
-          required
-        />
+      <div class="col">
+        <label>Nombre</label>
+        <input [(ngModel)]="cliente.nombre" name="nombre" class="form-control" required />
       </div>
-      <div class="col-md-6">
-        <label for="apellido" class="form-label fw-semibold">Apellido</label>
-        <input
-          id="apellido"
-          type="text"
-          class="form-control"
-          [(ngModel)]="cliente.apellido"
-          name="apellido"
-          placeholder="Ej. Domínguez"
-          required
-        />
+      <div class="col">
+        <label>Apellido</label>
+        <input [(ngModel)]="cliente.apellido" name="apellido" class="form-control" required />
       </div>
     </div>
 
     <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="empresa" class="form-label fw-semibold">Empresa</label>
+     <div class="col-md-6">
+        <label class="form-label">Empresa</label>
         <select
-          id="empresa"
           class="form-select"
           [(ngModel)]="cliente.empresa"
           name="empresa"
           required
         >
-          <option value="" disabled selected>Selecciona una empresa</option>
+          <option value="">Seleccionar empresa</option>
           <option *ngFor="let e of empresas" [value]="e">{{ e }}</option>
         </select>
       </div>
-      <div class="col-md-6">
-        <label for="telefono" class="form-label fw-semibold">Teléfono</label>
-        <input
-          id="telefono"
-          type="text"
-          class="form-control"
-          [(ngModel)]="cliente.telefono"
-          name="telefono"
-          placeholder="Ej. 600123456"
-        />
+      <div class="col">
+        <label>Teléfono</label>
+        <input [(ngModel)]="cliente.telefono" name="telefono" class="form-control" />
       </div>
     </div>
+
+    <div class="mb-3">
+      <label>Email</label>
+      <input [(ngModel)]="cliente.email" name="email" class="form-control" />
+    </div>
+
+    <h5 class="mt-4">Compras del cliente</h5>
 
     <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="email" class="form-label fw-semibold">Email</label>
-        <input
-          id="email"
-          type="email"
-          class="form-control"
-          [(ngModel)]="cliente.email"
-          name="email"
-          placeholder="Ej. contacto@empresa.com"
-        />
+      <div class="col">
+        <input [(ngModel)]="nuevoTrabajo.descripcion" name="descripcion" placeholder="Descripción" class="form-control" />
+      </div>
+      <div class="col">
+        <input [(ngModel)]="nuevoTrabajo.importe" name="importe" placeholder="Precio (€)" type="number" class="form-control" />
+      </div>
+      <div class="col">
+        <input [(ngModel)]="nuevoTrabajo.importePagado" name="importePagado" placeholder="Pagado (€)" type="number" class="form-control" />
+      </div>
+      <div class="col-auto">
+        <button type="button" class="btn btn-primary" (click)="agregarTrabajo()">+</button>
       </div>
     </div>
 
-    <hr />
-    <h5 class="mb-3">Compras del cliente</h5>
-
-    <div class="row mb-3">
-      <div class="col-md-5">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Descripción (ej. Lavadora)"
-          [(ngModel)]="nuevaCompra.descripcion"
-          name="descripcion"
-        />
-      </div>
-      <div class="col-md-3">
-        <input
-          type="number"
-          class="form-control"
-          placeholder="Precio (€)"
-          [(ngModel)]="nuevaCompra.precio"
-          name="precio"
-        />
-      </div>
-      <div class="col-md-3">
-        <input
-          type="number"
-          class="form-control"
-          placeholder="Pagado (€)"
-          [(ngModel)]="nuevaCompra.pagado"
-          name="pagado"
-        />
-      </div>
-      <div class="col-md-1 d-grid">
-        <button type="button" class="btn btn-primary" (click)="agregarCompra()">+</button>
-      </div>
-    </div>
-
-    <table class="table table-striped text-center align-middle shadow-sm">
-      <thead class="table-dark">
+    <table class="table table-striped">
+      <thead>
         <tr>
           <th>Descripción</th>
           <th>Precio (€)</th>
@@ -117,44 +66,29 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let c of compras; let i = index">
-          <td>{{ c.descripcion }}</td>
-          <td>{{ c.precio | number: '1.2-2' }}</td>
-          <td>{{ c.pagado | number: '1.2-2' }}</td>
-          <td
-            [ngClass]="{
-              'text-success': diferencia(c) <= 0,
-              'text-danger': diferencia(c) > 0
-            }"
-          >
-            {{ diferencia(c) | number: '1.2-2' }}
+        <tr *ngFor="let t of cliente.trabajos; let i = index">
+          <td>{{ t.descripcion }}</td>
+          <td>{{ t.importe | number:'1.2-2' }}</td>
+          <td>{{ t.importePagado | number:'1.2-2' }}</td>
+          <td [ngClass]="{'text-danger': t.importePagado < t.importe}">
+            {{ t.importe - t.importePagado | number:'1.2-2' }}
           </td>
           <td>
-            <button type="button" class="btn btn-danger btn-sm" (click)="eliminarCompra(i)">
-              <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn btn-danger btn-sm" (click)="cliente.trabajos.splice(i,1); recalcularTotales()">x</button>
           </td>
         </tr>
       </tbody>
     </table>
 
-    <div class="text-end mt-3">
-      <strong>Total debe:</strong> {{ cliente.saldoDebe | currency: 'EUR':'symbol' }}<br />
-      <strong>Total pagado:</strong> {{ cliente.saldoPagado | currency: 'EUR':'symbol' }}<br />
-      <strong>Diferencia total:</strong>
-      <span
-        [ngClass]="{
-          'text-success': cliente.saldoDebe - cliente.saldoPagado <= 0,
-          'text-danger': cliente.saldoDebe - cliente.saldoPagado > 0
-        }"
-      >
-        {{ (cliente.saldoDebe - cliente.saldoPagado) | currency: 'EUR':'symbol' }}
-      </span>
+    <div class="text-end">
+      <p><b>Total debe:</b> {{ cliente.totalImporte | currency:'EUR' }}</p>
+      <p><b>Total pagado:</b> {{ cliente.totalPagado | currency:'EUR' }}</p>
+      <p><b>Diferencia total:</b> {{ cliente.totalImporte - cliente.totalPagado | currency:'EUR' }}</p>
     </div>
 
-    <div class="text-end mt-4">
-      <button type="submit" class="btn btn-success me-2">Guardar cliente</button>
-      <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+    <div class="text-end mt-3">
+      <button class="btn btn-success" type="submit">Guardar cliente</button>
     </div>
+
   </form>
 </div>

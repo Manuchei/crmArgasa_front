@@ -5,3 +5,42 @@
 form input {
   font-size: 14px;
 }
+.text-success {
+  color: #198754;
+  font-weight: 600;
+}
+
+.text-danger {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* Elimina cualquier hueco debajo de la tabla */
+.table {
+  border-collapse: collapse !important;
+  margin-bottom: 0 !important;
+}
+
+/* Ajusta bordes y sombra limpia */
+.table th,
+.table td {
+  vertical-align: middle;
+  padding: 0.75rem;
+}
+
+/* Evita sangrías o márgenes indeseados */
+.container {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Asegura que los botones no expandan el ancho */
+.btn {
+  white-space: nowrap;
+}
+
+.pagado {
+  color: green;
+}
+
+

@@ -7,42 +7,92 @@
   <hr />
 
   <h5>Trabajos realizados</h5>
-  <table class="table table-striped text-center">
+  <table class="table table-striped text-center align-middle shadow-sm">
     <thead class="table-dark">
       <tr>
         <th>Descripción</th>
-        <th>Precio (€)</th>
+        <th>Importe (€)</th>
+        <th>Pagado (€)</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
+      <!-- 🔹 Listado de trabajos -->
       <tr *ngFor="let t of trabajos">
         <td>{{ t.descripcion }}</td>
-        <td>{{ t.precio | number:'1.2-2' }}</td>
+        <td>{{ t.importe | number: '1.2-2' }}</td>
+        <td>{{ t.importePagado | number: '1.2-2' }}</td>
         <td>
-          <button class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t.id!)">Eliminar</button>
+          <button class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t.id)">
+            <i class="bi bi-trash"></i> Eliminar
+          </button>
         </td>
       </tr>
+
+      <!-- 🔹 Mensaje si no hay trabajos -->
       <tr *ngIf="trabajos.length === 0">
-        <td colspan="3" class="text-muted">No hay trabajos registrados.</td>
+        <td colspan="4" class="text-muted">No hay trabajos registrados.</td>
       </tr>
     </tbody>
   </table>
 
-  <div class="text-end fw-bold">Total: {{ getTotal() | number:'1.2-2' }} €</div>
+  <!-- 🔹 Totales dinámicos -->
+  <div class="text-end mt-3 fw-bold">
+    <p>Total: {{ getTotalImporte() | number: '1.2-2' }} €</p>
+    <p class="text-success">Pagado: {{ getTotalPagado() | number: '1.2-2' }} €</p>
+    <p>
+      <b>Saldo pendiente:</b>
+      <span
+        [ngClass]="{
+          'text-success': getSaldoPendiente() <= 0,
+          'text-danger': getSaldoPendiente() > 0
+        }"
+      >
+        {{ getSaldoPendiente() | number: '1.2-2' }} €
+      </span>
+    </p>
+  </div>
 
   <hr />
 
-  <h6 class="mt-3">Añadir nuevo trabajo</h6>
-  <div class="row g-2 align-items-center">
-    <div class="col-md-8">
-      <input type="text" class="form-control" placeholder="Descripción (ej. Lavadora)" [(ngModel)]="nuevoTrabajo.descripcion" name="descripcion" />
-    </div>
-    <div class="col-md-3">
-      <input type="number" class="form-control" placeholder="Precio (€)" [(ngModel)]="nuevoTrabajo.precio" name="precio" />
-    </div>
-    <div class="col-md-1 text-end">
-      <button class="btn btn-success w-100" (click)="agregarTrabajo()">+</button>
-    </div>
+  <!-- 🔹 Añadir nuevo trabajo -->
+  <h6 class="mt-4">Añadir nuevo trabajo</h6>
+  <div class="input-group mb-3">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Descripción (ej. Lavadora)"
+      [(ngModel)]="nuevoTrabajo.descripcion"
+      name="descripcion"
+    />
+    <input
+      type="number"
+      class="form-control"
+      placeholder="Importe (€)"
+      [(ngModel)]="nuevoTrabajo.importe"
+      name="importe"
+      min="0"
+      step="0.01"
+    />
+    <input
+      type="number"
+      class="form-control"
+      placeholder="Pagado (€)"
+      [(ngModel)]="nuevoTrabajo.importePagado"
+      name="importePagado"
+      min="0"
+      step="0.01"
+    />
+    <button class="btn btn-success" (click)="agregarTrabajo()">+</button>
+  </div>
+
+  <hr />
+
+  <!-- 🔙 Botón para volver al listado -->
+  <div class="text-end mt-3">
+    <button class="btn btn-secondary" (click)="volverAClientes()">
+  <i class="bi bi-arrow-left"></i> Volver a clientes
+</button>
+
   </div>
 </div>

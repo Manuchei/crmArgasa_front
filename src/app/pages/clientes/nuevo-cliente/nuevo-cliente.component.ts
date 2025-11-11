@@ -1,16 +1,23 @@
-import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { ClienteService } from '../../../services/cliente.service';
-import { ICliente } from '../../../interfaces/icliente';
-import { CommonModule } from '@angular/common';
+import {
+  NgFor,
+  NgIf,
+  CurrencyPipe,
+  DecimalPipe,
+  NgClass,
+} from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Component } from '@angular/core';
+import { ClientesService } from '../../../services/cliente.service';
+import { ICliente } from '../../../interfaces/icliente';
+import { ITrabajo } from '../../../interfaces/itrabajo';
 
 @Component({
   selector: 'app-nuevo-cliente',
   standalone: true,
-  imports: [CommonModule, FormsModule],
   templateUrl: './nuevo-cliente.component.html',
-  styleUrls: ['./nuevo-cliente.component.css']
+  styleUrls: ['./nuevo-cliente.component.css'],
+  imports: [FormsModule, NgFor, NgIf, CurrencyPipe, DecimalPipe, NgClass],
 })
 export class NuevoClienteComponent {
   cliente: ICliente = {
@@ -19,63 +26,65 @@ export class NuevoClienteComponent {
     empresa: '',
     telefono: '',
     email: '',
-    saldoDebe: 0,
-    saldoPagado: 0
+    totalImporte: 0,
+    totalPagado: 0,
+    trabajos: [],
   };
 
-  compras: { descripcion: string; precio: number; pagado: number }[] = [];
-  nuevaCompra = { descripcion: '', precio: 0, pagado: 0 };
+  nuevoTrabajo: ITrabajo = {
+    descripcion: '',
+    importe: 0,
+    importePagado: 0,
+    pagado: false,
+  };
 
-  constructor(private clienteService: ClienteService, private router: Router) {}
+  constructor(
+    private clienteService: ClientesService,
+    private router: Router
+  ) {}
 
-  agregarCompra(): void {
-    if (!this.nuevaCompra.descripcion || this.nuevaCompra.precio <= 0) {
-      alert('Debes indicar una descripción y un precio válido.');
+  empresas: string[] = ['Argasa', 'Luga'];
+
+
+  agregarTrabajo(): void {
+    const trabajo: ITrabajo = { ...this.nuevoTrabajo };
+    trabajo.pagado = trabajo.importePagado >= trabajo.importe;
+    this.cliente.trabajos.push(trabajo);
+    this.recalcularTotales();
+    this.nuevoTrabajo = {
+      descripcion: '',
+      importe: 0,
+      importePagado: 0,
+      pagado: false,
+    };
+  }
+
+  recalcularTotales(): void {
+    this.cliente.totalImporte = this.cliente.trabajos.reduce(
+      (sum: number, t: ITrabajo) => sum + (t.importe || 0),
+      0
+    );
+    this.cliente.totalPagado = this.cliente.trabajos.reduce(
+      (sum: number, t: ITrabajo) => sum + (t.importePagado || 0),
+      0
+    );
+  }
+
+  guardarCliente(): void {
+    if (!this.cliente.nombre || !this.cliente.apellido || !this.cliente.empresa) {
+      alert('Por favor, completa todos los campos obligatorios.');
       return;
     }
 
-    this.compras.push({ ...this.nuevaCompra });
-    this.nuevaCompra = { descripcion: '', precio: 0, pagado: 0 };
-
-    this.calcularTotales();
-  }
-
-    empresas: string[] = ['Argasa', 'Luga', 'ByDominguez', 'Otra'];
-
-
-  eliminarCompra(index: number): void {
-    this.compras.splice(index, 1);
-    this.calcularTotales();
-  }
-
-  calcularTotales(): void {
-    this.cliente.saldoDebe = this.compras.reduce((sum, c) => sum + c.precio, 0);
-    this.cliente.saldoPagado = this.compras.reduce((sum, c) => sum + c.pagado, 0);
-  }
-
-  diferencia(compra: any): number {
-    return (compra.precio || 0) - (compra.pagado || 0);
-  }
-
-  guardar(): void {
-    if (!this.cliente.nombre || !this.cliente.empresa) {
-      alert('El nombre y la empresa son obligatorios');
-      return;
-    }
-
-    this.clienteService.crear(this.cliente).subscribe({
+    this.clienteService.crearCliente(this.cliente).subscribe({
       next: () => {
-        alert('Cliente creado correctamente');
+        alert('✅ Cliente añadido correctamente.');
         this.router.navigate(['/clientes']);
       },
-      error: (err: any) => {
-        console.error('Error al crear el cliente:', err);
-        alert('Error al crear el cliente');
-      }
+      error: (err) => {
+        console.error('Error al crear cliente:', err);
+        alert('❌ No se pudo crear el cliente.');
+      },
     });
-  }
-
-  cancelar(): void {
-    this.router.navigate(['/clientes']);
   }
 }
