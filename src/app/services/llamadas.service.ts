@@ -21,13 +21,23 @@ export class LlamadasService {
     return this.http.post<any>(this.apiUrl, llamada);
   }
 
-  // 🔹 (Opcional) Obtener las llamadas de un día concreto
+  // 🔹 Actualizar una llamada existente
+  actualizarLlamada(id: number, llamada: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, llamada);
+  }
+
+  // 🔹 Eliminar una llamada por su ID
+  eliminarLlamada(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  // 🔹 Obtener las llamadas de un día concreto
   obtenerPorFecha(fecha: string): Observable<IeventoCalendario[]> {
     return this.http.get<IeventoCalendario[]>(`${this.apiUrl}/fecha/${fecha}`);
   }
 
-  // 🔹 (Opcional) Eliminar una llamada
-  eliminarLlamada(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  // 🔹 Obtener todas las llamadas en formato de eventos para el calendario
+  getEventosCalendario(): Observable<IeventoCalendario[]> {
+    return this.http.get<IeventoCalendario[]>(`${this.apiUrl}/calendario`);
   }
 }
