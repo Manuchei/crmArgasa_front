@@ -1,43 +1,59 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { IeventoCalendario } from '../interfaces/ievento-calendario';
+import { IEventoCalendario } from '../interfaces/ievento-calendario';
+import { ILlamada } from '../interfaces/illamda';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LlamadasService {
+
   private apiUrl = 'http://localhost:9018/api/llamadas';
 
   constructor(private http: HttpClient) {}
 
-  // 🔹 Obtener todas las llamadas
-  listarTodas(): Observable<IeventoCalendario[]> {
-    return this.http.get<IeventoCalendario[]>(this.apiUrl);
+  /* ============================================================
+     📌 EVENTOS PARA FULLCALENDAR (mes visible)
+     ============================================================ */
+ getEventosCalendario() {
+  return this.http.get<ILlamada[]>(this.apiUrl + '/calendario');
+}
+
+
+  /* ============================================================
+     📌 LLAMADAS DEL DÍA
+     ============================================================ */
+  getLlamadasDia(fechaStr: string): Observable<ILlamada[]> {
+    return this.http.get<ILlamada[]>(
+      `${this.apiUrl}/dia?fecha=${fechaStr}`
+    );
   }
 
-  // 🔹 Crear una nueva llamada
-  crearLlamada(llamada: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl, llamada);
+  /* ============================================================
+     📌 CRUD
+     ============================================================ */
+  crearLlamada(llamada: ILlamada): Observable<ILlamada> {
+    return this.http.post<ILlamada>(this.apiUrl, llamada);
   }
 
-  // 🔹 Actualizar una llamada existente
-  actualizarLlamada(id: number, llamada: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, llamada);
+  actualizarLlamada(id: number, llamada: ILlamada): Observable<ILlamada> {
+    return this.http.put<ILlamada>(`${this.apiUrl}/${id}`, llamada);
   }
 
-  // 🔹 Eliminar una llamada por su ID
   eliminarLlamada(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  // 🔹 Obtener las llamadas de un día concreto
-  obtenerPorFecha(fecha: string): Observable<IeventoCalendario[]> {
-    return this.http.get<IeventoCalendario[]>(`${this.apiUrl}/fecha/${fecha}`);
+  /* ============================================================
+     📌 OBTENER UNA LLAMADA POR ID
+     ============================================================ */
+  getLlamada(id: number): Observable<ILlamada> {
+    return this.http.get<ILlamada>(`${this.apiUrl}/${id}`);
   }
 
-  // 🔹 Obtener todas las llamadas en formato de eventos para el calendario
-  getEventosCalendario(): Observable<IeventoCalendario[]> {
-    return this.http.get<IeventoCalendario[]>(`${this.apiUrl}/calendario`);
-  }
+  getById(id: number): Observable<ILlamada> {
+  return this.http.get<ILlamada>(`${this.apiUrl}/llamadas/${id}`);
+}
+
 }

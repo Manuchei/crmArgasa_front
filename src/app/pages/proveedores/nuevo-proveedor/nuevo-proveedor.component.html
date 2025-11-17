@@ -1,0 +1,109 @@
+<div class="container mt-4">
+  <h2>Nuevo Proveedor</h2>
+
+  <form (ngSubmit)="guardar()">
+    <!-- NOMBRE -->
+    <div class="mb-3">
+      <label class="form-label">Nombre</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="nombre"
+        name="nombre"
+        required
+      />
+    </div>
+
+    <!-- APELLIDO -->
+    <div class="mb-3">
+      <label class="form-label">Apellido</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="apellido"
+        name="apellido"
+        required
+      />
+    </div>
+
+    <!-- OFICIO -->
+    <div class="mb-3">
+      <label class="form-label">Oficio</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="oficio"
+        name="oficio"
+        placeholder="Ej: fontanero, electricista..."
+        required
+      />
+    </div>
+
+    <!-- TELEFONO -->
+    <div class="mb-3">
+      <label class="form-label">Teléfono</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="telefono"
+        name="telefono"
+        required
+      />
+    </div>
+
+    <!-- EMAIL -->
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input
+        type="email"
+        class="form-control"
+        [(ngModel)]="email"
+        name="email"
+        required
+      />
+    </div>
+
+    <!-- CHECKBOXES DE EMPRESA -->
+    <div class="row mb-3">
+      <div class="col">
+        <label class="form-check-label">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="trabajaEnArgasa"
+            name="trabajaEnArgasa"
+          />
+          Trabaja en Argasa
+        </label>
+      </div>
+
+      <div class="col">
+        <label class="form-check-label">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="trabajaEnLuga"
+            name="trabajaEnLuga"
+          />
+          Trabaja en Electroluga
+        </label>
+      </div>
+    </div>
+
+    <!-- OBSERVACIONES -->
+    <div class="mb-3">
+      <label class="form-label">Observaciones</label>
+      <textarea
+        rows="3"
+        class="form-control"
+        [(ngModel)]="observaciones"
+        name="observaciones"
+      ></textarea>
+    </div>
+
+    <!-- BOTÓN GUARDAR -->
+    <div class="text-center mt-4">
+      <button type="submit" class="btn btn-primary px-5">Guardar</button>
+    </div>
+  </form>
+</div>

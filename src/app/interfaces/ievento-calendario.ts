@@ -1,11 +1,8 @@
-import { Observable } from 'rxjs';
-export interface IeventoCalendario {
-
-    id: number,
-    title: string,
-    start: string,
-    end: string,
-    estado: string,
-    observaciones?:string,
-    clienteId?:number | null
+export interface IEventoCalendario {
+  id: number;
+  title: string;
+  start: string;             // yyyy-MM-ddTHH:mm:ss
+  estado: string;
+  motivo: string;
+  observaciones?: string;
 }

@@ -1,26 +1,26 @@
 <div class="container mt-4">
   <h3 class="text-center mb-4 fw-bold">📞 Calendario de Llamadas</h3>
 
-  <div class="calendar-layout">
+  <div class="calendar-layout d-flex gap-4">
     <!-- 📅 Calendario -->
-    <div class="calendar-panel">
-      <full-calendar [options]="calendarOptions"></full-calendar>
+    <div class="calendar-panel flex-fill">
+      <full-calendar #calendar [options]="calendarOptions"></full-calendar>
     </div>
 
     <!-- 📋 Detalles del día -->
-    <div class="details-panel" *ngIf="fechaSeleccionada">
+    <div class="details-panel flex-fill" *ngIf="fechaSeleccionada">
       <h5 class="fw-semibold">Llamadas del {{ fechaSeleccionada }}</h5>
 
-      <!-- Lista de llamadas -->
-      <ul class="list-group mb-3 mt-3">
+      <ul class="list-group my-3">
         <li
-  *ngFor="let l of llamadasDelDia"
-  class="list-group-item shadow-sm"
-  (click)="abrirDesdeLista(l.id)"
-  style="cursor: pointer;"
->
+          *ngFor="let l of llamadasDelDia"
+          class="list-group-item shadow-sm"
+          (click)="abrirModal(l.id)"
+          style="cursor: pointer;"
+        >
           <div class="d-flex justify-content-between align-items-center">
             <strong>{{ l.motivo }}</strong>
+
             <span
               class="badge"
               [ngClass]="{
@@ -32,45 +32,37 @@
               {{ l.estado | uppercase }}
             </span>
           </div>
+
           <div class="mt-1 small text-muted">
-            🕒 {{ l.fechaHora | date: 'short' }}
+            🕒 {{ l.fecha | date : 'short' }}
           </div>
+
           <div class="mt-1">
             🗒️ {{ l.observaciones || 'Sin observaciones' }}
           </div>
         </li>
 
-        <li
-          *ngIf="llamadasDelDia.length === 0"
-          class="list-group-item text-muted"
-        >
-          No hay llamadas para este día.
+        <li *ngIf="llamadasDelDia.length === 0" class="list-group-item text-muted">
+          No hay llamadas este día.
         </li>
       </ul>
 
-      <!-- 🔹 Botón para mostrar/ocultar formulario -->
-      <button
-        class="btn btn-outline-primary w-100 mb-2"
-        (click)="mostrarFormulario = !mostrarFormulario"
-      >
-        {{ mostrarFormulario ? '➖ Ocultar formulario' : '➕ Añadir nueva llamada' }}
+      <button class="btn btn-outline-primary w-100 mb-2" (click)="mostrarFormulario = !mostrarFormulario">
+        {{ mostrarFormulario ? '➖ Ocultar formulario' : '➕ Añadir llamada' }}
       </button>
 
-      <!-- 🔹 Formulario nueva llamada -->
-      <div
-        class="card p-3 shadow-sm animate__animated"
-        *ngIf="mostrarFormulario"
-        style="animation: fadeIn 0.3s;"
-      >
+      <!-- FORMULARIO CREAR -->
+      <div class="card p-3 shadow-sm" *ngIf="mostrarFormulario">
         <h6 class="fw-semibold mb-3">Nueva llamada</h6>
-        <form (ngSubmit)="guardarLlamada()" #formLlamada="ngForm">
+
+        <form (ngSubmit)="guardarLlamada()">
           <div class="mb-2">
             <input
               type="text"
+              name="motivo"
               class="form-control"
               placeholder="Motivo"
               [(ngModel)]="nuevaLlamada.motivo"
-              name="motivo"
               required
             />
           </div>
@@ -78,18 +70,18 @@
           <div class="mb-2">
             <input
               type="datetime-local"
+              name="fecha"
               class="form-control"
-              [(ngModel)]="nuevaLlamada.fechaHora"
-              name="fechaHora"
+              [(ngModel)]="nuevaLlamada.fecha"
               required
             />
           </div>
 
           <div class="mb-2">
             <select
+              name="estado"
               class="form-select"
               [(ngModel)]="nuevaLlamada.estado"
-              name="estado"
               required
             >
               <option value="pendiente">Pendiente</option>
@@ -100,56 +92,39 @@
 
           <div class="mb-2">
             <textarea
+              name="observaciones"
               class="form-control"
+              rows="2"
               placeholder="Observaciones"
               [(ngModel)]="nuevaLlamada.observaciones"
-              name="observaciones"
-              rows="2"
             ></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary w-100">
-            Guardar llamada
-          </button>
+          <button type="submit" class="btn btn-primary w-100">Guardar llamada</button>
         </form>
       </div>
     </div>
 
-    <!-- 📭 Mensaje cuando no hay día seleccionado -->
-    <div class="details-panel-empty" *ngIf="!fechaSeleccionada">
-      <p class="text-muted mt-4 text-center">
-        Selecciona un día en el calendario para ver o añadir llamadas.
-      </p>
+    <div class="details-panel flex-fill text-center mt-5 text-muted" *ngIf="!fechaSeleccionada">
+      <p>Selecciona un día del calendario para ver o añadir llamadas.</p>
     </div>
   </div>
 </div>
 
-<!-- 🟢 MODAL EDICIÓN DE LLAMADA -->
-<div
-  class="modal fade"
-  id="editarModal"
-  tabindex="-1"
-  aria-labelledby="editarModalLabel"
-  aria-hidden="true"
-  #editarModal
->
-  <div class="modal-dialog modal-dialog-centered">
+<!-- 🟢 MODAL -->
+<div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title fw-semibold" id="editarModalLabel">
-          ✏️ Editar llamada
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Cerrar"
-        ></button>
+        <h5 class="modal-title fw-semibold">✏️ Editar llamada</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body" *ngIf="llamadaSeleccionada">
         <form (ngSubmit)="actualizarLlamada()">
-          <div class="mb-3">
+
+          <!-- Motivo -->
+          <div class="mb-2">
             <label class="form-label fw-semibold">Motivo</label>
             <input
               type="text"
@@ -160,18 +135,20 @@
             />
           </div>
 
-          <div class="mb-3">
+          <!-- Fecha -->
+          <div class="mb-2">
             <label class="form-label fw-semibold">Fecha y hora</label>
             <input
               type="datetime-local"
               class="form-control"
-              [(ngModel)]="llamadaSeleccionada.fechaHora"
-              name="fechaHora"
+              [(ngModel)]="llamadaSeleccionada.fecha"
+              name="fecha"
               required
             />
           </div>
 
-          <div class="mb-3">
+          <!-- Estado -->
+          <div class="mb-2">
             <label class="form-label fw-semibold">Estado</label>
             <select
               class="form-select"
@@ -185,35 +162,34 @@
             </select>
           </div>
 
+          <!-- Observaciones -->
           <div class="mb-3">
             <label class="form-label fw-semibold">Observaciones</label>
             <textarea
               class="form-control"
+              rows="3"
               [(ngModel)]="llamadaSeleccionada.observaciones"
               name="observaciones"
-              rows="3"
             ></textarea>
           </div>
 
-          <div class="text-end">
-            <button
-              type="button"
-              class="btn btn-danger me-auto"
-              (click)="eliminarLlamada()"
-            >
+          <!-- Botones -->
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-danger" (click)="eliminarLlamada()">
               🗑️ Eliminar
             </button>
-            <button
-              type="button"
-              class="btn btn-secondary me-2"
-              data-bs-dismiss="modal"
-            >
-              Cancelar
-            </button>
-            <button type="submit" class="btn btn-success">
-              💾 Guardar cambios
-            </button>
+
+            <div>
+              <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+                Cancelar
+              </button>
+
+              <button type="submit" class="btn btn-success">
+                💾 Guardar cambios
+              </button>
+            </div>
           </div>
+
         </form>
       </div>
     </div>

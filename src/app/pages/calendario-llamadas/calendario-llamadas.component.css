@@ -1,51 +1,102 @@
+/* ======== LAYOUT GENERAL ======== */
 .calendar-layout {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 25px;
+  align-items: flex-start;
 }
 
+/* Panel del calendario */
 .calendar-panel {
   flex: 2;
-  min-width: 320px;
+  min-width: 60%;
 }
 
-.details-panel,
+/* Panel lateral */
+.details-panel {
+  flex: 1;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 15px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.10);
+}
+
+/* Mensaje si no hay día seleccionado */
 .details-panel-empty {
   flex: 1;
-  min-width: 320px;
+  padding: 20px;
+  text-align: center;
+  color: #777;
 }
 
+
+/* ======== LISTA DE LLAMADAS ======== */
 .list-group-item {
-  border-radius: 8px;
-  margin-bottom: 10px;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  border-left: 4px solid transparent;
 }
 
+.list-group-item:hover {
+  background: #f5faff;
+  transform: scale(1.01);
+  border-left: 4px solid #0d6efd;
+}
+
+
+/* ======== FORMULARIO NUEVA LLAMADA ======== */
 .card {
   border-radius: 10px;
-  background-color: #f8f9fa;
+  animation: fadeIn 0.3s;
 }
 
+.form-control,
+.form-select,
+textarea {
+  border-radius: 8px;
+}
+
+
+/* ======== MODAL ======== */
+.modal-content {
+  border-radius: 12px;
+}
+
+.modal-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-body {
+  padding-top: 20px;
+}
+
+
+/* ======== ANIMACIONES ======== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ======== RESPONSIVE ======== */
 @media (max-width: 992px) {
   .calendar-layout {
     flex-direction: column;
   }
 
-  .calendar-panel,
-  .details-panel {
+  .calendar-panel {
     width: 100%;
   }
 
   .details-panel {
-    margin-top: 20px;
-  }
-}
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    max-height: none;
   }
 }
