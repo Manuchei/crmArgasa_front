@@ -1,35 +1,57 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center gap-3" routerLink="/dashboard">
-      <img src="src\assets\img\argasa.png" alt="Argasa" class="logo-navbar">
-      <span class="text-light fw-bold">/</span>
-      <img src="src\assets\img\electroluga.png" alt="Electroluga" class="logo-navbar">
-    </a>
 
+    <!-- LOGOS ARGASA / ELECTROLUGA -->
+    <!-- <a class="navbar-brand d-flex align-items-center gap-3" routerLink="/dashboard">
+      <img src="src\assets\Argasa mod.png" alt="Argasa" class="logo-navbar">
+      <span class="text-light fw-bold">/</span>
+      <img src="" alt="Electroluga" class="logo-navbar">
+    </a> -->
+
+    <!-- BOTÓN HAMBURGUESA -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
+    <!-- MENÚ -->
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
+
+        <!-- Siempre visible -->
         <li class="nav-item">
           <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">🏠 Inicio</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/clientes" routerLinkActive="active">👥 Clientes</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/proveedores" routerLinkActive="active">🔧 Proveedores</a>
-        </li>
+
+        <!-- SOLO ADMIN -->
+        <ng-container *ngIf="rol === 'ADMIN'">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/clientes" routerLinkActive="active">👥 Clientes</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/proveedores" routerLinkActive="active">🔧 Proveedores</a>
+          </li>
+        </ng-container>
+
+        <!-- SOLO USER -->
+        <ng-container *ngIf="rol === 'USER'">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/clientes" routerLinkActive="active">📁 Mis Clientes</a>
+          </li>
+        </ng-container>
+
+        <!-- Siempre visible -->
         <li class="nav-item">
           <a class="nav-link" routerLink="/calendario" routerLinkActive="active">📅 Calendario</a>
         </li>
       </ul>
 
+      <!-- Usuario -->
       <span class="navbar-text me-3">
         Bienvenido, {{ usuario?.email }}
       </span>
 
+      <!-- Logout -->
       <button class="btn btn-outline-danger btn-sm" (click)="logout()">Cerrar sesión</button>
     </div>
   </div>

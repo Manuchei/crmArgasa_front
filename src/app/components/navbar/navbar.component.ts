@@ -14,14 +14,16 @@ import { AuthService } from '../../services/auth.service';
 export class NavbarComponent {
   usuario: any = null;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  rol: string | null = null;
 
-  ngOnInit() {
-    this.usuario = this.authService.getUsuario();
-  }
+constructor(private auth: AuthService, private router: Router) {}
 
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
+ngOnInit() {
+  this.rol = this.auth.getRol();
+}
+
+logout() {
+  this.auth.logout();
+  this.router.navigate(['/login']);
+}
 }

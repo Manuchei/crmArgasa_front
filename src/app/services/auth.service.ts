@@ -4,29 +4,34 @@ import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'http://localhost:9018/api/auth';
-  private tokenKey = 'token';
-  private rolKey = 'rol';
+  private readonly apiUrl = 'http://localhost:9018/api/auth';
+  private readonly tokenKey = 'token';
+  private readonly rolKey = 'rol';
 
   constructor(private http: HttpClient) {}
 
   login(credentials: { email: string; password: string }): Observable<any> {
-  return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
-    tap((res: any) => {
-      localStorage.setItem(this.tokenKey, res.token);
-      localStorage.setItem(this.rolKey, res.rol);
+    return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
+      tap((res: any) => {
+        const payload = this.decodeToken(res.token);
 
-      // 👉 decodificar token para obtener el email
-      const payload = this.decodeToken(res.token);
+        localStorage.setItem(this.tokenKey, res.token);
+        localStorage.setItem(this.rolKey, res.rol);
 
-      localStorage.setItem(
-        'usuario',
-        JSON.stringify({ email: payload.sub }) // normalmente viene en "sub"
-      );
-    })
-  );
-}
+        // 👉 Guardamos la expiración token * 1000
+        localStorage.setItem('exp', (payload.exp * 1000).toString());
 
+        // 👉 Guardamos el usuario
+        localStorage.setItem('usuario', JSON.stringify({ email: payload.sub }));
+      })
+    );
+  }
+
+  isSessionExpired(): boolean {
+    const exp = Number(localStorage.getItem('exp'));
+    if (!exp) return true;
+    return Date.now() > exp;
+  }
 
   register(data: {
     nombre: string;
@@ -45,11 +50,15 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.rolKey);
     localStorage.removeItem('usuario');
-
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    if (!this.getToken()) return false;
+    if (this.isSessionExpired()) {
+      this.logout();
+      return false;
+    }
+    return true;
   }
 
   getRol(): string | null {
@@ -62,9 +71,8 @@ export class AuthService {
   }
 
   private decodeToken(token: string): any {
-  const payload = token.split('.')[1];
-  const decoded = atob(payload);
-  return JSON.parse(decoded);
-}
-
+    const payload = token.split('.')[1];
+    const decoded = atob(payload);
+    return JSON.parse(decoded);
+  }
 }

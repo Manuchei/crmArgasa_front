@@ -3,6 +3,8 @@ import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { AuthService } from './services/auth.service';
 import { CommonModule, NgIf } from '@angular/common';
+import { Router } from '@angular/router';
+
 
 
 @Component({
@@ -15,9 +17,17 @@ import { CommonModule, NgIf } from '@angular/common';
 export class AppComponent {
   title = 'empresa.crm';
 
-  constructor(private authService: AuthService) {}
+  constructor(private auth: AuthService, private router: Router) {
+  setInterval(() => {
+    if (this.auth.isSessionExpired()) {
+      alert('Tu sesión ha expirado');
+      this.auth.logout();
+      this.router.navigate(['/login']);
+    }
+  }, 15000); // cada 15 segundos revisa
+}
 
-  isLoggedIn() {
-    return this.authService.isLoggedIn();
+  mostrarNavbar(): boolean {
+    return this.router.url !== '/login';
   }
 }

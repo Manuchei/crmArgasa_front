@@ -12,22 +12,28 @@ import { CalendarioLlamadasComponent } from './pages/calendario-llamadas/calenda
 import { NuevoProveedorComponent } from './pages/proveedores/nuevo-proveedor/nuevo-proveedor.component';
 
 export const routes: Routes = [
-
-  // Si no hay ruta → ir al login
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-
-  // Login SIN guard
+  // Ruta pública
   { path: 'login', component: LoginFormComponent },
 
   // Rutas protegidas
-  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
-  { path: 'clientes', component: ClientesComponent, canActivate: [AuthGuard] },
-  { path: 'clientes/nuevo', component: NuevoClienteComponent, canActivate: [AuthGuard] },
-  { path: 'clientes/editar/:id', component: EditarClienteComponent, canActivate: [AuthGuard] },
-  { path: 'clientes/:id', component: ClienteDetalleComponent, canActivate: [AuthGuard] },
-  { path: 'proveedores', component: ProveedoresComponent, canActivate: [AuthGuard] },
-  { path: 'calendario', component: CalendarioLlamadasComponent, canActivate: [AuthGuard] },
-  { path: 'proveedores/nuevo', component: NuevoProveedorComponent, canActivate: [AuthGuard] },
-  // Si la ruta no existe → login
-  { path: '**', redirectTo: 'login' }
+  {
+    path: '',
+    canActivate: [AuthGuard],
+    children: [
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'clientes', component: ClientesComponent },
+      { path: 'clientes/nuevo', component: NuevoClienteComponent },
+      { path: 'clientes/:id', component: ClienteDetalleComponent },
+      { path: 'clientes/editar/:id', component: EditarClienteComponent },
+
+      { path: 'proveedores', component: ProveedoresComponent },
+      { path: 'proveedores/nuevo', component: NuevoProveedorComponent },
+
+      { path: 'calendario', component: CalendarioLlamadasComponent },
+    ]
+  },
+
+  // Default y error
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: '**', redirectTo: 'dashboard' }
 ];

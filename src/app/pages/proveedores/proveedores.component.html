@@ -6,13 +6,11 @@
   <div class="card p-3 mb-4">
     <div class="row">
 
-      <!-- BUSCADOR -->
       <div class="col-md-4">
         <label>Buscar por nombre</label>
         <input type="text" class="form-control" [(ngModel)]="filtros.texto" (input)="filtrar()">
       </div>
 
-      <!-- EMPRESA -->
       <div class="col-md-4">
         <label>Empresa</label>
         <select class="form-control" [(ngModel)]="filtros.empresa" (change)="filtrar()">
@@ -22,7 +20,6 @@
         </select>
       </div>
 
-      <!-- OFICIO -->
       <div class="col-md-4">
         <label>Oficio</label>
         <select class="form-control" [(ngModel)]="filtros.oficio" (change)="filtrar()">
@@ -32,10 +29,9 @@
           <option value="pintor">Pintor</option>
           <option value="albañil">Albañil</option>
           <option value="carpintero">Carpintero</option>
-          <!-- Puedes añadir más -->
         </select>
       </div>
-      
+
     </div>
 
     <div class="mt-3 text-end">
@@ -44,10 +40,11 @@
   </div>
 
   <a routerLink="/proveedores/nuevo" class="btn btn-success mb-3">
-        + Nuevo Proveedor
-      </a>
+    + Nuevo Proveedor
+  </a>
+
   <!-- LISTADO -->
-  <table class="table table-hover">
+  <table class="table table-hover align-middle">
     <thead class="table-dark">
       <tr>
         <th>Nombre</th>
@@ -55,19 +52,42 @@
         <th>Oficio</th>
         <th>Empresa</th>
         <th>Teléfono</th>
+        <th class="text-center">Acciones</th>
       </tr>
     </thead>
 
     <tbody>
-      <tr *ngFor="let p of proveedores">
-        <td>{{ p.nombre }}</td>
-        <td>{{ p.apellido }}</td>
-        <td>{{ p.oficio }}</td>
-        <td>
+      <tr *ngFor="let p of proveedores" style="cursor:pointer">
+        
+        <td (click)="verProveedor(p.id)">{{ p.nombre }}</td>
+        <td (click)="verProveedor(p.id)">{{ p.apellido }}</td>
+        <td (click)="verProveedor(p.id)">{{ p.oficio }}</td>
+        <td (click)="verProveedor(p.id)">
           <span *ngIf="p.trabajaEnArgasa">Argasa</span>
           <span *ngIf="p.trabajaEnLuga">Electroluga</span>
         </td>
-        <td>{{ p.telefono }}</td>
+        <td (click)="verProveedor(p.id)">{{ p.telefono }}</td>
+
+        <!-- ACCIONES -->
+        <td class="text-center">
+
+          <button class="btn btn-sm btn-outline-primary me-1"
+                  (click)="verProveedor(p.id)">
+            🔍 Ver
+          </button>
+
+          <button class="btn btn-sm btn-outline-warning me-1"
+                  (click)="editarProveedor(p.id)">
+            ✏️ Editar
+          </button>
+
+          <button class="btn btn-sm btn-outline-danger"
+                  (click)="eliminarProveedor(p.id)">
+            🗑 Eliminar
+          </button>
+
+        </td>
+
       </tr>
     </tbody>
   </table>

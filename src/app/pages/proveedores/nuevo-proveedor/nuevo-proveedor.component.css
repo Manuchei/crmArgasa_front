@@ -1,0 +1,5 @@
+.deuda {
+  background-color: #ffdddd !important;  /* rojo suave */
+  color: #b30000 !important;             /* texto rojo oscuro */
+  font-weight: bold;
+}

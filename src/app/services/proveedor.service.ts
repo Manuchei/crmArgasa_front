@@ -20,13 +20,15 @@ export class ProveedorService {
     return this.http.get<any[]>(`${this.apiUrl}/oficio/${oficio}`);
   }
   buscar(texto: string, empresa?: string, oficio?: string): Observable<any[]> {
-    let params = new HttpParams().set('textto', texto);
-    if (empresa) params = params.set('empresa', empresa);
-    if (oficio) params = params.set('ofocio', oficio);
+  let params = new HttpParams().set('texto', texto);
+  if (empresa) params = params.set('empresa', empresa);
+  if (oficio) params = params.set('oficio', oficio);
 
-    return this.http.get<any[]>(`${this.apiUrl}/buscar`, { params });
-  }
-  crearProveedor(proveedor: any) {
-    return this.http.post(`${this.apiUrl}/proveedores`, proveedor)
-  }
+  return this.http.get<any[]>(`${this.apiUrl}/buscar`, { params });
+}
+
+crearProveedor(proveedor: any) {
+  return this.http.post(`${this.apiUrl}`, proveedor);
+}
+
 }
