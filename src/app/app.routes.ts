@@ -10,6 +10,8 @@ import { ClienteDetalleComponent } from './pages/cliente-detalle/cliente-detalle
 import { ProveedoresComponent } from './pages/proveedores/proveedores.component';
 import { CalendarioLlamadasComponent } from './pages/calendario-llamadas/calendario-llamadas.component';
 import { NuevoProveedorComponent } from './pages/proveedores/nuevo-proveedor/nuevo-proveedor.component';
+import { VerProveedorComponent } from './pages/ver-proveedor/ver-proveedor.component';
+import { EditarProveedorComponent } from './pages/proveedores/editar-proveedor/editar-proveedor.component';
 
 export const routes: Routes = [
   // Ruta pública
@@ -26,14 +28,16 @@ export const routes: Routes = [
       { path: 'clientes/:id', component: ClienteDetalleComponent },
       { path: 'clientes/editar/:id', component: EditarClienteComponent },
 
-      { path: 'proveedores', component: ProveedoresComponent },
       { path: 'proveedores/nuevo', component: NuevoProveedorComponent },
+      { path: 'proveedores/editar/:id', component: EditarProveedorComponent },
+      { path: 'proveedores/:id', component: VerProveedorComponent },
+      { path: 'proveedores', component: ProveedoresComponent },
 
       { path: 'calendario', component: CalendarioLlamadasComponent },
-    ]
+    ],
   },
 
   // Default y error
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '**', redirectTo: 'dashboard' },
 ];

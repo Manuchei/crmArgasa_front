@@ -13,17 +13,21 @@ import { Router, RouterLink } from "@angular/router";
 export class ProveedoresComponent implements OnInit {
 
   proveedores: any[] = [];
+
   filtros = {
     texto: '',
     empresa: '',
     oficio: '',
-  }
+  };
 
   totalDeuda: number = 0;
   totalPagado: number = 0;
   totalFacturado: number = 0;
 
-  constructor(private proveedorService: ProveedorService, private router: Router) {}
+  constructor(
+    private proveedorService: ProveedorService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.cargarProveedores();
@@ -32,6 +36,12 @@ export class ProveedoresComponent implements OnInit {
   cargarProveedores() {
     this.proveedorService.getProveedores().subscribe(data => {
       this.proveedores = data;
+
+      // Calculamos la deuda automáticamente
+      this.proveedores.forEach(p => {
+        p.importePendiente = (p.importeTotal || 0) - (p.importePagado || 0);
+      });
+
       this.calcularTotales();
     });
   }
@@ -48,6 +58,11 @@ export class ProveedoresComponent implements OnInit {
       this.filtros.oficio
     ).subscribe(data => {
       this.proveedores = data;
+
+      this.proveedores.forEach(p => {
+        p.importePendiente = (p.importeTotal || 0) - (p.importePagado || 0);
+      });
+
       this.calcularTotales();
     });
   }
@@ -58,26 +73,25 @@ export class ProveedoresComponent implements OnInit {
   }
 
   calcularTotales() {
-    this.totalDeuda = this.proveedores.reduce((sum, p) => sum + (p.importePendiente || 0), 0);
-    this.totalPagado = this.proveedores.reduce((sum, p) => sum + (p.importePagado || 0), 0);
     this.totalFacturado = this.proveedores.reduce((sum, p) => sum + (p.importeTotal || 0), 0);
+    this.totalPagado = this.proveedores.reduce((sum, p) => sum + (p.importePagado || 0), 0);
+    this.totalDeuda = this.proveedores.reduce((sum, p) => sum + (p.importePendiente || 0), 0);
   }
 
   verProveedor(id: number) {
-  this.router.navigate(['/proveedores', id]);
-}
-
-editarProveedor(id: number) {
-  this.router.navigate(['/proveedores/editar', id]);
-}
-
-eliminarProveedor(id: number) {
-  if (confirm('¿Seguro que deseas eliminar este proveedor?')) {
-    this.proveedorService.deleteProveedor(id).subscribe(() => {
-      this.cargarProveedores();
-    });
+    this.router.navigate(['/proveedores', id]);
   }
-}
 
+  editarProveedor(id: number) {
+    this.router.navigate(['/proveedores/editar', id]);
+  }
+
+  eliminarProveedor(id: number) {
+    if (confirm('¿Seguro que deseas eliminar este proveedor?')) {
+      this.proveedorService.deleteProveedor(id).subscribe(() => {
+        this.cargarProveedores();
+      });
+    }
+  }
 
 }

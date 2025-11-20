@@ -1,0 +1,57 @@
+<div class="container mt-4">
+  <h3>Editar proveedor</h3>
+
+  <div class="card p-4 shadow-sm">
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label>Nombre</label>
+        <input class="form-control" [(ngModel)]="proveedor.nombre">
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label>Apellido</label>
+        <input class="form-control" [(ngModel)]="proveedor.apellido">
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label>Oficio</label>
+        <input class="form-control" [(ngModel)]="proveedor.oficio">
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label>Teléfono</label>
+        <input class="form-control" [(ngModel)]="proveedor.telefono">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label>Trabajo realizado</label>
+      <textarea class="form-control" [(ngModel)]="proveedor.descripcionTrabajo"></textarea>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col-md-4">
+        <label>Coste total</label>
+        <input type="number" class="form-control" [(ngModel)]="proveedor.importeTotal">
+      </div>
+
+      <div class="col-md-4">
+        <label>Pagado</label>
+        <input type="number" class="form-control" [(ngModel)]="proveedor.importePagado">
+      </div>
+
+      <div class="col-md-4">
+        <label>Pendiente</label>
+        <input class="form-control"
+               [value]="proveedor.importeTotal - proveedor.importePagado" disabled>
+      </div>
+    </div>
+
+    <div class="mt-4 text-end">
+      <button class="btn btn-secondary me-2" (click)="cancelar()">Cancelar</button>
+      <button class="btn btn-success" (click)="guardar()">Guardar cambios</button>
+    </div>
+
+  </div>
+</div>

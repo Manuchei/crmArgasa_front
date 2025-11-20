@@ -1,0 +1,114 @@
+<div class="container mt-4" *ngIf="proveedor">
+
+  <!-- Cabecera -->
+  <div class="card shadow-sm p-4 mb-4">
+    <h2>{{ proveedor.nombre }} {{ proveedor.apellido }}</h2>
+
+    <p><strong>Oficio:</strong> {{ proveedor.oficio }}</p>
+    <p><strong>Teléfono:</strong> {{ proveedor.telefono }}</p>
+    <p><strong>Email:</strong> {{ proveedor.email }}</p>
+
+    <div class="mt-2">
+      <span *ngIf="proveedor.trabajaEnArgasa" class="badge bg-primary me-2">Argasa</span>
+      <span *ngIf="proveedor.trabajaEnLuga" class="badge bg-warning text-dark">Electroluga</span>
+    </div>
+  </div>
+
+  <!-- TRABAJOS REALIZADOS -->
+  <div class="card shadow-sm p-4">
+    <h4>Trabajos realizados</h4>
+
+    <table class="table table-bordered mt-3">
+      <thead class="table-dark">
+        <tr>
+          <th>Descripción</th>
+          <th>Importe (€)</th>
+          <th>Pagado (€)</th>
+          <th>Diferencia (€)</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let trabajo of trabajos">
+          <td>{{ trabajo.descripcion }}</td>
+          <td>{{ trabajo.importe }}</td>
+          <td style="color: green;">
+            {{ trabajo.pagado }}
+          </td>
+          <td 
+            [ngStyle]="{ color: (trabajo.importe - trabajo.pagado) > 0 ? 'red' : 'green' }">
+            {{ trabajo.importe - trabajo.pagado }}
+          </td>
+
+          <td>
+            <button class="btn btn-sm btn-danger" (click)="eliminarTrabajo(trabajo.id)">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Totales -->
+    <div class="mt-3 text-end">
+      <p><b>Total:</b> {{ totalImporte }} €</p>
+      <p style="color: green;"><b>Total pagado:</b> {{ totalPagado }} €</p>
+      <p style="color: red;">
+        <b>Total pendiente:</b> {{ totalImporte - totalPagado }} €
+      </p>
+    </div>
+  </div>
+
+  <!-- AÑADIR NUEVO TRABAJO -->
+  <div class="card shadow-sm p-4 mt-4">
+    <h5>Añadir nuevo trabajo</h5>
+
+    <div class="row g-2 align-items-end">
+      <div class="col-md-6">
+        <label>Descripción</label>
+        <input type="text"
+          class="form-control"
+          [(ngModel)]="nuevoTrabajo.descripcion"
+          placeholder="Ej: Cambio de caldera">
+      </div>
+
+      <div class="col-md-2">
+        <label>Importe (€)</label>
+        <input type="number"
+          class="form-control"
+          [(ngModel)]="nuevoTrabajo.importe">
+      </div>
+
+      <div class="col-md-2">
+        <label>Pagado (€)</label>
+        <input type="number"
+          class="form-control"
+          [(ngModel)]="nuevoTrabajo.pagado">
+      </div>
+
+      <div class="col-md-2 d-grid">
+        <button class="btn btn-success" (click)="guardarTrabajo()">
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTONES -->
+  <div class="mt-4 d-flex justify-content-between">
+    <button class="btn btn-secondary" (click)="volver()">
+      Volver a proveedores
+    </button>
+
+    <button class="btn btn-warning" (click)="irEditar()">
+      Editar proveedor
+    </button>
+  </div>
+
+</div>
+
+<!-- Si no existe proveedor -->
+<div *ngIf="!proveedor" class="text-center mt-5">
+  <p>Cargando proveedor...</p>
+</div>
