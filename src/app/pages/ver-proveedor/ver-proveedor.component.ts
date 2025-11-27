@@ -16,14 +16,16 @@ export class VerProveedorComponent implements OnInit {
   proveedor: any;
   trabajos: any[] = [];
 
+  // ✅ Nombres corregidos
   nuevoTrabajo = {
     descripcion: '',
     importe: 0,
-    pagado: 0
+    importePagado: 0
   };
 
-  totalImporte: number = 0;
-  totalPagado: number = 0;
+  totalImporte = 0;
+  totalPagado = 0;
+  totalPendiente = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -31,53 +33,59 @@ export class VerProveedorComponent implements OnInit {
     private router: Router
   ) {}
 
-ngOnInit() {
-  const id = this.route.snapshot.params['id'];
+  ngOnInit(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
 
-  this.proveedorService.getProveedorById(id).subscribe(data => {
-    this.proveedor = data;
-    this.cargarTrabajos();
-  });
-}
-
-
-  calcularTotales() {
-    this.totalImporte = this.trabajos.reduce((sum, t) => sum + (t.importe || 0), 0);
-    this.totalPagado = this.trabajos.reduce((sum, t) => sum + (t.pagado || 0), 0);
-  }
-
- guardarTrabajo() {
-
-  if (!this.nuevoTrabajo.descripcion.trim()) {
-    alert("La descripción es obligatoria");
-    return;
-  }
-
-  const trabajo = {
-    descripcion: this.nuevoTrabajo.descripcion,
-    importe: this.nuevoTrabajo.importe,
-    pagado: this.nuevoTrabajo.pagado,
-    proveedorId: this.proveedor.id
-  };
-
-  this.proveedorService.guardarTrabajo(trabajo).subscribe({
-    next: () => {
+    this.proveedorService.getProveedorById(id).subscribe((data) => {
+      this.proveedor = data;
       this.cargarTrabajos();
-      this.nuevoTrabajo = { descripcion: '', importe: 0, pagado: 0 };
-    },
-    error: err => {
-      console.error("Error al guardar trabajo", err);
-    }
-  });
-}
+    });
+  }
 
+  cargarTrabajos() {
+    this.proveedorService.getTrabajosByProveedor(this.proveedor.id).subscribe({
+      next: (data) => {
+        this.trabajos = data;
+        this.calcularTotales();
+      },
+      error: (err) => console.error("Error cargando trabajos", err)
+    });
+  }
 
- eliminarTrabajo(id: number) {
-  this.proveedorService.eliminarTrabajo(id).subscribe(() => {
-    this.cargarTrabajos();
-  });
-}
+  guardarTrabajo() {
+    if (!this.nuevoTrabajo.descripcion) return;
 
+    this.proveedorService.crearTrabajoProveedor(this.proveedor.id, this.nuevoTrabajo)
+      .subscribe({
+        next: () => {
+          // ✅ Limpiar formulario
+          this.nuevoTrabajo = { descripcion: '', importe: 0, importePagado: 0 };
+
+          // ✅ Recargar trabajos y totales
+          this.cargarTrabajos();
+        },
+        error: (err) => console.error('Error al guardar trabajo', err)
+      });
+  }
+
+  eliminarTrabajo(id: number) {
+    this.proveedorService.eliminarTrabajo(id).subscribe(() => {
+      this.cargarTrabajos();
+    });
+  }
+
+  // ✅ Método corregido
+  calcularTotales() {
+    this.totalImporte = 0;
+    this.totalPagado = 0;
+
+    this.trabajos.forEach(t => {
+      this.totalImporte += Number(t.importe) || 0;
+      this.totalPagado += Number(t.importePagado) || 0;
+    });
+
+    this.totalPendiente = this.totalImporte - this.totalPagado;
+  }
 
   volver() {
     this.router.navigate(['/proveedores']);
@@ -86,14 +94,4 @@ ngOnInit() {
   irEditar() {
     this.router.navigate(['/proveedores/editar', this.proveedor.id]);
   }
-
-cargarTrabajos() {
-  this.proveedorService.getTrabajosByProveedor(this.proveedor.id)
-    .subscribe(trabajos => {
-      this.trabajos = trabajos;
-      this.calcularTotales();
-    });
-}
-
-
 }

@@ -3,28 +3,34 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ProveedorService {
 
-  private apiUrl = 'http://localhost:9018/api/proveedores';
+  private apiProveedores = 'http://localhost:9018/api/proveedores';
+  private apiTrabajos = 'http://localhost:9018/api/trabajos-proveedor';
 
   constructor(private http: HttpClient) {}
 
+  // ========== PROVEEDORES ==========
   getProveedores(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+    return this.http.get<any[]>(this.apiProveedores);
   }
 
   getProveedorById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+    return this.http.get<any>(`${this.apiProveedores}/${id}`);
   }
 
-  getByEmpresa(empresa: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/empresa/${empresa}`);
+  crearProveedor(proveedor: any): Observable<any> {
+    return this.http.post(this.apiProveedores, proveedor);
   }
 
-  getByOficio(oficio: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/oficio/${oficio}`);
+  actualizarProveedor(id: number, proveedor: any): Observable<any> {
+    return this.http.put(`${this.apiProveedores}/${id}`, proveedor);
+  }
+
+  deleteProveedor(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiProveedores}/${id}`);
   }
 
   buscar(texto: string, empresa?: string, oficio?: string): Observable<any[]> {
@@ -33,37 +39,19 @@ export class ProveedorService {
     if (empresa) params = params.set('empresa', empresa);
     if (oficio) params = params.set('oficio', oficio);
 
-    return this.http.get<any[]>(`${this.apiUrl}/buscar`, { params });
+    return this.http.get<any[]>(`${this.apiProveedores}/buscar`, { params });
   }
 
-  crearProveedor(proveedor: any): Observable<any> {
-    return this.http.post(this.apiUrl, proveedor);
+  // ========== TRABAJOS POR PROVEEDOR ==========
+  getTrabajosByProveedor(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiTrabajos}/proveedor/${id}`);
   }
 
-  actualizarProveedor(id: number, proveedor: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}`, proveedor);
+  crearTrabajoProveedor(idProveedor: number, trabajo: any): Observable<any> {
+    return this.http.post(`${this.apiTrabajos}/proveedor/${idProveedor}`, trabajo);
   }
 
-  deleteProveedor(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  eliminarTrabajo(idTrabajo: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiTrabajos}/${idTrabajo}`);
   }
-
-
-getTrabajosByProveedor(id: number) {
-  return this.http.get<any[]>(`${this.apiUrl}/${id}/trabajos`);
-}
-
-crearTrabajoProveedor(id: number, trabajo: any) {
-  return this.http.post(`http://localhost:9018/api/trabajos-proveedor/${id}`, trabajo);
-}
-
-eliminarTrabajo(id: number) {
-  return this.http.delete(`http://localhost:9018/api/trabajos-proveedor/${id}`);
-}
-
-guardarTrabajo(trabajo: any) {
-  return this.http.post(`${this.apiUrl}/trabajos`, trabajo);
-}
-
-
 }

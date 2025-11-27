@@ -55,7 +55,7 @@
       <p><b>Total:</b> {{ totalImporte }} €</p>
       <p style="color: green;"><b>Total pagado:</b> {{ totalPagado }} €</p>
       <p style="color: red;">
-        <b>Total pendiente:</b> {{ totalImporte - totalPagado }} €
+        <b>Total pendiente:</b> {{ totalImporte - totalPendiente }} €
       </p>
     </div>
   </div>
@@ -84,13 +84,11 @@
         <label>Pagado (€)</label>
         <input type="number"
           class="form-control"
-          [(ngModel)]="nuevoTrabajo.pagado">
+          [(ngModel)]="nuevoTrabajo.importePagado">
       </div>
 
       <div class="col-md-2 d-grid">
-        <button class="btn btn-success" (click)="guardarTrabajo()">
-          +
-        </button>
+<button class="btn btn-success" (click)="guardarTrabajo()">+</button>
       </div>
     </div>
   </div>

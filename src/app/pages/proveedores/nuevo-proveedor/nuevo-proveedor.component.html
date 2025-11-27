@@ -68,16 +68,16 @@
       </div>
     </div>
 
-    <!-- OBSERVACIONES -->
+    <!-- OBSERVACIONES
     <div class="mb-3">
       <label class="form-label">Observaciones</label>
       <textarea rows="3" class="form-control"
                 [(ngModel)]="proveedor.observaciones"
                 name="observaciones"></textarea>
-    </div>
+    </div> -->
 
     <!-- IMPORTES -->
-    <div class="mb-3">
+    <!-- <div class="mb-3">
       <label class="form-label">Coste total del arreglo</label>
       <input type="number" class="form-control"
              [(ngModel)]="proveedor.importeTotal" name="importeTotal" min="0">
@@ -89,7 +89,7 @@
       <label class="form-label mt-2">Importe pendiente</label>
       <input type="number" class="form-control"
              [value]="(proveedor.importeTotal || 0) - (proveedor.importePagado || 0)" disabled>
-    </div>
+    </div> -->
 
     <!-- BOTÓN GUARDAR -->
     <div class="text-center mt-4">
