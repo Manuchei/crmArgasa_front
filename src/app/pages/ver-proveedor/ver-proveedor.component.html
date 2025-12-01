@@ -32,13 +32,18 @@
       <tbody>
         <tr *ngFor="let trabajo of trabajos">
           <td>{{ trabajo.descripcion }}</td>
+
           <td>{{ trabajo.importe }}</td>
+
+          <!-- PAGADO (€) -->
           <td style="color: green;">
-            {{ trabajo.pagado }}
+            {{ trabajo.importePagado || 0 }}
           </td>
+
+          <!-- DIFERENCIA (€) -->
           <td 
-            [ngStyle]="{ color: (trabajo.importe - trabajo.pagado) > 0 ? 'red' : 'green' }">
-            {{ trabajo.importe - trabajo.pagado }}
+            [ngStyle]="{ color: (trabajo.importe - trabajo.importePagado) > 0 ? 'red' : 'green' }">
+            {{ (trabajo.importe - trabajo.importePagado) || 0 }}
           </td>
 
           <td>
@@ -55,7 +60,7 @@
       <p><b>Total:</b> {{ totalImporte }} €</p>
       <p style="color: green;"><b>Total pagado:</b> {{ totalPagado }} €</p>
       <p style="color: red;">
-        <b>Total pendiente:</b> {{ totalImporte - totalPendiente }} €
+        <b>Total pendiente:</b> {{ totalPendiente }} €
       </p>
     </div>
   </div>
@@ -70,7 +75,7 @@
         <input type="text"
           class="form-control"
           [(ngModel)]="nuevoTrabajo.descripcion"
-          placeholder="Ej: Cambio de caldera">
+          placeholder="Ej: Reparación fuga">
       </div>
 
       <div class="col-md-2">
@@ -88,7 +93,7 @@
       </div>
 
       <div class="col-md-2 d-grid">
-<button class="btn btn-success" (click)="guardarTrabajo()">+</button>
+        <button class="btn btn-success" (click)="guardarTrabajo()">+</button>
       </div>
     </div>
   </div>

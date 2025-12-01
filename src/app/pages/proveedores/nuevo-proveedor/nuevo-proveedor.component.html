@@ -6,63 +6,60 @@
     <!-- NOMBRE -->
     <div class="mb-3">
       <label class="form-label">Nombre</label>
-      <input type="text" class="form-control"
-             [(ngModel)]="proveedor.nombre" name="nombre" required />
+      <input type="text" class="form-control" [(ngModel)]="proveedor.nombre" name="nombre" required />
     </div>
 
     <!-- APELLIDO -->
     <div class="mb-3">
       <label class="form-label">Apellido</label>
-      <input type="text" class="form-control"
-             [(ngModel)]="proveedor.apellido" name="apellido" required />
+      <input type="text" class="form-control" [(ngModel)]="proveedor.apellido" name="apellido" required />
     </div>
 
     <!-- OFICIO -->
     <div class="mb-3">
       <label class="form-label">Oficio</label>
-      <input type="text" class="form-control"
-             [(ngModel)]="proveedor.oficio" name="oficio"
-             placeholder="Ej: fontanero, electricista..." required />
+      <select class="form-control" [(ngModel)]="proveedor.oficio">
+        <option value="">Seleccione un oficio...</option>
+        <option *ngFor="let o of oficios" [value]="o">{{ o }}</option>
+      </select>
+
     </div>
 
     <!-- TRABAJO REALIZADO (NUEVO CAMPO) -->
-    <div class="mb-3">
+    <!-- <div class="mb-3">
       <label class="form-label">Trabajo realizado</label>
       <textarea rows="2" class="form-control"
                 [(ngModel)]="proveedor.trabajoRealizado"
                 name="trabajoRealizado"
                 placeholder="Ej: Reparación de fuga, cambio de cuadro eléctrico..."
                 required></textarea>
-    </div>
+    </div> -->
 
     <!-- TELEFONO -->
     <div class="mb-3">
       <label class="form-label">Teléfono</label>
-      <input type="text" class="form-control"
-             [(ngModel)]="proveedor.telefono" name="telefono" required />
+      <input type="text" class="form-control" [(ngModel)]="proveedor.telefono" name="telefono" required />
     </div>
 
     <!-- EMAIL -->
     <div class="mb-3">
       <label class="form-label">Email</label>
-      <input type="email" class="form-control"
-             [(ngModel)]="proveedor.email" name="email" required />
+      <input type="email" class="form-control" [(ngModel)]="proveedor.email" name="email" required />
     </div>
 
     <!-- CHECKBOXES EMPRESAS -->
     <div class="row mb-3">
       <div class="col">
         <label>
-          <input type="checkbox" class="form-check-input"
-                 [(ngModel)]="proveedor.trabajaEnArgasa" name="trabajaEnArgasa" />
+          <input type="checkbox" class="form-check-input" [(ngModel)]="proveedor.trabajaEnArgasa"
+            name="trabajaEnArgasa" />
           Trabaja en Argasa
         </label>
       </div>
 
       <div class="col">
         <label>
-          <input type="checkbox" class="form-check-input"
-                 [(ngModel)]="proveedor.trabajaEnLuga" name="trabajaEnLuga" />
+          <input type="checkbox" class="form-check-input" [(ngModel)]="proveedor.trabajaEnLuga" name="trabajaEnLuga" />
           Trabaja en Electroluga
         </label>
       </div>

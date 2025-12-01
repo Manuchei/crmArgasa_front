@@ -84,7 +84,7 @@
 
         <td (click)="$event.stopPropagation()">
           <button class="btn btn-outline-primary btn-sm me-2" (click)="verProveedor(p.id)">Ver</button>
-          <button class="btn btn-outline-primary btn-sm me-1" (click)="editarProveedor(p.id)">Editar</button>
+          <button class="btn btn-outline-warning btn-sm" (click)="editarProveedor(p.id)">Editar</button>
 
           <button class="btn btn-outline-danger btn-sm" (click)="eliminarProveedor(p.id)">Borrar</button>
         </td>

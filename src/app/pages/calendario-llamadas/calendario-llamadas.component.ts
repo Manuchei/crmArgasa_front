@@ -32,7 +32,7 @@ export class CalendarioLlamadasComponent implements OnInit {
   llamadasDelDia: ILlamada[] = [];
   fechaSeleccionada: string | null = null;
 
-  mostrarFormulario = true;
+  mostrarFormulario = false;
 
   nuevaLlamada: ILlamada = {
     id: 0,
@@ -45,13 +45,16 @@ export class CalendarioLlamadasComponent implements OnInit {
 
   llamadaSeleccionada: ILlamada | null = null;
 
+
+  // ============================
+  //    CALENDAR OPTIONS
+  // ============================
   calendarOptions: CalendarOptions = {
     initialView: 'dayGridMonth',
     plugins: [dayGridPlugin, interactionPlugin],
     locale: 'es',
     dateClick: (args) => this.handleDateClick(args),
-      eventClick: (info) => this.handleEventClick(info),
-
+    eventClick: (info) => this.handleEventClick(info),
     events: [],
   };
 
@@ -62,7 +65,7 @@ export class CalendarioLlamadasComponent implements OnInit {
   }
 
   // ======================================================
-  //                CARGAR EVENTOS CALENDARIO
+  //              CARGAR EVENTOS CALENDARIO
   // ======================================================
   private cargarEventosCalendario(): void {
     this.llamadasService.getEventosCalendario().subscribe({
@@ -73,7 +76,7 @@ export class CalendarioLlamadasComponent implements OnInit {
         const fcEvents = eventos.map((e) => ({
           id: e.id.toString(),
           title: e.motivo,
-          start: e.fecha, // DEBE SER ISO STRING
+          start: e.fecha, 
           backgroundColor:
             e.estado === 'pendiente'
               ? '#ffc23e'
@@ -89,29 +92,38 @@ export class CalendarioLlamadasComponent implements OnInit {
   }
 
   // ======================================================
-  //                      CLICK EN DÍA
+  //                   CLICK EN DÍA
   // ======================================================
   handleDateClick(arg: DateClickArg): void {
     this.fechaSeleccionada = arg.dateStr;
+
+    // Pre-cargar fecha en el formulario
+    this.nuevaLlamada.fecha = arg.dateStr + "T12:00"; // hora por defecto
+
     this.cargarLlamadasDelDia(arg.dateStr);
   }
 
+  // ======================================================
+  //                CLICK EVENTO (MODAL)
+  // ======================================================
   handleEventClick(info: any): void {
-  const id = Number(info.event.id);
+    const id = Number(info.event.id);
 
-  this.llamadasService.getById(id).subscribe({
-    next: (llamada) => {
-      this.llamadaSeleccionada = { ...llamada };
+    this.llamadasService.getById(id).subscribe({
+      next: (llamada) => {
+        this.llamadaSeleccionada = { ...llamada };
 
-      const modal = new bootstrap.Modal(
-        document.getElementById('editarModal') as HTMLElement
-      );
-      modal.show();
-    },
-    error: (err) => console.error(err)
-  });
-}
+        // Convertir LocalDateTime → datetime-local
+        this.llamadaSeleccionada.fecha = llamada.fecha.replace(" ", "T");
 
+        const modal = new bootstrap.Modal(
+          document.getElementById('editarModal') as HTMLElement
+        );
+        modal.show();
+      },
+      error: (err) => console.error(err),
+    });
+  }
 
   private cargarLlamadasDelDia(fechaStr: string): void {
     this.llamadasService.getLlamadasDia(fechaStr).subscribe({
@@ -121,57 +133,43 @@ export class CalendarioLlamadasComponent implements OnInit {
   }
 
   // ======================================================
-  //                   ABRIR MODAL EDITAR
-  // ======================================================
-  abrirModal(id: number): void {
-    this.llamadasService.getById(id).subscribe({
-      next: (llamada) => {
-        this.llamadaSeleccionada = { ...llamada };
-
-        const modal = new bootstrap.Modal(
-          document.getElementById('editarModal')!
-        );
-        modal.show();
-      },
-      error: (err) => console.error('Error obteniendo llamada', err),
-    });
-  }
-
-  // ======================================================
   //                   GUARDAR NUEVA
   // ======================================================
   guardarLlamada(): void {
-  this.llamadasService.crearLlamada(this.nuevaLlamada).subscribe({
-    next: () => {
+    // FORMATO ISO para LocalDateTime
+    this.nuevaLlamada.fecha = this.nuevaLlamada.fecha.replace(" ", "T");
 
-      if (this.fechaSeleccionada) {
-        this.cargarLlamadasDelDia(this.fechaSeleccionada);
-      }
+    this.llamadasService.crearLlamada(this.nuevaLlamada).subscribe({
+      next: () => {
+        if (this.fechaSeleccionada) {
+          this.cargarLlamadasDelDia(this.fechaSeleccionada);
+        }
 
-      // 👇 Recalcular eventos correctamente
-      setTimeout(() => this.cargarEventosCalendario(), 200);
+        setTimeout(() => this.cargarEventosCalendario(), 100);
 
-      this.mostrarFormulario = false;
+        this.mostrarFormulario = false;
 
-      this.nuevaLlamada = {
-        id: 0,
-        motivo: '',
-        fecha: '',
-        estado: 'pendiente',
-        observaciones: '',
-        clienteId: null
-      };
-
-    }
-  });
-}
-
+        this.nuevaLlamada = {
+          id: 0,
+          motivo: '',
+          fecha: '',
+          estado: 'pendiente',
+          observaciones: '',
+          clienteId: null,
+        };
+      },
+      error: (err) => console.error("Error guardando llamada", err)
+    });
+  }
 
   // ======================================================
   //                   ACTUALIZAR
   // ======================================================
   actualizarLlamada(): void {
     if (!this.llamadaSeleccionada) return;
+
+    this.llamadaSeleccionada.fecha =
+      this.llamadaSeleccionada.fecha.replace(" ", "T");
 
     this.llamadasService
       .actualizarLlamada(this.llamadaSeleccionada.id, this.llamadaSeleccionada)
@@ -213,4 +211,19 @@ export class CalendarioLlamadasComponent implements OnInit {
     const modal = bootstrap.Modal.getInstance(modalElement);
     modal?.hide();
   }
+
+  abrirModalDesdeLista(id: number): void {
+  this.llamadasService.getById(id).subscribe({
+    next: (llamada) => {
+      this.llamadaSeleccionada = { ...llamada };
+
+      const modal = new bootstrap.Modal(
+        document.getElementById('editarModal') as HTMLElement
+      );
+      modal.show();
+    },
+    error: (err) => console.error(err)
+  });
+}
+
 }

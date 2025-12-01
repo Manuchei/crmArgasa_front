@@ -20,6 +20,7 @@ export class ProveedoresComponent implements OnInit {
     empresa: '',
     oficio: '',
   };
+  
 
   totalDeuda: number = 0;
   totalPagado: number = 0;

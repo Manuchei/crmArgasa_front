@@ -25,6 +25,18 @@ export class NuevoProveedorComponent {
     importePagado: 0
   };
 
+  oficios: string[] = [
+  'Fontanero',
+  'Electricista',
+  'Carpintero',
+  'Programador',
+  'Pintor',
+  'Cerrajero',
+  'Albañil',
+  'Jardinero'
+];
+
+
   constructor(
     private proveedorService: ProveedorService,
     private router: Router

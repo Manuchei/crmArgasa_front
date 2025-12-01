@@ -9,14 +9,14 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './ver-proveedor.component.html',
-  styleUrl: './ver-proveedor.component.css'
+  styleUrls: ['./ver-proveedor.component.css']
 })
 export class VerProveedorComponent implements OnInit {
 
   proveedor: any;
   trabajos: any[] = [];
 
-  // ✅ Nombres corregidos
+  // Campos correctos (importePagado)
   nuevoTrabajo = {
     descripcion: '',
     importe: 0,
@@ -53,15 +53,15 @@ export class VerProveedorComponent implements OnInit {
   }
 
   guardarTrabajo() {
-    if (!this.nuevoTrabajo.descripcion) return;
+    if (!this.nuevoTrabajo.descripcion.trim()) return;
 
     this.proveedorService.crearTrabajoProveedor(this.proveedor.id, this.nuevoTrabajo)
       .subscribe({
         next: () => {
-          // ✅ Limpiar formulario
+          // Reset formulario
           this.nuevoTrabajo = { descripcion: '', importe: 0, importePagado: 0 };
 
-          // ✅ Recargar trabajos y totales
+          // Recargar trabajos
           this.cargarTrabajos();
         },
         error: (err) => console.error('Error al guardar trabajo', err)
@@ -74,7 +74,7 @@ export class VerProveedorComponent implements OnInit {
     });
   }
 
-  // ✅ Método corregido
+  // CÁLCULO REAL DE TOTALES
   calcularTotales() {
     this.totalImporte = 0;
     this.totalPagado = 0;
