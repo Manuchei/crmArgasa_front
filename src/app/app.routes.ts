@@ -12,6 +12,8 @@ import { CalendarioLlamadasComponent } from './pages/calendario-llamadas/calenda
 import { NuevoProveedorComponent } from './pages/proveedores/nuevo-proveedor/nuevo-proveedor.component';
 import { VerProveedorComponent } from './pages/ver-proveedor/ver-proveedor.component';
 import { EditarProveedorComponent } from './pages/proveedores/editar-proveedor/editar-proveedor.component';
+import { RutasListComponent } from './pages/rutas-list/rutas-list.component';
+import { RutasFormComponent } from './pages/rutas-form/rutas-form.component';
 
 export const routes: Routes = [
   // Ruta pública
@@ -32,6 +34,10 @@ export const routes: Routes = [
       { path: 'proveedores/editar/:id', component: EditarProveedorComponent },
       { path: 'proveedores/:id', component: VerProveedorComponent },
       { path: 'proveedores', component: ProveedoresComponent },
+
+      { path: 'rutas', component: RutasListComponent },
+      { path: 'rutas/nueva', component: RutasFormComponent },
+      { path: 'rutas/editar/:id', component: RutasFormComponent },
 
       { path: 'calendario', component: CalendarioLlamadasComponent },
     ],
