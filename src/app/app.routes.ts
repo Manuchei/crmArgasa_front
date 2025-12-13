@@ -16,24 +16,22 @@ import { RutasListComponent } from './pages/rutas-list/rutas-list.component';
 import { RutasFormComponent } from './pages/rutas-form/rutas-form.component';
 
 export const routes: Routes = [
-  // Ruta pública
   { path: 'login', component: LoginFormComponent },
 
-  // Rutas protegidas
   {
     path: '',
-    canActivate: [AuthGuard],
     children: [
       { path: 'dashboard', component: DashboardComponent },
+
       { path: 'clientes', component: ClientesComponent },
       { path: 'clientes/nuevo', component: NuevoClienteComponent },
       { path: 'clientes/:id', component: ClienteDetalleComponent },
       { path: 'clientes/editar/:id', component: EditarClienteComponent },
 
-      { path: 'proveedores/nuevo', component: NuevoProveedorComponent },
-      { path: 'proveedores/editar/:id', component: EditarProveedorComponent },
-      { path: 'proveedores/:id', component: VerProveedorComponent },
       { path: 'proveedores', component: ProveedoresComponent },
+      { path: 'proveedores/nuevo', component: NuevoProveedorComponent },
+      { path: 'proveedores/:id', component: VerProveedorComponent },
+      { path: 'proveedores/editar/:id', component: EditarProveedorComponent },
 
       { path: 'rutas', component: RutasListComponent },
       { path: 'rutas/nueva', component: RutasFormComponent },
@@ -43,7 +41,9 @@ export const routes: Routes = [
     ],
   },
 
-  // Default y error
+  // SOLO UNO
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+  // wildcard al final
   { path: '**', redirectTo: 'dashboard' },
 ];

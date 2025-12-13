@@ -1,41 +1,78 @@
 <div class="container mt-4">
-  <h2 class="mb-4 text-center">Panel principal</h2>
 
-  <div class="row text-center">
-    <div class="col-md-3 mb-3">
-      <div class="card bg-primary text-white shadow">
-        <div class="card-body">
-          <h5>Total Clientes</h5>
-          <p class="display-6">42</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3 mb-3">
-      <div class="card bg-success text-white shadow">
-        <div class="card-body">
-          <h5>Proveedores</h5>
-          <p class="display-6">12</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3 mb-3">
-      <div class="card bg-warning text-dark shadow">
-        <div class="card-body">
-          <h5>Facturas</h5>
-          <p class="display-6">25</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3 mb-3">
-      <div class="card bg-danger text-white shadow">
-        <div class="card-body">
-          <h5>Pagos pendientes</h5>
-          <p class="display-6">5</p>
+  <!-- KPIs -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3" *ngFor="let card of kpis">
+      <div class="card text-white shadow cursor-pointer"
+           [ngClass]="card.color"
+           (click)="go(card.route)">
+        <div class="card-body text-center">
+          <h6>{{ card.title }}</h6>
+          <h2>{{ card.value }}</h2>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- HOY -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-4" *ngFor="let item of today">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h5>{{ item.icon }} {{ item.title }}</h5>
+          <p class="fs-4 fw-bold">{{ item.value }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRÓXIMAS LLAMADAS -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-bold">
+      📞 Próximas llamadas
+    </div>
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Cliente</th>
+          <th>Motivo</th>
+          <th>Hora</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let call of calls">
+          <td>{{ call.date }}</td>
+          <td>{{ call.client }}</td>
+          <td>{{ call.reason }}</td>
+          <td>{{ call.time }}</td>
+        </tr>
+        <tr *ngIf="calls.length === 0">
+          <td colspan="4" class="text-center text-muted">
+            No hay llamadas próximas
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ACCIONES -->
+  <div class="row g-3">
+    <div class="col-md-4">
+      <button class="btn btn-primary w-100" routerLink="/clientes/nuevo">
+        ➕ Nuevo cliente
+      </button>
+    </div>
+    <div class="col-md-4">
+      <button class="btn btn-success w-100" routerLink="/rutas/nueva">
+        ➕ Nueva ruta
+      </button>
+    </div>
+    <div class="col-md-4">
+      <button class="btn btn-warning w-100" routerLink="/calendario">
+        ➕ Nueva llamada
+      </button>
+    </div>
+  </div>
+
 </div>

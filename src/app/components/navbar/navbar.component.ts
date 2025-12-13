@@ -13,17 +13,17 @@ import { AuthService } from '../../services/auth.service';
 })
 export class NavbarComponent {
   usuario: any = null;
-
   rol: string | null = null;
 
-constructor(private auth: AuthService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
-ngOnInit() {
-  this.rol = this.auth.getRol();
-}
+  ngOnInit() {
+    this.usuario = this.auth.getUsuario();
+    this.rol = this.auth.getRol();
+  }
 
-logout() {
-  this.auth.logout();
-  this.router.navigate(['/login']);
-}
+  logout() {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
 }

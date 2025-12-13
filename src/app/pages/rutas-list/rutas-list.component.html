@@ -15,8 +15,13 @@
 
         <!-- Filtro Estado -->
         <div class="col-md-3">
-          <label class="form-label">Estado</label>
-          <select class="form-select" [(ngModel)]="filtroEstado" (change)="filtrarEstado()">
+          <label class="form-label" for="filtroEstado">Estado</label>
+          <select
+            id="filtroEstado"
+            class="form-select"
+            [(ngModel)]="filtroEstado"
+            (change)="filtrarEstado()"
+          >
             <option value="">Todos</option>
             <option value="pendiente">Pendiente</option>
             <option value="en_curso">En curso</option>
@@ -24,30 +29,41 @@
           </select>
         </div>
 
-        <!-- Filtro Transportista (AUTO mientras escribe) -->
+        <!-- Filtro Transportista -->
         <div class="col-md-3">
-          <label class="form-label">Transportista</label>
-          <input type="text" class="form-control" [(ngModel)]="filtroNombre" placeholder="Buscar..."
-            (input)="filtrarNombre()">
+          <label class="form-label" for="filtroNombre">Transportista</label>
+          <input
+            id="filtroNombre"
+            type="text"
+            class="form-control"
+            [(ngModel)]="filtroNombre"
+            placeholder="Buscar..."
+            (input)="filtrarNombre()"
+          />
         </div>
 
         <!-- Filtro Fecha -->
         <div class="col-md-3">
-          <label class="form-label">Fecha</label>
-          <input type="date" class="form-control" [(ngModel)]="filtroFecha" (change)="filtrarFecha()">
+          <label class="form-label" for="filtroFecha">Fecha</label>
+          <input
+            id="filtroFecha"
+            type="date"
+            class="form-control"
+            [(ngModel)]="filtroFecha"
+            (change)="filtrarFecha()"
+          />
         </div>
 
       </div>
     </div>
   </div>
 
-
   <!-- Mensajes -->
   <div *ngIf="cargando" class="alert alert-info">Cargando rutas...</div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
   <!-- Tabla -->
-  <div class="table-responsive" *ngIf="!cargando && rutas.length > 0">
+  <div class="table-responsive" *ngIf="!cargando && (rutas ?? []).length > 0">
     <table class="table table-striped table-hover align-middle">
       <thead class="table-dark">
         <tr>
@@ -63,7 +79,7 @@
       </thead>
 
       <tbody>
-        <tr *ngFor="let ruta of rutas">
+        <tr *ngFor="let ruta of rutas || []">
           <td>{{ ruta.id }}</td>
           <td>{{ ruta.nombreTransportista }}</td>
           <td>{{ ruta.fecha }}</td>
@@ -85,7 +101,11 @@
               🗑 Eliminar
             </button>
 
-            <button class="btn btn-sm btn-success" [disabled]="ruta.estado === 'cerrada'" (click)="cerrarRuta(ruta)">
+            <button
+              class="btn btn-sm btn-success"
+              [disabled]="ruta.estado === 'cerrada'"
+              (click)="cerrarRuta(ruta)"
+            >
               ✔ Cerrar
             </button>
 
@@ -95,7 +115,7 @@
     </table>
   </div>
 
-  <div *ngIf="!cargando && rutas.length == 0" class="alert alert-warning text-center">
+  <div *ngIf="!cargando && (rutas?.length ?? 0) === 0" class="alert alert-warning text-center">
     No hay rutas disponibles.
   </div>
 </div>

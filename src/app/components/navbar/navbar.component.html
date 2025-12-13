@@ -23,7 +23,7 @@
         </li>
 
         <!-- SOLO ADMIN -->
-        <ng-container *ngIf="rol === 'ADMIN'">
+        <ng-container *ngIf="rol?.includes('ADMIN')">
           <li class="nav-item">
             <a class="nav-link" routerLink="/clientes" routerLinkActive="active">👥 Clientes</a>
           </li>
@@ -33,12 +33,12 @@
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" routerLink="/rutas" routerLink="active">Rutas</a>
+            <a class="nav-link" routerLink="/rutas" routerLinkActive="active">🗺️ Rutas</a>
           </li>
         </ng-container>
 
         <!-- SOLO USER -->
-        <ng-container *ngIf="rol === 'USER'">
+        <ng-container *ngIf="rol?.includes('USER')">
           <li class="nav-item">
             <a class="nav-link" routerLink="/clientes" routerLinkActive="active">📁 Mis Clientes</a>
           </li>

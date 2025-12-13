@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-login-form',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './login-form.component.html'
+  templateUrl: './login-form.component.html',
 })
 export class LoginFormComponent {
   email = '';
@@ -18,9 +18,16 @@ export class LoginFormComponent {
   constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
-    this.authService.login({ email: this.email, password: this.password }).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
-      error: () => (this.errorMsg = 'Usuario o contraseña incorrectos')
-    });
+    console.log('Login fake → entramos como ADMIN');
+
+    // 🔥 FORZAMOS SESIÓN
+    localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('rol', 'ROLE_ADMIN');
+    localStorage.setItem(
+      'usuario',
+      JSON.stringify({ email: 'admin@empresa.com' })
+    );
+
+    this.router.navigate(['/dashboard']); // o la ruta principal
   }
 }
