@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>Editar llamada</h2>
+
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" class="w-100 mb-2">
+    <mat-label>Motivo</mat-label>
+    <input matInput [(ngModel)]="llamada.motivo" name="motivoEdit" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-100 mb-2">
+    <mat-label>Fecha y hora</mat-label>
+    <input
+      matInput
+      type="datetime-local"
+      [(ngModel)]="llamada.fecha"
+      name="fechaEdit"
+    />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-100 mb-2">
+    <mat-label>Estado</mat-label>
+    <mat-select [(ngModel)]="llamada.estado" name="estadoEdit">
+      <mat-option value="pendiente">Pendiente</mat-option>
+      <mat-option value="realizada">Realizada</mat-option>
+      <mat-option value="cancelada">Cancelada</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Observaciones</mat-label>
+    <textarea matInput rows="3" [(ngModel)]="llamada.observaciones" name="obsEdit"></textarea>
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+  <button mat-raised-button color="primary" type="button" (click)="guardar()">Guardar</button>
+</div>

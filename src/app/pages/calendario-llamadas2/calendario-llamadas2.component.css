@@ -1,0 +1,149 @@
+:host ::ng-deep .dia-con-evento .mat-calendar-body-cell-content {
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+mat-card {
+  border-radius: 12px;
+}
+
+mat-list-item {
+  padding: 12px 0;
+}
+
+button {
+  white-space: nowrap;
+}
+
+/* Panels */
+.panel {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  background: rgba(0,0,0,0.02);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-icon {
+  font-size: 18px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.06);
+}
+
+.title {
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: rgba(0,0,0,0.6);
+  margin-top: 3px;
+}
+
+.panel-body {
+  padding: 14px 16px;
+}
+
+/* Badge */
+.badge-soft {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.06);
+}
+
+/* List */
+.llamadas-list mat-list-item {
+  padding: 10px 0;
+}
+
+.item-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.item-main {
+  min-width: 0;
+}
+
+.item-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.item-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meta-pill {
+  font-size: 12px;
+  color: rgba(0,0,0,0.65);
+  background: rgba(0,0,0,0.05);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 18px 0;
+}
+
+.empty-emoji {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.empty-title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.empty-subtitle {
+  font-size: 12px;
+  color: rgba(0,0,0,0.6);
+}
+
+/* Form */
+.form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.btn-save {
+  min-width: 180px;
+}
+
+.btn-compact {
+  white-space: nowrap;
+}
+

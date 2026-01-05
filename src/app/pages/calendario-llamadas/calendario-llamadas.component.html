@@ -1,196 +1,195 @@
 <div class="container mt-4">
-  <h3 class="text-center mb-4 fw-bold">📞 Calendario de Llamadas</h3>
+  <h2 class="text-center mb-4">📞 Calendario de Llamadas</h2>
 
-  <div class="calendar-layout d-flex gap-4">
-    <!-- 📅 Calendario -->
-    <div class="calendar-panel flex-fill">
+  <div class="row g-3">
+    <!-- CALENDARIO -->
+    <div class="col-lg-8">
       <full-calendar #calendar [options]="calendarOptions"></full-calendar>
     </div>
 
-    <!-- 📋 Detalles del día -->
-    <div class="details-panel flex-fill" *ngIf="fechaSeleccionada">
-      <h5 class="fw-semibold">Llamadas del {{ fechaSeleccionada }}</h5>
+    <!-- PANEL DERECHO -->
+    <div class="col-lg-4">
+      <div class="card p-3">
+        <ng-container *ngIf="fechaSeleccionada; else noFecha">
+          <h5 class="mb-2">Día seleccionado: {{ fechaSeleccionada }}</h5>
+          <hr />
 
-      <ul class="list-group my-3">
-        <li
-          *ngFor="let l of llamadasDelDia"
-          class="list-group-item shadow-sm"
-          (click)="abrirModalDesdeLista(l.id)"
-          style="cursor: pointer;"
-        >
-          <div class="d-flex justify-content-between align-items-center">
-            <strong>{{ l.motivo }}</strong>
+          <h6 class="mb-2">Llamadas del día</h6>
 
-            <span
-              class="badge"
-              [ngClass]="{
-                'bg-warning text-dark': l.estado === 'pendiente',
-                'bg-success': l.estado === 'realizada',
-                'bg-danger': l.estado === 'cancelada'
-              }"
+          <div *ngIf="llamadasDelDia.length === 0" class="text-muted mb-3">
+            No hay llamadas para este día.
+          </div>
+
+          <ul class="list-group mb-3" *ngIf="llamadasDelDia.length > 0">
+            <li
+              class="list-group-item d-flex justify-content-between align-items-center"
+              *ngFor="let l of llamadasDelDia"
             >
-              {{ l.estado | uppercase }}
-            </span>
-          </div>
+              <div class="me-2">
+                <strong>{{ l.motivo }}</strong><br />
+                <small class="text-muted">{{ l.fecha }}</small>
+              </div>
 
-          <div class="mt-1 small text-muted">
-            🕒 {{ l.fecha | date : 'short' }}
-          </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                (click)="abrirModalDesdeLista(l.id)"
+              >
+                Editar
+              </button>
+            </li>
+          </ul>
 
-          <div class="mt-1">
-            🗒️ {{ l.observaciones || 'Sin observaciones' }}
-          </div>
-        </li>
+          <button
+            type="button"
+            class="btn btn-primary w-100"
+            (click)="mostrarFormulario = !mostrarFormulario"
+          >
+            {{ mostrarFormulario ? 'Cerrar formulario' : 'Añadir llamada' }}
+          </button>
 
-        <li *ngIf="llamadasDelDia.length === 0" class="list-group-item text-muted">
-          No hay llamadas este día.
-        </li>
-      </ul>
+          <div class="mt-3" *ngIf="mostrarFormulario">
+            <div class="mb-2">
+              <label class="form-label">Motivo</label>
+              <input
+                class="form-control"
+                [(ngModel)]="nuevaLlamada.motivo"
+                name="motivoNueva"
+              />
+            </div>
 
-      <button class="btn btn-outline-primary w-100 mb-2" (click)="mostrarFormulario = !mostrarFormulario">
-        {{ mostrarFormulario ? '➖ Ocultar formulario' : '➕ Añadir llamada' }}
-      </button>
+            <div class="mb-2">
+              <label class="form-label">Fecha y hora</label>
+              <input
+                type="datetime-local"
+                class="form-control"
+                [(ngModel)]="nuevaLlamada.fecha"
+                name="fechaNueva"
+              />
+            </div>
 
-      <!-- FORMULARIO CREAR -->
-      <div class="card p-3 shadow-sm" *ngIf="mostrarFormulario">
-        <h6 class="fw-semibold mb-3">Nueva llamada</h6>
+            <div class="mb-2">
+              <label class="form-label">Estado</label>
+              <select
+                class="form-select"
+                [(ngModel)]="nuevaLlamada.estado"
+                name="estadoNueva"
+              >
+                <option value="pendiente">pendiente</option>
+                <option value="realizada">realizada</option>
+                <option value="cancelada">cancelada</option>
+              </select>
+            </div>
 
-        <form (ngSubmit)="guardarLlamada()">
-          <div class="mb-2">
-            <input
-              type="text"
-              name="motivo"
-              class="form-control"
-              placeholder="Motivo"
-              [(ngModel)]="nuevaLlamada.motivo"
-              required
-            />
-          </div>
+            <div class="mb-2">
+              <label class="form-label">Observaciones</label>
+              <textarea
+                class="form-control"
+                [(ngModel)]="nuevaLlamada.observaciones"
+                name="obsNueva"
+              ></textarea>
+            </div>
 
-          <div class="mb-2">
-            <input
-              type="datetime-local"
-              name="fecha"
-              class="form-control"
-              [(ngModel)]="nuevaLlamada.fecha"
-              required
-            />
-          </div>
-
-          <div class="mb-2">
-            <select
-              name="estado"
-              class="form-select"
-              [(ngModel)]="nuevaLlamada.estado"
-              required
+            <button
+              type="button"
+              class="btn btn-success w-100"
+              (click)="guardarLlamada()"
             >
-              <option value="pendiente">Pendiente</option>
-              <option value="realizada">Realizada</option>
-              <option value="cancelada">Cancelada</option>
-            </select>
+              Guardar
+            </button>
           </div>
+        </ng-container>
 
-          <div class="mb-2">
-            <textarea
-              name="observaciones"
-              class="form-control"
-              rows="2"
-              placeholder="Observaciones"
-              [(ngModel)]="nuevaLlamada.observaciones"
-            ></textarea>
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100">Guardar llamada</button>
-        </form>
+        <ng-template #noFecha>
+          <p class="mb-0">Selecciona un día del calendario para ver o añadir llamadas.</p>
+        </ng-template>
       </div>
-    </div>
-
-    <div class="details-panel flex-fill text-center mt-5 text-muted" *ngIf="!fechaSeleccionada">
-      <p>Selecciona un día del calendario para ver o añadir llamadas.</p>
     </div>
   </div>
 </div>
 
-<!-- 🟢 MODAL -->
-<div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+<!-- MODAL EDITAR -->
+<div
+  class="modal fade"
+  id="editarModal"
+  tabindex="-1"
+  aria-labelledby="editarModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog">
-    <div class="modal-content">
+    <div class="modal-content" *ngIf="llamadaSeleccionada">
       <div class="modal-header">
-        <h5 class="modal-title fw-semibold">✏️ Editar llamada</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title" id="editarModalLabel">Editar llamada</h5>
+
+        <!-- ✅ Cierra por Bootstrap + tu método -->
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          (click)="cerrarModal()"
+        ></button>
       </div>
 
-      <div class="modal-body" *ngIf="llamadaSeleccionada">
-        <form (ngSubmit)="actualizarLlamada()">
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Motivo</label>
+          <input
+            class="form-control"
+            [(ngModel)]="llamadaSeleccionada.motivo"
+            name="motivoEdit"
+          />
+        </div>
 
-          <!-- Motivo -->
-          <div class="mb-2">
-            <label class="form-label fw-semibold">Motivo</label>
-            <input
-              type="text"
-              class="form-control"
-              [(ngModel)]="llamadaSeleccionada.motivo"
-              name="motivo"
-              required
-            />
-          </div>
+        <div class="mb-2">
+          <label class="form-label">Fecha</label>
+          <input
+            type="datetime-local"
+            class="form-control"
+            [(ngModel)]="llamadaSeleccionada.fecha"
+            name="fechaEdit"
+          />
+        </div>
 
-          <!-- Fecha -->
-          <div class="mb-2">
-            <label class="form-label fw-semibold">Fecha y hora</label>
-            <input
-              type="datetime-local"
-              class="form-control"
-              [(ngModel)]="llamadaSeleccionada.fecha"
-              name="fecha"
-              required
-            />
-          </div>
+        <div class="mb-2">
+          <label class="form-label">Estado</label>
+          <select
+            class="form-select"
+            [(ngModel)]="llamadaSeleccionada.estado"
+            name="estadoEdit"
+          >
+            <option value="pendiente">pendiente</option>
+            <option value="realizada">realizada</option>
+            <option value="cancelada">cancelada</option>
+          </select>
+        </div>
 
-          <!-- Estado -->
-          <div class="mb-2">
-            <label class="form-label fw-semibold">Estado</label>
-            <select
-              class="form-select"
-              [(ngModel)]="llamadaSeleccionada.estado"
-              name="estado"
-              required
-            >
-              <option value="pendiente">Pendiente</option>
-              <option value="realizada">Realizada</option>
-              <option value="cancelada">Cancelada</option>
-            </select>
-          </div>
+        <div class="mb-2">
+          <label class="form-label">Observaciones</label>
+          <textarea
+            class="form-control"
+            [(ngModel)]="llamadaSeleccionada.observaciones"
+            name="obsEdit"
+          ></textarea>
+        </div>
+      </div>
 
-          <!-- Observaciones -->
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Observaciones</label>
-            <textarea
-              class="form-control"
-              rows="3"
-              [(ngModel)]="llamadaSeleccionada.observaciones"
-              name="observaciones"
-            ></textarea>
-          </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="eliminarLlamada()"
+        >
+          Eliminar
+        </button>
 
-          <!-- Botones -->
-          <div class="d-flex justify-content-between">
-            <button type="button" class="btn btn-danger" (click)="eliminarLlamada()">
-              🗑️ Eliminar
-            </button>
-
-            <div>
-              <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
-                Cancelar
-              </button>
-
-              <button type="submit" class="btn btn-success">
-                💾 Guardar cambios
-              </button>
-            </div>
-          </div>
-
-        </form>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="actualizarLlamada()"
+        >
+          Guardar cambios
+        </button>
       </div>
     </div>
   </div>

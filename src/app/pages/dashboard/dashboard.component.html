@@ -41,18 +41,20 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let call of calls">
-          <td>{{ call.date }}</td>
-          <td>{{ call.client }}</td>
-          <td>{{ call.reason }}</td>
-          <td>{{ call.time }}</td>
-        </tr>
-        <tr *ngIf="calls.length === 0">
-          <td colspan="4" class="text-center text-muted">
-            No hay llamadas próximas
-          </td>
-        </tr>
-      </tbody>
+  <tr *ngFor="let call of calls">
+    <td>{{ call.fecha | date:'dd/MM/yyyy' }}</td>
+    <td>{{ call.clienteId ?? '-' }}</td>
+    <td>{{ call.motivo }}</td>
+    <td>{{ call.fecha | date:'HH:mm' }}</td>
+  </tr>
+
+  <tr *ngIf="calls.length === 0">
+    <td colspan="4" class="text-center text-muted">
+      No hay llamadas próximas
+    </td>
+  </tr>
+</tbody>
+
     </table>
   </div>
 

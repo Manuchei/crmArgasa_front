@@ -1,11 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
-import {
-  FullCalendarComponent,
-  FullCalendarModule,
-} from '@fullcalendar/angular';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
+import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions } from '@fullcalendar/core';
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -15,9 +12,6 @@ import * as bootstrap from 'bootstrap';
 import { LlamadasService } from '../../services/llamadas.service';
 import { ILlamada } from '../../interfaces/illamda';
 
-import { FormsModule } from '@angular/forms';
-
-
 @Component({
   selector: 'app-calendario-llamadas',
   standalone: true,
@@ -25,10 +19,9 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './calendario-llamadas.component.html',
   styleUrls: ['./calendario-llamadas.component.css'],
 })
-export class CalendarioLlamadasComponent implements OnInit {
+export class CalendarioLlamadasComponent implements AfterViewInit {
   @ViewChild('calendar') calendarRef!: FullCalendarComponent;
 
-  llamadas: ILlamada[] = [];
   llamadasDelDia: ILlamada[] = [];
   fechaSeleccionada: string | null = null;
 
@@ -45,14 +38,15 @@ export class CalendarioLlamadasComponent implements OnInit {
 
   llamadaSeleccionada: ILlamada | null = null;
 
-
-  // ============================
-  //    CALENDAR OPTIONS
-  // ============================
   calendarOptions: CalendarOptions = {
     initialView: 'dayGridMonth',
     plugins: [dayGridPlugin, interactionPlugin],
     locale: 'es',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: '',
+    },
     dateClick: (args) => this.handleDateClick(args),
     eventClick: (info) => this.handleEventClick(info),
     events: [],
@@ -60,23 +54,20 @@ export class CalendarioLlamadasComponent implements OnInit {
 
   constructor(private llamadasService: LlamadasService) {}
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     this.cargarEventosCalendario();
   }
 
-  // ======================================================
-  //              CARGAR EVENTOS CALENDARIO
-  // ======================================================
   private cargarEventosCalendario(): void {
     this.llamadasService.getEventosCalendario().subscribe({
       next: (eventos) => {
         const api = this.calendarRef.getApi();
         api.removeAllEvents();
 
-        const fcEvents = eventos.map((e) => ({
-          id: e.id.toString(),
-          title: e.motivo,
-          start: e.fecha, 
+        const fcEvents = eventos.map((e: any) => ({
+          id: String(e.id),
+          title: e.title,
+          start: e.start,
           backgroundColor:
             e.estado === 'pendiente'
               ? '#ffc23e'
@@ -91,30 +82,22 @@ export class CalendarioLlamadasComponent implements OnInit {
     });
   }
 
-  // ======================================================
-  //                   CLICK EN DÍA
-  // ======================================================
   handleDateClick(arg: DateClickArg): void {
     this.fechaSeleccionada = arg.dateStr;
 
-    // Pre-cargar fecha en el formulario
-    this.nuevaLlamada.fecha = arg.dateStr + "T12:00"; // hora por defecto
+    // ✅ ISO para datetime-local
+    this.nuevaLlamada.fecha = `${arg.dateStr}T12:00`;
 
     this.cargarLlamadasDelDia(arg.dateStr);
+    this.mostrarFormulario = true;
   }
 
-  // ======================================================
-  //                CLICK EVENTO (MODAL)
-  // ======================================================
   handleEventClick(info: any): void {
     const id = Number(info.event.id);
 
     this.llamadasService.getById(id).subscribe({
       next: (llamada) => {
         this.llamadaSeleccionada = { ...llamada };
-
-        // Convertir LocalDateTime → datetime-local
-        this.llamadaSeleccionada.fecha = llamada.fecha.replace(" ", "T");
 
         const modal = new bootstrap.Modal(
           document.getElementById('editarModal') as HTMLElement
@@ -132,12 +115,35 @@ export class CalendarioLlamadasComponent implements OnInit {
     });
   }
 
-  // ======================================================
-  //                   GUARDAR NUEVA
-  // ======================================================
+  // ✅ Normaliza a yyyy-MM-ddTHH:mm si por algún motivo llega distinto
+  private normalizarFechaIso(fecha: string): string {
+    // si ya viene bien: 2026-01-05T13:30
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(fecha)) return fecha;
+
+    // si viniera con segundos: 2026-01-05T13:30:00
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(fecha)) {
+      return fecha.substring(0, 16);
+    }
+
+    // último recurso: intenta parsear (evita toLocaleString)
+    const d = new Date(fecha);
+    if (!isNaN(d.getTime())) {
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+        d.getHours()
+      )}:${pad(d.getMinutes())}`;
+    }
+
+    return fecha; // si no puede, lo deja y backend lo rechazará
+  }
+
   guardarLlamada(): void {
-    // FORMATO ISO para LocalDateTime
-    this.nuevaLlamada.fecha = this.nuevaLlamada.fecha.replace(" ", "T");
+    // ✅ Validación mínima
+    if (!this.nuevaLlamada.motivo?.trim()) return;
+    if (!this.nuevaLlamada.fecha?.trim()) return;
+
+    // ✅ asegurar ISO
+    this.nuevaLlamada.fecha = this.normalizarFechaIso(this.nuevaLlamada.fecha);
 
     this.llamadasService.crearLlamada(this.nuevaLlamada).subscribe({
       next: () => {
@@ -145,8 +151,7 @@ export class CalendarioLlamadasComponent implements OnInit {
           this.cargarLlamadasDelDia(this.fechaSeleccionada);
         }
 
-        setTimeout(() => this.cargarEventosCalendario(), 100);
-
+        this.cargarEventosCalendario();
         this.mostrarFormulario = false;
 
         this.nuevaLlamada = {
@@ -158,18 +163,15 @@ export class CalendarioLlamadasComponent implements OnInit {
           clienteId: null,
         };
       },
-      error: (err) => console.error("Error guardando llamada", err)
+      error: (err) => console.error('Error guardando llamada', err),
     });
   }
 
-  // ======================================================
-  //                   ACTUALIZAR
-  // ======================================================
   actualizarLlamada(): void {
     if (!this.llamadaSeleccionada) return;
 
-    this.llamadaSeleccionada.fecha =
-      this.llamadaSeleccionada.fecha.replace(" ", "T");
+    // ✅ asegurar ISO
+    this.llamadaSeleccionada.fecha = this.normalizarFechaIso(this.llamadaSeleccionada.fecha);
 
     this.llamadasService
       .actualizarLlamada(this.llamadaSeleccionada.id, this.llamadaSeleccionada)
@@ -181,31 +183,25 @@ export class CalendarioLlamadasComponent implements OnInit {
 
           this.cargarEventosCalendario();
         },
+        error: (err) => console.error('Error actualizando llamada', err),
       });
   }
 
-  // ======================================================
-  //                   ELIMINAR
-  // ======================================================
   eliminarLlamada(): void {
     if (!this.llamadaSeleccionada) return;
 
-    this.llamadasService
-      .eliminarLlamada(this.llamadaSeleccionada.id)
-      .subscribe({
-        next: () => {
-          this.cerrarModal();
-          if (this.fechaSeleccionada)
-            this.cargarLlamadasDelDia(this.fechaSeleccionada);
+    this.llamadasService.eliminarLlamada(this.llamadaSeleccionada.id).subscribe({
+      next: () => {
+        this.cerrarModal();
+        if (this.fechaSeleccionada)
+          this.cargarLlamadasDelDia(this.fechaSeleccionada);
 
-          this.cargarEventosCalendario();
-        },
-      });
+        this.cargarEventosCalendario();
+      },
+      error: (err) => console.error('Error eliminando llamada', err),
+    });
   }
 
-  // ======================================================
-  //                   CERRAR MODAL
-  // ======================================================
   cerrarModal(): void {
     const modalElement = document.getElementById('editarModal')!;
     const modal = bootstrap.Modal.getInstance(modalElement);
@@ -213,17 +209,16 @@ export class CalendarioLlamadasComponent implements OnInit {
   }
 
   abrirModalDesdeLista(id: number): void {
-  this.llamadasService.getById(id).subscribe({
-    next: (llamada) => {
-      this.llamadaSeleccionada = { ...llamada };
+    this.llamadasService.getById(id).subscribe({
+      next: (llamada) => {
+        this.llamadaSeleccionada = { ...llamada };
 
-      const modal = new bootstrap.Modal(
-        document.getElementById('editarModal') as HTMLElement
-      );
-      modal.show();
-    },
-    error: (err) => console.error(err)
-  });
-}
-
+        const modal = new bootstrap.Modal(
+          document.getElementById('editarModal') as HTMLElement
+        );
+        modal.show();
+      },
+      error: (err) => console.error(err),
+    });
+  }
 }

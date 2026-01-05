@@ -1,11 +1,13 @@
 import { RutaService } from './../../services/ruta.service';
 import { ProveedorService } from './../../services/proveedor.service';
-import { Proveedor } from './../../interfaces/iproveedor';
 import { ClientesService } from './../../services/cliente.service';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+
+import { LlamadasService } from './../../services/llamadas.service';
+import { ILlamada } from './../../interfaces/illamda';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,19 +18,33 @@ import { RouterModule } from '@angular/router';
 export class DashboardComponent implements OnInit {
   kpis: any[] = [];
   today: any[] = [];
-  calls: any[] = [];
+  calls: ILlamada[] = [];
 
   constructor(
     private ClientesService: ClientesService,
     private ProveedorService: ProveedorService,
     private RutaService: RutaService,
+    private llamadasService: LlamadasService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.cargarKPIs();
     this.cargarTodayFake();
-    this.calls = []; // llamadas fake
+    this.cargarProximasLlamadas();
+  }
+
+  // -------------------------
+  // PRÓXIMAS LLAMADAS (REALES)
+  // -------------------------
+  private cargarProximasLlamadas(): void {
+    this.llamadasService.getProximasLlamadas(10).subscribe({
+      next: (res) => (this.calls = res),
+      error: (err) => {
+        console.error('Error cargando próximas llamadas', err);
+        this.calls = [];
+      },
+    });
   }
 
   // -------------------------
@@ -36,30 +52,10 @@ export class DashboardComponent implements OnInit {
   // -------------------------
   cargarKPIs() {
     this.kpis = [
-      {
-        title: 'Clientes',
-        value: 0,
-        color: 'bg-primary',
-        route: '/clientes',
-      },
-      {
-        title: 'Proveedores',
-        value: 0,
-        color: 'bg-success',
-        route: '/proveedores',
-      },
-      {
-        title: 'Rutas',
-        value: 0,
-        color: 'bg-warning',
-        route: '/rutas',
-      },
-      {
-        title: 'Pendientes',
-        value: '-',
-        color: 'bg-secondary',
-        route: '/dashboard',
-      },
+      { title: 'Clientes', value: 0, color: 'bg-primary', route: '/clientes' },
+      { title: 'Proveedores', value: 0, color: 'bg-success', route: '/proveedores' },
+      { title: 'Rutas', value: 0, color: 'bg-warning', route: '/rutas' },
+      { title: 'Pendientes', value: '-', color: 'bg-secondary', route: '/dashboard' },
     ];
 
     this.ClientesService.getClientes().subscribe((res) => {
