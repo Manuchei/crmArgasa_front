@@ -1,0 +1,76 @@
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold">Facturas</h2>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Filtros</h5>
+
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Empresa</label>
+          <input class="form-control" [(ngModel)]="filtroEmpresa" placeholder="Argasa / Luga" />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Estado</label>
+          <select class="form-select" [(ngModel)]="filtroPagada">
+            <option value="">Todas</option>
+            <option value="false">Pendientes</option>
+            <option value="true">Pagadas</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <button class="btn btn-primary w-100" (click)="aplicarFiltros()">Aplicar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="cargando" class="alert alert-info">Cargando...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="table-responsive" *ngIf="!cargando && (facturas?.length ?? 0) > 0">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Empresa</th>
+          <th>Fecha</th>
+          <th>Total</th>
+          <th>Pagada</th>
+          <th>Cliente</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let f of facturas">
+          <td>{{ f.id }}</td>
+          <td>{{ f.empresa }}</td>
+          <td>{{ f.fechaEmision | date:'dd/MM/yyyy' }}</td>
+          <td>{{ f.totalImporte | number:'1.2-2' }} €</td>
+          <td>
+            <span class="badge bg-success" *ngIf="f.pagada">Pagada</span>
+            <span class="badge bg-warning text-dark" *ngIf="!f.pagada">Pendiente</span>
+          </td>
+          <td>{{ f.cliente?.id ?? '-' }}</td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-success"
+                    [disabled]="f.pagada"
+                    (click)="marcarPagada(f)">
+              ✔ Marcar pagada
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!cargando && (facturas?.length ?? 0) === 0" class="alert alert-warning text-center">
+    No hay facturas.
+  </div>
+</div>

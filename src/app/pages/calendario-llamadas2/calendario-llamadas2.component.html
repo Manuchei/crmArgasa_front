@@ -93,7 +93,7 @@
               <input matInput [(ngModel)]="nuevaLlamada.motivo" name="motivo" />
             </mat-form-field>
 
-            <!-- ✅ NUEVO: Fecha (datepicker) + Hora (time) -->
+            <!-- ✅ Fecha (datepicker) + Hora (DESPLEGABLE) -->
             <div class="row g-2">
               <div class="col-md-7">
                 <mat-form-field appearance="outline" class="w-100">
@@ -119,16 +119,18 @@
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Hora</mat-label>
 
-                  <input
-                    matInput
-                    type="time"
+                  <mat-select
                     [(ngModel)]="horaNueva"
                     name="horaNueva"
-                    (change)="syncFechaHora()"
+                    (selectionChange)="syncFechaHora()"
                     [disabled]="!selectedDate"
-                  />
+                  >
+                    <mat-option *ngFor="let h of horasDisponibles" [value]="h">
+                      {{ h }}
+                    </mat-option>
+                  </mat-select>
 
-                  <mat-hint>Ej: 12:00</mat-hint>
+                  <mat-hint>Elige la hora</mat-hint>
                 </mat-form-field>
               </div>
             </div>

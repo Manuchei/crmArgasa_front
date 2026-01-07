@@ -37,6 +37,7 @@ import { IEventoCalendario } from '../../interfaces/ievento-calendario';
   templateUrl: './calendario-llamadas2.component.html',
   styleUrls: ['./calendario-llamadas2.component.css'],
 })
+
 export class CalendarioLlamadas2Component implements AfterViewInit {
   selectedDate: Date | null = null;
   fechaSeleccionadaStr: string | null = null; // yyyy-MM-dd
@@ -44,8 +45,11 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
   llamadasDelDia: ILlamada[] = [];
 
   // ✅ NUEVO: inputs del formulario (fecha + hora)
-  fechaNueva: Date | null = null; // datepicker
-  horaNueva: string = '12:00';     // input type="time"
+  fechaNueva: Date | null = null;
+
+  // ✅ NUEVO: hora como desplegable
+  horasDisponibles: string[] = [];
+  horaNueva: string = '12:00';
 
   nuevaLlamada: ILlamadaRequest = this.crearRequestVacio();
 
@@ -57,6 +61,7 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
   ) {}
 
   ngAfterViewInit(): void {
+    this.generarHoras();
     this.cargarFechasConEventos();
   }
 
@@ -75,6 +80,26 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 
+  // ✅ NUEVO: genera horas (cada 30 min, de 08:00 a 20:30)
+  private generarHoras(): void {
+    const horas: string[] = [];
+    for (let h = 8; h <= 22; h++) {
+      horas.push(`${String(h).padStart(2, '0')}:00`);
+      horas.push(`${String(h).padStart(2, '0')}:05`);
+      horas.push(`${String(h).padStart(2, '0')}:10`);
+      horas.push(`${String(h).padStart(2, '0')}:15`);
+      horas.push(`${String(h).padStart(2, '0')}:20`);
+      horas.push(`${String(h).padStart(2, '0')}:25`);
+      horas.push(`${String(h).padStart(2, '0')}:30`);
+      horas.push(`${String(h).padStart(2, '0')}:35`);
+      horas.push(`${String(h).padStart(2, '0')}:40`);
+      horas.push(`${String(h).padStart(2, '0')}:45`);
+      horas.push(`${String(h).padStart(2, '0')}:50`);
+      horas.push(`${String(h).padStart(2, '0')}:55`);
+    }
+    this.horasDisponibles = horas;
+  }
+
   // ✅ NUEVO: sincroniza fechaNueva + horaNueva => nuevaLlamada.fecha (yyyy-MM-ddTHH:mm)
   syncFechaHora(): void {
     // Si no hay fechaNueva, intentamos usar el día seleccionado del calendario
@@ -86,9 +111,10 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     const ymd = this.toYmd(this.fechaNueva);
 
     // Asegurar HH:mm
-    const time = (this.horaNueva && /^\d{2}:\d{2}$/.test(this.horaNueva))
-      ? this.horaNueva
-      : '12:00';
+    const time =
+      this.horaNueva && /^\d{2}:\d{2}$/.test(this.horaNueva)
+        ? this.horaNueva
+        : '12:00';
 
     this.nuevaLlamada.fecha = `${ymd}T${time}`;
   }

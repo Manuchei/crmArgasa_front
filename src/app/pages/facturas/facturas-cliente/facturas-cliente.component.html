@@ -1,0 +1,68 @@
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold">Facturas del cliente #{{ clienteId }}</h2>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Empresa</label>
+          <select class="form-select" [(ngModel)]="empresa">
+            <option value="Argasa">Argasa</option>
+            <option value="Luga">Luga</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <button class="btn btn-primary w-100" (click)="generarFactura()" [disabled]="cargando">
+            🧾 Generar factura
+          </button>
+        </div>
+      </div>
+      <small class="text-muted d-block mt-2">
+        Genera una factura con los servicios pendientes (no pagados y sin factura).
+      </small>
+    </div>
+  </div>
+
+  <div *ngIf="cargando" class="alert alert-info">Cargando...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="table-responsive" *ngIf="!cargando && (facturas?.length ?? 0) > 0">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Empresa</th>
+          <th>Fecha</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let f of facturas">
+          <td>{{ f.id }}</td>
+          <td>{{ f.empresa }}</td>
+          <td>{{ f.fechaEmision | date:'dd/MM/yyyy' }}</td>
+          <td>{{ f.totalImporte | number:'1.2-2' }} €</td>
+          <td>
+            <span class="badge bg-success" *ngIf="f.pagada">Pagada</span>
+            <span class="badge bg-warning text-dark" *ngIf="!f.pagada">Pendiente</span>
+          </td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-success" [disabled]="f.pagada" (click)="pagarFactura(f)">
+              ✔ Pagar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!cargando && (facturas?.length ?? 0) === 0" class="alert alert-warning text-center">
+    Este cliente no tiene facturas.
+  </div>
+</div>

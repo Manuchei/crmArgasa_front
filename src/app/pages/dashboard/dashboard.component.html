@@ -35,16 +35,16 @@
       <thead>
         <tr>
           <th>Fecha</th>
-          <th>Cliente</th>
           <th>Motivo</th>
+          <th>Observaciones</th>
           <th>Hora</th>
         </tr>
       </thead>
       <tbody>
   <tr *ngFor="let call of calls">
     <td>{{ call.fecha | date:'dd/MM/yyyy' }}</td>
-    <td>{{ call.clienteId ?? '-' }}</td>
     <td>{{ call.motivo }}</td>
+    <td>{{ call.observaciones }}</td>
     <td>{{ call.fecha | date:'HH:mm' }}</td>
   </tr>
 

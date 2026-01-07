@@ -14,6 +14,8 @@ import { RutasListComponent } from './pages/rutas-list/rutas-list.component';
 import { RutasFormComponent } from './pages/rutas-form/rutas-form.component';
 
 import { CalendarioLlamadas2Component } from './pages/calendario-llamadas2/calendario-llamadas2.component';
+import { FacturasListComponent } from './pages/facturas/facturas-list/facturas-list.component';
+import { FacturasClienteComponent } from './pages/facturas/facturas-cliente/facturas-cliente.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginFormComponent },
@@ -43,6 +45,10 @@ export const routes: Routes = [
 
       // ✅ calendario NUEVO
       { path: 'calendario', component: CalendarioLlamadas2Component },
+
+      { path: 'facturas', component: FacturasListComponent},
+      { path: 'clientes/:id/facturas', component: FacturasClienteComponent}
+
     ],
   },
 
