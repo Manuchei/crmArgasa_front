@@ -6,6 +6,7 @@ export interface Ruta {
   observaciones: string;
   origen: string;
   destino: string;
+  tarea?: string;
   emailTransportista: string;
 
 }

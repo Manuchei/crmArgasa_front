@@ -47,4 +47,9 @@ export class RutaService {
   cerrarRuta(id: number): Observable<Ruta> {
     return this.http.put<Ruta>(`${this.apiUrl}/cerrar/${id}`, {});
   }
+
+  crearRutasDia(payload: any): Observable<any> {
+  return this.http.post(`${this.apiUrl}/dia`, payload);
+}
+
 }

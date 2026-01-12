@@ -1,89 +1,114 @@
 <div class="container my-4">
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <h3 class="fw-bold mb-3">{{ titulo }}</h3>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h3 class="fw-bold mb-3">{{ titulo }}</h3>
 
-            <form [formGroup]="rutaForm" (ngSubmit)="onSubmit()">
+      <form [formGroup]="rutaForm" (ngSubmit)="onSubmit()">
 
-                <div class="row g-3">
+        <div class="row g-3">
 
-                    <div class="col-md-4">
-                        <label class="form-label">Nombre del Transportista</label>
-                        <input type="text" class="form-control" formControlName="nombreTransportista">
-                        <div class="text-danger mt-1" *ngIf="enviado && f['nombreTransportista'].invalid">
-                            El nombre es obligatorio.
-                        </div>
-                    </div>
+          <!-- SELECT Transportista (autocompletar) -->
+          <!-- <div class="col-md-4">
+            <label class="form-label">Transportista (autocompletar)</label>
+            <select id="transportistaSelect" #selectTransportista class="form-select" formControlName="transportistaId"
+              (change)="onSelectTransportista(selectTransportista.value)">
+              <option value="">— Selecciona —</option>
+              <option *ngFor="let t of transportistas" [value]="t.id">
+                {{ t.nombre }}
+              </option>
+            </select>
 
-                    <div class="col-md-4">
-                        <label class="form-label">Correo del transportista</label>
-                        <input type="email" class="form-control" formControlName="emailTransportista">
-                        <div class="text-danger mt-1" *ngIf="enviado && f['emailTransportista'].invalid">
-                            Debes introducir un correo válido.
-                        </div>
-                    </div>
+          </div> -->
 
+          <!-- Nombre transportista -->
+          <div class="col-md-4">
+            <label class="form-label">Nombre del Transportista</label>
+            <input type="text" class="form-control" formControlName="nombreTransportista">
+            <div class="text-danger mt-1" *ngIf="enviado && f['nombreTransportista'].invalid">
+              El nombre es obligatorio.
+            </div>
+          </div>
 
-                    <div class="col-md-3">
-                        <label class="form-label">Fecha</label>
-                        <input type="date" class="form-control" formControlName="fecha">
-                        <div class="text-danger mt-1" *ngIf="enviado && f['fecha'].invalid">
-                            La fecha es obligatoria.
-                        </div>
-                    </div>
+          <!-- Email transportista -->
+          <div class="col-md-4">
+            <label class="form-label">Correo del transportista</label>
+            <input type="email" class="form-control" formControlName="emailTransportista">
+            <div class="text-danger mt-1" *ngIf="enviado && f['emailTransportista'].invalid">
+              Debes introducir un correo válido.
+            </div>
+          </div>
 
-                    <div class="col-md-3">
-                        <label class="form-label">Estado</label>
-                        <select class="form-select" formControlName="estado">
-                            <option value="pendiente">Pendiente</option>
-                            <option value="en_curso">En curso</option>
-                            <option value="cerrada">Cerrada</option>
-                        </select>
-                    </div>
+          <!-- Fecha -->
+          <div class="col-md-3">
+            <label class="form-label">Fecha</label>
+            <input type="date" class="form-control" formControlName="fecha">
+            <div class="text-danger mt-1" *ngIf="enviado && f['fecha'].invalid">
+              La fecha es obligatoria.
+            </div>
+          </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label">Origen</label>
-                        <input type="text" class="form-control" formControlName="origen">
-                        <div class="text-danger mt-1" *ngIf="enviado && f['origen'].invalid">
-                            El origen es obligatorio.
-                        </div>
-                    </div>
+          <!-- Estado -->
+          <div class="col-md-3">
+            <label class="form-label">Estado</label>
+            <select class="form-select" formControlName="estado">
+              <option value="pendiente">Pendiente</option>
+              <option value="en_curso">En curso</option>
+              <option value="cerrada">Cerrada</option>
+            </select>
+          </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label">Destino</label>
-                        <input type="text" class="form-control" formControlName="destino">
-                        <div class="text-danger mt-1" *ngIf="enviado && f['destino'].invalid">
-                            El destino es obligatorio.
-                        </div>
-                    </div>
+          <!-- Origen -->
+          <div class="col-md-6">
+            <label class="form-label">Origen</label>
+            <input type="text" class="form-control" formControlName="origen">
+            <div class="text-danger mt-1" *ngIf="enviado && f['origen'].invalid">
+              El origen es obligatorio.
+            </div>
+          </div>
 
-                    <div class="col-12">
-                        <label class="form-label">Observaciones</label>
-                        <textarea class="form-control" rows="3" formControlName="observaciones"></textarea>
-                    </div>
+          <!-- Destino -->
+          <div class="col-md-6">
+            <label class="form-label">Destino</label>
+            <input type="text" class="form-control" formControlName="destino">
+            <div class="text-danger mt-1" *ngIf="enviado && f['destino'].invalid">
+              El destino es obligatorio.
+            </div>
+          </div>
 
-                </div>
+          <!-- Tarea -->
+          <div class="col-md-6">
+            <label class="form-label">Tarea</label>
+            <input type="text" class="form-control" formControlName="tarea">
+          </div>
 
-                <div class="mt-4 d-flex justify-content-between">
-                    <button class="btn btn-secondary" type="button" (click)="volver()">
-                        ⬅ Volver
-                    </button>
+          <!-- Observaciones -->
+          <div class="col-12">
+            <label class="form-label">Observaciones</label>
+            <textarea class="form-control" rows="3" formControlName="observaciones"></textarea>
+          </div>
 
-                    <button class="btn btn-primary" type="submit" [disabled]="cargando">
-                        {{ idRuta ? 'Actualizar Ruta' : 'Crear Ruta' }}
-                    </button>
-                </div>
-
-                <div *ngIf="cargando" class="alert alert-info mt-3">
-                    Guardando...
-                </div>
-
-                <div *ngIf="error" class="alert alert-danger mt-3">
-                    {{ error }}
-                </div>
-
-            </form>
         </div>
+
+        <div class="mt-4 d-flex justify-content-between">
+          <button class="btn btn-secondary" type="button" (click)="volver()">
+            ⬅ Volver
+          </button>
+
+          <button class="btn btn-primary" type="submit" [disabled]="cargando">
+            {{ idRuta ? 'Actualizar Ruta' : 'Crear Ruta' }}
+          </button>
+        </div>
+
+        <div *ngIf="cargando" class="alert alert-info mt-3">
+          Guardando...
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger mt-3">
+          {{ error }}
+        </div>
+
+      </form>
     </div>
+  </div>
 </div>

@@ -1,9 +1,16 @@
 <div class="container my-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="fw-bold">Gestión de Rutas</h2>
-    <button class="btn btn-primary" (click)="nuevaRuta()">
-      ➕ Nueva Ruta
-    </button>
+
+    <div>
+      <button class="btn btn-primary me-2" (click)="nuevaRuta()">
+        ➕ Nueva Ruta
+      </button>
+
+      <button class="btn btn-outline-primary" (click)="crearRutasDia()">
+        🗓 Crear rutas del día
+      </button>
+    </div>
   </div>
 
   <!-- Filtros -->
@@ -12,7 +19,6 @@
       <h5 class="card-title mb-3">Filtros</h5>
 
       <div class="row g-3">
-
         <!-- Filtro Estado -->
         <div class="col-md-3">
           <label class="form-label" for="filtroEstado">Estado</label>
@@ -53,7 +59,6 @@
             (change)="filtrarFecha()"
           />
         </div>
-
       </div>
     </div>
   </div>
@@ -62,60 +67,119 @@
   <div *ngIf="cargando" class="alert alert-info">Cargando rutas...</div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-  <!-- Tabla -->
-  <div class="table-responsive" *ngIf="!cargando && (rutas ?? []).length > 0">
-    <table class="table table-striped table-hover align-middle">
-      <thead class="table-dark">
-        <tr>
-          <th>ID</th>
-          <th>Transportista</th>
-          <th>Fecha</th>
-          <th>Estado</th>
-          <th>Origen</th>
-          <th>Destino</th>
-          <th>Observaciones</th>
-          <th class="text-center">Acciones</th>
-        </tr>
-      </thead>
+  <!-- ACORDEÓN AGRUPADO (sin bootstrap JS) -->
+  <div *ngIf="!cargando && (grouped?.length ?? 0) > 0" class="accordion">
 
-      <tbody>
-        <tr *ngFor="let ruta of rutas || []">
-          <td>{{ ruta.id }}</td>
-          <td>{{ ruta.nombreTransportista }}</td>
-          <td>{{ ruta.fecha }}</td>
-          <td>
-            <span class="badge bg-warning text-dark" *ngIf="ruta.estado == 'pendiente'">Pendiente</span>
-            <span class="badge bg-info text-dark" *ngIf="ruta.estado == 'en_curso'">En curso</span>
-            <span class="badge bg-success" *ngIf="ruta.estado == 'cerrada'">Cerrada</span>
-          </td>
-          <td>{{ ruta.origen }}</td>
-          <td>{{ ruta.destino }}</td>
-          <td>{{ ruta.observaciones }}</td>
-          <td class="text-center">
+    <div class="accordion-item" *ngFor="let g of grouped; let i = index">
+      <h2 class="accordion-header">
+        <button
+          class="accordion-button"
+          [class.collapsed]="openIndex !== i"
+          type="button"
+          (click)="toggle(i)"
+        >
+          <div class="d-flex w-100 justify-content-between align-items-center">
+            <div>
+              <!-- ✅ Transportista antes de la fecha -->
+              <strong class="me-2">
+                🚚
+                <span *ngIf="g.transportistas.length === 1; else varios">
+                  {{ g.transportistas[0].nombre }}
+                </span>
+                <ng-template #varios>Varios transportistas</ng-template>
+              </strong>
 
-            <button class="btn btn-sm btn-primary me-1" (click)="editarRuta(ruta)">
-              ✏️ Editar
-            </button>
+              <strong>📅 {{ g.fechaLabel }}</strong>
 
-            <button class="btn btn-sm btn-danger me-1" (click)="eliminarRuta(ruta)">
-              🗑 Eliminar
-            </button>
+              <span class="ms-2 text-muted">
+                ({{ g.transportistas.length }} transportistas · {{ g.total }} rutas)
+              </span>
+            </div>
+          </div>
+        </button>
+      </h2>
 
-            <button
-              class="btn btn-sm btn-success"
-              [disabled]="ruta.estado === 'cerrada'"
-              (click)="cerrarRuta(ruta)"
-            >
-              ✔ Cerrar
-            </button>
+      <div
+        class="accordion-collapse"
+        [class.collapse]="openIndex !== i"
+        [class.show]="openIndex === i"
+      >
+        <div class="accordion-body">
 
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          <!-- Transportistas del día -->
+          <div class="card mb-3" *ngFor="let t of g.transportistas">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <strong>🚚 {{ t.nombre }}</strong>
+                <span class="badge bg-secondary ms-2">{{ t.rutas.length }}</span>
+                <span class="text-muted ms-2" *ngIf="t.email">({{ t.email }})</span>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>ID</th>
+                    <th>Transportista</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Tarea</th>
+                    <th>Observaciones</th>
+                    <th class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr *ngFor="let ruta of t.rutas">
+                    <td>{{ ruta.id }}</td>
+                    <td>{{ ruta.nombreTransportista }}</td>
+                    <td>{{ ruta.fecha }}</td>
+
+                    <td>
+                      <span class="badge bg-warning text-dark" *ngIf="ruta.estado == 'pendiente'">Pendiente</span>
+                      <span class="badge bg-info text-dark" *ngIf="ruta.estado == 'en_curso'">En curso</span>
+                      <span class="badge bg-success" *ngIf="ruta.estado == 'cerrada'">Cerrada</span>
+                    </td>
+
+                    <td>{{ ruta.origen }}</td>
+                    <td>{{ ruta.destino }}</td>
+                    <td>{{ ruta.tarea }}</td>
+                    <td>{{ ruta.observaciones }}</td>
+
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-primary me-1" (click)="editarRuta(ruta)">
+                        ✏️ Editar
+                      </button>
+
+                      <button class="btn btn-sm btn-danger me-1" (click)="eliminarRuta(ruta)">
+                        🗑 Eliminar
+                      </button>
+
+                      <button
+                        class="btn btn-sm btn-success"
+                        [disabled]="ruta.estado === 'cerrada'"
+                        (click)="cerrarRuta(ruta)"
+                      >
+                        ✔ Cerrar
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
   </div>
 
-  <div *ngIf="!cargando && (rutas?.length ?? 0) === 0" class="alert alert-warning text-center">
+  <div *ngIf="!cargando && (grouped?.length ?? 0) === 0" class="alert alert-warning text-center">
     No hay rutas disponibles.
   </div>
 </div>

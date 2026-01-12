@@ -16,6 +16,8 @@ import { RutasFormComponent } from './pages/rutas-form/rutas-form.component';
 import { CalendarioLlamadas2Component } from './pages/calendario-llamadas2/calendario-llamadas2.component';
 import { FacturasListComponent } from './pages/facturas/facturas-list/facturas-list.component';
 import { FacturasClienteComponent } from './pages/facturas/facturas-cliente/facturas-cliente.component';
+import { RutasDiaComponent } from './pages/rutas-dia/rutas-dia.component';
+import { TransportistasComponent } from './pages/transportistas/transportistas.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginFormComponent },
@@ -42,12 +44,17 @@ export const routes: Routes = [
       { path: 'rutas', component: RutasListComponent },
       { path: 'rutas/nueva', component: RutasFormComponent },
       { path: 'rutas/editar/:id', component: RutasFormComponent },
+      { path: 'rutas/dia', component:RutasDiaComponent},
 
       // ✅ calendario NUEVO
       { path: 'calendario', component: CalendarioLlamadas2Component },
 
+      // ✅ transportisas NUEVO
+      { path: 'transportistas', component: TransportistasComponent},
+
+
       { path: 'facturas', component: FacturasListComponent},
-      { path: 'clientes/:id/facturas', component: FacturasClienteComponent}
+      { path: 'clientes/:id/facturas', component: FacturasClienteComponent},
 
     ],
   },
