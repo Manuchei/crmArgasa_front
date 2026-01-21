@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -14,10 +14,19 @@ import { FormsModule } from '@angular/forms';
 export class ClienteDetalleComponent implements OnInit {
   cliente: any;
   trabajos: any[] = [];
+  albaranes: any[] = [];
+
   nuevoTrabajo = { descripcion: '', importe: 0, importePagado: 0, pagado: false };
+
+  creandoAlbaranEmpresa: string | null = null;
+
   private apiUrl = 'http://localhost:9018/api';
 
-  constructor(private route: ActivatedRoute, private http: HttpClient, private router: Router) {}
+  constructor(
+    private route: ActivatedRoute,
+    private http: HttpClient,
+    private router: Router
+  ) {}
 
   volverAClientes(): void {
     this.router.navigate(['/clientes']);
@@ -25,8 +34,15 @@ export class ClienteDetalleComponent implements OnInit {
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (isNaN(id)) {
+      alert('ID inválido');
+      this.router.navigate(['/clientes']);
+      return;
+    }
+
     this.cargarCliente(id);
     this.cargarTrabajos(id);
+    this.cargarAlbaranes(id);
   }
 
   cargarCliente(id: number): void {
@@ -42,15 +58,56 @@ export class ClienteDetalleComponent implements OnInit {
   cargarTrabajos(clienteId: number): void {
     this.http.get<any[]>(`${this.apiUrl}/trabajos/cliente/${clienteId}`).subscribe({
       next: (data) => {
-        this.trabajos = data;
+        this.trabajos = data ?? [];
         this.calcularTotales();
       },
       error: (err) => console.error('Error al cargar trabajos:', err),
     });
   }
 
+  // ✅ NUEVO: cargar albaranes del cliente
+  cargarAlbaranes(clienteId: number): void {
+    this.http.get<any[]>(`${this.apiUrl}/albaranes/clientes/${clienteId}`).subscribe({
+      next: (data) => (this.albaranes = data ?? []),
+      error: (err) => console.error('Error al cargar albaranes:', err),
+    });
+  }
+
+  // ✅ NUEVO: crear albarán para Argasa/Luga y navegar al detalle
+  crearAlbaran(empresa: 'Argasa' | 'Luga'): void {
+    if (!this.cliente?.id) return;
+
+    this.creandoAlbaranEmpresa = empresa;
+
+    const params = new HttpParams().set('empresa', empresa);
+
+    this.http
+      .post<any>(`${this.apiUrl}/albaranes/clientes/${this.cliente.id}`, {}, { params })
+      .subscribe({
+        next: (albaran) => {
+          this.creandoAlbaranEmpresa = null;
+
+          if (!albaran?.id) {
+            alert('No se pudo crear el albarán.');
+            return;
+          }
+
+          // recarga lista y navega al detalle del albarán
+          this.cargarAlbaranes(this.cliente.id);
+          this.router.navigate(['/albaranes', albaran.id]);
+        },
+        error: (err) => {
+          this.creandoAlbaranEmpresa = null;
+          console.error('Error creando albarán:', err);
+          alert('No se pudo crear el albarán.');
+        },
+      });
+  }
+
+  // ---------- trabajos ----------
   agregarTrabajo(): void {
     if (!this.cliente?.id) return;
+
     if (!this.nuevoTrabajo.descripcion || this.nuevoTrabajo.importe <= 0) {
       alert('Debes introducir una descripción y un importe válido.');
       return;
@@ -59,7 +116,7 @@ export class ClienteDetalleComponent implements OnInit {
     const trabajoAEnviar = {
       descripcion: this.nuevoTrabajo.descripcion,
       importe: Number(this.nuevoTrabajo.importe),
-      importePagado: this.nuevoTrabajo.importePagado || 0,
+      importePagado: Number(this.nuevoTrabajo.importePagado || 0),
       pagado: false,
     };
 
@@ -77,22 +134,20 @@ export class ClienteDetalleComponent implements OnInit {
   eliminarTrabajo(id: number): void {
     if (confirm('¿Seguro que deseas eliminar este trabajo?')) {
       this.http.delete(`${this.apiUrl}/trabajos/${id}`).subscribe({
-        next: () => {
-          this.cargarTrabajos(this.cliente.id);
-        },
+        next: () => this.cargarTrabajos(this.cliente.id),
         error: (err) => console.error('Error al eliminar trabajo:', err),
       });
     }
   }
 
-  /** 🔹 Calcula los totales del cliente a partir de los trabajos */
+  // ---------- totales ----------
   calcularTotales(): void {
     let totalImporte = 0;
     let totalPagado = 0;
 
-    this.trabajos.forEach((t) => {
-      totalImporte += t.importe || 0;
-      totalPagado += t.importePagado || 0;
+    (this.trabajos ?? []).forEach((t) => {
+      totalImporte += Number(t?.importe || 0);
+      totalPagado += Number(t?.importePagado || 0);
     });
 
     this.cliente = {
@@ -103,16 +158,15 @@ export class ClienteDetalleComponent implements OnInit {
     };
   }
 
-  /** 🔹 Getters para usar en el HTML */
   getTotalImporte(): number {
-    return this.cliente?.totalImporte || 0;
+    return Number(this.cliente?.totalImporte || 0);
   }
 
   getTotalPagado(): number {
-    return this.cliente?.totalPagado || 0;
+    return Number(this.cliente?.totalPagado || 0);
   }
 
   getSaldoPendiente(): number {
-    return this.cliente?.saldoPendiente || 0;
+    return Number(this.cliente?.saldoPendiente || 0);
   }
 }

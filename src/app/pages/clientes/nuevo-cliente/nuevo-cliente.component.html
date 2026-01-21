@@ -4,38 +4,64 @@
   <form (ngSubmit)="guardarCliente()" #formCliente="ngForm">
 
     <div class="row mb-3">
-      <div class="col">
-        <label>Nombre</label>
-        <input [(ngModel)]="cliente.nombre" name="nombre" class="form-control" required />
+      <div class="col-md-6">
+        <label>Nombre y apellidos o Empresa *</label>
+        <input [(ngModel)]="cliente.nombreApellidos" name="nombreApellidos" class="form-control" required />
       </div>
-      <div class="col">
-        <label>Apellido</label>
-        <input [(ngModel)]="cliente.apellido" name="apellido" class="form-control" required />
+
+      <div class="col-md-6">
+        <label class="form-label">Nombre comercio *</label>
+        <select class="form-select" [(ngModel)]="cliente.nombreComercial" name="nombreComercial" required>
+          <option value="">Seleccionar</option>
+          <option *ngFor="let e of empresas" [value]="e">{{ e }}</option>
+        </select>
       </div>
     </div>
 
     <div class="row mb-3">
-     <div class="col-md-6">
-        <label class="form-label">Empresa</label>
-        <select
-          class="form-select"
-          [(ngModel)]="cliente.empresa"
-          name="empresa"
-          required
-        >
-          <option value="">Seleccionar empresa</option>
-          <option *ngFor="let e of empresas" [value]="e">{{ e }}</option>
-        </select>
+      <div class="col-md-8">
+        <label>Dirección</label>
+        <input [(ngModel)]="cliente.direccion" name="direccion" class="form-control" />
       </div>
-      <div class="col">
-        <label>Teléfono</label>
-        <input [(ngModel)]="cliente.telefono" name="telefono" class="form-control" />
+      <div class="col-md-4">
+        <label>Código Postal</label>
+        <input [(ngModel)]="cliente.codigoPostal" name="codigoPostal" class="form-control" />
       </div>
     </div>
 
-    <div class="mb-3">
-      <label>Email</label>
-      <input [(ngModel)]="cliente.email" name="email" class="form-control" />
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label>Población</label>
+        <input [(ngModel)]="cliente.poblacion" name="poblacion" class="form-control" />
+      </div>
+      <div class="col-md-6">
+        <label>Provincia</label>
+        <input [(ngModel)]="cliente.provincia" name="provincia" class="form-control" />
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label>Teléfono</label>
+        <input [(ngModel)]="cliente.telefono" name="telefono" class="form-control" />
+      </div>
+
+      <div class="col-md-6">
+        <label>Móvil</label>
+        <input [(ngModel)]="cliente.movil" name="movil" class="form-control" />
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label>CIF / DNI</label>
+        <input [(ngModel)]="cliente.cifDni" name="cifDni" class="form-control" />
+      </div>
+
+      <div class="col-md-6">
+        <label>Email</label>
+        <input [(ngModel)]="cliente.email" name="email" class="form-control" />
+      </div>
     </div>
 
     <h5 class="mt-4">Compras del cliente</h5>

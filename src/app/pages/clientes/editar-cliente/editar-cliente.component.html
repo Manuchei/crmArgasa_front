@@ -3,75 +3,75 @@
 
   <form (ngSubmit)="guardarCambios()" #formCliente="ngForm">
     <div class="row g-3">
-      <!-- Nombre -->
+
       <div class="col-md-6">
-        <label class="form-label">Nombre</label>
+        <label class="form-label">Nombre y apellidos *</label>
         <input
           type="text"
           class="form-control"
-          [(ngModel)]="cliente.nombre"
-          name="nombre"
+          [(ngModel)]="cliente.nombreApellidos"
+          name="nombreApellidos"
           required
         />
       </div>
 
-      <!-- Apellido -->
       <div class="col-md-6">
-        <label class="form-label">Apellido</label>
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="cliente.apellido"
-          name="apellido"
-          required
-        />
-      </div>
-
-      <!-- Empresa (desplegable) -->
-      <div class="col-md-6">
-        <label class="form-label">Empresa</label>
+        <label class="form-label">Nombre comercial *</label>
         <select
           class="form-select"
-          [(ngModel)]="cliente.empresa"
-          name="empresa"
+          [(ngModel)]="cliente.nombreComercial"
+          name="nombreComercial"
           required
         >
-          <option value="">Seleccionar empresa</option>
-          <option value="Argasa">Argasa</option>
-          <option value="Luga">Luga</option>
+          <option value="">Seleccionar</option>
+          <option *ngFor="let e of empresas" [value]="e">{{ e }}</option>
         </select>
       </div>
 
-      <!-- Teléfono -->
+      <div class="col-md-8">
+        <label class="form-label">Dirección</label>
+        <input type="text" class="form-control" [(ngModel)]="cliente.direccion" name="direccion" />
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Código Postal</label>
+        <input type="text" class="form-control" [(ngModel)]="cliente.codigoPostal" name="codigoPostal" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Población</label>
+        <input type="text" class="form-control" [(ngModel)]="cliente.poblacion" name="poblacion" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Provincia</label>
+        <input type="text" class="form-control" [(ngModel)]="cliente.provincia" name="provincia" />
+      </div>
+
       <div class="col-md-6">
         <label class="form-label">Teléfono</label>
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="cliente.telefono"
-          name="telefono"
-        />
+        <input type="text" class="form-control" [(ngModel)]="cliente.telefono" name="telefono" />
       </div>
 
-      <!-- Email -->
-      <div class="col-md-12">
-        <label class="form-label">Email</label>
-        <input
-          type="email"
-          class="form-control"
-          [(ngModel)]="cliente.email"
-          name="email"
-        />
+      <div class="col-md-6">
+        <label class="form-label">Móvil</label>
+        <input type="text" class="form-control" [(ngModel)]="cliente.movil" name="movil" />
       </div>
+
+      <div class="col-md-6">
+        <label class="form-label">CIF / DNI</label>
+        <input type="text" class="form-control" [(ngModel)]="cliente.cifDni" name="cifDni" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" [(ngModel)]="cliente.email" name="email" />
+      </div>
+
     </div>
 
-    <!-- Botones -->
     <div class="text-end mt-4">
-      <button
-        type="button"
-        class="btn btn-secondary me-2"
-        (click)="cancelar()"
-      >
+      <button type="button" class="btn btn-secondary me-2" (click)="cancelar()">
         Cancelar
       </button>
 

@@ -18,6 +18,7 @@ import { FacturasListComponent } from './pages/facturas/facturas-list/facturas-l
 import { FacturasClienteComponent } from './pages/facturas/facturas-cliente/facturas-cliente.component';
 import { RutasDiaComponent } from './pages/rutas-dia/rutas-dia.component';
 import { TransportistasComponent } from './pages/transportistas/transportistas.component';
+import { AlbaranDetalleComponent } from './pages/albaran-detalle/albaran-detalle.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginFormComponent },
@@ -51,6 +52,8 @@ export const routes: Routes = [
 
       // ✅ transportisas NUEVO
       { path: 'transportistas', component: TransportistasComponent},
+
+      { path: 'albaranes/:id', component: AlbaranDetalleComponent},
 
 
       { path: 'facturas', component: FacturasListComponent},

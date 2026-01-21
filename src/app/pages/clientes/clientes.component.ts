@@ -42,8 +42,6 @@ export class ClientesComponent implements OnInit {
           .map((cliente: any) => {
             let totalServicios = 0;
             let totalPagado = 0;
-
-            // ✅ NUEVO: facturable = suma de importes de servicios SIN factura (da igual pagado)
             let facturableSinFactura = 0;
 
             if (Array.isArray(cliente.trabajos) && cliente.trabajos.length > 0) {
@@ -51,16 +49,12 @@ export class ClientesComponent implements OnInit {
                 const importe = Number(t?.importe ?? 0);
                 totalServicios += importe;
 
-                // pagado real (según tus campos)
                 const importePagado = Number(t?.importePagado ?? 0);
                 if (importePagado > 0) totalPagado += importePagado;
                 else if (t?.pagado === true) totalPagado += importe;
 
-                // ✅ SOLO MIRAMOS SI TIENE FACTURA O NO
                 const sinFactura = (t?.factura == null);
-                if (sinFactura) {
-                  facturableSinFactura += importe;
-                }
+                if (sinFactura) facturableSinFactura += importe;
               });
             }
 
@@ -68,8 +62,6 @@ export class ClientesComponent implements OnInit {
               ...cliente,
               saldoDebe: totalServicios,
               saldoPagado: totalPagado,
-
-              // 👇 AHORA "pendiente" significa: IMPORTE FACTURABLE (servicios sin factura)
               pendiente: facturableSinFactura,
             };
           });
@@ -81,17 +73,20 @@ export class ClientesComponent implements OnInit {
   }
 
   buscar(): void {
-    const texto = (this.textoBusqueda ?? '').toLowerCase();
+    const texto = (this.textoBusqueda ?? '').toLowerCase().trim();
 
     this.clientesFiltrados = (this.clientes ?? []).filter((c: any) => {
       if (!c) return false;
 
-      const coincideTexto = ((c.nombre ?? '') + ' ' + (c.apellido ?? ''))
-        .toLowerCase()
-        .includes(texto);
+      const nombre = (c.nombreApellidos ?? '').toLowerCase();
+      const comercial = (c.nombreComercial ?? '').toLowerCase();
+      const doc = (c.cifDni ?? '').toLowerCase();
+
+      const coincideTexto =
+        (nombre + ' ' + comercial + ' ' + doc).includes(texto);
 
       const coincideEmpresa =
-        !this.empresaSeleccionada || c.empresa === this.empresaSeleccionada;
+        !this.empresaSeleccionada || c.nombreComercial === this.empresaSeleccionada;
 
       return coincideTexto && coincideEmpresa;
     });
@@ -114,9 +109,6 @@ export class ClientesComponent implements OnInit {
     }
   }
 
-  // =========================
-  // ✅ GENERAR FACTURA
-  // =========================
   generarFactura(cliente: any): void {
     if (!cliente || cliente.id == null) {
       console.error('generarFactura() llamado con cliente inválido:', cliente);
@@ -125,14 +117,13 @@ export class ClientesComponent implements OnInit {
     }
 
     const clienteId = Number(cliente.id);
-    const empresa = cliente.empresa;
+    const empresa = cliente.nombreComercial; // ✅ ahora viene aquí
 
     if (!empresa) {
-      alert('Este cliente no tiene empresa asignada.');
+      alert('Este cliente no tiene nombre comercial asignado.');
       return;
     }
 
-    // ✅ AHORA: solo exigimos que haya AL MENOS 1 servicio SIN factura
     const facturable = Number(cliente.pendiente ?? 0);
     if (facturable <= 0) {
       alert('Este cliente no tiene servicios sin factura.');

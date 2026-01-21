@@ -13,7 +13,9 @@ import { ICliente } from '../../../interfaces/icliente';
   styleUrls: ['./editar-cliente.component.css'],
 })
 export class EditarClienteComponent implements OnInit {
-  cliente: ICliente | null = null; // ✅ Inicializamos como null para controlar la carga
+  cliente: ICliente | null = null;
+
+  empresas: string[] = ['Argasa', 'Luga'];
 
   constructor(
     private route: ActivatedRoute,

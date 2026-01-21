@@ -1,11 +1,5 @@
 import { Router } from '@angular/router';
-import {
-  NgFor,
-  NgIf,
-  CurrencyPipe,
-  DecimalPipe,
-  NgClass,
-} from '@angular/common';
+import { NgFor, NgIf, CurrencyPipe, DecimalPipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component } from '@angular/core';
 import { ClientesService } from '../../../services/cliente.service';
@@ -21,10 +15,15 @@ import { ITrabajo } from '../../../interfaces/itrabajo';
 })
 export class NuevoClienteComponent {
   cliente: ICliente = {
-    nombre: '',
-    apellido: '',
-    empresa: '',
+    nombreApellidos: '',
+    nombreComercial: '',
+    direccion: '',
+    codigoPostal: '',
+    poblacion: '',
+    provincia: '',
     telefono: '',
+    movil: '',
+    cifDni: '',
     email: '',
     totalImporte: 0,
     totalPagado: 0,
@@ -38,19 +37,17 @@ export class NuevoClienteComponent {
     pagado: false,
   };
 
-  constructor(
-    private clienteService: ClientesService,
-    private router: Router
-  ) {}
+  constructor(private clienteService: ClientesService, private router: Router) {}
 
   empresas: string[] = ['Argasa', 'Luga'];
-
 
   agregarTrabajo(): void {
     const trabajo: ITrabajo = { ...this.nuevoTrabajo };
     trabajo.pagado = trabajo.importePagado >= trabajo.importe;
+
     this.cliente.trabajos.push(trabajo);
     this.recalcularTotales();
+
     this.nuevoTrabajo = {
       descripcion: '',
       importe: 0,
@@ -71,8 +68,8 @@ export class NuevoClienteComponent {
   }
 
   guardarCliente(): void {
-    if (!this.cliente.nombre || !this.cliente.apellido || !this.cliente.empresa) {
-      alert('Por favor, completa todos los campos obligatorios.');
+    if (!this.cliente.nombreApellidos || !this.cliente.nombreComercial) {
+      alert('Por favor, completa los campos obligatorios (Nombre y apellidos + Nombre comercial).');
       return;
     }
 
