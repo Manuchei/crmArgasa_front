@@ -12,20 +12,12 @@
 
     <!-- BOTONES ALBARÁN -->
     <div class="d-flex gap-2">
-      <button
-        class="btn btn-dark"
-        (click)="crearAlbaran('Argasa')"
-        [disabled]="creandoAlbaranEmpresa !== null"
-      >
+      <button class="btn btn-dark" (click)="crearAlbaran('Argasa')" [disabled]="creandoAlbaranEmpresa !== null">
         <span *ngIf="creandoAlbaranEmpresa !== 'Argasa'">🧾 Albarán Argasa</span>
         <span *ngIf="creandoAlbaranEmpresa === 'Argasa'">Creando...</span>
       </button>
 
-      <button
-        class="btn btn-dark"
-        (click)="crearAlbaran('Luga')"
-        [disabled]="creandoAlbaranEmpresa !== null"
-      >
+      <button class="btn btn-dark" (click)="crearAlbaran('Luga')" [disabled]="creandoAlbaranEmpresa !== null">
         <span *ngIf="creandoAlbaranEmpresa !== 'Luga'">🧾 Albarán Luga</span>
         <span *ngIf="creandoAlbaranEmpresa === 'Luga'">Creando...</span>
       </button>
@@ -37,9 +29,7 @@
     <div class="col-md-6">
       <div class="p-3 border rounded shadow-sm bg-white">
         <div><b>Dirección:</b> {{ cliente.direccion }}</div>
-        <div>
-          <b>CP / Población:</b> {{ cliente.codigoPostal }} - {{ cliente.poblacion }}
-        </div>
+        <div><b>CP / Población:</b> {{ cliente.codigoPostal }} - {{ cliente.poblacion }}</div>
         <div><b>Provincia:</b> {{ cliente.provincia }}</div>
       </div>
     </div>
@@ -95,6 +85,80 @@
 
   <hr class="my-4" />
 
+  <!-- HISTORIAL DE PAGOS -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h5 class="mb-0">Historial de pagos</h5>
+    <div class="fw-bold">
+      Total pagado (historial): {{ getTotalPagos() | number:'1.2-2' }} €
+    </div>
+  </div>
+
+  <table class="table table-striped table-hover text-center align-middle shadow-sm mt-2">
+    <thead class="table-dark">
+      <tr>
+        <th>Fecha</th>
+        <th>Importe (€)</th>
+        <th>Método</th>
+        <th>Observaciones</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of pagos">
+        <td>{{ p.fecha || '-' }}</td>
+        <td>{{ (p.importe || 0) | number:'1.2-2' }}</td>
+        <td>{{ p.metodo || '-' }}</td>
+        <td class="text-start">{{ p.observaciones || '-' }}</td>
+        <td>
+          <button type="button" class="btn btn-sm btn-danger" (click)="eliminarPago(p.id)">
+            <i class="bi bi-trash"></i> Eliminar
+          </button>
+        </td>
+      </tr>
+
+      <tr *ngIf="pagos.length === 0">
+        <td colspan="5" class="text-muted">Este cliente no tiene pagos registrados.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- REGISTRAR PAGO -->
+  <h6 class="mt-3">Registrar nuevo pago</h6>
+
+  <div class="row g-2">
+    <div class="col-md-3">
+      <label class="form-label">Fecha</label>
+      <input type="date" class="form-control" [(ngModel)]="nuevoPago.fecha" name="fechaPago" />
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Importe (€)</label>
+      <input type="number" class="form-control" [(ngModel)]="nuevoPago.importe" name="importePago" min="0"
+        step="0.01" />
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Método</label>
+      <input type="text" class="form-control" [(ngModel)]="nuevoPago.metodo" name="metodoPago"
+        placeholder="Bizum / Efectivo..." />
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Observaciones</label>
+      <input type="text" class="form-control" [(ngModel)]="nuevoPago.observaciones" name="obsPago"
+        placeholder="Opcional" />
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <button class="btn btn-success w-100" (click)="agregarPago()" [disabled]="creandoPago">
+      <span *ngIf="!creandoPago">Registrar pago</span>
+      <span *ngIf="creandoPago">...</span>
+    </button>
+  </div>
+
+  <hr class="my-4" />
+
   <!-- TRABAJOS -->
   <h5>Trabajos realizados</h5>
   <table class="table table-striped text-center align-middle shadow-sm">
@@ -124,7 +188,7 @@
     </tbody>
   </table>
 
-  <!-- TOTALES -->
+  <!-- TOTALES (por trabajos) -->
   <div class="text-end mt-3 fw-bold">
     <p>Total: {{ getTotalImporte() | number: '1.2-2' }} €</p>
     <p class="text-success">Pagado: {{ getTotalPagado() | number: '1.2-2' }} €</p>
@@ -144,11 +208,11 @@
     <input type="text" class="form-control" placeholder="Descripción (ej. Lavadora)"
       [(ngModel)]="nuevoTrabajo.descripcion" name="descripcion" />
 
-    <input type="number" class="form-control" placeholder="Importe (€)"
-      [(ngModel)]="nuevoTrabajo.importe" name="importe" min="0" step="0.01" />
+    <input type="number" class="form-control" placeholder="Importe (€)" [(ngModel)]="nuevoTrabajo.importe"
+      name="importe" min="0" step="0.01" />
 
-    <input type="number" class="form-control" placeholder="Pagado (€)"
-      [(ngModel)]="nuevoTrabajo.importePagado" name="importePagado" min="0" step="0.01" />
+    <input type="number" class="form-control" placeholder="Pagado (€)" [(ngModel)]="nuevoTrabajo.importePagado"
+      name="importePagado" min="0" step="0.01" />
 
     <button class="btn btn-success" (click)="agregarTrabajo()">+</button>
   </div>
