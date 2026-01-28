@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams,HttpHeaders  } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { IfacturaCliente } from '../interfaces/ifactura-cliente';
 
@@ -10,6 +10,7 @@ export class FacturasClientesService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<IfacturaCliente[]> {
+    // ✅ el backend debería filtrar por empresa con X-Empresa (TenantContext)
     return this.http.get<IfacturaCliente[]>(this.baseUrl);
   }
 
@@ -17,12 +18,17 @@ export class FacturasClientesService {
     return this.http.get<IfacturaCliente[]>(`${this.baseUrl}/cliente/${clienteId}`);
   }
 
-  getByEmpresa(empresa: string): Observable<IfacturaCliente[]> {
-    return this.http.get<IfacturaCliente[]>(`${this.baseUrl}/empresa/${empresa}`);
-  }
+  // ❌ Eliminado getByEmpresa(empresa) -> ya no se pasa empresa por URL
+  // getByEmpresa(empresa: string): Observable<IfacturaCliente[]> { ... }
 
-  generar(clienteId: number, empresa: string): Observable<IfacturaCliente> {
-    return this.http.post<IfacturaCliente>(`${this.baseUrl}/generar/${clienteId}/${empresa}`, {});
+   generar(clienteId: number) {
+    const empresa = localStorage.getItem('empresa') || ''; // o desde tu servicio de empresa seleccionada
+
+    const headers = new HttpHeaders({
+      'X-Empresa': empresa
+    });
+
+    return this.http.post(`${this.baseUrl}/generar/${clienteId}`, {}, { headers });
   }
 
   pagar(facturaId: number): Observable<IfacturaCliente> {

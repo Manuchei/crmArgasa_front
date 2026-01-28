@@ -1,0 +1,30 @@
+.selector-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+}
+
+.buttons {
+  display: flex;
+  gap: 30px;
+}
+
+.btn {
+  padding: 40px 60px;
+  font-size: 24px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  color: white;
+}
+
+.argasa {
+  background-color: #1976d2;
+}
+
+.electroluga {
+  background-color: #2e7d32;
+}

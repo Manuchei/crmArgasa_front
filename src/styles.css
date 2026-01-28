@@ -3,3 +3,53 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* =========================
+   VARIABLES BASE
+========================= */
+
+:root {
+  --color-primario: #666;
+  --color-secundario: #999;
+}
+
+/* =========================
+   ARGASA (ROJO)
+========================= */
+
+body.tema-argasa {
+  --color-primario: #c62828;   /* rojo fuerte */
+  --color-secundario: #ef5350; /* rojo claro */
+}
+
+/* =========================
+   ELECTROLUGA (AZUL)
+========================= */
+
+body.tema-electroluga {
+  --color-primario: #1565c0;   /* azul fuerte */
+  --color-secundario: #42a5f5; /* azul claro */
+}
+
+/* =========================
+   USO GENERAL
+========================= */
+
+.navbar {
+  background-color: var(--color-primario) !important;
+}
+
+.btn-primary {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-secundario);
+  border-color: var(--color-secundario);
+}
+
+.badge-empresa {
+  background-color: var(--color-primario);
+}
+

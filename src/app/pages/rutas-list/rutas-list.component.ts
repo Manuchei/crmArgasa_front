@@ -156,16 +156,16 @@ export class RutasListComponent implements OnInit {
   // NAVEGACIÓN
   // -----------------------------
   nuevaRuta(): void {
-    this.router.navigate(['/rutas/nueva']);
+    this.router.navigate(['/app/rutas/nueva']);
   }
 
   crearRutasDia(): void {
-    this.router.navigate(['/rutas/dia']);
+    this.router.navigate(['/app/rutas/dia']);
   }
 
   editarRuta(ruta: Ruta): void {
     if (ruta.id) {
-      this.router.navigate(['/rutas/editar', ruta.id]);
+      this.router.navigate(['/app/rutas/editar', ruta.id]);
     }
   }
 

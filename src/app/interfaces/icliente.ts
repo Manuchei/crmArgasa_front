@@ -3,9 +3,9 @@ import { ITrabajo } from './itrabajo';
 export interface ICliente {
   id?: number;
 
-  // ✅ NUEVOS CAMPOS (backend)
+  // ✅ CAMPOS (backend)
+  empresa?: string; // viene del backend (READ_ONLY), NO se manda al crear
   nombreApellidos: string;
-  nombreComercial: string;
   direccion: string;
   codigoPostal: string;
   poblacion: string;
@@ -14,7 +14,6 @@ export interface ICliente {
   movil: string;
   cifDni: string;
 
-  // ya existía
   email: string;
 
   // totales

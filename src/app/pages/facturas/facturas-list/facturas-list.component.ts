@@ -5,7 +5,6 @@ import { CommonModule, NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-
 @Component({
   selector: 'app-facturas-list',
   standalone: true,
@@ -17,7 +16,7 @@ export class FacturasListComponent implements OnInit {
   cargando = false;
   error = '';
 
-  filtroEmpresa = '';
+  // ❌ filtroEmpresa eliminado: ahora la empresa la decide X-Empresa (TenantContext)
   filtroPagada = ''; // '', 'true', 'false'
 
   constructor(private facturasService: FacturasClientesService) {}
@@ -31,11 +30,11 @@ export class FacturasListComponent implements OnInit {
     this.error = '';
 
     this.facturasService.getAll().subscribe({
-      next: (res) => {
-        this.facturas = res ?? [];
+      next: (res: IfacturaCliente[]) => {
+        this.facturas = this.filtrarPagada(res ?? []);
         this.cargando = false;
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error(err);
         this.error = 'Error al cargar facturas';
         this.cargando = false;
@@ -44,31 +43,14 @@ export class FacturasListComponent implements OnInit {
   }
 
   aplicarFiltros(): void {
-    // filtro empresa usa endpoint del back
-    if (this.filtroEmpresa && this.filtroEmpresa.trim() !== '') {
-      this.cargando = true;
-      this.facturasService.getByEmpresa(this.filtroEmpresa.trim()).subscribe({
-        next: (res) => {
-          this.facturas = this.filtrarPagada(res ?? []);
-          this.cargando = false;
-        },
-        error: (err) => {
-          console.error(err);
-          this.error = 'Error al filtrar por empresa';
-          this.cargando = false;
-        },
-      });
-      return;
-    }
-
-    // si no hay filtro empresa, cargamos todas y filtramos pagada en front
+    // ✅ Solo filtramos pagada en front
     this.cargar();
   }
 
   private filtrarPagada(list: IfacturaCliente[]): IfacturaCliente[] {
     if (this.filtroPagada === '') return list;
     const pagada = this.filtroPagada === 'true';
-    return list.filter(f => f.pagada === pagada);
+    return list.filter((f: IfacturaCliente) => f.pagada === pagada);
   }
 
   marcarPagada(f: IfacturaCliente): void {
@@ -76,11 +58,15 @@ export class FacturasListComponent implements OnInit {
     if (f.pagada) return;
 
     this.facturasService.pagar(f.id).subscribe({
-      next: (updated) => {
-        // actualiza en memoria
-        this.facturas = this.facturas.map(x => x.id === f.id ? { ...x, pagada: true } : x);
+      next: (_updated: IfacturaCliente) => {
+        this.facturas = this.facturas.map((x) =>
+          x.id === f.id ? { ...x, pagada: true } : x
+        );
       },
-      error: (err) => console.error(err),
+      error: (err: unknown) => {
+        console.error(err);
+        this.error = 'No se pudo marcar como pagada';
+      },
     });
   }
 }

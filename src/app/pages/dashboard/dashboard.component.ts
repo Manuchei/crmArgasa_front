@@ -40,10 +40,10 @@ export class DashboardComponent implements OnInit {
   // =========================
   cargarKPIs(): void {
     this.kpis = [
-      { title: 'Clientes', value: 0, color: 'bg-primary', route: '/clientes' },
-      { title: 'Proveedores', value: 0, color: 'bg-success', route: '/proveedores' },
-      { title: 'Rutas', value: 0, color: 'bg-warning', route: '/rutas' },
-      { title: 'Pendientes', value: 0, color: 'bg-secondary', route: '/rutas' },
+      { title: 'Clientes', value: 0, color: 'bg-primary', route: '/app/clientes' },
+      { title: 'Proveedores', value: 0, color: 'bg-success', route: '/app/proveedores' },
+      { title: 'Rutas', value: 0, color: 'bg-warning', route: '/app/rutas' },
+      { title: 'Pendientes', value: 0, color: 'bg-secondary', route: '/app/rutas' },
     ];
 
     this.clientesService.getClientes().subscribe(r => this.kpis[0].value = r.length);

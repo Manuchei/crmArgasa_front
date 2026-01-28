@@ -16,7 +16,6 @@ import { ITrabajo } from '../../../interfaces/itrabajo';
 export class NuevoClienteComponent {
   cliente: ICliente = {
     nombreApellidos: '',
-    nombreComercial: '',
     direccion: '',
     codigoPostal: '',
     poblacion: '',
@@ -39,11 +38,9 @@ export class NuevoClienteComponent {
 
   constructor(private clienteService: ClientesService, private router: Router) {}
 
-  empresas: string[] = ['Argasa', 'Luga'];
-
   agregarTrabajo(): void {
     const trabajo: ITrabajo = { ...this.nuevoTrabajo };
-    trabajo.pagado = trabajo.importePagado >= trabajo.importe;
+    trabajo.pagado = (trabajo.importePagado ?? 0) >= (trabajo.importe ?? 0);
 
     this.cliente.trabajos.push(trabajo);
     this.recalcularTotales();
@@ -68,15 +65,21 @@ export class NuevoClienteComponent {
   }
 
   guardarCliente(): void {
-    if (!this.cliente.nombreApellidos || !this.cliente.nombreComercial) {
-      alert('Por favor, completa los campos obligatorios (Nombre y apellidos + Nombre comercial).');
+    if (!this.cliente.nombreApellidos) {
+      alert('Por favor, completa el campo obligatorio (Nombre y apellidos o Empresa).');
       return;
     }
 
-    this.clienteService.crearCliente(this.cliente).subscribe({
+    // ✅ Seguridad extra: nunca mandar empresa desde el front
+    const payload: ICliente = {
+      ...this.cliente,
+      empresa: undefined,
+    };
+
+    this.clienteService.crearCliente(payload).subscribe({
       next: () => {
         alert('✅ Cliente añadido correctamente.');
-        this.router.navigate(['/clientes']);
+        this.router.navigate(['/app/clientes']);
       },
       error: (err) => {
         console.error('Error al crear cliente:', err);

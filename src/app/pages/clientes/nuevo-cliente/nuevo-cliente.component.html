@@ -4,17 +4,9 @@
   <form (ngSubmit)="guardarCliente()" #formCliente="ngForm">
 
     <div class="row mb-3">
-      <div class="col-md-6">
+      <div class="col-md-12">
         <label>Nombre y apellidos o Empresa *</label>
         <input [(ngModel)]="cliente.nombreApellidos" name="nombreApellidos" class="form-control" required />
-      </div>
-
-      <div class="col-md-6">
-        <label class="form-label">Nombre comercio *</label>
-        <select class="form-select" [(ngModel)]="cliente.nombreComercial" name="nombreComercial" required>
-          <option value="">Seleccionar</option>
-          <option *ngFor="let e of empresas" [value]="e">{{ e }}</option>
-        </select>
       </div>
     </div>
 

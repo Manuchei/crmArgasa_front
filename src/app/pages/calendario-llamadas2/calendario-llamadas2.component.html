@@ -46,7 +46,14 @@
                     <div class="item-title">{{ l.motivo }}</div>
                     <div class="item-meta">
                       <span class="meta-pill">🕒 {{ l.fecha | date:'HH:mm' }}</span>
-                      <span class="meta-pill">• {{ l.estado }}</span>
+                     <span class="estado-pill" [ngClass]="{
+  'estado-pendiente': (l.estado || '').toLowerCase() === 'pendiente',
+  'estado-realizada': (l.estado || '').toLowerCase() === 'realizada',
+  'estado-cancelada': (l.estado || '').toLowerCase() === 'cancelada'
+}">
+  {{ l.estado }}
+</span>
+
                     </div>
                   </div>
 

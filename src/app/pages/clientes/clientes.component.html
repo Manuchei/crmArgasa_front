@@ -3,31 +3,19 @@
 
   <div class="row mb-4 justify-content-center align-items-center text-center">
     <div class="col-md-2 col-sm-12 mb-2 mb-md-0">
-      <a class="btn btn-success w-100" [routerLink]="['/clientes/nuevo']">
+      <a class="btn btn-success w-100" [routerLink]="['/app/clientes/nuevo']">
         <i class="bi bi-person-plus"></i> Añadir cliente
       </a>
     </div>
 
-    <div class="col-md-4 col-sm-12 mb-2 mb-md-0">
+    <div class="col-md-6 col-sm-12 mb-2 mb-md-0">
       <input
         type="text"
         class="form-control text-center"
-        placeholder="Buscar por nombre, comercial o CIF/DNI"
+        placeholder="Buscar por nombre, CIF/DNI, email o teléfono"
         [(ngModel)]="textoBusqueda"
         (input)="buscar()"
       />
-    </div>
-
-    <div class="col-md-3 col-sm-12">
-      <select
-        class="form-select text-center"
-        [(ngModel)]="empresaSeleccionada"
-        (change)="buscar()"
-      >
-        <option value="">Todas las empresas</option>
-        <option value="Argasa">Argasa</option>
-        <option value="Luga">Luga</option>
-      </select>
     </div>
   </div>
 
@@ -35,7 +23,6 @@
     <thead class="table-dark">
       <tr>
         <th>Nombre y apellidos</th>
-        <th>Nombre comercial</th>
         <th>Teléfono</th>
         <th>Móvil</th>
         <th>CIF/DNI</th>
@@ -50,7 +37,6 @@
     <tbody>
       <tr *ngFor="let c of clientesFiltrados">
         <td>{{ c.nombreApellidos }}</td>
-        <td>{{ c.nombreComercial }}</td>
         <td>{{ c.telefono }}</td>
         <td>{{ c.movil }}</td>
         <td>{{ c.cifDni }}</td>
@@ -69,7 +55,7 @@
         </td>
 
         <td class="d-flex justify-content-center gap-2">
-          <button class="btn btn-sm btn-primary" [routerLink]="['/clientes', c.id]">
+          <button class="btn btn-sm btn-primary" [routerLink]="['/app/clientes', c.id]">
             <i class="bi bi-eye"></i> Ver
           </button>
 
@@ -93,7 +79,7 @@
       </tr>
 
       <tr *ngIf="clientesFiltrados.length === 0">
-        <td colspan="10" class="text-muted">No hay clientes disponibles.</td>
+        <td colspan="9" class="text-muted">No hay clientes disponibles.</td>
       </tr>
     </tbody>
   </table>

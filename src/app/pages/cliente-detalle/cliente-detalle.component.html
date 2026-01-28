@@ -10,18 +10,14 @@
       </div>
     </div>
 
-    <!-- BOTONES ALBARÁN -->
+    <!-- BOTÓN ALBARÁN -->
     <div class="d-flex gap-2">
-      <button class="btn btn-dark" (click)="crearAlbaran('Argasa')" [disabled]="creandoAlbaranEmpresa !== null">
-        <span *ngIf="creandoAlbaranEmpresa !== 'Argasa'">🧾 Albarán Argasa</span>
-        <span *ngIf="creandoAlbaranEmpresa === 'Argasa'">Creando...</span>
-      </button>
-
-      <button class="btn btn-dark" (click)="crearAlbaran('Luga')" [disabled]="creandoAlbaranEmpresa !== null">
-        <span *ngIf="creandoAlbaranEmpresa !== 'Luga'">🧾 Albarán Luga</span>
-        <span *ngIf="creandoAlbaranEmpresa === 'Luga'">Creando...</span>
+      <button class="btn btn-dark" (click)="crearAlbaran()" [disabled]="creandoPago">
+        <span *ngIf="!creandoPago">🧾 Crear albarán</span>
+        <span *ngIf="creandoPago">Creando...</span>
       </button>
     </div>
+
   </div>
 
   <!-- DATOS CLIENTE -->
@@ -71,9 +67,13 @@
           </span>
         </td>
         <td>
-          <a class="btn btn-sm btn-primary" [routerLink]="['/albaranes', a.id]">
+          <button type="button" class="btn btn-sm btn-primary" (click)="verAlbaran(a)">
             <i class="bi bi-eye"></i> Ver
-          </a>
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-dark" (click)="imprimirAlbaran(a)">
+            <i class="bi bi-printer"></i> Imprimir
+          </button>
+
         </td>
       </tr>
 

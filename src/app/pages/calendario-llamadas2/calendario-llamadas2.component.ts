@@ -66,14 +66,16 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
   }
 
   private crearRequestVacio(): ILlamadaRequest {
-    return {
-      motivo: '',
-      fecha: '',
-      estado: 'pendiente',
-      observaciones: '',
-      clienteId: null,
-    };
-  }
+  return {
+    empresa: 'ARGASA', // luego se sobreescribe en el service igualmente
+    motivo: '',
+    fecha: '',
+    estado: 'pendiente',
+    observaciones: '',
+    clienteId: null,
+  };
+}
+
 
   private toYmd(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0');

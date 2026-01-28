@@ -20,7 +20,6 @@ export class ClientesComponent implements OnInit {
   clientesFiltrados: any[] = [];
 
   textoBusqueda: string = '';
-  empresaSeleccionada: string = '';
 
   generandoFacturaId: number | null = null;
 
@@ -79,21 +78,17 @@ export class ClientesComponent implements OnInit {
       if (!c) return false;
 
       const nombre = (c.nombreApellidos ?? '').toLowerCase();
-      const comercial = (c.nombreComercial ?? '').toLowerCase();
       const doc = (c.cifDni ?? '').toLowerCase();
+      const email = (c.email ?? '').toLowerCase();
+      const tel = (c.telefono ?? '').toLowerCase();
+      const mov = (c.movil ?? '').toLowerCase();
 
-      const coincideTexto =
-        (nombre + ' ' + comercial + ' ' + doc).includes(texto);
-
-      const coincideEmpresa =
-        !this.empresaSeleccionada || c.nombreComercial === this.empresaSeleccionada;
-
-      return coincideTexto && coincideEmpresa;
+      return (nombre + ' ' + doc + ' ' + email + ' ' + tel + ' ' + mov).includes(texto);
     });
   }
 
   editarCliente(id: number): void {
-    this.router.navigate(['/clientes/editar', id]);
+    this.router.navigate(['/app/clientes/editar', id]);
   }
 
   eliminarCliente(id: number): void {
@@ -117,12 +112,6 @@ export class ClientesComponent implements OnInit {
     }
 
     const clienteId = Number(cliente.id);
-    const empresa = cliente.nombreComercial; // ✅ ahora viene aquí
-
-    if (!empresa) {
-      alert('Este cliente no tiene nombre comercial asignado.');
-      return;
-    }
 
     const facturable = Number(cliente.pendiente ?? 0);
     if (facturable <= 0) {
@@ -130,10 +119,12 @@ export class ClientesComponent implements OnInit {
       return;
     }
 
+    // ✅ Ya NO pasamos "empresa" aquí.
+    // El backend sabe la empresa por el header X-Empresa (TenantContext)
     this.generandoFacturaId = clienteId;
 
     this.facturasService
-      .generar(clienteId, empresa)
+      .generar(clienteId)
       .pipe(finalize(() => (this.generandoFacturaId = null)))
       .subscribe({
         next: (factura: any) => {

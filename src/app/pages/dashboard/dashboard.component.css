@@ -1,3 +1,27 @@
-.cursor-pointer {
-  cursor: pointer;
+.estado-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.estado-pendiente {
+  color: #856404;
+  background: rgba(255, 193, 7, 0.22);
+  border: 1px solid rgba(255, 193, 7, 0.55);
+}
+
+.estado-realizada {
+  color: #155724;
+  background: rgba(40, 167, 69, 0.20);
+  border: 1px solid rgba(40, 167, 69, 0.55);
+}
+
+.estado-cancelada {
+  color: #721c24;
+  background: rgba(220, 53, 69, 0.18);
+  border: 1px solid rgba(220, 53, 69, 0.55);
 }

@@ -95,7 +95,7 @@ export class RutasDiaComponent implements OnInit {
       next: () => {
         this.cargando = false;
         alert('Rutas del día creadas correctamente.');
-        this.router.navigate(['/rutas']);
+        this.router.navigate(['/app/rutas']);
       },
       error: (err) => {
         console.error(err);
@@ -106,6 +106,6 @@ export class RutasDiaComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/rutas']);
+    this.router.navigate(['/app/rutas']);
   }
 }

@@ -150,7 +150,7 @@ export class RutasFormComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/rutas']);
+    this.router.navigate(['/app/rutas']);
   }
 
   get f() {

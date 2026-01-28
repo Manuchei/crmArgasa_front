@@ -73,8 +73,22 @@ export class ClienteDetalleComponent implements OnInit {
   }
 
   volverAClientes(): void {
-    this.router.navigate(['/clientes']);
+    this.router.navigate(['/app/clientes']);
   }
+
+  verAlbaran(a: any): void {
+  if (!a?.id) return;
+
+  // ✅ Guardar empresa del albarán como empresa seleccionada
+  // Cambia la clave si tú usas otra (ej: 'empresaSeleccionada')
+  if (a?.empresa) {
+    localStorage.setItem('empresa', String(a.empresa));
+  }
+
+  // ✅ Navegar al detalle
+  this.router.navigate(['/app/albaranes', a.id]);
+}
+
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -153,40 +167,47 @@ export class ClienteDetalleComponent implements OnInit {
   }
 
   // ---------------- ALBARANES ----------------
-  cargarAlbaranes(clienteId: number): void {
-    // ✅ GET /api/albaranes?clienteId=...
-    this.http.get<any[]>(`${this.apiUrl}/albaranes`, { params: { clienteId } as any }).subscribe({
-      next: (data) => (this.albaranes = data ?? []),
-      error: (err) => console.error('Error al cargar albaranes:', err),
-    });
-  }
+cargarAlbaranes(clienteId: number): void {
+  // ✅ GET /api/albaranes?clienteId=...
+  this.http.get<any[]>(`${this.apiUrl}/albaranes`, { params: { clienteId } as any }).subscribe({
+    next: (data) => (this.albaranes = data ?? []),
+    error: (err) => console.error('Error al cargar albaranes:', err),
+  });
+}
 
-  crearAlbaran(empresa: 'Argasa' | 'Luga'): void {
-    if (!this.cliente?.id) return;
 
-    this.creandoAlbaranEmpresa = empresa;
-    const params = new HttpParams().set('empresa', empresa);
 
-    // ✅ POST /api/albaranes/clientes/{clienteId}?empresa=...
-    this.http.post<any>(`${this.apiUrl}/albaranes/clientes/${this.cliente.id}`, {}, { params }).subscribe({
-      next: (albaran) => {
-        this.creandoAlbaranEmpresa = null;
+// ✅ Un solo albarán (empresa la decide el backend por el cliente/tenant)
+crearAlbaran(): void {
+  if (!this.cliente?.id) return;
+      this.router.navigate(['/app/clientes']);
 
-        if (!albaran?.id) {
-          alert('No se pudo crear el albarán.');
-          return;
-        }
+  // opcional: bloquear botón mientras crea
+  this.creandoPago = true; // si NO quieres añadir una variable nueva, reutilizo esta
+  // mejor sería: creandoAlbaran = true; pero así no toco más
 
-        this.cargarAlbaranes(this.cliente.id);
-        this.router.navigate(['/albaranes', albaran.id]);
-      },
-      error: (err) => {
-        this.creandoAlbaranEmpresa = null;
-        console.error('Error creando albarán:', err);
+  // ✅ POST /api/albaranes/clientes/{clienteId} (SIN ?empresa)
+  this.http.post<any>(`${this.apiUrl}/albaranes/clientes/${this.cliente.id}`, {}).subscribe({
+    next: (albaran) => {
+      this.creandoPago = false;
+
+      if (!albaran?.id) {
         alert('No se pudo crear el albarán.');
-      },
-    });
-  }
+        return;
+      }
+
+      this.cargarAlbaranes(this.cliente.id);
+      this.router.navigate(['/app/albaranes', albaran.id]);
+    },
+    error: (err) => {
+      this.creandoPago = false;
+      console.error('Error creando albarán:', err);
+      alert('No se pudo crear el albarán.');
+    },
+  });
+}
+
+
 
   // ---------------- PAGOS (HISTORIAL) ----------------
   cargarPagos(clienteId: number): void {
@@ -320,4 +341,13 @@ export class ClienteDetalleComponent implements OnInit {
   getSaldoPendiente(): number {
     return ClienteDetalleComponent.toNumber(this.cliente?.saldoPendiente);
   }
+
+ imprimirAlbaran(a: any): void {
+  if (!a?.id) return;
+
+  const url = `${window.location.origin}/app/imprimir/albaran/${a.id}`;
+  window.open(url, '_blank');
+}
+
+
 }

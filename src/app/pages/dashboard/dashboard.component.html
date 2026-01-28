@@ -32,26 +32,40 @@
       📞 Próximas llamadas
     </div>
     <table class="table mb-0">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Motivo</th>
-          <th>Observaciones</th>
-          <th>Hora</th>
-        </tr>
-      </thead>
+     <thead>
+  <tr>
+    <th>Fecha</th>
+    <th>Motivo</th>
+    <th>Observaciones</th>
+    <th>Hora</th>
+    <th>Estado</th>
+  </tr>
+</thead>
+
       <tbody>
   <tr *ngFor="let call of calls">
-    <td>{{ call.fecha | date:'dd/MM/yyyy' }}</td>
-    <td>{{ call.motivo }}</td>
-    <td>{{ call.observaciones }}</td>
-    <td>{{ call.fecha | date:'HH:mm' }}</td>
-  </tr>
+  <td>{{ call.fecha | date:'dd/MM/yyyy' }}</td>
+  <td>{{ call.motivo }}</td>
+  <td>{{ call.observaciones }}</td>
+  <td>{{ call.fecha | date:'HH:mm' }}</td>
+  <td>
+    <span class="estado-pill"
+      [ngClass]="{
+        'estado-pendiente': (call.estado || '').toLowerCase() === 'pendiente',
+        'estado-realizada': (call.estado || '').toLowerCase() === 'realizada',
+        'estado-cancelada': (call.estado || '').toLowerCase() === 'cancelada'
+      }">
+      {{ call.estado || 'pendiente' }}
+    </span>
+  </td>
+</tr>
+
 
   <tr *ngIf="calls.length === 0">
-    <td colspan="4" class="text-center text-muted">
-      No hay llamadas próximas
-    </td>
+    <td colspan="5" class="text-center text-muted">
+  No hay llamadas próximas
+</td>
+
   </tr>
 </tbody>
 
@@ -61,17 +75,17 @@
   <!-- ACCIONES -->
   <div class="row g-3">
     <div class="col-md-4">
-      <button class="btn btn-primary w-100" routerLink="/clientes/nuevo">
+      <button class="btn btn-primary w-100" routerLink="/app/clientes/nuevo">
         ➕ Nuevo cliente
       </button>
     </div>
     <div class="col-md-4">
-      <button class="btn btn-success w-100" routerLink="/rutas/nueva">
+      <button class="btn btn-success w-100" routerLink="/app/rutas/nueva">
         ➕ Nueva ruta
       </button>
     </div>
     <div class="col-md-4">
-      <button class="btn btn-warning w-100" routerLink="/calendario">
+      <button class="btn btn-warning w-100" routerLink="/app/calendario">
         ➕ Nueva llamada
       </button>
     </div>

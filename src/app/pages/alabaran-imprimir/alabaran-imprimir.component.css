@@ -1,0 +1,95 @@
+.hoja{
+  width: 820px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #111;
+}
+
+.cabecera{
+  display:flex;
+  justify-content: space-between;
+  align-items:flex-start;
+  gap: 16px;
+}
+
+.cabecera h2{
+  margin: 0 0 6px 0;
+}
+
+.badge{
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  border: 1px solid #333;
+}
+
+.badge.ok{ background:#e7f7ea; }
+.badge.no{ background:#f1f1f1; }
+
+.bloque h5{
+  margin: 0 0 8px 0;
+}
+
+.tabla{
+  width:100%;
+  border-collapse: collapse;
+}
+
+.tabla th, .tabla td{
+  border: 1px solid #333;
+  padding: 8px;
+  vertical-align: top;
+}
+
+.num{
+  width: 130px;
+  text-align:right;
+  white-space: nowrap;
+}
+
+.muted{
+  color:#666;
+}
+
+.totales{
+  width: 320px;
+  margin-left: auto;
+  display:flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.totales > div{
+  display:flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.totalFinal{
+  font-size: 16px;
+}
+
+@media print{
+  .hoja{
+    width: auto;
+    margin: 0;
+  }
+  hr{
+    border: none;
+    border-top: 1px solid #999;
+  }
+  @media print {
+  .no-print,
+  .navbar {
+    display: none !important;
+  }
+
+  body {
+    margin: 0;
+    background: #fff !important;
+  }
+}
+}

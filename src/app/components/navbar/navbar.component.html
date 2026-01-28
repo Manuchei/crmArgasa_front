@@ -1,15 +1,18 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark no-print">
   <div class="container-fluid">
 
-    <!-- LOGOS ARGASA / ELECTROLUGA -->
-    <!-- <a class="navbar-brand d-flex align-items-center gap-3" routerLink="/dashboard">
-      <img src="src\assets\Argasa mod.png" alt="Argasa" class="logo-navbar">
-      <span class="text-light fw-bold">/</span>
-      <img src="" alt="Electroluga" class="logo-navbar">
-    </a> -->
+    <!-- EMPRESA ACTIVA -->
+    <span class="badge badge-empresa me-3">
+      {{ empresa }}
+    </span>
 
     <!-- BOTÓN HAMBURGUESA -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -19,51 +22,80 @@
 
         <!-- Siempre visible -->
         <li class="nav-item">
-          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">🏠 Inicio</a>
+          <a class="nav-link" routerLink="/app/dashboard" routerLinkActive="active">
+            🏠 Inicio
+          </a>
         </li>
 
         <!-- SOLO ADMIN -->
         <ng-container *ngIf="rol?.includes('ADMIN')">
           <li class="nav-item">
-            <a class="nav-link" routerLink="/clientes" routerLinkActive="active">👥 Clientes</a>
+            <a class="nav-link" routerLink="/app/clientes" routerLinkActive="active">
+              👥 Clientes
+            </a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" routerLink="/proveedores" routerLinkActive="active">🔧 Proveedores</a>
+            <a class="nav-link" routerLink="/app/proveedores" routerLinkActive="active">
+              🔧 Proveedores
+            </a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" routerLink="/rutas" routerLinkActive="active">🗺️ Rutas</a>
+            <a class="nav-link" routerLink="/app/rutas" routerLinkActive="active">
+              🗺️ Rutas
+            </a>
           </li>
 
-                  <li class="nav-item">
-            <a class="nav-link" routerLink="/facturas" routerLinkActive="active">🧾 Facturas</a>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/app/facturas" routerLinkActive="active">
+              🧾 Facturas
+            </a>
           </li>
         </ng-container>
 
         <!-- SOLO USER -->
         <ng-container *ngIf="rol?.includes('USER')">
           <li class="nav-item">
-            <a class="nav-link" routerLink="/clientes" routerLinkActive="active">📁 Mis Clientes</a>
+            <a class="nav-link" routerLink="/app/clientes" routerLinkActive="active">
+              📁 Mis Clientes
+            </a>
           </li>
-           
         </ng-container>
 
         <!-- Siempre visible -->
         <li class="nav-item">
-          <a class="nav-link" routerLink="/calendario" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">📅 Calendario</a>
-           <!-- <li class="nav-item">
-            <a class="nav-link" routerLink="/transportistas" routerLinkActive="active">🧾 Transportistas</a>
-          </li> -->
+          <a
+            class="nav-link"
+            routerLink="/app/calendario"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            📅 Calendario
+          </a>
+        </li>
       </ul>
 
       <!-- Usuario -->
       <span class="navbar-text me-3">
-        Bienvenido, {{ usuario?.email }}
+        {{ usuario?.email }}
       </span>
 
+      <!-- Cambiar empresa -->
+      <button
+        class="btn btn-outline-warning btn-sm me-2"
+        (click)="cambiarEmpresa()"
+      >
+        Cambiar empresa
+      </button>
+
       <!-- Logout -->
-      <button class="btn btn-outline-danger btn-sm" (click)="logout()">Cerrar sesión</button>
+      <button
+        class="btn btn-outline-danger btn-sm"
+        (click)="logout()"
+      >
+        Cerrar sesión
+      </button>
     </div>
   </div>
 </nav>

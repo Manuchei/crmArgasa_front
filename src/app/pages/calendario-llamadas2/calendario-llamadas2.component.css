@@ -147,3 +147,48 @@ button {
   white-space: nowrap;
 }
 
+/* ✅ Evita el recorte típico de mat-list-item (alto fijo interno) */
+:host ::ng-deep .mat-mdc-list-item {
+  height: auto !important;
+  min-height: 56px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+/* ✅ Pills (hora + estado) */
+.item-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.meta-pill,
+.estado-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* ✅ Estado con color (sin tocar colores del tema, solo el chip) */
+.estado-pendiente {
+  color: #856404;
+  background: rgba(255, 193, 7, 0.22);
+  border: 1px solid rgba(255, 193, 7, 0.55);
+}
+
+.estado-realizada {
+  color: #155724;
+  background: rgba(40, 167, 69, 0.20);
+  border: 1px solid rgba(40, 167, 69, 0.55);
+}
+
+.estado-cancelada {
+  color: #721c24;
+  background: rgba(220, 53, 69, 0.18);
+  border: 1px solid rgba(220, 53, 69, 0.55);
+}
