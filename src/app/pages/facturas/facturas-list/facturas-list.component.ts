@@ -1,9 +1,10 @@
-import { FacturasClientesService } from './../../../services/facturas-clientes.service';
-import { IfacturaCliente } from './../../../interfaces/ifactura-cliente';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+
+import { FacturacionV2Service } from '../../../services/facturacion-v2.service';
+import { FacturaV2Response } from '../../../interfaces/facturacion-v2';
 
 @Component({
   selector: 'app-facturas-list',
@@ -12,14 +13,15 @@ import { RouterModule } from '@angular/router';
   templateUrl: './facturas-list.component.html',
 })
 export class FacturasListComponent implements OnInit {
-  facturas: IfacturaCliente[] = [];
+
+  facturas: FacturaV2Response[] = [];
   cargando = false;
   error = '';
 
-  // ❌ filtroEmpresa eliminado: ahora la empresa la decide X-Empresa (TenantContext)
-  filtroPagada = ''; // '', 'true', 'false'
+  // Filtro estado V2
+  filtroEstado = ''; // '', 'BORRADOR', 'EMITIDA', 'PAGADA', 'ANULADA'
 
-  constructor(private facturasService: FacturasClientesService) {}
+  constructor(private facturasV2Service: FacturacionV2Service) {}
 
   ngOnInit(): void {
     this.cargar();
@@ -29,44 +31,22 @@ export class FacturasListComponent implements OnInit {
     this.cargando = true;
     this.error = '';
 
-    this.facturasService.getAll().subscribe({
-      next: (res: IfacturaCliente[]) => {
-        this.facturas = this.filtrarPagada(res ?? []);
+    const estado = this.filtroEstado ? this.filtroEstado : undefined;
+
+    this.facturasV2Service.listarFacturas(estado).subscribe({
+      next: (res) => {
+        this.facturas = res ?? [];
         this.cargando = false;
       },
-      error: (err: unknown) => {
+      error: (err) => {
         console.error(err);
-        this.error = 'Error al cargar facturas';
+        this.error = 'Error al cargar facturas V2';
         this.cargando = false;
       },
     });
   }
 
   aplicarFiltros(): void {
-    // ✅ Solo filtramos pagada en front
     this.cargar();
-  }
-
-  private filtrarPagada(list: IfacturaCliente[]): IfacturaCliente[] {
-    if (this.filtroPagada === '') return list;
-    const pagada = this.filtroPagada === 'true';
-    return list.filter((f: IfacturaCliente) => f.pagada === pagada);
-  }
-
-  marcarPagada(f: IfacturaCliente): void {
-    if (!f.id) return;
-    if (f.pagada) return;
-
-    this.facturasService.pagar(f.id).subscribe({
-      next: (_updated: IfacturaCliente) => {
-        this.facturas = this.facturas.map((x) =>
-          x.id === f.id ? { ...x, pagada: true } : x
-        );
-      },
-      error: (err: unknown) => {
-        console.error(err);
-        this.error = 'No se pudo marcar como pagada';
-      },
-    });
   }
 }

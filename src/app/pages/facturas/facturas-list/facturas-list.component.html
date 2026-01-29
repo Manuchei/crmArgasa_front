@@ -1,6 +1,6 @@
 <div class="container my-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="fw-bold">Facturas</h2>
+    <h2 class="fw-bold">Facturas (V2)</h2>
   </div>
 
   <!-- Filtros -->
@@ -11,10 +11,12 @@
       <div class="row g-3 align-items-end">
         <div class="col-md-6">
           <label class="form-label">Estado</label>
-          <select class="form-select" [(ngModel)]="filtroPagada">
+          <select class="form-select" [(ngModel)]="filtroEstado">
             <option value="">Todas</option>
-            <option value="false">Pendientes</option>
-            <option value="true">Pagadas</option>
+            <option value="BORRADOR">Borrador</option>
+            <option value="EMITIDA">Emitida</option>
+            <option value="PAGADA">Pagada</option>
+            <option value="ANULADA">Anulada</option>
           </select>
         </div>
 
@@ -34,11 +36,10 @@
         <tr>
           <th>ID</th>
           <th>Empresa</th>
+          <th>Factura</th>
           <th>Fecha</th>
-          <th>Total</th>
-          <th>Pagada</th>
-          <th>Cliente</th>
-          <th class="text-center">Acciones</th>
+          <th class="text-end">Total</th>
+          <th>Estado</th>
         </tr>
       </thead>
 
@@ -46,20 +47,14 @@
         <tr *ngFor="let f of facturas">
           <td>{{ f.id }}</td>
           <td>{{ f.empresa }}</td>
+          <td>{{ f.serie }}-{{ f.numero }}</td>
           <td>{{ f.fechaEmision | date:'dd/MM/yyyy' }}</td>
-          <td>{{ f.totalImporte | number:'1.2-2' }} €</td>
+          <td class="text-end">{{ f.total | number:'1.2-2' }} €</td>
           <td>
-            <span class="badge bg-success" *ngIf="f.pagada">Pagada</span>
-            <span class="badge bg-warning text-dark" *ngIf="!f.pagada">Pendiente</span>
-          </td>
-          <td>{{ f.cliente?.id ?? '-' }}</td>
-          <td class="text-center">
-            <button
-              class="btn btn-sm btn-success"
-              [disabled]="f.pagada"
-              (click)="marcarPagada(f)">
-              ✔ Marcar pagada
-            </button>
+            <span class="badge bg-warning text-dark" *ngIf="f.estado === 'BORRADOR'">BORRADOR</span>
+            <span class="badge bg-success" *ngIf="f.estado === 'EMITIDA'">EMITIDA</span>
+            <span class="badge bg-secondary" *ngIf="f.estado === 'PAGADA'">PAGADA</span>
+            <span class="badge bg-danger" *ngIf="f.estado === 'ANULADA'">ANULADA</span>
           </td>
         </tr>
       </tbody>

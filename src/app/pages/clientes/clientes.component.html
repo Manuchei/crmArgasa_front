@@ -67,14 +67,16 @@
             <i class="bi bi-trash"></i> Eliminar
           </button>
 
-          <button
+          
+
+          <!-- <button
             class="btn btn-sm btn-dark"
             (click)="c?.id && generarFactura(c)"
             [disabled]="!c?.id || generandoFacturaId === c.id || (c.pendiente ?? 0) <= 0"
           >
             <span *ngIf="generandoFacturaId !== c.id">🧾 Facturar</span>
             <span *ngIf="generandoFacturaId === c.id">Generando...</span>
-          </button>
+          </button> -->
         </td>
       </tr>
 

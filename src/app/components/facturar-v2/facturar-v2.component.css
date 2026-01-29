@@ -1,0 +1,15 @@
+.facturar-container .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.totales > div {
+  margin-top: 4px;
+}

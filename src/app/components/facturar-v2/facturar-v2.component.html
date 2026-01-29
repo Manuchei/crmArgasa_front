@@ -1,0 +1,194 @@
+<div class="card mt-3">
+  <!-- CABECERA -->
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <strong>Facturación V2</strong>
+
+    <div class="d-flex align-items-center gap-2">
+      <label class="mb-0 small text-muted">Serie</label>
+      <select class="form-select form-select-sm" style="width: 90px;" [(ngModel)]="serie">
+        <option value="A">A</option>
+        <option value="B">B</option>
+      </select>
+
+      <button class="btn btn-sm btn-outline-secondary"
+              (click)="cargarPendientes()"
+              [disabled]="loading || !clienteId">
+        ↻ Refrescar
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+
+    <!-- ERROR -->
+    <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+    <!-- LOADING -->
+    <div class="text-muted" *ngIf="loading">Cargando…</div>
+
+    <!-- ========================= -->
+    <!-- FACTURA EN VISTA (VER)   -->
+    <!-- ========================= -->
+    <div class="card mb-4 shadow-sm" *ngIf="factura">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Factura {{ factura.serie }}-{{ factura.numero }}</strong>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-dark" (click)="window.print()">
+            🖨 Imprimir
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="resetVistaFactura()">
+            Cerrar
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body" id="factura-print">
+
+        <!-- CABECERA FACTURA -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="fw-bold">Empresa</div>
+            <div>{{ factura.empresa }}</div>
+          </div>
+
+          <div class="col-md-6 text-end">
+            <div><b>Fecha:</b> {{ factura.fechaEmision }}</div>
+            <div>
+              <b>Estado:</b>
+              <span class="badge"
+                    [ngClass]="{
+                      'bg-warning': factura.estado === 'BORRADOR',
+                      'bg-success': factura.estado === 'EMITIDA',
+                      'bg-secondary': factura.estado === 'PAGADA',
+                      'bg-danger': factura.estado === 'ANULADA'
+                    }">
+                {{ factura.estado }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- LINEAS -->
+        <table class="table table-bordered table-sm">
+          <thead class="table-light">
+            <tr>
+              <th>Concepto</th>
+              <th class="text-end">Cant.</th>
+              <th class="text-end">Precio</th>
+              <th class="text-end">Subtotal</th>
+              <th class="text-end">IVA</th>
+              <th class="text-end">Total</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let l of factura.lineas">
+              <td>
+                {{ l.descripcion }}
+                <div class="text-muted small">
+                  {{ l.tipoOrigen }} #{{ l.origenId }}
+                </div>
+              </td>
+              <td class="text-end">{{ l.cantidad }}</td>
+              <td class="text-end">{{ l.precioUnitario | number:'1.2-2' }} €</td>
+              <td class="text-end">{{ l.subtotal | number:'1.2-2' }} €</td>
+              <td class="text-end">{{ l.ivaPct }}%</td>
+              <td class="text-end">{{ l.totalLinea | number:'1.2-2' }} €</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- TOTALES -->
+        <div class="d-flex justify-content-end mt-3">
+          <table class="table table-sm" style="width: 300px;">
+            <tr>
+              <td>Base imponible</td>
+              <td class="text-end">{{ factura.baseImponible | number:'1.2-2' }} €</td>
+            </tr>
+            <tr>
+              <td>IVA</td>
+              <td class="text-end">{{ factura.ivaTotal | number:'1.2-2' }} €</td>
+            </tr>
+            <tr class="fw-bold">
+              <td>TOTAL</td>
+              <td class="text-end">{{ factura.total | number:'1.2-2' }} €</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- ACCIONES BORRADOR -->
+        <div class="d-flex gap-2 mt-3" *ngIf="factura.estado === 'BORRADOR'">
+          <button class="btn btn-success" (click)="emitir()" [disabled]="loading">
+            ✅ Emitir
+          </button>
+          <button class="btn btn-danger" (click)="cancelarBorrador()" [disabled]="loading">
+            ❌ Cancelar borrador
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- LISTADO FACTURAS CLIENTE -->
+    <!-- ========================= -->
+    <div class="card">
+      <div class="card-header">
+        <strong>Facturas del cliente</strong>
+        <span class="badge bg-secondary ms-2">{{ facturasCliente.length }}</span>
+      </div>
+
+      <div class="card-body p-0" *ngIf="facturasCliente?.length; else sinFacturas">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Serie-Nº</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th class="text-end">Total</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of facturasCliente">
+              <td>{{ f.serie }}-{{ f.numero }}</td>
+              <td>{{ f.fechaEmision }}</td>
+              <td>
+                <span class="badge"
+                      [ngClass]="{
+                        'bg-warning': f.estado === 'BORRADOR',
+                        'bg-success': f.estado === 'EMITIDA',
+                        'bg-secondary': f.estado === 'PAGADA',
+                        'bg-danger': f.estado === 'ANULADA'
+                      }">
+                  {{ f.estado }}
+                </span>
+              </td>
+              <td class="text-end">{{ f.total | number:'1.2-2' }} €</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary me-2"
+                        (click)="verFactura(f)">
+                  Ver
+                </button>
+
+                <button class="btn btn-sm btn-success"
+                        *ngIf="f.estado === 'BORRADOR'"
+                        (click)="emitirDesdeListado(f)">
+                  Emitir
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #sinFacturas>
+        <div class="p-3 text-muted">No hay facturas para este cliente.</div>
+      </ng-template>
+    </div>
+
+  </div>
+</div>

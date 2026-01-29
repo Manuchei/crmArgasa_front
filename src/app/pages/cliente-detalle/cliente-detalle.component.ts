@@ -3,11 +3,12 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { FacturarV2Component } from '../../components/facturar-v2/facturar-v2.component';
 
 @Component({
   selector: 'app-cliente-detalle',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, FacturarV2Component],
   templateUrl: './cliente-detalle.component.html',
   styleUrls: ['./cliente-detalle.component.css'],
 })
@@ -33,6 +34,8 @@ export class ClienteDetalleComponent implements OnInit {
   creandoPago = false;
 
   creandoAlbaranEmpresa: string | null = null;
+
+  creandoAlbaran = false;
 
   private apiUrl = 'http://localhost:9018/api';
 
@@ -180,16 +183,12 @@ cargarAlbaranes(clienteId: number): void {
 // ✅ Un solo albarán (empresa la decide el backend por el cliente/tenant)
 crearAlbaran(): void {
   if (!this.cliente?.id) return;
-      this.router.navigate(['/app/clientes']);
 
-  // opcional: bloquear botón mientras crea
-  this.creandoPago = true; // si NO quieres añadir una variable nueva, reutilizo esta
-  // mejor sería: creandoAlbaran = true; pero así no toco más
+  this.creandoAlbaran = true;
 
-  // ✅ POST /api/albaranes/clientes/{clienteId} (SIN ?empresa)
   this.http.post<any>(`${this.apiUrl}/albaranes/clientes/${this.cliente.id}`, {}).subscribe({
     next: (albaran) => {
-      this.creandoPago = false;
+      this.creandoAlbaran = false;
 
       if (!albaran?.id) {
         alert('No se pudo crear el albarán.');
@@ -200,7 +199,7 @@ crearAlbaran(): void {
       this.router.navigate(['/app/albaranes', albaran.id]);
     },
     error: (err) => {
-      this.creandoPago = false;
+      this.creandoAlbaran = false;
       console.error('Error creando albarán:', err);
       alert('No se pudo crear el albarán.');
     },
