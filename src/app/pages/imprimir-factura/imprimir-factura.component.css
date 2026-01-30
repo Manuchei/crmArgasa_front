@@ -1,3 +1,8 @@
+/* barra superior solo para pantalla */
+.barra { padding: 12px; }
+.estado { padding: 12px; color: #666; }
+.error  { padding: 12px; color: #b00020; font-weight: 600; }
+
 .hoja{
   width: 820px;
   margin: 20px auto;
@@ -15,6 +20,7 @@
 
 .cabecera h2{
   margin: 0 0 6px 0;
+  letter-spacing: 0.5px;
 }
 
 .badge{
@@ -23,10 +29,8 @@
   font-weight: 700;
   font-size: 12px;
   border: 1px solid #333;
+  background: #f1f1f1;
 }
-
-.badge.ok{ background:#e7f7ea; }
-.badge.no{ background:#f1f1f1; }
 
 .bloque h5{
   margin: 0 0 8px 0;
@@ -44,17 +48,15 @@
 }
 
 .num{
-  width: 130px;
+  width: 110px;
   text-align:right;
   white-space: nowrap;
 }
 
-.muted{
-  color:#666;
-}
+.muted{ color:#666; }
 
 .totales{
-  width: 320px;
+  width: 360px;
   margin-left: auto;
   display:flex;
   flex-direction: column;
@@ -68,24 +70,18 @@
   gap: 12px;
 }
 
-.totalFinal{
-  font-size: 16px;
-}
+.totalFinal{ font-size: 16px; }
 
-/* ✅ IMPRESIÓN */
-@media print {
-
-  /* Oculta UI */
+/* ✅ impresión: fuera UI, fuera navbar, solo A4 */
+@media print{
   .no-print,
-  .navbar,
-  nav,
-  app-navbar,
-  app-nav-bar {
+  header, nav, .navbar, .topbar,
+  app-header, app-navbar, app-topbar,
+  .app-shell, .layout, .sidebar {
     display: none !important;
   }
 
-  /* Ajustes de página */
-  @page {
+  @page{
     size: A4;
     margin: 12mm;
   }
@@ -93,11 +89,8 @@
   body{
     margin: 0 !important;
     background: #fff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
   }
 
-  /* Hoja a ancho completo en impresión */
   .hoja{
     width: auto !important;
     margin: 0 !important;

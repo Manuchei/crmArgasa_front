@@ -13,3 +13,57 @@
 .totales > div {
   margin-top: 4px;
 }
+
+/* ===============================
+   IMPRESIÓN FACTURA
+   =============================== */
+@media print {
+
+  /* Oculta todo lo marcado como no imprimible */
+  .no-print,
+  .ref-origen {
+    display: none !important;
+  }
+
+  /* Si el layout global se cuela, lo matas aquí también */
+  header,
+  nav,
+  .navbar,
+  .topbar,
+  app-header,
+  app-navbar,
+  app-topbar {
+    display: none !important;
+  }
+
+  /* A4 */
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Imprime solo la factura y sin “card look” */
+  #factura-print {
+    display: block !important;
+  }
+
+  .card,
+  .card-body,
+  .card-header {
+    box-shadow: none !important;
+  }
+
+  /* Evita que Bootstrap meta fondos raros */
+  .table-light,
+  .table thead {
+    background: #fff !important;
+  }
+}

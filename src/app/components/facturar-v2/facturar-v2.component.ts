@@ -37,7 +37,7 @@ export class FacturarV2Component implements OnInit, OnChanges {
   constructor(private factService: FacturacionV2Service) {}
 
   ngOnInit(): void {
-    // ⚠️ No cargues aquí porque a veces clienteId aún no está listo
+    // no cargamos aquí porque a veces clienteId aún no está listo
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -53,9 +53,29 @@ export class FacturarV2Component implements OnInit, OnChanges {
     return this.selectedServicios.size > 0 || this.selectedLineas.size > 0;
   }
 
+  // ✅ Para que el HTML funcione aunque el DTO venga con nombres distintos
+  get serviciosPendientes(): any[] {
+    return (this.pendientes as any)?.servicios
+        ?? (this.pendientes as any)?.serviciosPendientes
+        ?? [];
+  }
+
+  get lineasPendientes(): any[] {
+    return (this.pendientes as any)?.lineasAlbaran
+        ?? (this.pendientes as any)?.lineasAlbaranPendientes
+        ?? (this.pendientes as any)?.lineas
+        ?? [];
+  }
+
   limpiarSeleccion(): void {
     this.selectedServicios.clear();
     this.selectedLineas.clear();
+  }
+
+  onSerieChange(): void {
+    this.resetVistaFactura();
+    this.cargarPendientes();
+    this.cargarFacturasCliente();
   }
 
   private resetEstadoVista(): void {
@@ -88,7 +108,7 @@ export class FacturarV2Component implements OnInit, OnChanges {
     this.factService.getPendientes(this.clienteId).subscribe({
       next: (data) => {
         this.pendientes = data ?? null;
-        this.limpiarSeleccion(); // siempre limpia selección al refrescar
+        this.limpiarSeleccion();
         this.loading = false;
       },
       error: (err) => {
@@ -107,7 +127,6 @@ export class FacturarV2Component implements OnInit, OnChanges {
       },
       error: (err) => {
         console.error('Error listando facturas:', err);
-        // no bloqueamos UI por esto
       }
     });
   }
@@ -122,7 +141,7 @@ export class FacturarV2Component implements OnInit, OnChanges {
     const req: any = {
       clienteId: this.clienteId,
       serie: this.serie,
-      // ✅ nombres tal cual dijiste que espera tu backend
+      // ✅ nombres que dijiste que espera tu backend
       servicioId: Array.from(this.selectedServicios),
       lineasAlbaranIds: Array.from(this.selectedLineas)
     };
@@ -187,13 +206,22 @@ export class FacturarV2Component implements OnInit, OnChanges {
     });
   }
 
-
-
   resetVistaFactura(): void {
     this.factura = null;
   }
 
-  abrirFactura(id: number): void {
+  verFactura(f: FacturaV2Response): void {
+  // si ya viene con lineas, úsala tal cual
+  if ((f as any)?.lineas?.length) {
+    this.factura = f;
+    return;
+  }
+
+  // si NO viene con lineas, intenta cargar detalle
+  this.abrirFacturaDetalle(f.id);
+}
+
+private abrirFacturaDetalle(id: number): void {
   this.loading = true;
   this.error = null;
 
@@ -204,53 +232,35 @@ export class FacturarV2Component implements OnInit, OnChanges {
     },
     error: (err) => {
       this.loading = false;
-      this.error = err?.error?.message ?? 'Error cargando detalle de factura';
-    }
-  });
-}
-
-// ✅ cambia verFactura para que cargue detalle real
-verFactura(f: FacturaV2Response): void {
-  if (!f?.id) return;
-
-  this.loading = true;
-  this.error = null;
-
-  this.factService.getFacturaById(f.id).subscribe({
-    next: (full) => {
-      this.factura = full;   // ✅ viene con lineas
-      this.loading = false;
-    },
-    error: (err) => {
-      this.loading = false;
       this.error = err?.error?.message ?? 'No se pudo cargar el detalle de la factura';
     }
   });
 }
 
 
-// ✅ emitir directamente una factura del listado
-emitirDesdeListado(f: FacturaV2Response): void {
-  if (!f?.id) return;
+  emitirDesdeListado(f: FacturaV2Response): void {
+    if (!f?.id) return;
 
-  this.loading = true;
-  this.error = null;
+    this.loading = true;
+    this.error = null;
 
-  this.factService.emitirFactura(f.id).subscribe({
-    next: (emitida) => {
-      // si justo estabas viendo esa factura, actualiza vista
-      if (this.factura?.id === f.id) {
-        this.factura = emitida;
+    this.factService.emitirFactura(f.id).subscribe({
+      next: (emitida) => {
+        if (this.factura?.id === f.id) this.factura = emitida;
+        this.loading = false;
+        this.cargarPendientes();
+        this.cargarFacturasCliente();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.error?.message ?? 'Error emitiendo factura';
       }
-      this.loading = false;
-      this.cargarPendientes();
-      this.cargarFacturasCliente();
-    },
-    error: (err) => {
-      this.loading = false;
-      this.error = err?.error?.message ?? 'Error emitiendo factura';
-    }
-  });
-}
+    });
+  }
 
+  // ✅ Imprimir como el albarán: abre la ruta limpia
+  imprimir(): void {
+    if (!this.factura?.id) return;
+    window.open(`/app/imprimir/factura/${this.factura.id}`, '_blank');
+  }
 }

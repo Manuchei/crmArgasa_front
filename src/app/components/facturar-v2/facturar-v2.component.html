@@ -1,11 +1,15 @@
 <div class="card mt-3">
+
   <!-- CABECERA -->
-  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <strong>Facturación V2</strong>
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2 no-print">
+    <strong>Facturas</strong>
 
     <div class="d-flex align-items-center gap-2">
       <label class="mb-0 small text-muted">Serie</label>
-      <select class="form-select form-select-sm" style="width: 90px;" [(ngModel)]="serie">
+      <select class="form-select form-select-sm"
+              style="width: 90px;"
+              [(ngModel)]="serie"
+              (ngModelChange)="onSerieChange()">
         <option value="A">A</option>
         <option value="B">B</option>
       </select>
@@ -21,10 +25,76 @@
   <div class="card-body">
 
     <!-- ERROR -->
-    <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+    <div class="alert alert-danger no-print" *ngIf="error">{{ error }}</div>
 
     <!-- LOADING -->
-    <div class="text-muted" *ngIf="loading">Cargando…</div>
+    <div class="text-muted no-print" *ngIf="loading">Cargando…</div>
+
+    <!-- ========================= -->
+    <!-- PENDIENTES DE FACTURAR    -->
+    <!-- ========================= -->
+    <div class="card mb-3 no-print" *ngIf="pendientes as p">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Pendientes de facturar</strong>
+
+        <button class="btn btn-sm btn-primary"
+                (click)="crearBorrador()"
+                [disabled]="loading || !haySeleccion">
+          Generar factura (borrador)
+        </button>
+      </div>
+
+      <div class="card-body">
+
+        <div class="text-muted" *ngIf="!serviciosPendientes.length && !lineasPendientes.length">
+          No hay servicios ni líneas de albarán pendientes de facturar para este cliente.
+        </div>
+
+        <!-- SERVICIOS -->
+        <div *ngIf="serviciosPendientes.length" class="mb-3">
+          <div class="fw-bold mb-2">Servicios</div>
+
+          <div class="form-check" *ngFor="let s of serviciosPendientes">
+            <input class="form-check-input"
+                   type="checkbox"
+                   [checked]="selectedServicios.has(s.id)"
+                   (change)="onServicioChange(s.id, $event)">
+            <label class="form-check-label">
+              {{ s.descripcion || s.nombre || ('Servicio #' + s.id) }}
+              <span class="text-muted" *ngIf="s.importe"> — {{ s.importe | number:'1.2-2' }} €</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- LÍNEAS ALBARÁN -->
+        <div *ngIf="lineasPendientes.length">
+          <div class="fw-bold mb-2">Líneas de albarán</div>
+
+          <div class="form-check" *ngFor="let l of lineasPendientes">
+            <input class="form-check-input"
+                   type="checkbox"
+                   [checked]="selectedLineas.has(l.id)"
+                   (change)="onLineaChange(l.id, $event)">
+            <label class="form-check-label">
+              {{ l.descripcion || l.concepto || ('Línea #' + l.id) }}
+              <span class="text-muted" *ngIf="l.baseLinea || l.totalLinea">
+                — {{ (l.totalLinea || l.baseLinea) | number:'1.2-2' }} €
+              </span>
+              <span class="text-muted" *ngIf="l.albaranId"> (Albarán #{{ l.albaranId }})</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <button class="btn btn-sm btn-outline-secondary"
+                  (click)="limpiarSeleccion()"
+                  [disabled]="!haySeleccion">
+            Limpiar selección
+          </button>
+        </div>
+
+      </div>
+    </div>
 
     <!-- ========================= -->
     <!-- FACTURA EN VISTA (VER)   -->
@@ -33,8 +103,8 @@
       <div class="card-header d-flex justify-content-between align-items-center">
         <strong>Factura {{ factura.serie }}-{{ factura.numero }}</strong>
 
-        <div class="d-flex gap-2">
-          <button class="btn btn-sm btn-outline-dark" (click)="window.print()">
+        <div class="d-flex gap-2 no-print">
+          <button class="btn btn-sm btn-outline-dark" (click)="imprimir()">
             🖨 Imprimir
           </button>
           <button class="btn btn-sm btn-outline-secondary" (click)="resetVistaFactura()">
@@ -43,9 +113,9 @@
         </div>
       </div>
 
-      <div class="card-body" id="factura-print">
+      <!-- (en pantalla se ve como antes; imprimir se hace en ruta limpia) -->
+      <div class="card-body">
 
-        <!-- CABECERA FACTURA -->
         <div class="row mb-3">
           <div class="col-md-6">
             <div class="fw-bold">Empresa</div>
@@ -71,7 +141,6 @@
 
         <hr />
 
-        <!-- LINEAS -->
         <table class="table table-bordered table-sm">
           <thead class="table-light">
             <tr>
@@ -88,7 +157,7 @@
             <tr *ngFor="let l of factura.lineas">
               <td>
                 {{ l.descripcion }}
-                <div class="text-muted small">
+                <div class="text-muted small ref-origen no-print">
                   {{ l.tipoOrigen }} #{{ l.origenId }}
                 </div>
               </td>
@@ -101,7 +170,6 @@
           </tbody>
         </table>
 
-        <!-- TOTALES -->
         <div class="d-flex justify-content-end mt-3">
           <table class="table table-sm" style="width: 300px;">
             <tr>
@@ -119,23 +187,22 @@
           </table>
         </div>
 
-        <!-- ACCIONES BORRADOR -->
-        <div class="d-flex gap-2 mt-3" *ngIf="factura.estado === 'BORRADOR'">
-          <button class="btn btn-success" (click)="emitir()" [disabled]="loading">
-            ✅ Emitir
-          </button>
-          <button class="btn btn-danger" (click)="cancelarBorrador()" [disabled]="loading">
-            ❌ Cancelar borrador
-          </button>
-        </div>
+      </div>
 
+      <div class="d-flex gap-2 mt-3 no-print" *ngIf="factura.estado === 'BORRADOR'">
+        <button class="btn btn-success" (click)="emitir()" [disabled]="loading">
+          ✅ Emitir
+        </button>
+        <button class="btn btn-danger" (click)="cancelarBorrador()" [disabled]="loading">
+          ❌ Cancelar borrador
+        </button>
       </div>
     </div>
 
     <!-- ========================= -->
-    <!-- LISTADO FACTURAS CLIENTE -->
+    <!-- LISTADO FACTURAS CLIENTE  -->
     <!-- ========================= -->
-    <div class="card">
+    <div class="card no-print">
       <div class="card-header">
         <strong>Facturas del cliente</strong>
         <span class="badge bg-secondary ms-2">{{ facturasCliente.length }}</span>
@@ -169,8 +236,7 @@
               </td>
               <td class="text-end">{{ f.total | number:'1.2-2' }} €</td>
               <td class="text-end">
-                <button class="btn btn-sm btn-outline-primary me-2"
-                        (click)="verFactura(f)">
+                <button class="btn btn-sm btn-outline-primary me-2" (click)="verFactura(f)">
                   Ver
                 </button>
 

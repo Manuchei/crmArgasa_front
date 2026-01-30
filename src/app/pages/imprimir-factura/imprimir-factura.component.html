@@ -1,0 +1,86 @@
+<div class="no-print barra">
+  <button class="btn btn-dark btn-sm" (click)="imprimirManual()">Imprimir</button>
+</div>
+
+<div class="no-print estado" *ngIf="loading">Cargando factura…</div>
+<div class="no-print error" *ngIf="error">{{ error }}</div>
+
+<!-- ✅ SOLO SE MUESTRA SI LLEGA LA FACTURA -->
+<div class="hoja" *ngIf="factura">
+
+  <div class="cabecera">
+    <div class="left">
+      <h2>FACTURA</h2>
+      <div><b>Nº:</b> {{ factura.serie }}-{{ factura.numero }}</div>
+      <div><b>Fecha:</b> {{ factura.fechaEmision }}</div>
+      <div><b>Empresa:</b> {{ factura.empresa }}</div>
+    </div>
+
+    <!-- Si NO quieres estado, elimina este bloque -->
+    <div class="right">
+      <div class="badge">
+        {{ factura.estado }}
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- CLIENTE (si viene en factura) -->
+  <div class="bloque" *ngIf="factura.nombreApellidos || factura.cifDni || factura.direccion">
+    <h5>Cliente</h5>
+    <div *ngIf="factura.nombreApellidos"><b>Nombre:</b> {{ factura.nombreApellidos }}</div>
+    <div *ngIf="factura.nombreComercial"><b>Nombre comercial:</b> {{ factura.nombreComercial }}</div>
+    <div *ngIf="factura.cifDni"><b>CIF/DNI:</b> {{ factura.cifDni }}</div>
+    <div *ngIf="factura.direccion"><b>Dirección:</b> {{ factura.direccion }}</div>
+    <div *ngIf="factura.codigoPostal || factura.poblacion">
+      <b>CP / Población:</b> {{ factura.codigoPostal }} - {{ factura.poblacion }}
+    </div>
+    <div *ngIf="factura.provincia"><b>Provincia:</b> {{ factura.provincia }}</div>
+    <div *ngIf="factura.telefono"><b>Teléfono:</b> {{ factura.telefono }}</div>
+    <div *ngIf="factura.movil"><b>Móvil:</b> {{ factura.movil }}</div>
+    <div *ngIf="factura.email"><b>Email:</b> {{ factura.email }}</div>
+  </div>
+
+  <hr>
+
+  <div class="bloque">
+    <h5>Conceptos</h5>
+
+    <table class="tabla" *ngIf="factura.lineas?.length; else sinLineas">
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th class="num">Cant.</th>
+          <th class="num">Precio</th>
+          <th class="num">Base</th>
+          <th class="num">IVA</th>
+          <th class="num">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let l of factura.lineas">
+          <td>{{ l.descripcion || '-' }}</td>
+          <td class="num">{{ l.cantidad || 0 }}</td>
+          <td class="num">{{ (l.precioUnitario || 0) | number:'1.2-2' }} €</td>
+          <td class="num">{{ (l.subtotal || 0) | number:'1.2-2' }} €</td>
+          <td class="num">{{ (l.ivaPct || 0) }}%</td>
+          <td class="num"><b>{{ (l.totalLinea || 0) | number:'1.2-2' }} €</b></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #sinLineas>
+      <div class="muted">Esta factura no tiene líneas.</div>
+    </ng-template>
+  </div>
+
+  <hr>
+
+  <div class="totales">
+    <div><span>Base imponible:</span><b>{{ (factura.baseImponible || 0) | number:'1.2-2' }} €</b></div>
+    <div><span>IVA:</span><b>{{ (factura.ivaTotal || 0) | number:'1.2-2' }} €</b></div>
+    <div class="totalFinal"><span>TOTAL:</span><b>{{ (factura.total || 0) | number:'1.2-2' }} €</b></div>
+  </div>
+
+</div>

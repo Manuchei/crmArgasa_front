@@ -1,11 +1,9 @@
-  <button class="btn btn-dark btn-sm" (click)="imprimirManual()">
-    <i class="bi bi-printer"></i> Imprimir
-  </button>
+<!-- Botón imprimir (NO debe salir en impresión) -->
+<button class="btn btn-dark btn-sm no-print" (click)="imprimirManual()">
+  <i class="bi bi-printer"></i> Imprimir
+</button>
+
 <div class="hoja" *ngIf="albaran">
-    <div class="no-print text-end mb-2">
-
-</div>
-
 
   <!-- CABECERA -->
   <div class="cabecera">
@@ -16,7 +14,8 @@
       <div><b>Empresa:</b> {{ albaran.empresa }}</div>
     </div>
 
-    <div class="right">
+    <!-- Badge NO CONFIRMADO (NO debe salir en impresión) -->
+    <div class="right no-print">
       <div class="badge" [class.ok]="albaran.confirmado" [class.no]="!albaran.confirmado">
         {{ albaran.confirmado ? 'CONFIRMADO' : 'NO CONFIRMADO' }}
       </div>
@@ -71,7 +70,7 @@
 
   <hr>
 
-  <!-- TOTALES (los tuyos reales) -->
+  <!-- TOTALES -->
   <div class="totales">
     <div><span>Subtotal:</span><b>{{ (albaran.subtotal || 0) | number:'1.2-2' }} €</b></div>
     <div><span>Descuento:</span><b>- {{ (albaran.totalDescuento || 0) | number:'1.2-2' }} €</b></div>

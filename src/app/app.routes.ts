@@ -74,6 +74,9 @@ export const routes: Routes = [
     import('./pages/alabaran-imprimir/alabaran-imprimir.component')
       .then(m => m.AlbaranImprimirComponent),
 },
+
+{ path: 'imprimir/factura/:id', loadComponent: () => import('./pages/imprimir-factura/imprimir-factura.component').then(m => m.ImprimirFacturaComponent) },
+
     ],
   },
 

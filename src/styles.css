@@ -53,3 +53,45 @@ body.tema-electroluga {
   background-color: var(--color-primario);
 }
 
+/* ===============================
+   IMPRESIÓN – OCULTAR LAYOUT
+   =============================== */
+@media print {
+
+  /* Oculta headers y navbars globales */
+  header,
+  nav,
+  .navbar,
+  .topbar,
+  .app-header,
+  .app-navbar,
+  .layout-header,
+  .layout-topbar,
+  .menu,
+  .sidebar {
+    display: none !important;
+  }
+
+  /* Angular components típicos */
+  app-header,
+  app-navbar,
+  app-topbar,
+  app-layout,
+  app-shell {
+    display: none !important;
+  }
+
+  /* Elimina márgenes del layout */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  /* Asegura hoja limpia */
+  .hoja {
+    margin: 0 auto !important;
+  }
+}
+
+

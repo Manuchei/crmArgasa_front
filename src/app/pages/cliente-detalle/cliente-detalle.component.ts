@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FacturarV2Component } from '../../components/facturar-v2/facturar-v2.component';
@@ -18,9 +18,12 @@ export class ClienteDetalleComponent implements OnInit {
   albaranes: any[] = [];
   pagos: any[] = [];
 
+  // ✅ NUEVO: unidades + precioUnitario + descuento
   nuevoTrabajo = {
     descripcion: '',
-    importe: 0,
+    unidades: 1,
+    precioUnitario: 0,
+    descuento: 0, // %
     importePagado: 0,
     pagado: false,
   };
@@ -80,18 +83,14 @@ export class ClienteDetalleComponent implements OnInit {
   }
 
   verAlbaran(a: any): void {
-  if (!a?.id) return;
+    if (!a?.id) return;
 
-  // ✅ Guardar empresa del albarán como empresa seleccionada
-  // Cambia la clave si tú usas otra (ej: 'empresaSeleccionada')
-  if (a?.empresa) {
-    localStorage.setItem('empresa', String(a.empresa));
+    if (a?.empresa) {
+      localStorage.setItem('empresa', String(a.empresa));
+    }
+
+    this.router.navigate(['/app/albaranes', a.id]);
   }
-
-  // ✅ Navegar al detalle
-  this.router.navigate(['/app/albaranes', a.id]);
-}
-
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -119,32 +118,82 @@ export class ClienteDetalleComponent implements OnInit {
   }
 
   // ---------------- TRABAJOS ----------------
+
+  // ✅ Normaliza trabajos antiguos: si no vienen unidades/precioUnitario/descuento, los crea
+  private normalizarTrabajos(): void {
+    this.trabajos = (this.trabajos ?? []).map((t) => {
+      const importeLegacy = ClienteDetalleComponent.toNumber(t?.importe); // el de antes
+      const unidades = t?.unidades != null ? ClienteDetalleComponent.toNumber(t.unidades) : 1;
+      const precioUnitario =
+        t?.precioUnitario != null
+          ? ClienteDetalleComponent.toNumber(t.precioUnitario)
+          : (t?.importeUnitario != null ? ClienteDetalleComponent.toNumber(t.importeUnitario) : importeLegacy);
+
+      const descuento = t?.descuento != null ? ClienteDetalleComponent.toNumber(t.descuento) : 0;
+
+      return {
+        ...t,
+        unidades: unidades <= 0 ? 1 : unidades,
+        precioUnitario: precioUnitario < 0 ? 0 : precioUnitario,
+        descuento: descuento < 0 ? 0 : descuento,
+      };
+    });
+  }
+
   cargarTrabajos(clienteId: number): void {
     this.http.get<any[]>(`${this.apiUrl}/trabajos/cliente/${clienteId}`).subscribe({
       next: (data) => {
         this.trabajos = data ?? [];
-        this.calcularTotales(); // ✅ recalcula total/pagado/saldo
+        this.normalizarTrabajos();
+        this.calcularTotales();
       },
       error: (err) => console.error('Error al cargar trabajos:', err),
     });
+  }
+
+  // ✅ Cálculos por línea
+  getBrutoTrabajo(t: any): number {
+    const u = ClienteDetalleComponent.toNumber(t?.unidades);
+    const p = ClienteDetalleComponent.toNumber(t?.precioUnitario);
+    return Math.max(0, u) * Math.max(0, p);
+  }
+
+  getNetoTrabajo(t: any): number {
+    const bruto = this.getBrutoTrabajo(t);
+    const dto = ClienteDetalleComponent.toNumber(t?.descuento);
+    const factor = 1 - dto / 100;
+    return Math.max(0, bruto * (isFinite(factor) ? factor : 1));
   }
 
   agregarTrabajo(): void {
     if (!this.cliente?.id) return;
 
     const desc = ClienteDetalleComponent.safeTrim(this.nuevoTrabajo.descripcion);
-    const importe = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.importe);
+    const unidades = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.unidades);
+    const precioUnitario = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.precioUnitario);
+    const descuento = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.descuento);
     const pagadoInicial = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.importePagado);
 
-    if (!desc || importe <= 0) {
-      alert('Debes introducir una descripción y un importe válido.');
+    if (!desc || unidades <= 0 || precioUnitario <= 0) {
+      alert('Debes introducir descripción, unidades (>0) y precio unitario (>0).');
+      return;
+    }
+    if (descuento < 0 || descuento > 100) {
+      alert('El descuento debe estar entre 0 y 100.');
       return;
     }
 
-    const trabajoAEnviar = {
+    const bruto = unidades * precioUnitario;
+    const neto = Math.max(0, bruto * (1 - descuento / 100));
+
+    // ✅ Payload compatible: mantenemos "importe" como neto para tu backend actual
+    const trabajoAEnviar: any = {
       descripcion: desc,
-      importe,
-      // ✅ Puede venir un primer pago aquí (se contará en totales)
+      importe: neto, // ✅ backend legacy
+      // extras (si backend los acepta, genial; si no, los ignora)
+      unidades,
+      precioUnitario,
+      descuento,
       importePagado: pagadoInicial,
       pagado: false,
     };
@@ -152,7 +201,14 @@ export class ClienteDetalleComponent implements OnInit {
     this.http.post(`${this.apiUrl}/trabajos/cliente/${this.cliente.id}`, trabajoAEnviar).subscribe({
       next: () => {
         this.cargarTrabajos(this.cliente.id);
-        this.nuevoTrabajo = { descripcion: '', importe: 0, importePagado: 0, pagado: false };
+        this.nuevoTrabajo = {
+          descripcion: '',
+          unidades: 1,
+          precioUnitario: 0,
+          descuento: 0,
+          importePagado: 0,
+          pagado: false,
+        };
       },
       error: (err) => console.error('Error al agregar trabajo:', err),
     });
@@ -170,50 +226,44 @@ export class ClienteDetalleComponent implements OnInit {
   }
 
   // ---------------- ALBARANES ----------------
-cargarAlbaranes(clienteId: number): void {
-  // ✅ GET /api/albaranes?clienteId=...
-  this.http.get<any[]>(`${this.apiUrl}/albaranes`, { params: { clienteId } as any }).subscribe({
-    next: (data) => (this.albaranes = data ?? []),
-    error: (err) => console.error('Error al cargar albaranes:', err),
-  });
-}
+  cargarAlbaranes(clienteId: number): void {
+    this.http.get<any[]>(`${this.apiUrl}/albaranes`, { params: { clienteId } as any }).subscribe({
+      next: (data) => (this.albaranes = data ?? []),
+      error: (err) => console.error('Error al cargar albaranes:', err),
+    });
+  }
 
+  crearAlbaran(): void {
+    if (!this.cliente?.id) return;
 
+    this.creandoAlbaran = true;
 
-// ✅ Un solo albarán (empresa la decide el backend por el cliente/tenant)
-crearAlbaran(): void {
-  if (!this.cliente?.id) return;
+    this.http.post<any>(`${this.apiUrl}/albaranes/clientes/${this.cliente.id}`, {}).subscribe({
+      next: (albaran) => {
+        this.creandoAlbaran = false;
 
-  this.creandoAlbaran = true;
+        if (!albaran?.id) {
+          alert('No se pudo crear el albarán.');
+          return;
+        }
 
-  this.http.post<any>(`${this.apiUrl}/albaranes/clientes/${this.cliente.id}`, {}).subscribe({
-    next: (albaran) => {
-      this.creandoAlbaran = false;
-
-      if (!albaran?.id) {
+        this.cargarAlbaranes(this.cliente.id);
+        this.router.navigate(['/app/albaranes', albaran.id]);
+      },
+      error: (err) => {
+        this.creandoAlbaran = false;
+        console.error('Error creando albarán:', err);
         alert('No se pudo crear el albarán.');
-        return;
-      }
-
-      this.cargarAlbaranes(this.cliente.id);
-      this.router.navigate(['/app/albaranes', albaran.id]);
-    },
-    error: (err) => {
-      this.creandoAlbaran = false;
-      console.error('Error creando albarán:', err);
-      alert('No se pudo crear el albarán.');
-    },
-  });
-}
-
-
+      },
+    });
+  }
 
   // ---------------- PAGOS (HISTORIAL) ----------------
   cargarPagos(clienteId: number): void {
     this.http.get<any[]>(`${this.apiUrl}/pagos/cliente/${clienteId}`).subscribe({
       next: (data) => {
         this.pagos = data ?? [];
-        this.calcularTotales(); // ✅ recalcula total/pagado/saldo
+        this.calcularTotales();
       },
       error: (err) => console.error('Error al cargar pagos:', err),
     });
@@ -244,7 +294,6 @@ crearAlbaran(): void {
       next: (pagoCreado) => {
         this.creandoPago = false;
 
-        // ✅ Añadir en local y ordenar
         if (pagoCreado) {
           this.pagos = [...(this.pagos ?? []), pagoCreado].sort((a, b) => {
             const fa = String(a?.fecha ?? '');
@@ -255,10 +304,8 @@ crearAlbaran(): void {
           });
         }
 
-        // ✅ recalcular total pagado + saldo (SIN tocar trabajos)
         this.calcularTotales();
 
-        // reset
         this.nuevoPago = {
           fecha: this.hoyISO(),
           importe: 0,
@@ -281,7 +328,6 @@ crearAlbaran(): void {
 
     this.http.delete(`${this.apiUrl}/pagos/${pagoId}`).subscribe({
       next: () => {
-        // ✅ quitar en local y recalcular (SIN tocar trabajos)
         this.pagos = (this.pagos ?? []).filter(p => ClienteDetalleComponent.toNumber(p?.id) !== pagoId);
         this.calcularTotales();
       },
@@ -292,7 +338,6 @@ crearAlbaran(): void {
     });
   }
 
-  // ✅ total solo del historial
   getTotalPagos(): number {
     return (this.pagos ?? []).reduce(
       (acc, p) => acc + ClienteDetalleComponent.toNumber(p?.importe),
@@ -300,20 +345,19 @@ crearAlbaran(): void {
     );
   }
 
-  // ---------------- TOTALES (total trabajos, pagado = historial + pagado inicial de trabajos) ----------------
+  // ---------------- TOTALES ----------------
   calcularTotales(): void {
+    // ✅ Total trabajos ahora por NETO (unidades*precio - dto)
     const totalImporte = (this.trabajos ?? []).reduce(
-      (acc, t) => acc + ClienteDetalleComponent.toNumber(t?.importe),
+      (acc, t) => acc + this.getNetoTrabajo(t),
       0
     );
 
-    // ✅ Pagos del historial
     const pagadoHistorial = (this.pagos ?? []).reduce(
       (acc, p) => acc + ClienteDetalleComponent.toNumber(p?.importe),
       0
     );
 
-    // ✅ Pagado inicial metido en trabajos al crearlos (no se modifica con pagos)
     const pagadoInicial = (this.trabajos ?? []).reduce(
       (acc, t) => acc + ClienteDetalleComponent.toNumber(t?.importePagado),
       0
@@ -341,12 +385,9 @@ crearAlbaran(): void {
     return ClienteDetalleComponent.toNumber(this.cliente?.saldoPendiente);
   }
 
- imprimirAlbaran(a: any): void {
-  if (!a?.id) return;
-
-  const url = `${window.location.origin}/app/imprimir/albaran/${a.id}`;
-  window.open(url, '_blank');
-}
-
-
+  imprimirAlbaran(a: any): void {
+    if (!a?.id) return;
+    const url = `${window.location.origin}/app/imprimir/albaran/${a.id}`;
+    window.open(url, '_blank');
+  }
 }
