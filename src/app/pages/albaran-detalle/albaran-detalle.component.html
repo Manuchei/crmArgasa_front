@@ -1,86 +1,111 @@
 <div class="container mt-4" *ngIf="albaran">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-        <div>
-            <h3 class="mb-1">Albarán #{{ albaran.id }} - {{ albaran.empresa }}</h3>
-            <p class="mb-1"><b>Fecha:</b> {{ albaran.fechaEmision }}</p>
-            <p class="mb-0">
-                <b>Cliente:</b> {{ albaran.nombreApellidos }}
-                <span *ngIf="albaran.nombreComercial"> ({{ albaran.nombreComercial }})</span>
-            </p>
-        </div>
-
-        <button class="btn btn-success" (click)="confirmar()" [disabled]="albaran.confirmado">
-            ✅ Confirmar
-        </button>
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+      <h3 class="mb-1">Albarán #{{ albaran.id }} - {{ albaran.empresa }}</h3>
+      <p class="mb-1"><b>Fecha:</b> {{ albaran.fechaEmision }}</p>
+      <p class="mb-0">
+        <b>Cliente:</b> {{ albaran.nombreApellidos }}
+        <span *ngIf="albaran.nombreComercial"> ({{ albaran.nombreComercial }})</span>
+      </p>
     </div>
 
-    <hr class="my-4" />
+    <div class="d-flex gap-2">
+      <button class="btn btn-secondary" (click)="volverACliente()">
+        ⬅ Volver al cliente
+      </button>
 
-    <h5>Líneas</h5>
-    <table class="table table-striped text-center align-middle shadow-sm">
-        <thead class="table-dark">
-            <tr>
-                <th>Código</th>
-                <th>Descripción</th>
-                <th>Uds</th>
-                <th>Precio</th>
-                <th>Dto %</th>
-                <th>Total</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
+      <button class="btn btn-success" (click)="confirmar()" [disabled]="albaran.confirmado">
+        ✅ Confirmar
+      </button>
+    </div>
+  </div>
 
-        <tbody>
-            <tr *ngFor="let l of (albaran.lineas || [])">
-                <td>{{ l.codigo || '-' }}</td>
-                <td class="text-start">{{ l.descripcion }}</td>
-                <td>{{ l.unidades }}</td>
-                <td>{{ l.precio | number:'1.2-2' }} €</td>
-                <td>{{ l.dtoPct | number:'1.0-2' }}</td>
-                <td>{{ l.totalLinea | number:'1.2-2' }} €</td>
-                <td>
-                    <button class="btn btn-sm btn-danger" (click)="eliminarLinea(l.id)" [disabled]="albaran.confirmado">
-                        🗑️
-                    </button>
-                </td>
-            </tr>
+  <hr class="my-4" />
 
-            <tr *ngIf="(albaran.lineas || []).length === 0">
-                <td colspan="7" class="text-muted">Sin líneas todavía.</td>
-            </tr>
-        </tbody>
-    </table>
+  <h5>Líneas</h5>
+  <table class="table table-striped text-center align-middle shadow-sm">
+    <thead class="table-dark">
+      <tr>
+        <th>Código</th>
+        <th>Descripción</th>
+        <th>Uds</th>
+        <th>Precio</th>
+        <th>Dto %</th>
+        <th>Total</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
 
-    <div class="text-end fw-bold mt-3">
-        <p>Subtotal: {{ albaran.subtotal | number:'1.2-2' }} €</p>
-        <p>Descuento: {{ albaran.totalDescuento | number:'1.2-2' }} €</p>
-        <p>Total: {{ albaran.totalImporte | number:'1.2-2' }} €</p>
+    <tbody>
+      <tr *ngFor="let l of (albaran.lineas || [])">
+        <td>{{ l.codigo || '-' }}</td>
+        <td class="text-start">{{ l.descripcion }}</td>
+        <td>{{ l.unidades ?? 0 }}</td>
+        <td>{{ (l.precio ?? 0) | number:'1.2-2' }} €</td>
+        <td>{{ (l.dtoPct ?? 0) | number:'1.0-2' }}</td>
+        <td>{{ (l.totalLinea ?? 0) | number:'1.2-2' }} €</td>
+        <td>
+          <button class="btn btn-sm btn-danger" (click)="eliminarLinea(l.id)" [disabled]="albaran.confirmado">
+            🗑️
+          </button>
+        </td>
+      </tr>
+
+      <tr *ngIf="(albaran.lineas || []).length === 0">
+        <td colspan="7" class="text-muted">Sin líneas todavía.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="text-end fw-bold mt-3">
+    <p>Subtotal: {{ (albaran.subtotal ?? 0) | number:'1.2-2' }} €</p>
+    <p>Descuento: {{ (albaran.totalDescuento ?? 0) | number:'1.2-2' }} €</p>
+    <p>Total: {{ (albaran.totalImporte ?? 0) | number:'1.2-2' }} €</p>
+  </div>
+
+  <hr class="my-4" />
+
+  <h6>Añadir línea</h6>
+
+  <!-- Cabeceras inputs -->
+  <div class="row g-2 mb-1 fw-semibold text-muted small">
+    <div class="col-md-2">Código</div>
+    <div class="col-md-4">Descripción</div>
+    <div class="col-md-2">Uds</div>
+    <div class="col-md-2">Precio</div>
+    <div class="col-md-1">Dto %</div>
+    <div class="col-md-1 text-center">Acción</div>
+  </div>
+
+  <!-- Inputs -->
+  <div class="row g-2 align-items-center">
+    <div class="col-md-2">
+      <input class="form-control" placeholder="Código" [(ngModel)]="nuevaLinea.codigo" />
     </div>
 
-    <hr class="my-4" />
-
-    <h6>Añadir línea</h6>
-    <div class="row g-2">
-        <div class="col-md-2">
-            <input class="form-control" placeholder="Código" [(ngModel)]="nuevaLinea.codigo" />
-        </div>
-        <div class="col-md-4">
-            <input class="form-control" placeholder="Descripción" [(ngModel)]="nuevaLinea.descripcion" />
-        </div>
-        <div class="col-md-2">
-            <input type="number" class="form-control" placeholder="Uds" [(ngModel)]="nuevaLinea.unidades" min="0"
-                step="0.01" />
-        </div>
-        <div class="col-md-2">
-            <input type="number" class="form-control" placeholder="Precio" [(ngModel)]="nuevaLinea.precio" min="0"
-                step="0.01" />
-        </div>
-        <div class="col-md-1">
-            <input type="number" class="form-control" placeholder="Dto" [(ngModel)]="nuevaLinea.dtoPct" min="0"
-                max="100" step="0.01" />
-        </div>
-        <div class="col-md-1 d-grid">
-            <button class="btn btn-primary" (click)="agregarLinea()" [disabled]="albaran.confirmado">+</button>
-        </div>
+    <div class="col-md-4">
+      <input class="form-control" placeholder="Descripción" [(ngModel)]="nuevaLinea.descripcion" />
     </div>
+
+    <div class="col-md-2">
+      <input type="number" class="form-control" placeholder="Uds"
+             [(ngModel)]="nuevaLinea.unidades" min="0" step="0.01" />
+    </div>
+
+    <div class="col-md-2">
+      <input type="number" class="form-control" placeholder="Precio"
+             [(ngModel)]="nuevaLinea.precio" min="0" step="0.01" />
+    </div>
+
+    <div class="col-md-1">
+      <input type="number" class="form-control" placeholder="Dto"
+             [ngModel]="nuevaLinea.dtoPct ?? 0"
+             (ngModelChange)="nuevaLinea.dtoPct = ($event ?? 0)"
+             min="0" max="100" step="0.01" />
+    </div>
+
+    <div class="col-md-1 d-grid">
+      <button class="btn btn-primary" (click)="agregarLinea()" [disabled]="albaran.confirmado">+</button>
+    </div>
+  </div>
 </div>

@@ -100,4 +100,57 @@
     border: none;
     border-top: 1px solid #999;
   }
+
+  /* Bloques de datos (emisor/cliente) */
+.bloque-datos{
+  border: 1px solid #ddd;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* Evita que € y números partan línea */
+.money,
+.nowrap{
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* Ajustes tabla para que no se descuadre */
+.tabla-lineas td,
+.tabla-lineas th{
+  vertical-align: middle;
+}
+
+/* Anchos recomendados para columnas numéricas */
+.col-cant { width: 70px; }
+.col-iva  { width: 60px; }
+.col-eur  { width: 120px; }
+
+/* Totales */
+.tabla-totales{
+  width: 320px;
+}
+.tabla-totales td{
+  vertical-align: middle;
+}
+
+/* Imprimir: oculta botones */
+@media print {
+  .no-print { display: none !important; }
+  .container { margin: 0 !important; padding: 0 !important; }
+  .bloque-datos { border-color: #999; }
+}
+
+.money{
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+td.num, th.num{
+  text-align: right;
+}
+
+
 }

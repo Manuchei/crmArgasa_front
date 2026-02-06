@@ -25,7 +25,8 @@ import { AlbaranDetalleComponent } from './pages/albaran-detalle/albaran-detalle
 import { FacturasListComponent } from './pages/facturas/facturas-list/facturas-list.component';
 
 import { empresaGuard, empresaChildGuard } from './guards/empresa.guard';
-import { AlbaranImprimirComponent } from './pages/alabaran-imprimir/alabaran-imprimir.component';
+import { ImprimirFacturaComponent } from './pages/imprimir-factura/imprimir-factura.component';
+import { ProductosComponent } from './pages/productos/productos.component';
 
 export const routes: Routes = [
   // 🔐 LOGIN
@@ -33,6 +34,19 @@ export const routes: Routes = [
 
   // 🏢 SELECTOR DE EMPRESA (pantalla inicial)
   { path: '', component: SelectorEmpresaComponent },
+
+  // ✅ IMPRIMIR FUERA DEL GUARD (para que no te redirija al selector)
+  // ✅ OJO: aquí NO va "app/" delante, porque ya lo estamos definiendo fuera
+  {
+    path: 'imprimir/albaran/:id',
+    loadComponent: () =>
+      import('./pages/alabaran-imprimir/alabaran-imprimir.component')
+        .then(m => m.AlbaranImprimirComponent),
+  },
+  {
+    path: 'imprimir/factura/:id',
+    component: ImprimirFacturaComponent,
+  },
 
   // 🚀 APP REAL (misma app para Argasa / Electroluga)
   {
@@ -66,17 +80,8 @@ export const routes: Routes = [
       { path: 'albaranes/:id', component: AlbaranDetalleComponent },
 
       { path: 'facturas', component: FacturasListComponent },
-      { path: 'app/facturas', component: FacturasListComponent },
 
-{
-  path: 'imprimir/albaran/:id',
-  loadComponent: () =>
-    import('./pages/alabaran-imprimir/alabaran-imprimir.component')
-      .then(m => m.AlbaranImprimirComponent),
-},
-
-{ path: 'imprimir/factura/:id', loadComponent: () => import('./pages/imprimir-factura/imprimir-factura.component').then(m => m.ImprimirFacturaComponent) },
-
+      { path: 'productos', component: ProductosComponent},
     ],
   },
 

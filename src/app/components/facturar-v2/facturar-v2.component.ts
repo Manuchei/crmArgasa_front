@@ -28,17 +28,12 @@ export class FacturarV2Component implements OnInit, OnChanges {
   loading = false;
   error: string | null = null;
 
-  // factura en vista (cuando creas/abres)
   factura: FacturaV2Response | null = null;
-
-  // listado de facturas del cliente
   facturasCliente: FacturaV2Response[] = [];
 
   constructor(private factService: FacturacionV2Service) {}
 
-  ngOnInit(): void {
-    // no cargamos aquí porque a veces clienteId aún no está listo
-  }
+  ngOnInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['clienteId'] && this.clienteId) {
@@ -48,23 +43,21 @@ export class FacturarV2Component implements OnInit, OnChanges {
     }
   }
 
-  // ---------- UI helpers ----------
   get haySeleccion(): boolean {
     return this.selectedServicios.size > 0 || this.selectedLineas.size > 0;
   }
 
-  // ✅ Para que el HTML funcione aunque el DTO venga con nombres distintos
   get serviciosPendientes(): any[] {
     return (this.pendientes as any)?.servicios
-        ?? (this.pendientes as any)?.serviciosPendientes
-        ?? [];
+      ?? (this.pendientes as any)?.serviciosPendientes
+      ?? [];
   }
 
   get lineasPendientes(): any[] {
     return (this.pendientes as any)?.lineasAlbaran
-        ?? (this.pendientes as any)?.lineasAlbaranPendientes
-        ?? (this.pendientes as any)?.lineas
-        ?? [];
+      ?? (this.pendientes as any)?.lineasAlbaranPendientes
+      ?? (this.pendientes as any)?.lineas
+      ?? [];
   }
 
   limpiarSeleccion(): void {
@@ -87,7 +80,6 @@ export class FacturarV2Component implements OnInit, OnChanges {
     this.limpiarSeleccion();
   }
 
-  // ---------- checkbox handlers ----------
   onServicioChange(id: number, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     checked ? this.selectedServicios.add(id) : this.selectedServicios.delete(id);
@@ -98,7 +90,6 @@ export class FacturarV2Component implements OnInit, OnChanges {
     checked ? this.selectedLineas.add(id) : this.selectedLineas.delete(id);
   }
 
-  // ---------- data loading ----------
   cargarPendientes(): void {
     if (!this.clienteId) return;
 
@@ -131,7 +122,6 @@ export class FacturarV2Component implements OnInit, OnChanges {
     });
   }
 
-  // ---------- actions ----------
   crearBorrador(): void {
     if (!this.haySeleccion) {
       this.error = 'Debes seleccionar al menos un servicio o una línea de albarán';
@@ -141,7 +131,6 @@ export class FacturarV2Component implements OnInit, OnChanges {
     const req: any = {
       clienteId: this.clienteId,
       serie: this.serie,
-      // ✅ nombres que dijiste que espera tu backend
       servicioId: Array.from(this.selectedServicios),
       lineasAlbaranIds: Array.from(this.selectedLineas)
     };
@@ -153,7 +142,6 @@ export class FacturarV2Component implements OnInit, OnChanges {
       next: (fact) => {
         this.factura = fact;
         this.loading = false;
-
         this.cargarPendientes();
         this.cargarFacturasCliente();
       },
@@ -174,7 +162,6 @@ export class FacturarV2Component implements OnInit, OnChanges {
       next: () => {
         this.factura = null;
         this.loading = false;
-
         this.cargarPendientes();
         this.cargarFacturasCliente();
       },
@@ -195,7 +182,6 @@ export class FacturarV2Component implements OnInit, OnChanges {
       next: (factEmitida) => {
         this.factura = factEmitida;
         this.loading = false;
-
         this.cargarPendientes();
         this.cargarFacturasCliente();
       },
@@ -211,32 +197,28 @@ export class FacturarV2Component implements OnInit, OnChanges {
   }
 
   verFactura(f: FacturaV2Response): void {
-  // si ya viene con lineas, úsala tal cual
-  if ((f as any)?.lineas?.length) {
-    this.factura = f;
-    return;
+    if ((f as any)?.lineas?.length) {
+      this.factura = f;
+      return;
+    }
+    this.abrirFacturaDetalle(f.id);
   }
 
-  // si NO viene con lineas, intenta cargar detalle
-  this.abrirFacturaDetalle(f.id);
-}
+  private abrirFacturaDetalle(id: number): void {
+    this.loading = true;
+    this.error = null;
 
-private abrirFacturaDetalle(id: number): void {
-  this.loading = true;
-  this.error = null;
-
-  this.factService.getFacturaById(id).subscribe({
-    next: (full) => {
-      this.factura = full;
-      this.loading = false;
-    },
-    error: (err) => {
-      this.loading = false;
-      this.error = err?.error?.message ?? 'No se pudo cargar el detalle de la factura';
-    }
-  });
-}
-
+    this.factService.getFacturaById(id).subscribe({
+      next: (full) => {
+        this.factura = full;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.error?.message ?? 'No se pudo cargar el detalle de la factura';
+      }
+    });
+  }
 
   emitirDesdeListado(f: FacturaV2Response): void {
     if (!f?.id) return;
@@ -258,9 +240,25 @@ private abrirFacturaDetalle(id: number): void {
     });
   }
 
-  // ✅ Imprimir como el albarán: abre la ruta limpia
-  imprimir(): void {
-    if (!this.factura?.id) return;
-    window.open(`/app/imprimir/factura/${this.factura.id}`, '_blank');
+imprimir(event?: Event): void {
+  event?.preventDefault();
+  event?.stopPropagation();
+
+  if (!this.factura?.id) return;
+
+  // ✅ La clave que usa el guard
+  const emp = String(this.factura?.empresa || '').toUpperCase();
+  if (emp === 'ARGASA' || emp === 'ELECTROLUGA') {
+    localStorage.setItem('empresa_activa', emp);
+
+    // opcional: mantener compatibilidad con tu código antiguo
+    localStorage.setItem('empresa', emp);
   }
+
+  const url = `${window.location.origin}/imprimir/factura/${this.factura.id}`;
+window.open(url, '_blank', 'noopener');
+
+}
+
+
 }

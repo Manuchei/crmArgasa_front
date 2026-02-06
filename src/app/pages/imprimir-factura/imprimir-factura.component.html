@@ -1,86 +1,117 @@
-<div class="no-print barra">
-  <button class="btn btn-dark btn-sm" (click)="imprimirManual()">Imprimir</button>
-</div>
+<div class="container mt-3">
 
-<div class="no-print estado" *ngIf="loading">Cargando factura…</div>
-<div class="no-print error" *ngIf="error">{{ error }}</div>
+  <div class="no-print mb-3">
+    <button type="button" class="btn btn-dark" (click)="imprimirManual()">
+      Imprimir
+    </button>
+  </div>
 
-<!-- ✅ SOLO SE MUESTRA SI LLEGA LA FACTURA -->
-<div class="hoja" *ngIf="factura">
+  <div *ngIf="loading" class="text-muted">Cargando…</div>
 
-  <div class="cabecera">
-    <div class="left">
-      <h2>FACTURA</h2>
-      <div><b>Nº:</b> {{ factura.serie }}-{{ factura.numero }}</div>
-      <div><b>Fecha:</b> {{ factura.fechaEmision }}</div>
-      <div><b>Empresa:</b> {{ factura.empresa }}</div>
-    </div>
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
 
-    <!-- Si NO quieres estado, elimina este bloque -->
-    <div class="right">
-      <div class="badge">
-        {{ factura.estado }}
+  <div *ngIf="factura && !loading" class="factura">
+
+    <!-- CABECERA -->
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+      <!-- EMISOR -->
+      <div class="bloque-datos flex-grow-1">
+        <h5 class="mb-2">Empresa</h5>
+
+        <!-- Si tu backend devuelve factura.emisor -->
+        <div><b>Nombre:</b> {{ factura.emisor?.nombre ?? factura.empresa }}</div>
+        <div *ngIf="factura.emisor?.cif"><b>CIF:</b> {{ factura.emisor?.cif }}</div>
+        <div *ngIf="factura.emisor?.direccion"><b>Dirección:</b> {{ factura.emisor?.direccion }}</div>
+        <div *ngIf="factura.emisor?.cp || factura.emisor?.poblacion || factura.emisor?.provincia">
+          <b>Localidad:</b>
+          {{ factura.emisor?.cp }} {{ factura.emisor?.poblacion }} ({{ factura.emisor?.provincia }})
+        </div>
+        <div *ngIf="factura.emisor?.telefono"><b>Teléfono:</b> {{ factura.emisor?.telefono }}</div>
+        <div *ngIf="factura.emisor?.email"><b>Email:</b> {{ factura.emisor?.email }}</div>
+      </div>
+
+      <!-- DATOS FACTURA -->
+      <div class="bloque-datos text-end">
+        <h4 class="mb-2">Factura {{ factura.serie }}-{{ factura.numero }}</h4>
+        <div><b>Fecha:</b> {{ factura.fechaEmision }}</div>
+        <div *ngIf="factura.estado"><b>Estado:</b> {{ factura.estado }}</div>
       </div>
     </div>
-  </div>
 
-  <hr>
+    <hr />
 
-  <!-- CLIENTE (si viene en factura) -->
-  <div class="bloque" *ngIf="factura.nombreApellidos || factura.cifDni || factura.direccion">
-    <h5>Cliente</h5>
-    <div *ngIf="factura.nombreApellidos"><b>Nombre:</b> {{ factura.nombreApellidos }}</div>
-    <div *ngIf="factura.nombreComercial"><b>Nombre comercial:</b> {{ factura.nombreComercial }}</div>
-    <div *ngIf="factura.cifDni"><b>CIF/DNI:</b> {{ factura.cifDni }}</div>
-    <div *ngIf="factura.direccion"><b>Dirección:</b> {{ factura.direccion }}</div>
-    <div *ngIf="factura.codigoPostal || factura.poblacion">
-      <b>CP / Población:</b> {{ factura.codigoPostal }} - {{ factura.poblacion }}
+    <!-- CLIENTE -->
+    <div class="bloque-datos mb-3">
+      <h5 class="mb-2">Cliente</h5>
+
+      <!-- Si tu backend devuelve factura.cliente -->
+      <div><b>Nombre:</b> {{ factura.cliente?.nombreComercial ?? factura.cliente?.nombreApellidos ?? '—' }}</div>
+      <div *ngIf="factura.cliente?.cifDni"><b>CIF/DNI:</b> {{ factura.cliente?.cifDni }}</div>
+      <div *ngIf="factura.cliente?.direccion"><b>Dirección:</b> {{ factura.cliente?.direccion }}</div>
+      <div *ngIf="factura.cliente?.codigoPostal || factura.cliente?.poblacion || factura.cliente?.provincia">
+        <b>Localidad:</b>
+        {{ factura.cliente?.codigoPostal }} {{ factura.cliente?.poblacion }} ({{ factura.cliente?.provincia }})
+      </div>
+      <div *ngIf="factura.cliente?.telefono"><b>Teléfono:</b> {{ factura.cliente?.telefono }}</div>
+      <div *ngIf="factura.cliente?.email"><b>Email:</b> {{ factura.cliente?.email }}</div>
     </div>
-    <div *ngIf="factura.provincia"><b>Provincia:</b> {{ factura.provincia }}</div>
-    <div *ngIf="factura.telefono"><b>Teléfono:</b> {{ factura.telefono }}</div>
-    <div *ngIf="factura.movil"><b>Móvil:</b> {{ factura.movil }}</div>
-    <div *ngIf="factura.email"><b>Email:</b> {{ factura.email }}</div>
-  </div>
 
-  <hr>
-
-  <div class="bloque">
-    <h5>Conceptos</h5>
-
-    <table class="tabla" *ngIf="factura.lineas?.length; else sinLineas">
+    <!-- LINEAS -->
+    <table class="table table-sm table-bordered tabla-lineas">
       <thead>
         <tr>
-          <th>Descripción</th>
-          <th class="num">Cant.</th>
-          <th class="num">Precio</th>
-          <th class="num">Base</th>
-          <th class="num">IVA</th>
-          <th class="num">Total</th>
+          <th>Concepto</th>
+          <th class="text-end col-cant">Cant.</th>
+          <th class="text-end col-eur">Precio</th>
+          <th class="text-end col-eur">Subtotal</th>
+          <th class="text-end col-iva">IVA</th>
+          <th class="text-end col-eur">Total</th>
         </tr>
       </thead>
+
       <tbody>
         <tr *ngFor="let l of factura.lineas">
-          <td>{{ l.descripcion || '-' }}</td>
-          <td class="num">{{ l.cantidad || 0 }}</td>
-          <td class="num">{{ (l.precioUnitario || 0) | number:'1.2-2' }} €</td>
-          <td class="num">{{ (l.subtotal || 0) | number:'1.2-2' }} €</td>
-          <td class="num">{{ (l.ivaPct || 0) }}%</td>
-          <td class="num"><b>{{ (l.totalLinea || 0) | number:'1.2-2' }} €</b></td>
+          <td>{{ l.descripcion }}</td>
+          <td class="text-end">{{ l.cantidad }}</td>
+
+          <td class="text-end">
+            <span class="money">{{ l.precioUnitario | number:'1.2-2' }} €</span>
+          </td>
+
+          <td class="text-end">
+            <span class="money">{{ l.subtotal | number:'1.2-2' }} €</span>
+          </td>
+
+          <td class="text-end">
+            <span class="nowrap">{{ l.ivaPct }}%</span>
+          </td>
+
+          <td class="text-end">
+            <span class="money">{{ l.totalLinea | number:'1.2-2' }} €</span>
+          </td>
         </tr>
       </tbody>
     </table>
 
-    <ng-template #sinLineas>
-      <div class="muted">Esta factura no tiene líneas.</div>
-    </ng-template>
+    <!-- TOTALES -->
+    <div class="d-flex justify-content-end mt-3">
+      <table class="table table-sm tabla-totales">
+        <tr>
+          <td>Base imponible</td>
+          <td class="text-end"><span class="money">{{ factura.baseImponible | number:'1.2-2' }} €</span></td>
+        </tr>
+        <tr>
+          <td>IVA</td>
+          <td class="text-end"><span class="money">{{ factura.ivaTotal | number:'1.2-2' }} €</span></td>
+        </tr>
+        <tr class="fw-bold">
+          <td>TOTAL</td>
+          <td class="text-end"><span class="money">{{ factura.total | number:'1.2-2' }} €</span></td>
+        </tr>
+      </table>
+    </div>
+
   </div>
-
-  <hr>
-
-  <div class="totales">
-    <div><span>Base imponible:</span><b>{{ (factura.baseImponible || 0) | number:'1.2-2' }} €</b></div>
-    <div><span>IVA:</span><b>{{ (factura.ivaTotal || 0) | number:'1.2-2' }} €</b></div>
-    <div class="totalFinal"><span>TOTAL:</span><b>{{ (factura.total || 0) | number:'1.2-2' }} €</b></div>
-  </div>
-
 </div>

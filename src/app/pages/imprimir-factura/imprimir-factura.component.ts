@@ -15,7 +15,6 @@ export class ImprimirFacturaComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  // ✅ mismo backend que FacturacionV2Service
   private baseUrl = 'http://localhost:9018/api/facturacion-v2';
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {}
@@ -30,25 +29,37 @@ export class ImprimirFacturaComponent implements OnInit {
   }
 
   cargarFactura(id: number): void {
-  this.loading = true;
-  this.error = null;
+    this.loading = true;
+    this.error = null;
 
-  this.http.post<any>(`${this.baseUrl}/facturas/detalle`, { id }).subscribe({
-    next: (data) => {
-      this.factura = data;
-      this.loading = false;
-      // setTimeout(() => window.print(), 200);
-    },
-    error: (err) => {
-      console.error('Error cargando factura', err);
-      this.loading = false;
-      this.error =
-        err?.error?.message ??
-        `No se pudo cargar la factura (HTTP ${err?.status ?? '?'})`;
-    },
-  });
-}
+    // ✅ En vez de /facturas/detalle (que NO admite POST), usamos GET por ID
+    this.http.get<any>(`${this.baseUrl}/facturas/${id}`).subscribe({
+     next: (data) => {
+  this.factura = data;
 
+  // ✅ refuerzo: si el backend devuelve empresa, la guardamos
+  if (this.factura?.empresa) {
+    localStorage.setItem('empresa', String(this.factura.empresa));
+  }
+
+  this.loading = false;
+},
+
+      error: (err) => {
+        console.error('Error cargando factura', err);
+        this.loading = false;
+
+        // Si el backend devuelve texto plano, lo mostramos
+        const backendText = typeof err?.error === 'string' ? err.error : null;
+
+        this.error =
+          err?.error?.message ??
+          backendText ??
+          `No se pudo cargar la factura (HTTP ${err?.status ?? '?'})`;
+      },
+    });
+  }
+  
 
   imprimirManual(): void {
     window.print();

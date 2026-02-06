@@ -14,7 +14,8 @@
         <option value="B">B</option>
       </select>
 
-      <button class="btn btn-sm btn-outline-secondary"
+      <button type="button"
+              class="btn btn-sm btn-outline-secondary"
               (click)="cargarPendientes()"
               [disabled]="loading || !clienteId">
         ↻ Refrescar
@@ -24,20 +25,16 @@
 
   <div class="card-body">
 
-    <!-- ERROR -->
     <div class="alert alert-danger no-print" *ngIf="error">{{ error }}</div>
-
-    <!-- LOADING -->
     <div class="text-muted no-print" *ngIf="loading">Cargando…</div>
 
-    <!-- ========================= -->
-    <!-- PENDIENTES DE FACTURAR    -->
-    <!-- ========================= -->
+    <!-- PENDIENTES -->
     <div class="card mb-3 no-print" *ngIf="pendientes as p">
       <div class="card-header d-flex justify-content-between align-items-center">
         <strong>Pendientes de facturar</strong>
 
-        <button class="btn btn-sm btn-primary"
+        <button type="button"
+                class="btn btn-sm btn-primary"
                 (click)="crearBorrador()"
                 [disabled]="loading || !haySeleccion">
           Generar factura (borrador)
@@ -66,7 +63,7 @@
           </div>
         </div>
 
-        <!-- LÍNEAS ALBARÁN -->
+        <!-- LÍNEAS -->
         <div *ngIf="lineasPendientes.length">
           <div class="fw-bold mb-2">Líneas de albarán</div>
 
@@ -86,7 +83,8 @@
         </div>
 
         <div class="mt-3">
-          <button class="btn btn-sm btn-outline-secondary"
+          <button type="button"
+                  class="btn btn-sm btn-outline-secondary"
                   (click)="limpiarSeleccion()"
                   [disabled]="!haySeleccion">
             Limpiar selección
@@ -96,24 +94,23 @@
       </div>
     </div>
 
-    <!-- ========================= -->
-    <!-- FACTURA EN VISTA (VER)   -->
-    <!-- ========================= -->
+    <!-- FACTURA EN VISTA -->
     <div class="card mb-4 shadow-sm" *ngIf="factura">
       <div class="card-header d-flex justify-content-between align-items-center">
         <strong>Factura {{ factura.serie }}-{{ factura.numero }}</strong>
 
         <div class="d-flex gap-2 no-print">
-          <button class="btn btn-sm btn-outline-dark" (click)="imprimir()">
+          <!-- ✅ Pasamos $event para cancelar submit sí o sí -->
+          <button type="button" class="btn btn-sm btn-outline-dark" (click)="imprimir($event)">
             🖨 Imprimir
           </button>
-          <button class="btn btn-sm btn-outline-secondary" (click)="resetVistaFactura()">
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetVistaFactura()">
             Cerrar
           </button>
         </div>
       </div>
 
-      <!-- (en pantalla se ve como antes; imprimir se hace en ruta limpia) -->
       <div class="card-body">
 
         <div class="row mb-3">
@@ -190,18 +187,16 @@
       </div>
 
       <div class="d-flex gap-2 mt-3 no-print" *ngIf="factura.estado === 'BORRADOR'">
-        <button class="btn btn-success" (click)="emitir()" [disabled]="loading">
+        <button type="button" class="btn btn-success" (click)="emitir()" [disabled]="loading">
           ✅ Emitir
         </button>
-        <button class="btn btn-danger" (click)="cancelarBorrador()" [disabled]="loading">
+        <button type="button" class="btn btn-danger" (click)="cancelarBorrador()" [disabled]="loading">
           ❌ Cancelar borrador
         </button>
       </div>
     </div>
 
-    <!-- ========================= -->
-    <!-- LISTADO FACTURAS CLIENTE  -->
-    <!-- ========================= -->
+    <!-- LISTADO -->
     <div class="card no-print">
       <div class="card-header">
         <strong>Facturas del cliente</strong>
@@ -236,11 +231,12 @@
               </td>
               <td class="text-end">{{ f.total | number:'1.2-2' }} €</td>
               <td class="text-end">
-                <button class="btn btn-sm btn-outline-primary me-2" (click)="verFactura(f)">
+                <button type="button" class="btn btn-sm btn-outline-primary me-2" (click)="verFactura(f)">
                   Ver
                 </button>
 
-                <button class="btn btn-sm btn-success"
+                <button type="button"
+                        class="btn btn-sm btn-success"
                         *ngIf="f.estado === 'BORRADOR'"
                         (click)="emitirDesdeListado(f)">
                   Emitir

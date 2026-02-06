@@ -1,0 +1,61 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Productos</h3>
+
+    <select class="form-select w-auto" [(ngModel)]="empresaSeleccionada" (change)="cargar()">
+      <option value="ARGASA">ARGASA</option>
+      <option value="ELECTROLUGA">ELECTROLUGA</option>
+    </select>
+  </div>
+
+  <!-- FORMULARIO ALTA -->
+  <div class="card mb-4">
+    <div class="card-header">Crear producto</div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-3">
+          <label class="form-label">Código</label>
+          <input class="form-control" [(ngModel)]="form.codigo" name="codigo" placeholder="P-001" required>
+        </div>
+
+        <div class="col-md-5">
+          <label class="form-label">Nombre</label>
+          <input class="form-control" [(ngModel)]="form.nombre" name="nombre" placeholder="Tornillo 6mm" required>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Stock</label>
+          <input type="number" class="form-control" [(ngModel)]="form.stock" name="stock" min="0">
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+          <button class="btn btn-success w-100" (click)="crear()" [disabled]="loading">
+            ➕ Crear
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTADO -->
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th class="text-center">Stock</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of productos">
+        <td>{{ p.codigo }}</td>
+        <td>{{ p.nombre }}</td>
+        <td class="text-center">
+          <span class="badge" [class.bg-success]="p.stock>0" [class.bg-danger]="p.stock===0">
+            {{ p.stock }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
