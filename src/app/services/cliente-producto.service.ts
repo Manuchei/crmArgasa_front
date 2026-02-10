@@ -1,19 +1,24 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ClienteProductoService {
+  private baseUrl = 'http://localhost:9018/api/productos';
 
-  private base = 'http://localhost:9018/api/clientes';
+  constructor(private http: HttpClient) {}
 
-  constructor(private http: HttpClient) { }
+  addProducto(clienteId: number, productoId: number, empresa?: string): Observable<any> {
+    let headers = new HttpHeaders();
 
- addProducto(clienteId: number, productoId: number) {
+    if (empresa) {
+      headers = headers.set('X-Empresa', empresa);
+    }
+
     return this.http.post(
-      `${this.base}/${clienteId}/productos/${productoId}`,
-      {}
+      `${this.baseUrl}/clientes/${clienteId}/productos/${productoId}`,
+      {},
+      { headers }
     );
   }
 }
