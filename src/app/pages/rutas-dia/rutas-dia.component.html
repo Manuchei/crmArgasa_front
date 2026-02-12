@@ -10,39 +10,21 @@
   <div class="card mb-3">
     <div class="card-body">
       <div class="row g-3">
-
-        <!-- Fecha -->
         <div class="col-md-3">
           <label class="form-label">Fecha</label>
           <input type="date" class="form-control" [(ngModel)]="fecha">
         </div>
 
-        <!-- SELECT Transportista (autocompletar) -->
-        <!-- <div class="col-md-3">
-          <label class="form-label">Transportista (autocompletar)</label>
-          <select id="transportistaSelectDia" #selectTransportistaDia class="form-select" [(ngModel)]="transportistaId"
-            (change)="onSelectTransportista(selectTransportistaDia.value)">
-            <option value="">-- Selecciona --</option>
-            <option *ngFor="let t of transportistas" [value]="t.id">
-              {{ t.nombre }}
-            </option>
-          </select>
-
-        </div> -->
-
-        <!-- Nombre transportista (relleno automático) -->
         <div class="col-md-3">
           <label class="form-label">Transportista</label>
           <input class="form-control" [(ngModel)]="nombreTransportista" placeholder="Nombre">
         </div>
 
-        <!-- Email transportista (relleno automático) -->
         <div class="col-md-3">
           <label class="form-label">Email transportista</label>
           <input type="email" class="form-control" [(ngModel)]="emailTransportista" placeholder="email@...">
         </div>
 
-        <!-- Estado -->
         <div class="col-md-3">
           <label class="form-label">Estado</label>
           <select class="form-select" [(ngModel)]="estado">
@@ -51,7 +33,6 @@
             <option value="cerrada">Cerrada</option>
           </select>
         </div>
-
       </div>
     </div>
   </div>
@@ -67,9 +48,10 @@
         <table class="table table-striped align-middle">
           <thead class="table-dark">
             <tr>
-              <th style="width: 22%">Origen</th>
-              <th style="width: 22%">Destino</th>
-              <th style="width: 20%">Tarea</th>
+              <th style="width: 20%">Cliente</th>
+              <th style="width: 18%">Origen</th>
+              <th style="width: 18%">Destino</th>
+              <th style="width: 18%">Tarea</th>
               <th>Observaciones</th>
               <th style="width: 120px" class="text-center">Acción</th>
             </tr>
@@ -77,12 +59,20 @@
 
           <tbody>
             <tr *ngFor="let r of rutas; let i = index">
+              <td>
+                <select class="form-select" [(ngModel)]="r.clienteId">
+                  <option [ngValue]="null">— Cliente —</option>
+                  <option *ngFor="let c of clientes" [ngValue]="c.id">
+                    {{ c.nombreApellidos }} <span *ngIf="c.nombreComercial">({{ c.nombreComercial }})</span>
+                  </option>
+                </select>
+              </td>
+
               <td><input class="form-control" [(ngModel)]="r.origen"></td>
               <td><input class="form-control" [(ngModel)]="r.destino"></td>
-              <td>
-                <input class="form-control" [(ngModel)]="r.tarea">
-              </td>
+              <td><input class="form-control" [(ngModel)]="r.tarea"></td>
               <td><input class="form-control" [(ngModel)]="r.observaciones"></td>
+
               <td class="text-center">
                 <button class="btn btn-sm btn-danger" (click)="removeFila(i)">🗑</button>
               </td>

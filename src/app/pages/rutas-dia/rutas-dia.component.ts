@@ -5,8 +5,10 @@ import { Router } from '@angular/router';
 import { RutaService } from '../../services/ruta.service';
 import { TransportistaService } from '../../services/transportista.service';
 import { Itrasnportista } from '../../interfaces/itrasnportista';
+import { HttpClient } from '@angular/common/http';
 
 interface RutaDiaItem {
+  clienteId: number | null; // ✅
   origen: string;
   destino: string;
   tarea: string;
@@ -32,20 +34,34 @@ export class RutasDiaComponent implements OnInit {
   transportistas: Itrasnportista[] = [];
   transportistaId: string = '';
 
+  // ✅ clientes
+  clientes: any[] = [];
+  private apiUrl = 'http://localhost:9018/api';
+
   rutas: RutaDiaItem[] = [
-    { origen: '', destino: '', tarea: '', observaciones: '' }
+    { clienteId: null, origen: '', destino: '', tarea: '', observaciones: '' }
   ];
 
   constructor(
     private rutaService: RutaService,
     private transportistaService: TransportistaService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
     this.transportistaService.getAll().subscribe({
       next: (t) => this.transportistas = t,
       error: (err) => console.error(err)
+    });
+
+    this.cargarClientes();
+  }
+
+  cargarClientes(): void {
+    this.http.get<any[]>(`${this.apiUrl}/clientes`).subscribe({
+      next: (data) => this.clientes = data ?? [],
+      error: (err) => console.error('Error cargando clientes', err)
     });
   }
 
@@ -61,7 +77,7 @@ export class RutasDiaComponent implements OnInit {
   }
 
   addFila(): void {
-    this.rutas.push({ origen: '', destino: '', tarea: '', observaciones: '' });
+    this.rutas.push({ clienteId: null, origen: '', destino: '', tarea: '', observaciones: '' });
   }
 
   removeFila(i: number): void {
@@ -77,21 +93,27 @@ export class RutasDiaComponent implements OnInit {
       return;
     }
 
-    const validas = this.rutas.filter(r => r.origen.trim() && r.destino.trim());
+    const validas = this.rutas.filter(r =>
+      r.clienteId &&
+      r.origen.trim() &&
+      r.destino.trim()
+    );
+
     if (validas.length === 0) {
-      this.error = 'Añade al menos una ruta con origen y destino.';
+      this.error = 'Añade al menos una ruta con cliente, origen y destino.';
       return;
     }
 
     this.cargando = true;
 
     this.rutaService.crearRutasDia({
+      empresa: (localStorage.getItem('empresa') || '').trim(),
       fecha: this.fecha,
       nombreTransportista: this.nombreTransportista,
       emailTransportista: this.emailTransportista,
       estado: this.estado,
       rutas: validas
-    }).subscribe({
+    } as any).subscribe({
       next: () => {
         this.cargando = false;
         alert('Rutas del día creadas correctamente.');

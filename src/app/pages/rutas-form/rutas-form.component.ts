@@ -6,6 +6,7 @@ import { RutaService } from '../../services/ruta.service';
 import { Ruta } from '../../interfaces/iruta';
 import { TransportistaService } from '../../services/transportista.service';
 import { Itrasnportista } from '../../interfaces/itrasnportista';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-rutas-form',
@@ -25,37 +26,47 @@ export class RutasFormComponent implements OnInit {
 
   transportistas: Itrasnportista[] = [];
 
+  // ✅ clientes
+  clientes: any[] = [];
+  private apiUrl = 'http://localhost:9018/api';
+
   constructor(
     private fb: FormBuilder,
     private rutaService: RutaService,
     private transportistaService: TransportistaService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
-    // 1) Form
     this.rutaForm = this.fb.group({
-  nombreTransportista: ['', Validators.required],
-  emailTransportista: ['', [Validators.required, Validators.email]],
-  fecha: ['', Validators.required],
-  estado: ['pendiente', Validators.required],
-  origen: ['', Validators.required],
-  destino: ['', Validators.required],
-  tarea: ['', Validators.required], // ✅ NUEVO
-  observaciones: ['']
-});
+      clienteId: [null, Validators.required], // ✅ NUEVO
+      nombreTransportista: ['', Validators.required],
+      emailTransportista: ['', [Validators.required, Validators.email]],
+      fecha: ['', Validators.required],
+      estado: ['pendiente', Validators.required],
+      origen: ['', Validators.required],
+      destino: ['', Validators.required],
+      tarea: ['', Validators.required],
+      observaciones: ['']
+    });
 
-
-    // 2) Cargar transportistas
+    this.cargarClientes();
     this.cargarTransportistas();
 
-    // 3) Editar si viene ID
     this.idRuta = Number(this.route.snapshot.paramMap.get('id'));
     if (this.idRuta) {
       this.titulo = 'Editar ruta';
       this.cargarRuta(this.idRuta);
     }
+  }
+
+  cargarClientes(): void {
+    this.http.get<any[]>(`${this.apiUrl}/clientes`).subscribe({
+      next: (data) => this.clientes = data ?? [],
+      error: (err) => console.error('Error cargando clientes', err)
+    });
   }
 
   cargarTransportistas(): void {
@@ -71,7 +82,6 @@ export class RutasFormComponent implements OnInit {
     const t = this.transportistas.find(x => x.id === +id);
     if (!t) return;
 
-    // Autorellenar el form
     this.rutaForm.patchValue({
       nombreTransportista: t.nombre,
       emailTransportista: t.email
@@ -79,53 +89,52 @@ export class RutasFormComponent implements OnInit {
   }
 
   cargarRuta(id: number): void {
-    this.cargando = true;
-    this.rutaService.getRuta(id).subscribe({
-      next: (ruta) => {
-        const fecha = ruta.fecha ? ruta.fecha.toString().substring(0, 10) : '';
+  this.cargando = true;
+  this.rutaService.getRuta(id).subscribe({
+    next: (ruta: any) => {
+      const fecha = ruta.fecha ? ruta.fecha.toString().substring(0, 10) : '';
 
-        this.rutaForm.patchValue({
-          // transportistaId lo dejamos vacío si la ruta antigua no lo tiene
-          nombreTransportista: ruta.nombreTransportista,
-          emailTransportista: ruta.emailTransportista,
-          fecha: fecha,
-          estado: ruta.estado,
-          observaciones: ruta.observaciones,
-          origen: ruta.origen,
-          destino: ruta.destino
-        });
+      this.rutaForm.patchValue({
+        clienteId: ruta?.clienteId ?? null, // ✅ CORREGIDO
+        nombreTransportista: ruta.nombreTransportista,
+        emailTransportista: ruta.emailTransportista,
+        fecha,
+        estado: ruta.estado,
+        observaciones: ruta.observaciones,
+        origen: ruta.origen,
+        destino: ruta.destino,
+        tarea: ruta.tarea
+      });
 
-        this.cargando = false;
-      },
-      error: (err) => {
-        console.error(err);
-        this.error = 'Error al cargar la ruta';
-        this.cargando = false;
-      }
-    });
-  }
+      this.cargando = false;
+    },
+    error: (err) => {
+      console.error(err);
+      this.error = 'Error al cargar la ruta';
+      this.cargando = false;
+    }
+  });
+}
 
   onSubmit(): void {
     this.enviado = true;
     this.error = '';
-
     if (this.rutaForm.invalid) return;
 
-    // Si transportistaId es solo para autocompletar, lo eliminamos del payload
-    const { transportistaId, ...payload } = this.rutaForm.value;
-
-    const ruta: Ruta = {
-      ...payload
+    const payload = {
+      ...this.rutaForm.value,
+      // ✅ empresa: mejor mandarla también (y además tu service puede mandar X-Empresa)
+      empresa: (localStorage.getItem('empresa') || '').trim()
     };
 
     this.cargando = true;
 
     if (this.idRuta) {
-      this.rutaService.actualizarRuta(this.idRuta, ruta).subscribe({
+      this.rutaService.actualizarRuta(this.idRuta, payload as any).subscribe({
         next: () => {
           this.cargando = false;
           alert('Ruta actualizada correctamente.');
-          this.router.navigate(['/rutas']);
+          this.router.navigate(['/app/rutas']);
         },
         error: (err) => {
           console.error(err);
@@ -134,11 +143,11 @@ export class RutasFormComponent implements OnInit {
         }
       });
     } else {
-      this.rutaService.crearRuta(ruta).subscribe({
+      this.rutaService.crearRuta(payload as any).subscribe({
         next: () => {
           this.cargando = false;
           alert('Ruta creada correctamente.');
-          this.router.navigate(['/rutas']);
+          this.router.navigate(['/app/rutas']);
         },
         error: (err) => {
           console.error(err);

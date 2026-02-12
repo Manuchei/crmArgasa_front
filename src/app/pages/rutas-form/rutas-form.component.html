@@ -1,5 +1,4 @@
 <div class="container my-4">
-
   <div class="card shadow-sm">
     <div class="card-body">
       <h3 class="fw-bold mb-3">{{ titulo }}</h3>
@@ -8,18 +7,19 @@
 
         <div class="row g-3">
 
-          <!-- SELECT Transportista (autocompletar) -->
-          <!-- <div class="col-md-4">
-            <label class="form-label">Transportista (autocompletar)</label>
-            <select id="transportistaSelect" #selectTransportista class="form-select" formControlName="transportistaId"
-              (change)="onSelectTransportista(selectTransportista.value)">
-              <option value="">— Selecciona —</option>
-              <option *ngFor="let t of transportistas" [value]="t.id">
-                {{ t.nombre }}
+          <!-- ✅ Cliente -->
+          <div class="col-md-6">
+            <label class="form-label">Cliente</label>
+            <select class="form-select" formControlName="clienteId">
+              <option [ngValue]="null">— Selecciona cliente —</option>
+              <option *ngFor="let c of clientes" [ngValue]="c.id">
+                {{ c.nombreApellidos }} <span *ngIf="c.nombreComercial">({{ c.nombreComercial }})</span>
               </option>
             </select>
-
-          </div> -->
+            <div class="text-danger mt-1" *ngIf="enviado && f['clienteId'].invalid">
+              El cliente es obligatorio.
+            </div>
+          </div>
 
           <!-- Nombre transportista -->
           <div class="col-md-4">
@@ -87,27 +87,18 @@
             <label class="form-label">Observaciones</label>
             <textarea class="form-control" rows="3" formControlName="observaciones"></textarea>
           </div>
-
         </div>
 
         <div class="mt-4 d-flex justify-content-between">
-          <button class="btn btn-secondary" type="button" (click)="volver()">
-            ⬅ Volver
-          </button>
+          <button class="btn btn-secondary" type="button" (click)="volver()">⬅ Volver</button>
 
           <button class="btn btn-primary" type="submit" [disabled]="cargando">
             {{ idRuta ? 'Actualizar Ruta' : 'Crear Ruta' }}
           </button>
         </div>
 
-        <div *ngIf="cargando" class="alert alert-info mt-3">
-          Guardando...
-        </div>
-
-        <div *ngIf="error" class="alert alert-danger mt-3">
-          {{ error }}
-        </div>
-
+        <div *ngIf="cargando" class="alert alert-info mt-3">Guardando...</div>
+        <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
       </form>
     </div>
   </div>

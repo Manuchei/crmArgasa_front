@@ -4,21 +4,30 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ClienteProductoService {
-  private baseUrl = 'http://localhost:9018/api/productos';
+  private apiUrl = 'http://localhost:9018/api/clientes';
 
   constructor(private http: HttpClient) {}
 
-  addProducto(clienteId: number, productoId: number, empresa?: string): Observable<any> {
-    let headers = new HttpHeaders();
+  addProducto(
+    clienteId: number,
+    productoId: number,
+    cantidad: number,
+    descuento: number,
+    importePagado: number,
+    empresa: string,
+  ): Observable<any> {
+    const headers = new HttpHeaders({ 'X-Empresa': empresa });
 
-    if (empresa) {
-      headers = headers.set('X-Empresa', empresa);
-    }
+    const body = {
+      cantidad,
+      descuento,
+      importePagado,
+    };
 
     return this.http.post(
-      `${this.baseUrl}/clientes/${clienteId}/productos/${productoId}`,
-      {},
-      { headers }
+      `${this.apiUrl}/${clienteId}/productos/${productoId}`,
+      body,
+      { headers },
     );
   }
 }

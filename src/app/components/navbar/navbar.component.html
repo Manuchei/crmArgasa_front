@@ -7,12 +7,7 @@
     </span>
 
     <!-- BOTÓN HAMBURGUESA -->
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-    >
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -47,13 +42,9 @@
             </a>
           </li>
 
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/app/facturas" routerLinkActive="active">
-              🧾 Facturas
-            </a>
-          </li>
 
-           <li class="nav-item">
+
+          <li class="nav-item">
             <a class="nav-link" routerLink="/app/productos" routerLinkActive="active">
               🧾 Productos
             </a>
@@ -71,12 +62,8 @@
 
         <!-- Siempre visible -->
         <li class="nav-item">
-          <a
-            class="nav-link"
-            routerLink="/app/calendario"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
-          >
+          <a class="nav-link" routerLink="/app/calendario" routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }">
             📅 Calendario
           </a>
         </li>
@@ -88,18 +75,12 @@
       </span>
 
       <!-- Cambiar empresa -->
-      <button
-        class="btn btn-outline-warning btn-sm me-2"
-        (click)="cambiarEmpresa()"
-      >
+      <button class="btn btn-outline-warning btn-sm me-2" (click)="cambiarEmpresa()">
         Cambiar empresa
       </button>
 
       <!-- Logout -->
-      <button
-        class="btn btn-outline-danger btn-sm"
-        (click)="logout()"
-      >
+      <button class="btn btn-outline-danger btn-sm" (click)="logout()">
         Cerrar sesión
       </button>
     </div>
