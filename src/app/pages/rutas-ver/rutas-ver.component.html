@@ -1,0 +1,80 @@
+<div class="container my-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h3 class="fw-bold mb-3">Ver ruta #{{ idRuta }}</h3>
+
+      <div *ngIf="cargando" class="alert alert-info">Cargando...</div>
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <div *ngIf="ruta && !cargando">
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="fw-bold">Cliente</div>
+            <div>{{ ruta?.cliente?.nombreApellidos || ruta?.clienteNombre || '—' }}</div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="fw-bold">Fecha</div>
+            <div>{{ ruta?.fecha || '—' }}</div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="fw-bold">Estado</div>
+            <div>{{ ruta?.estado || '—' }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="fw-bold">Transportista</div>
+            <div>{{ ruta?.nombreTransportista || '—' }} ({{ ruta?.emailTransportista || '—' }})</div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="fw-bold">Destino</div>
+            <div>{{ ruta?.destino || '—' }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="fw-bold">Tarea</div>
+            <div>{{ ruta?.tarea || '—' }}</div>
+          </div>
+
+          <div class="col-12">
+            <div class="fw-bold">Observaciones</div>
+            <div>{{ ruta?.observaciones || '—' }}</div>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <h5 class="fw-bold mb-2">Productos a entregar</h5>
+
+        <div *ngIf="ruta?.lineas?.length > 0; else sinLineas">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th style="width:140px;">Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let l of ruta.lineas">
+                <td>{{ getNombreProducto(l) }}</td>
+                <td>{{ l?.cantidad ?? 0 }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #sinLineas>
+          <div class="alert alert-warning">Esta ruta no tiene productos asociados.</div>
+        </ng-template>
+
+        <div class="mt-4">
+          <button class="btn btn-secondary" type="button" (click)="volver()">⬅ Volver</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

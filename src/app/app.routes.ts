@@ -27,6 +27,7 @@ import { FacturasListComponent } from './pages/facturas/facturas-list/facturas-l
 import { empresaGuard, empresaChildGuard } from './guards/empresa.guard';
 import { ImprimirFacturaComponent } from './pages/imprimir-factura/imprimir-factura.component';
 import { ProductosComponent } from './pages/productos/productos.component';
+import { RutasVerComponent } from './pages/rutas-ver/rutas-ver.component';
 
 export const routes: Routes = [
   // 🔐 LOGIN
@@ -72,6 +73,7 @@ export const routes: Routes = [
       { path: 'rutas/nueva', component: RutasFormComponent },
       { path: 'rutas/editar/:id', component: RutasFormComponent },
       { path: 'rutas/dia', component: RutasDiaComponent },
+      { path: 'rutas/ver/:id', component:RutasVerComponent},
 
       { path: 'calendario', component: CalendarioLlamadas2Component },
 

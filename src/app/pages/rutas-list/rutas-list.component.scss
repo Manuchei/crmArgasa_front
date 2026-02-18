@@ -1,1 +1,45 @@
+.transportista-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
+  .left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .name {
+    display: flex;
+    align-items: center;
+    line-height: 1.1;
+  }
+
+  .mail {
+    font-size: 0.85rem;
+  }
+}
+
+.tarea-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.1;
+}
+
+.tarea-main {
+  font-weight: 600;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px; // ajusta si quieres
+}
+
+.tarea-sub {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}

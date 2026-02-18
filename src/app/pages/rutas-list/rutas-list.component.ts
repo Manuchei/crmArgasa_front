@@ -12,7 +12,7 @@ interface GrupoTransportista {
 }
 
 interface GrupoFecha {
-  fechaKey: string;   // "2026-01-30"
+  fechaKey: string; // "2026-01-30"
   fechaLabel: string; // "30/01/2026"
   transportistas: GrupoTransportista[];
   total: number;
@@ -23,10 +23,9 @@ interface GrupoFecha {
   standalone: true,
   templateUrl: './rutas-list.component.html',
   imports: [FormsModule, NgIf, NgFor],
-  styleUrls: ['./rutas-list.component.scss']
+  styleUrls: ['./rutas-list.component.scss'],
 })
 export class RutasListComponent implements OnInit {
-
   rutas: Ruta[] = [];
   grouped: GrupoFecha[] = [];
 
@@ -42,7 +41,7 @@ export class RutasListComponent implements OnInit {
 
   constructor(
     private rutaService: RutaService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -85,7 +84,7 @@ export class RutasListComponent implements OnInit {
         console.error(err);
         this.error = 'Error al cargar las rutas';
         this.cargando = false;
-      }
+      },
     });
   }
 
@@ -108,7 +107,7 @@ export class RutasListComponent implements OnInit {
         console.error(err);
         this.error = 'Error al filtrar por transportista';
         this.cargando = false;
-      }
+      },
     });
   }
 
@@ -128,7 +127,7 @@ export class RutasListComponent implements OnInit {
         console.error(err);
         this.error = 'Error al filtrar por estado';
         this.cargando = false;
-      }
+      },
     });
   }
 
@@ -148,7 +147,7 @@ export class RutasListComponent implements OnInit {
         console.error(err);
         this.error = 'Error al filtrar por fecha';
         this.cargando = false;
-      }
+      },
     });
   }
 
@@ -180,7 +179,7 @@ export class RutasListComponent implements OnInit {
         error: (err) => {
           console.error(err);
           alert('Error al eliminar la ruta');
-        }
+        },
       });
     }
   }
@@ -193,7 +192,7 @@ export class RutasListComponent implements OnInit {
         error: (err) => {
           console.error(err);
           alert('Error al cerrar la ruta');
-        }
+        },
       });
     }
   }
@@ -238,22 +237,24 @@ export class RutasListComponent implements OnInit {
         mapT.set(tKey, {
           nombre: tKey,
           email: this.getTransportistaEmail(r),
-          rutas: []
+          rutas: [],
         });
       }
       mapT.get(tKey)!.rutas.push(r);
     }
 
     // fechas desc
-    const fechas = Array.from(mapFecha.keys()).sort((a, b) => b.localeCompare(a));
+    const fechas = Array.from(mapFecha.keys()).sort((a, b) =>
+      b.localeCompare(a),
+    );
 
-    return fechas.map(fechaKey => {
+    return fechas.map((fechaKey) => {
       const transportistasMap = mapFecha.get(fechaKey)!;
 
       const transportistas = Array.from(transportistasMap.values())
-        .map(t => ({
+        .map((t) => ({
           ...t,
-          rutas: t.rutas.sort((a, b) => (a.id ?? 0) - (b.id ?? 0))
+          rutas: t.rutas.sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
         }))
         .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
@@ -263,8 +264,68 @@ export class RutasListComponent implements OnInit {
         fechaKey,
         fechaLabel: this.formatFechaLabel(fechaKey),
         transportistas,
-        total
+        total,
       };
     });
+  }
+
+  // --- Helpers para mostrar tarea/entrega en el listado ---
+
+private nombreProductoFromLinea(linea: any): string {
+  // soporta linea.producto.nombre / linea.productoId / linea.nombreProducto si lo tuvieras
+  const p = linea?.producto;
+  if (p?.nombre) return p.nombre;
+  if (p?.codigo && p?.nombre) return `${p.codigo} - ${p.nombre}`;
+  if (linea?.nombreProducto) return linea.nombreProducto;
+  if (linea?.productoId) return `Producto ${linea.productoId}`;
+  return 'Producto';
+}
+
+getResumenEntrega(ruta: any, maxItems: number = 2): string | null {
+  const lineas = ruta?.lineas;
+  if (!Array.isArray(lineas) || lineas.length === 0) return null;
+
+  const parts = lineas
+    .slice(0, maxItems)
+    .map((l: any) => `${l?.cantidad ?? 1}x ${this.nombreProductoFromLinea(l)}`);
+
+  const extra = lineas.length > maxItems ? ` +${lineas.length - maxItems}` : '';
+  return `📦 Entrega: ${parts.join(', ')}${extra}`;
+}
+
+getResumenTarea(ruta: any): string | null {
+  const t = (ruta?.tarea ?? '').toString().trim();
+  if (!t) return null;
+  return `🛠 Tarea: ${t}`;
+}
+
+// Para el "chip" principal (1 línea). Prioriza entrega si existe.
+getResumenPrincipal(ruta: any): string {
+  const entrega = this.getResumenEntrega(ruta, 2);
+  const tarea = this.getResumenTarea(ruta);
+
+  // si hay entrega, esa es la principal
+  if (entrega) return entrega;
+
+  // si no hay entrega pero sí tarea
+  if (tarea) return tarea;
+
+  return '—';
+}
+
+// Para mostrar una segunda línea (solo si hay ambas)
+getResumenSecundario(ruta: any): string | null {
+  const entrega = this.getResumenEntrega(ruta, 2);
+  const tarea = this.getResumenTarea(ruta);
+
+  // si hay ambas, ponemos la tarea como secundaria
+  if (entrega && tarea) return tarea;
+
+  return null;
+}
+
+
+  verRuta(id: number): void {
+    this.router.navigate(['/app/rutas/ver', id]);
   }
 }

@@ -22,12 +22,7 @@
         <!-- Filtro Estado -->
         <div class="col-md-3">
           <label class="form-label" for="filtroEstado">Estado</label>
-          <select
-            id="filtroEstado"
-            class="form-select"
-            [(ngModel)]="filtroEstado"
-            (change)="filtrarEstado()"
-          >
+          <select id="filtroEstado" class="form-select" [(ngModel)]="filtroEstado" (change)="filtrarEstado()">
             <option value="">Todos</option>
             <option value="pendiente">Pendiente</option>
             <option value="en_curso">En curso</option>
@@ -38,26 +33,15 @@
         <!-- Filtro Transportista -->
         <div class="col-md-3">
           <label class="form-label" for="filtroNombre">Transportista</label>
-          <input
-            id="filtroNombre"
-            type="text"
-            class="form-control"
-            [(ngModel)]="filtroNombre"
-            placeholder="Buscar..."
-            (input)="filtrarNombre()"
-          />
+          <input id="filtroNombre" type="text" class="form-control" [(ngModel)]="filtroNombre" placeholder="Buscar..."
+            (input)="filtrarNombre()" />
         </div>
 
         <!-- Filtro Fecha -->
         <div class="col-md-3">
           <label class="form-label" for="filtroFecha">Fecha</label>
-          <input
-            id="filtroFecha"
-            type="date"
-            class="form-control"
-            [(ngModel)]="filtroFecha"
-            (change)="filtrarFecha()"
-          />
+          <input id="filtroFecha" type="date" class="form-control" [(ngModel)]="filtroFecha"
+            (change)="filtrarFecha()" />
         </div>
       </div>
     </div>
@@ -67,20 +51,13 @@
   <div *ngIf="cargando" class="alert alert-info">Cargando rutas...</div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-  <!-- ACORDEÓN AGRUPADO (sin bootstrap JS) -->
+  <!-- ACORDEÓN AGRUPADO -->
   <div *ngIf="!cargando && (grouped?.length ?? 0) > 0" class="accordion">
-
     <div class="accordion-item" *ngFor="let g of grouped; let i = index">
       <h2 class="accordion-header">
-        <button
-          class="accordion-button"
-          [class.collapsed]="openIndex !== i"
-          type="button"
-          (click)="toggle(i)"
-        >
+        <button class="accordion-button" [class.collapsed]="openIndex !== i" type="button" (click)="toggle(i)">
           <div class="d-flex w-100 justify-content-between align-items-center">
             <div>
-              <!-- ✅ Transportista antes de la fecha -->
               <strong class="me-2">
                 🚚
                 <span *ngIf="g.transportistas.length === 1; else varios">
@@ -99,20 +76,18 @@
         </button>
       </h2>
 
-      <div
-        class="accordion-collapse"
-        [class.collapse]="openIndex !== i"
-        [class.show]="openIndex === i"
-      >
+      <div class="accordion-collapse" [class.collapse]="openIndex !== i" [class.show]="openIndex === i">
         <div class="accordion-body">
-
           <!-- Transportistas del día -->
           <div class="card mb-3" *ngFor="let t of g.transportistas">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <div>
-                <strong>🚚 {{ t.nombre }}</strong>
-                <span class="badge bg-secondary ms-2">{{ t.rutas.length }}</span>
-                <span class="text-muted ms-2" *ngIf="t.email">({{ t.email }})</span>
+            <!-- ✅ Card header arreglado -->
+            <div class="card-header transportista-header">
+              <div class="left">
+                <div class="name">
+                  🚚 <strong>{{ t.nombre }}</strong>
+                  <span class="badge bg-secondary ms-2">{{ t.rutas.length }}</span>
+                </div>
+                <div class="mail text-muted" *ngIf="t.email">{{ t.email }}</div>
               </div>
             </div>
 
@@ -121,10 +96,10 @@
                 <thead class="table-dark">
                   <tr>
                     <th>ID</th>
+                    <th>Cliente</th>
                     <th>Transportista</th>
                     <th>Fecha</th>
                     <th>Estado</th>
-                    <th>Origen</th>
                     <th>Destino</th>
                     <th>Tarea</th>
                     <th>Observaciones</th>
@@ -135,19 +110,40 @@
                 <tbody>
                   <tr *ngFor="let ruta of t.rutas">
                     <td>{{ ruta.id }}</td>
+
+                    <!-- ✅ Cliente (sale del objeto cliente del backend) -->
+                    <td>
+                      {{ ruta.cliente?.nombreApellidos || '—' }}
+                      <span *ngIf="ruta.cliente?.nombreComercial" class="text-muted">
+                        ({{ ruta.cliente?.nombreComercial }})
+                      </span>
+                    </td>
+
                     <td>{{ ruta.nombreTransportista }}</td>
                     <td>{{ ruta.fecha }}</td>
 
                     <td>
-                      <span class="badge bg-warning text-dark" *ngIf="ruta.estado == 'pendiente'">Pendiente</span>
-                      <span class="badge bg-info text-dark" *ngIf="ruta.estado == 'en_curso'">En curso</span>
-                      <span class="badge bg-success" *ngIf="ruta.estado == 'cerrada'">Cerrada</span>
+                      <span class="badge bg-warning text-dark" *ngIf="ruta.estado === 'pendiente'">Pendiente</span>
+                      <span class="badge bg-info text-dark" *ngIf="ruta.estado === 'en_curso'">En curso</span>
+                      <span class="badge bg-success" *ngIf="ruta.estado === 'cerrada'">Cerrada</span>
                     </td>
 
-                    <td>{{ ruta.origen }}</td>
                     <td>{{ ruta.destino }}</td>
-                    <td>{{ ruta.tarea }}</td>
-                    <td>{{ ruta.observaciones }}</td>
+
+                    <!-- ✅ TAREA: mostrar entrega o tarea (o ambas) -->
+                    <td>
+                      <div class="tarea-cell">
+                        <div class="tarea-main">
+                          {{ getResumenPrincipal(ruta) }}
+                        </div>
+
+                        <div class="tarea-sub text-muted" *ngIf="getResumenSecundario(ruta)">
+                          {{ getResumenSecundario(ruta) }}
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>{{ ruta.observaciones || '—' }}</td>
 
                     <td class="text-center">
                       <button class="btn btn-sm btn-primary me-1" (click)="editarRuta(ruta)">
@@ -158,24 +154,22 @@
                         🗑 Eliminar
                       </button>
 
-                      <button
-                        class="btn btn-sm btn-success"
-                        [disabled]="ruta.estado === 'cerrada'"
-                        (click)="cerrarRuta(ruta)"
-                      >
+                      <button class="btn btn-sm btn-success me-1" [disabled]="ruta.estado === 'cerrada'"
+                        (click)="cerrarRuta(ruta)">
                         ✔ Cerrar
+                      </button>
+
+                      <button type="button" class="btn btn-info btn-sm" (click)="verRuta(ruta.id!)">
+                        👁 Ver
                       </button>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-
           </div>
-
         </div>
       </div>
-
     </div>
   </div>
 

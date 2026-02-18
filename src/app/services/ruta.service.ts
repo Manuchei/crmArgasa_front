@@ -10,7 +10,7 @@ export class RutaService {
   constructor(private http: HttpClient) {}
 
   private getEmpresaActual(): 'ARGASA' | 'ELECTROLUGA' {
-    const emp = (localStorage.getItem('empresa_activa') || 'ARGASA').toUpperCase();
+    const emp = (localStorage.getItem('empresa_activa') || 'ARGASA').toUpperCase().trim();
     return emp === 'ELECTROLUGA' ? 'ELECTROLUGA' : 'ARGASA';
   }
 
@@ -27,12 +27,13 @@ export class RutaService {
   }
 
   crearRuta(ruta: Ruta): Observable<Ruta> {
-    // opcional: asegurar empresa también en body
-    return this.http.post<Ruta>(this.apiUrl, { ...ruta, empresa: this.getEmpresaActual() }, { headers: this.headersEmpresa() });
+    const body = { ...ruta, empresa: this.getEmpresaActual() };
+    return this.http.post<Ruta>(this.apiUrl, body, { headers: this.headersEmpresa() });
   }
 
   actualizarRuta(id: number, ruta: Ruta): Observable<Ruta> {
-    return this.http.put<Ruta>(`${this.apiUrl}/${id}`, { ...ruta, empresa: this.getEmpresaActual() }, { headers: this.headersEmpresa() });
+    const body = { ...ruta, empresa: this.getEmpresaActual() };
+    return this.http.put<Ruta>(`${this.apiUrl}/${id}`, body, { headers: this.headersEmpresa() });
   }
 
   eliminarRuta(id: number): Observable<void> {
@@ -56,8 +57,8 @@ export class RutaService {
   }
 
   crearRutasDia(payload: any): Observable<any> {
-    // si el payload no trae empresa, la añadimos
-    const body = { ...payload, empresa: payload?.empresa ?? this.getEmpresaActual() };
+    // ✅ No dependemos del componente: siempre aseguramos empresa
+    const body = { ...payload, empresa: this.getEmpresaActual() };
     return this.http.post(`${this.apiUrl}/dia`, body, { headers: this.headersEmpresa() });
   }
 }

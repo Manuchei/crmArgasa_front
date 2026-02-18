@@ -4,16 +4,15 @@
       <h3 class="fw-bold mb-3">{{ titulo }}</h3>
 
       <form [formGroup]="rutaForm" (ngSubmit)="onSubmit()">
-
         <div class="row g-3">
-
           <!-- ✅ Cliente -->
           <div class="col-md-6">
             <label class="form-label">Cliente</label>
             <select class="form-select" formControlName="clienteId">
               <option [ngValue]="null">— Selecciona cliente —</option>
               <option *ngFor="let c of clientes" [ngValue]="c.id">
-                {{ c.nombreApellidos }} <span *ngIf="c.nombreComercial">({{ c.nombreComercial }})</span>
+                {{ c.nombreApellidos }}
+                <span *ngIf="c.nombreComercial">({{ c.nombreComercial }})</span>
               </option>
             </select>
             <div class="text-danger mt-1" *ngIf="enviado && f['clienteId'].invalid">
@@ -24,7 +23,7 @@
           <!-- Nombre transportista -->
           <div class="col-md-4">
             <label class="form-label">Nombre del Transportista</label>
-            <input type="text" class="form-control" formControlName="nombreTransportista">
+            <input type="text" class="form-control" formControlName="nombreTransportista" />
             <div class="text-danger mt-1" *ngIf="enviado && f['nombreTransportista'].invalid">
               El nombre es obligatorio.
             </div>
@@ -33,7 +32,7 @@
           <!-- Email transportista -->
           <div class="col-md-4">
             <label class="form-label">Correo del transportista</label>
-            <input type="email" class="form-control" formControlName="emailTransportista">
+            <input type="email" class="form-control" formControlName="emailTransportista" />
             <div class="text-danger mt-1" *ngIf="enviado && f['emailTransportista'].invalid">
               Debes introducir un correo válido.
             </div>
@@ -42,7 +41,7 @@
           <!-- Fecha -->
           <div class="col-md-3">
             <label class="form-label">Fecha</label>
-            <input type="date" class="form-control" formControlName="fecha">
+            <input type="date" class="form-control" formControlName="fecha" />
             <div class="text-danger mt-1" *ngIf="enviado && f['fecha'].invalid">
               La fecha es obligatoria.
             </div>
@@ -58,19 +57,10 @@
             </select>
           </div>
 
-          <!-- Origen -->
-          <div class="col-md-6">
-            <label class="form-label">Origen</label>
-            <input type="text" class="form-control" formControlName="origen">
-            <div class="text-danger mt-1" *ngIf="enviado && f['origen'].invalid">
-              El origen es obligatorio.
-            </div>
-          </div>
-
           <!-- Destino -->
           <div class="col-md-6">
             <label class="form-label">Destino</label>
-            <input type="text" class="form-control" formControlName="destino">
+            <input type="text" class="form-control" formControlName="destino" />
             <div class="text-danger mt-1" *ngIf="enviado && f['destino'].invalid">
               El destino es obligatorio.
             </div>
@@ -79,7 +69,85 @@
           <!-- Tarea -->
           <div class="col-md-6">
             <label class="form-label">Tarea</label>
-            <input type="text" class="form-control" formControlName="tarea">
+            <input type="text" class="form-control" formControlName="tarea" />
+          </div>
+
+          <!-- ✅ BLOQUE PRODUCTOS A ENTREGAR -->
+          <div class="col-12 mt-2">
+            <hr class="my-2" />
+            <h5 class="fw-bold mb-2">Productos a entregar</h5>
+
+            <div class="row g-2 align-items-end" [formGroup]="lineaForm">
+              <div class="col-md-7">
+                <label class="form-label">Producto</label>
+                <select class="form-select" formControlName="productoId" [disabled]="!rutaForm.value.clienteId"
+                  (change)="onProductoChange()">
+                  <option [ngValue]="null">— Selecciona producto —</option>
+
+                  <option *ngFor="let cp of clienteProductos" [ngValue]="cp.productoId">
+                    {{ cp.codigo }} - {{ cp.nombre }}
+                    <span *ngIf="cp.cantidad != null"> | Comprados: {{ cp.cantidad }}</span>
+                  </option>
+                </select>
+
+                <div class="form-text" *ngIf="productoSeleccionado">
+                  Disponibles: {{ getDisponibles(productoSeleccionado.productoId) }}
+                </div>
+
+                <div class="form-text" *ngIf="rutaForm.value.clienteId && clienteProductos.length === 0">
+                  Este cliente no tiene productos comprados.
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Cantidad</label>
+                <input type="number" class="form-control" formControlName="cantidad" min="1"
+                  [max]="productoSeleccionado ? getDisponibles(productoSeleccionado.productoId) : 1" />
+                <div class="text-danger mt-1" *ngIf="lf['cantidad'].touched && lf['cantidad'].invalid">
+                  Cantidad mínima: 1
+                </div>
+
+                <div class="text-danger mt-1"
+                  *ngIf="productoSeleccionado && getDisponibles(productoSeleccionado.productoId) === 0">
+                  No quedan unidades disponibles para este producto.
+                </div>
+              </div>
+
+              <div class="col-md-2">
+                <button type="button" class="btn btn-primary w-100" (click)="addLinea()" [disabled]="
+                    lineaForm.invalid ||
+                    !rutaForm.value.clienteId ||
+                    clienteProductos.length === 0 ||
+                    (productoSeleccionado && getDisponibles(productoSeleccionado.productoId) === 0)
+                  ">
+                  Añadir
+                </button>
+              </div>
+            </div>
+
+            <!-- Tabla líneas -->
+            <div class="mt-3" *ngIf="lineas.length > 0">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th style="width: 120px">Cantidad</th>
+                    <th style="width: 120px"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let l of lineas">
+                    <td>{{ getNombreProducto(l.productoId) }}</td>
+                    <td>{{ l.cantidad }}</td>
+                    <td>
+                      <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeLinea(l.productoId)">
+                        Quitar
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <!-- Observaciones -->

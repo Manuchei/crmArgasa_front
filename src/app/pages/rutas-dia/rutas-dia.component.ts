@@ -8,12 +8,11 @@ import { Itrasnportista } from '../../interfaces/itrasnportista';
 import { HttpClient } from '@angular/common/http';
 
 interface RutaDiaItem {
-  clienteId: number | null; // ✅
-  origen: string;
-  destino: string;
+  clienteId: number | null;   // ✅ obligatorio
   tarea: string;
   observaciones: string;
   estado?: string;
+  empresa?: string;
 }
 
 @Component({
@@ -34,12 +33,11 @@ export class RutasDiaComponent implements OnInit {
   transportistas: Itrasnportista[] = [];
   transportistaId: string = '';
 
-  // ✅ clientes
   clientes: any[] = [];
   private apiUrl = 'http://localhost:9018/api';
 
   rutas: RutaDiaItem[] = [
-    { clienteId: null, origen: '', destino: '', tarea: '', observaciones: '' }
+    { clienteId: null, tarea: '', observaciones: '' }
   ];
 
   constructor(
@@ -51,8 +49,8 @@ export class RutasDiaComponent implements OnInit {
 
   ngOnInit(): void {
     this.transportistaService.getAll().subscribe({
-      next: (t) => this.transportistas = t,
-      error: (err) => console.error(err)
+      next: (t) => (this.transportistas = t),
+      error: (err) => console.error(err),
     });
 
     this.cargarClientes();
@@ -60,8 +58,8 @@ export class RutasDiaComponent implements OnInit {
 
   cargarClientes(): void {
     this.http.get<any[]>(`${this.apiUrl}/clientes`).subscribe({
-      next: (data) => this.clientes = data ?? [],
-      error: (err) => console.error('Error cargando clientes', err)
+      next: (data) => (this.clientes = data ?? []),
+      error: (err) => console.error('Error cargando clientes', err),
     });
   }
 
@@ -69,7 +67,7 @@ export class RutasDiaComponent implements OnInit {
     this.transportistaId = id;
     if (!id) return;
 
-    const t = this.transportistas.find(x => x.id === +id);
+    const t = this.transportistas.find((x) => x.id === +id);
     if (!t) return;
 
     this.nombreTransportista = t.nombre;
@@ -77,7 +75,7 @@ export class RutasDiaComponent implements OnInit {
   }
 
   addFila(): void {
-    this.rutas.push({ clienteId: null, origen: '', destino: '', tarea: '', observaciones: '' });
+    this.rutas.push({ clienteId: null, tarea: '', observaciones: '' });
   }
 
   removeFila(i: number): void {
@@ -93,38 +91,37 @@ export class RutasDiaComponent implements OnInit {
       return;
     }
 
-    const validas = this.rutas.filter(r =>
-      r.clienteId &&
-      r.origen.trim() &&
-      r.destino.trim()
-    );
+    // ✅ ahora solo validamos clienteId
+    const validas = this.rutas.filter((r) => !!r.clienteId);
 
     if (validas.length === 0) {
-      this.error = 'Añade al menos una ruta con cliente, origen y destino.';
+      this.error = 'Añade al menos una ruta con cliente.';
       return;
     }
 
     this.cargando = true;
 
-    this.rutaService.crearRutasDia({
-      empresa: (localStorage.getItem('empresa') || '').trim(),
-      fecha: this.fecha,
-      nombreTransportista: this.nombreTransportista,
-      emailTransportista: this.emailTransportista,
-      estado: this.estado,
-      rutas: validas
-    } as any).subscribe({
-      next: () => {
-        this.cargando = false;
-        alert('Rutas del día creadas correctamente.');
-        this.router.navigate(['/app/rutas']);
-      },
-      error: (err) => {
-        console.error(err);
-        this.cargando = false;
-        this.error = 'Error al crear las rutas del día.';
-      }
-    });
+    this.rutaService
+      .crearRutasDia({
+        fecha: this.fecha,
+        nombreTransportista: this.nombreTransportista,
+        emailTransportista: this.emailTransportista,
+        estado: this.estado,
+        rutas: validas,
+        // ✅ NO uses localStorage "empresa" aquí; tu service ya mete X-Empresa y empresa en body
+      })
+      .subscribe({
+        next: () => {
+          this.cargando = false;
+          alert('Rutas del día creadas correctamente.');
+          this.router.navigate(['/app/rutas']);
+        },
+        error: (err) => {
+          console.error(err);
+          this.cargando = false;
+          this.error = 'Error al crear las rutas del día.';
+        },
+      });
   }
 
   volver(): void {

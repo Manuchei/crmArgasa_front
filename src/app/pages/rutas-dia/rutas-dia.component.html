@@ -12,17 +12,17 @@
       <div class="row g-3">
         <div class="col-md-3">
           <label class="form-label">Fecha</label>
-          <input type="date" class="form-control" [(ngModel)]="fecha">
+          <input type="date" class="form-control" [(ngModel)]="fecha" />
         </div>
 
         <div class="col-md-3">
           <label class="form-label">Transportista</label>
-          <input class="form-control" [(ngModel)]="nombreTransportista" placeholder="Nombre">
+          <input class="form-control" [(ngModel)]="nombreTransportista" placeholder="Nombre" />
         </div>
 
         <div class="col-md-3">
           <label class="form-label">Email transportista</label>
-          <input type="email" class="form-control" [(ngModel)]="emailTransportista" placeholder="email@...">
+          <input type="email" class="form-control" [(ngModel)]="emailTransportista" placeholder="email@..." />
         </div>
 
         <div class="col-md-3">
@@ -48,10 +48,8 @@
         <table class="table table-striped align-middle">
           <thead class="table-dark">
             <tr>
-              <th style="width: 20%">Cliente</th>
-              <th style="width: 18%">Origen</th>
-              <th style="width: 18%">Destino</th>
-              <th style="width: 18%">Tarea</th>
+              <th style="width: 28%">Cliente</th>
+              <th style="width: 22%">Tarea</th>
               <th>Observaciones</th>
               <th style="width: 120px" class="text-center">Acción</th>
             </tr>
@@ -63,15 +61,14 @@
                 <select class="form-select" [(ngModel)]="r.clienteId">
                   <option [ngValue]="null">— Cliente —</option>
                   <option *ngFor="let c of clientes" [ngValue]="c.id">
-                    {{ c.nombreApellidos }} <span *ngIf="c.nombreComercial">({{ c.nombreComercial }})</span>
+                    {{ c.nombreApellidos }}
+                    <span *ngIf="c.nombreComercial">({{ c.nombreComercial }})</span>
                   </option>
                 </select>
               </td>
 
-              <td><input class="form-control" [(ngModel)]="r.origen"></td>
-              <td><input class="form-control" [(ngModel)]="r.destino"></td>
-              <td><input class="form-control" [(ngModel)]="r.tarea"></td>
-              <td><input class="form-control" [(ngModel)]="r.observaciones"></td>
+              <td><input class="form-control" [(ngModel)]="r.tarea" placeholder="Entrega / Recogida / ..." /></td>
+              <td><input class="form-control" [(ngModel)]="r.observaciones" placeholder="Notas..." /></td>
 
               <td class="text-center">
                 <button class="btn btn-sm btn-danger" (click)="removeFila(i)">🗑</button>

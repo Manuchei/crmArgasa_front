@@ -30,4 +30,15 @@ export class ClienteProductoService {
       { headers },
     );
   }
+
+  // ✅ NUEVO: listar productos asignados a un cliente
+  // OJO: ajusta si tu endpoint es distinto
+  getProductosCliente(clienteId: number, empresa?: string) {
+    const headers = empresa
+      ? new HttpHeaders({ 'X-Empresa': empresa })
+      : undefined;
+    return this.http.get<any[]>(`${this.apiUrl}/${clienteId}/productos`, {
+      headers,
+    });
+  }
 }
