@@ -1,224 +1,219 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
-import { CalendarOptions } from '@fullcalendar/core';
-import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
-import dayGridPlugin from '@fullcalendar/daygrid';
+import { MatCardModule } from '@angular/material/card';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { MatDialogModule } from '@angular/material/dialog';
 
-import * as bootstrap from 'bootstrap';
+import { MatDialog } from '@angular/material/dialog';
+import { DialogEditarLlamadaComponent } from '../../components/dialog-editar-llamada/dialog-editar-llamada.component';
 
 import { LlamadasService } from '../../services/llamadas.service';
 import { ILlamada } from '../../interfaces/illamda';
+import { ILlamadaRequest } from '../../interfaces/illamada-request';
+import { IEventoCalendario } from '../../interfaces/ievento-calendario';
 
 @Component({
-  selector: 'app-calendario-llamadas',
+  selector: 'app-calendario-llamadas2',
   standalone: true,
-  imports: [CommonModule, FullCalendarModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatListModule,
+    MatDialogModule,
+  ],
   templateUrl: './calendario-llamadas.component.html',
   styleUrls: ['./calendario-llamadas.component.css'],
 })
-export class CalendarioLlamadasComponent implements AfterViewInit {
-  @ViewChild('calendar') calendarRef!: FullCalendarComponent;
+export class CalendarioLlamadas2Component implements AfterViewInit {
 
+  selectedDate: Date | null = null;
+  fechaSeleccionadaStr: string | null = null; // yyyy-MM-dd
   llamadasDelDia: ILlamada[] = [];
-  fechaSeleccionada: string | null = null;
 
-  mostrarFormulario = false;
+  fechaNueva: Date | null = null;
+  horasDisponibles: string[] = [];
+  horaNueva: string = '12:00';
 
-  nuevaLlamada: ILlamada = {
-    id: 0,
-    motivo: '',
-    fecha: '',
-    estado: 'pendiente',
-    observaciones: '',
-    clienteId: null,
-  };
+  nuevaLlamada: ILlamadaRequest = this.crearRequestVacio();
 
-  llamadaSeleccionada: ILlamada | null = null;
+  private fechasConEventos = new Set<string>(); // yyyy-MM-dd
 
-  calendarOptions: CalendarOptions = {
-    initialView: 'dayGridMonth',
-    plugins: [dayGridPlugin, interactionPlugin],
-    locale: 'es',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: '',
-    },
-    dateClick: (args) => this.handleDateClick(args),
-    eventClick: (info) => this.handleEventClick(info),
-    events: [],
-  };
+  constructor(
+    private llamadasService: LlamadasService,
+    private dialog: MatDialog
+  ) {}
 
-  constructor(private llamadasService: LlamadasService) {}
-
+  // =========================
+  // INIT
+  // =========================
   ngAfterViewInit(): void {
-    this.cargarEventosCalendario();
+    this.generarHoras();
+    this.cargarFechasConEventos();
+
+    // ✅ Iniciar automáticamente en el día actual
+    this.seleccionarHoy();
   }
 
-  private cargarEventosCalendario(): void {
+  private seleccionarHoy(): void {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    this.onSelectDate(hoy);
+  }
+
+  // =========================
+  // UTILS
+  // =========================
+  private crearRequestVacio(): ILlamadaRequest {
+    return {
+      empresa: 'ARGASA',
+      motivo: '',
+      fecha: '',
+      estado: 'pendiente',
+      observaciones: '',
+      clienteId: null,
+    };
+  }
+
+  private toYmd(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  }
+
+  private generarHoras(): void {
+    const horas: string[] = [];
+    for (let h = 8; h <= 22; h++) {
+      for (let m = 0; m < 60; m += 5) {
+        horas.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+      }
+    }
+    this.horasDisponibles = horas;
+  }
+
+  syncFechaHora(): void {
+    if (!this.fechaNueva) {
+      if (this.selectedDate) this.fechaNueva = new Date(this.selectedDate);
+      else return;
+    }
+
+    const ymd = this.toYmd(this.fechaNueva);
+
+    const time =
+      this.horaNueva && /^\d{2}:\d{2}$/.test(this.horaNueva)
+        ? this.horaNueva
+        : '12:00';
+
+    this.nuevaLlamada.fecha = `${ymd}T${time}`;
+  }
+
+  private preCargarHoraDefault(ymd: string): void {
+    this.fechaNueva = new Date(`${ymd}T00:00:00`);
+    this.horaNueva = '12:00';
+    this.syncFechaHora();
+  }
+
+  private cargarFechasConEventos(): void {
     this.llamadasService.getEventosCalendario().subscribe({
-      next: (eventos) => {
-        const api = this.calendarRef.getApi();
-        api.removeAllEvents();
-
-        const fcEvents = eventos.map((e: any) => ({
-          id: String(e.id),
-          title: e.title,
-          start: e.start,
-          backgroundColor:
-            e.estado === 'pendiente'
-              ? '#ffc23e'
-              : e.estado === 'realizada'
-              ? '#1cc88a'
-              : '#e74a3b',
-        }));
-
-        api.addEventSource(fcEvents);
+      next: (eventos: IEventoCalendario[]) => {
+        this.fechasConEventos.clear();
+        for (const e of eventos) {
+          const ymd = e.start?.substring(0, 10);
+          if (ymd) this.fechasConEventos.add(ymd);
+        }
       },
       error: (err) => console.error('Error cargando eventos', err),
     });
   }
 
-  handleDateClick(arg: DateClickArg): void {
-    this.fechaSeleccionada = arg.dateStr;
+  dateClass = (d: Date) => {
+    const ymd = this.toYmd(d);
+    return this.fechasConEventos.has(ymd) ? 'dia-con-evento' : '';
+  };
 
-    // ✅ ISO para datetime-local
-    this.nuevaLlamada.fecha = `${arg.dateStr}T12:00`;
+  // =========================
+  // SELECCIÓN DE DÍA
+  // =========================
+  onSelectDate(date: Date | null): void {
+    if (!date) return;
 
-    this.cargarLlamadasDelDia(arg.dateStr);
-    this.mostrarFormulario = true;
+    this.selectedDate = date;
+
+    const ymd = this.toYmd(date);
+    this.fechaSeleccionadaStr = ymd;
+
+    this.preCargarHoraDefault(ymd);
+    this.cargarLlamadasDelDia(ymd);
   }
 
-  handleEventClick(info: any): void {
-    const id = Number(info.event.id);
-
-    this.llamadasService.getById(id).subscribe({
-      next: (llamada) => {
-        this.llamadaSeleccionada = { ...llamada };
-
-        const modal = new bootstrap.Modal(
-          document.getElementById('editarModal') as HTMLElement
-        );
-        modal.show();
-      },
-      error: (err) => console.error(err),
-    });
-  }
-
-  private cargarLlamadasDelDia(fechaStr: string): void {
-    this.llamadasService.getLlamadasDia(fechaStr).subscribe({
+  private cargarLlamadasDelDia(ymd: string): void {
+    this.llamadasService.getLlamadasDia(ymd).subscribe({
       next: (llamadas) => (this.llamadasDelDia = llamadas),
       error: (err) => console.error('Error llamadas del día', err),
     });
   }
 
-  // ✅ Normaliza a yyyy-MM-ddTHH:mm si por algún motivo llega distinto
-  private normalizarFechaIso(fecha: string): string {
-    // si ya viene bien: 2026-01-05T13:30
-    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(fecha)) return fecha;
-
-    // si viniera con segundos: 2026-01-05T13:30:00
-    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(fecha)) {
-      return fecha.substring(0, 16);
-    }
-
-    // último recurso: intenta parsear (evita toLocaleString)
-    const d = new Date(fecha);
-    if (!isNaN(d.getTime())) {
-      const pad = (n: number) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-        d.getHours()
-      )}:${pad(d.getMinutes())}`;
-    }
-
-    return fecha; // si no puede, lo deja y backend lo rechazará
-  }
-
+  // =========================
+  // GUARDAR
+  // =========================
   guardarLlamada(): void {
-    // ✅ Validación mínima
+    if (!this.fechaSeleccionadaStr) return;
     if (!this.nuevaLlamada.motivo?.trim()) return;
+
+    this.syncFechaHora();
     if (!this.nuevaLlamada.fecha?.trim()) return;
 
-    // ✅ asegurar ISO
-    this.nuevaLlamada.fecha = this.normalizarFechaIso(this.nuevaLlamada.fecha);
+    this.nuevaLlamada.fecha = this.nuevaLlamada.fecha.substring(0, 16);
 
     this.llamadasService.crearLlamada(this.nuevaLlamada).subscribe({
       next: () => {
-        if (this.fechaSeleccionada) {
-          this.cargarLlamadasDelDia(this.fechaSeleccionada);
-        }
+        this.cargarLlamadasDelDia(this.fechaSeleccionadaStr!);
+        this.cargarFechasConEventos();
 
-        this.cargarEventosCalendario();
-        this.mostrarFormulario = false;
-
-        this.nuevaLlamada = {
-          id: 0,
-          motivo: '',
-          fecha: '',
-          estado: 'pendiente',
-          observaciones: '',
-          clienteId: null,
-        };
+        const ymd = this.fechaSeleccionadaStr!;
+        this.nuevaLlamada = this.crearRequestVacio();
+        this.preCargarHoraDefault(ymd);
       },
       error: (err) => console.error('Error guardando llamada', err),
     });
   }
 
-  actualizarLlamada(): void {
-    if (!this.llamadaSeleccionada) return;
+  // =========================
+  // EDITAR
+  // =========================
+  editar(llamada: ILlamada): void {
+    const dialogRef = this.dialog.open(DialogEditarLlamadaComponent, {
+      width: '520px',
+      data: llamada,
+    });
 
-    // ✅ asegurar ISO
-    this.llamadaSeleccionada.fecha = this.normalizarFechaIso(this.llamadaSeleccionada.fecha);
+    dialogRef.afterClosed().subscribe((result: ILlamada | null) => {
+      if (!result) return;
 
-    this.llamadasService
-      .actualizarLlamada(this.llamadaSeleccionada.id, this.llamadaSeleccionada)
-      .subscribe({
+      this.llamadasService.actualizarLlamada(result.id, result).subscribe({
         next: () => {
-          this.cerrarModal();
-          if (this.fechaSeleccionada)
-            this.cargarLlamadasDelDia(this.fechaSeleccionada);
-
-          this.cargarEventosCalendario();
+          if (this.fechaSeleccionadaStr) {
+            this.cargarLlamadasDelDia(this.fechaSeleccionadaStr);
+          }
+          this.cargarFechasConEventos();
         },
         error: (err) => console.error('Error actualizando llamada', err),
       });
-  }
-
-  eliminarLlamada(): void {
-    if (!this.llamadaSeleccionada) return;
-
-    this.llamadasService.eliminarLlamada(this.llamadaSeleccionada.id).subscribe({
-      next: () => {
-        this.cerrarModal();
-        if (this.fechaSeleccionada)
-          this.cargarLlamadasDelDia(this.fechaSeleccionada);
-
-        this.cargarEventosCalendario();
-      },
-      error: (err) => console.error('Error eliminando llamada', err),
     });
   }
 
-  cerrarModal(): void {
-    const modalElement = document.getElementById('editarModal')!;
-    const modal = bootstrap.Modal.getInstance(modalElement);
-    modal?.hide();
-  }
-
-  abrirModalDesdeLista(id: number): void {
-    this.llamadasService.getById(id).subscribe({
-      next: (llamada) => {
-        this.llamadaSeleccionada = { ...llamada };
-
-        const modal = new bootstrap.Modal(
-          document.getElementById('editarModal') as HTMLElement
-        );
-        modal.show();
-      },
-      error: (err) => console.error(err),
-    });
+  trackByLlamadaId(_: number, item: ILlamada) {
+    return item.id;
   }
 }

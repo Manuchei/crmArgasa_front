@@ -143,92 +143,72 @@
   <hr class="my-4" />
 
   <!-- PRODUCTOS -->
-<div class="d-flex justify-content-between align-items-center mt-4">
-  <h4 class="mb-0">Añadir producto</h4>
+  <div class="d-flex justify-content-between align-items-center mt-4">
+    <h4 class="mb-0">Añadir producto</h4>
 
-  <button class="btn btn-outline-primary btn-sm" (click)="cargarProductos()">
-    🔄 Recargar productos
-  </button>
-</div>
+    <button class="btn btn-outline-primary btn-sm" (click)="cargarProductos()">
+      🔄 Recargar productos
+    </button>
+  </div>
 
-<table class="table table-hover align-middle mt-2">
-  <thead>
-    <tr>
-      <th>Código</th>
-      <th>Nombre</th>
-      <th class="text-end">Precio (sin IVA)</th>
-      <th class="text-center">Stock</th>
-      <th class="text-center">Cant.</th>
-      <th class="text-center">Dto (%)</th>
-      <th class="text-center">Pagado (€)</th>
-      <th class="text-end">Acción</th>
-    </tr>
-  </thead>
+  <table class="table table-hover align-middle mt-2">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th class="text-end">Precio (sin IVA)</th>
+        <th class="text-center">Stock</th>
+        <th class="text-center">Cant.</th>
+        <th class="text-center">Dto (%)</th>
+        <th class="text-center">Pagado (€)</th>
+        <th class="text-end">Acción</th>
+      </tr>
+    </thead>
 
-  <tbody>
-    <tr *ngFor="let p of productos">
-      <td>{{ p.codigo }}</td>
-      <td>{{ p.nombre }}</td>
-      <td class="text-end">{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
-      <td class="text-center">{{ p.stock }}</td>
+    <tbody>
+      <tr *ngFor="let p of productos">
+        <td>{{ p.codigo }}</td>
+        <td>{{ p.nombre }}</td>
+        <td class="text-end">{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
+        <td class="text-center">{{ p.stock }}</td>
 
-      <!-- ✅ Cantidad -->
-      <td class="text-center" style="max-width: 110px;">
-        <input
-          type="number"
-          class="form-control form-control-sm text-center"
-          [ngModel]="getQty(p.id || 0)"
-          (ngModelChange)="setQty(p.id || 0, $event, p.stock)"
-          min="1"
-          [max]="p.stock"
-        />
-      </td>
+        <!-- ✅ Cantidad -->
+        <td class="text-center" style="max-width: 110px;">
+          <input type="number" class="form-control form-control-sm text-center" [ngModel]="getQty(p.id || 0)"
+            (ngModelChange)="setQty(p.id || 0, $event, p.stock)" min="1" [max]="p.stock" />
+        </td>
 
-      <!-- ✅ Descuento -->
-      <td class="text-center" style="max-width: 110px;">
-        <input
-          type="number"
-          class="form-control form-control-sm text-center"
-          [ngModel]="getDto(p.id || 0)"
-          (ngModelChange)="setDto(p.id || 0, $event)"
-          min="0"
-          max="100"
-        />
-      </td>
+        <!-- ✅ Descuento -->
+        <td class="text-center" style="max-width: 110px;">
+          <input type="number" class="form-control form-control-sm text-center" [ngModel]="getDto(p.id || 0)"
+            (ngModelChange)="setDto(p.id || 0, $event)" min="0" max="100" />
+        </td>
 
-      <!-- ✅ Pagado -->
-      <td class="text-center" style="max-width: 130px;">
-        <input
-          type="number"
-          class="form-control form-control-sm text-center"
-          [ngModel]="getPagado(p.id || 0)"
-          (ngModelChange)="setPagado(p.id || 0, $event)"
-          min="0"
-          step="0.01"
-        />
-      </td>
+        <!-- ✅ Pagado -->
+        <td class="text-center" style="max-width: 130px;">
+          <input type="number" class="form-control form-control-sm text-center" [ngModel]="getPagado(p.id || 0)"
+            (ngModelChange)="setPagado(p.id || 0, $event)" min="0" step="0.01" />
+        </td>
 
-      <td class="text-end">
-        <button
-          class="btn btn-primary btn-sm"
-          (click)="addProducto(p)"
-          [disabled]="p.stock === 0 || getQty(p.id || 0) > p.stock"
-        >
-          ➕ Añadir
-        </button>
-      </td>
-    </tr>
+        <td class="text-end">
+          <button class="btn btn-primary btn-sm" (click)="addProducto(p)"
+            [disabled]="p.stock === 0 || getQty(p.id || 0) > p.stock">
+            ➕ Añadir
+          </button>
+        </td>
+      </tr>
 
-    <tr *ngIf="productos.length === 0">
-      <td colspan="8" class="text-muted text-center">
-        No hay productos para la empresa seleccionada.
-      </td>
-    </tr>
-  </tbody>
-</table>
-
+      <tr *ngIf="productos.length === 0">
+        <td colspan="8" class="text-muted text-center">
+          No hay productos para la empresa seleccionada.
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
   <hr class="my-4" />
+
+
 
   <!-- TRABAJOS -->
   <h5>Trabajos realizados</h5>
@@ -241,6 +221,8 @@
         <th class="text-end">Dto (%)</th>
         <th class="text-end">Importe neto (€)</th>
         <th class="text-end">Pagado (€)</th>
+        <th>Entregado</th>
+        <th>Fecha entrega</th>
         <th>Acciones</th>
       </tr>
     </thead>
@@ -253,13 +235,35 @@
         <td class="text-end">{{ t.descuento }}%</td>
         <td class="text-end">{{ getNetoTrabajo(t) | number:'1.2-2' }}</td>
         <td class="text-end">{{ t.importePagado | number:'1.2-2' }}</td>
+
         <td>
-          <button class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t.id)">Eliminar</button>
+          <span class="badge" [ngClass]="t.entregado ? 'bg-success' : 'bg-secondary'">
+            {{ t.entregado ? 'Sí' : 'No' }}
+          </span>
+        </td>
+
+        <td>
+          <span *ngIf="t.entregado; else sinFecha">
+            {{ t.fechaEntrega || t.fecha_entrega || '-' }}
+          </span>
+          <ng-template #sinFecha>-</ng-template>
+        </td>
+
+        <td>
+          <button class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t)" [disabled]="t.entregado"
+            [title]="t.entregado ? 'No se puede eliminar: ya está entregado' : 'Eliminar'">
+            Eliminar
+          </button>
+
+
+          <span *ngIf="t.entregado" class="ms-2 badge bg-light text-dark">
+            🔒 Bloqueado
+          </span>
         </td>
       </tr>
 
       <tr *ngIf="trabajos.length === 0">
-        <td colspan="7" class="text-muted">No hay trabajos registrados.</td>
+        <td colspan="9" class="text-muted">No hay trabajos registrados.</td>
       </tr>
     </tbody>
   </table>
@@ -299,19 +303,23 @@
           <input class="form-control" [(ngModel)]="nuevoTrabajo.descripcion" (ngModelChange)="onNuevoTrabajoChange()">
         </td>
         <td>
-          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.unidades" (ngModelChange)="onNuevoTrabajoChange()" min="1">
+          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.unidades"
+            (ngModelChange)="onNuevoTrabajoChange()" min="1">
         </td>
         <td>
-          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.precioUnitario" (ngModelChange)="onNuevoTrabajoChange()" step="0.01">
+          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.precioUnitario"
+            (ngModelChange)="onNuevoTrabajoChange()" step="0.01">
         </td>
         <td>
-          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.descuento" (ngModelChange)="onNuevoTrabajoChange()" min="0" max="100">
+          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.descuento"
+            (ngModelChange)="onNuevoTrabajoChange()" min="0" max="100">
         </td>
         <td class="fw-bold text-end">
           {{ getNetoNuevoTrabajo() | number:'1.2-2' }}
         </td>
         <td>
-          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.importePagado" (ngModelChange)="onNuevoTrabajoChange()" step="0.01">
+          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.importePagado"
+            (ngModelChange)="onNuevoTrabajoChange()" step="0.01">
         </td>
         <td>
           <button class="btn btn-success w-100" (click)="agregarTrabajo()">+</button>

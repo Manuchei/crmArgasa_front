@@ -37,17 +37,13 @@ import { IEventoCalendario } from '../../interfaces/ievento-calendario';
   templateUrl: './calendario-llamadas2.component.html',
   styleUrls: ['./calendario-llamadas2.component.css'],
 })
-
 export class CalendarioLlamadas2Component implements AfterViewInit {
+
   selectedDate: Date | null = null;
   fechaSeleccionadaStr: string | null = null; // yyyy-MM-dd
-
   llamadasDelDia: ILlamada[] = [];
 
-  // ✅ NUEVO: inputs del formulario (fecha + hora)
   fechaNueva: Date | null = null;
-
-  // ✅ NUEVO: hora como desplegable
   horasDisponibles: string[] = [];
   horaNueva: string = '12:00';
 
@@ -60,51 +56,53 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     private dialog: MatDialog
   ) {}
 
+  // =========================
+  // INIT
+  // =========================
   ngAfterViewInit(): void {
     this.generarHoras();
     this.cargarFechasConEventos();
+
+    // ✅ Iniciar automáticamente en el día actual
+    this.seleccionarHoy();
   }
 
-  private crearRequestVacio(): ILlamadaRequest {
-  return {
-    empresa: 'ARGASA', // luego se sobreescribe en el service igualmente
-    motivo: '',
-    fecha: '',
-    estado: 'pendiente',
-    observaciones: '',
-    clienteId: null,
-  };
-}
+  private seleccionarHoy(): void {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    this.onSelectDate(hoy);
+  }
 
+  // =========================
+  // UTILS
+  // =========================
+  private crearRequestVacio(): ILlamadaRequest {
+    return {
+      empresa: 'ARGASA',
+      motivo: '',
+      fecha: '',
+      estado: 'pendiente',
+      observaciones: '',
+      clienteId: null,
+    };
+  }
 
   private toYmd(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 
-  // ✅ NUEVO: genera horas (cada 30 min, de 08:00 a 20:30)
   private generarHoras(): void {
     const horas: string[] = [];
     for (let h = 8; h <= 22; h++) {
-      horas.push(`${String(h).padStart(2, '0')}:00`);
-      horas.push(`${String(h).padStart(2, '0')}:05`);
-      horas.push(`${String(h).padStart(2, '0')}:10`);
-      horas.push(`${String(h).padStart(2, '0')}:15`);
-      horas.push(`${String(h).padStart(2, '0')}:20`);
-      horas.push(`${String(h).padStart(2, '0')}:25`);
-      horas.push(`${String(h).padStart(2, '0')}:30`);
-      horas.push(`${String(h).padStart(2, '0')}:35`);
-      horas.push(`${String(h).padStart(2, '0')}:40`);
-      horas.push(`${String(h).padStart(2, '0')}:45`);
-      horas.push(`${String(h).padStart(2, '0')}:50`);
-      horas.push(`${String(h).padStart(2, '0')}:55`);
+      for (let m = 0; m < 60; m += 5) {
+        horas.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+      }
     }
     this.horasDisponibles = horas;
   }
 
-  // ✅ NUEVO: sincroniza fechaNueva + horaNueva => nuevaLlamada.fecha (yyyy-MM-ddTHH:mm)
   syncFechaHora(): void {
-    // Si no hay fechaNueva, intentamos usar el día seleccionado del calendario
     if (!this.fechaNueva) {
       if (this.selectedDate) this.fechaNueva = new Date(this.selectedDate);
       else return;
@@ -112,7 +110,6 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
     const ymd = this.toYmd(this.fechaNueva);
 
-    // Asegurar HH:mm
     const time =
       this.horaNueva && /^\d{2}:\d{2}$/.test(this.horaNueva)
         ? this.horaNueva
@@ -121,12 +118,9 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     this.nuevaLlamada.fecha = `${ymd}T${time}`;
   }
 
-  // ✅ reemplaza tu "preCargarHoraDefault" para trabajar con el nuevo sistema
   private preCargarHoraDefault(ymd: string): void {
-    // setear valores de UI
     this.fechaNueva = new Date(`${ymd}T00:00:00`);
     this.horaNueva = '12:00';
-    // setear valor real que se manda al backend
     this.syncFechaHora();
   }
 
@@ -143,13 +137,14 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     });
   }
 
-  // ✅ marcar días con eventos
   dateClass = (d: Date) => {
     const ymd = this.toYmd(d);
     return this.fechasConEventos.has(ymd) ? 'dia-con-evento' : '';
   };
 
-  // ✅ click en el mat-calendar grande
+  // =========================
+  // SELECCIÓN DE DÍA
+  // =========================
   onSelectDate(date: Date | null): void {
     if (!date) return;
 
@@ -158,9 +153,7 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     const ymd = this.toYmd(date);
     this.fechaSeleccionadaStr = ymd;
 
-    // ✅ precarga UI y fecha real
     this.preCargarHoraDefault(ymd);
-
     this.cargarLlamadasDelDia(ymd);
   }
 
@@ -171,24 +164,23 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     });
   }
 
+  // =========================
+  // GUARDAR
+  // =========================
   guardarLlamada(): void {
     if (!this.fechaSeleccionadaStr) return;
     if (!this.nuevaLlamada.motivo?.trim()) return;
 
-    // ✅ asegurar que la fecha se calcule desde los inputs
     this.syncFechaHora();
     if (!this.nuevaLlamada.fecha?.trim()) return;
 
-    // ✅ Asegurar yyyy-MM-ddTHH:mm
     this.nuevaLlamada.fecha = this.nuevaLlamada.fecha.substring(0, 16);
 
     this.llamadasService.crearLlamada(this.nuevaLlamada).subscribe({
       next: () => {
-        // refrescar lista y marcas
         this.cargarLlamadasDelDia(this.fechaSeleccionadaStr!);
         this.cargarFechasConEventos();
 
-        // reset del form, manteniendo el día seleccionado
         const ymd = this.fechaSeleccionadaStr!;
         this.nuevaLlamada = this.crearRequestVacio();
         this.preCargarHoraDefault(ymd);
@@ -197,6 +189,9 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     });
   }
 
+  // =========================
+  // EDITAR
+  // =========================
   editar(llamada: ILlamada): void {
     const dialogRef = this.dialog.open(DialogEditarLlamadaComponent, {
       width: '520px',

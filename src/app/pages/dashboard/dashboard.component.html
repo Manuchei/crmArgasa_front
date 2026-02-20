@@ -3,9 +3,7 @@
   <!-- KPIs -->
   <div class="row g-4 mb-4">
     <div class="col-md-3" *ngFor="let card of kpis">
-      <div class="card text-white shadow cursor-pointer"
-           [ngClass]="card.color"
-           (click)="go(card.route)">
+      <div class="card text-white shadow cursor-pointer" [ngClass]="card.color" (click)="go(card.route)">
         <div class="card-body text-center">
           <h6>{{ card.title }}</h6>
           <h2>{{ card.value }}</h2>
@@ -32,42 +30,41 @@
       📞 Próximas llamadas
     </div>
     <table class="table mb-0">
-     <thead>
-  <tr>
-    <th>Fecha</th>
-    <th>Motivo</th>
-    <th>Observaciones</th>
-    <th>Hora</th>
-    <th>Estado</th>
-  </tr>
-</thead>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Motivo</th>
+          <th>Observaciones</th>
+          <th>Hora</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
 
       <tbody>
-  <tr *ngFor="let call of calls">
-  <td>{{ call.fecha | date:'dd/MM/yyyy' }}</td>
-  <td>{{ call.motivo }}</td>
-  <td>{{ call.observaciones }}</td>
-  <td>{{ call.fecha | date:'HH:mm' }}</td>
-  <td>
-    <span class="estado-pill"
-      [ngClass]="{
+        <tr *ngFor="let call of calls">
+          <td>{{ call.fecha | date:'dd/MM/yyyy' }}</td>
+          <td>{{ call.motivo }}</td>
+          <td>{{ call.observaciones }}</td>
+          <td>{{ call.fecha | date:'HH:mm' }}</td>
+          <td>
+            <span class="estado-pill" [ngClass]="{
         'estado-pendiente': (call.estado || '').toLowerCase() === 'pendiente',
         'estado-realizada': (call.estado || '').toLowerCase() === 'realizada',
         'estado-cancelada': (call.estado || '').toLowerCase() === 'cancelada'
       }">
-      {{ call.estado || 'pendiente' }}
-    </span>
-  </td>
-</tr>
+              {{ call.estado || 'pendiente' }}
+            </span>
+          </td>
+        </tr>
 
 
-  <tr *ngIf="calls.length === 0">
-    <td colspan="5" class="text-center text-muted">
-  No hay llamadas próximas
-</td>
+        <tr *ngIf="calls.length === 0">
+          <td colspan="5" class="text-center text-muted">
+            No hay llamadas próximas
+          </td>
 
-  </tr>
-</tbody>
+        </tr>
+      </tbody>
 
     </table>
   </div>

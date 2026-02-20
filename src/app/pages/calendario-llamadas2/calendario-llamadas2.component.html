@@ -7,6 +7,7 @@
         <mat-card-title>📅 Calendario</mat-card-title>
 
         <mat-calendar
+          [selected]="selectedDate"
           [dateClass]="dateClass"
           (selectedChange)="onSelectDate($event)">
         </mat-calendar>
@@ -46,14 +47,14 @@
                     <div class="item-title">{{ l.motivo }}</div>
                     <div class="item-meta">
                       <span class="meta-pill">🕒 {{ l.fecha | date:'HH:mm' }}</span>
-                     <span class="estado-pill" [ngClass]="{
-  'estado-pendiente': (l.estado || '').toLowerCase() === 'pendiente',
-  'estado-realizada': (l.estado || '').toLowerCase() === 'realizada',
-  'estado-cancelada': (l.estado || '').toLowerCase() === 'cancelada'
-}">
-  {{ l.estado }}
-</span>
 
+                      <span class="estado-pill" [ngClass]="{
+                        'estado-pendiente': (l.estado || '').toLowerCase() === 'pendiente',
+                        'estado-realizada': (l.estado || '').toLowerCase() === 'realizada',
+                        'estado-cancelada': (l.estado || '').toLowerCase() === 'cancelada'
+                      }">
+                        {{ l.estado }}
+                      </span>
                     </div>
                   </div>
 
@@ -100,7 +101,6 @@
               <input matInput [(ngModel)]="nuevaLlamada.motivo" name="motivo" />
             </mat-form-field>
 
-            <!-- ✅ Fecha (datepicker) + Hora (DESPLEGABLE) -->
             <div class="row g-2">
               <div class="col-md-7">
                 <mat-form-field appearance="outline" class="w-100">
@@ -117,8 +117,6 @@
 
                   <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                   <mat-datepicker #picker></mat-datepicker>
-
-                  <mat-hint>Elige el día</mat-hint>
                 </mat-form-field>
               </div>
 
@@ -136,15 +134,8 @@
                       {{ h }}
                     </mat-option>
                   </mat-select>
-
-                  <mat-hint>Elige la hora</mat-hint>
                 </mat-form-field>
               </div>
-            </div>
-
-            <!-- (Opcional) mostrar el valor real que se enviará -->
-            <div class="text-muted small mb-2" *ngIf="nuevaLlamada.fecha">
-              Se guardará como: <strong>{{ nuevaLlamada.fecha }}</strong>
             </div>
 
             <mat-form-field appearance="outline" class="w-100">
@@ -162,8 +153,8 @@
                 matInput
                 rows="3"
                 [(ngModel)]="nuevaLlamada.observaciones"
-                name="obs"
-              ></textarea>
+                name="obs">
+              </textarea>
             </mat-form-field>
 
             <div class="form-actions">
@@ -171,10 +162,7 @@
                 type="submit"
                 mat-raised-button
                 color="primary"
-                class="btn-save"
-                [disabled]="!selectedDate"
-                title="Selecciona un día en el calendario para guardar"
-              >
+                [disabled]="!selectedDate">
                 Guardar llamada
               </button>
             </div>

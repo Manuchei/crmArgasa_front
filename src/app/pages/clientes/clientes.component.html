@@ -9,13 +9,8 @@
     </div>
 
     <div class="col-md-6 col-sm-12 mb-2 mb-md-0">
-      <input
-        type="text"
-        class="form-control text-center"
-        placeholder="Buscar por nombre, CIF/DNI, email o teléfono"
-        [(ngModel)]="textoBusqueda"
-        (input)="buscar()"
-      />
+      <input type="text" class="form-control text-center" placeholder="Buscar por nombre, CIF/DNI, email o teléfono"
+        [(ngModel)]="textoBusqueda" (input)="buscar()" />
     </div>
   </div>
 
@@ -42,15 +37,13 @@
         <td>{{ c.cifDni }}</td>
         <td>{{ c.email }}</td>
 
-        <td>{{ c.totalImporte || 0 | number: '1.2-2' }}</td>
-        <td class="pagado">{{ c.totalPagado || 0 | number: '1.2-2' }}</td>
+        <td>{{ (c.totalImporte || 0) | number: '1.2-2' }}</td>
+        <td class="pagado">{{ (c.totalPagado || 0) | number: '1.2-2' }}</td>
 
-        <td
-          [ngClass]="{
+        <td [ngClass]="{
             'text-success': (c.totalPagado || 0) - (c.totalImporte || 0) >= 0,
             'text-danger': (c.totalPagado || 0) - (c.totalImporte || 0) < 0
-          }"
-        >
+          }">
           {{ (c.totalPagado || 0) - (c.totalImporte || 0) | number: '1.2-2' }}
         </td>
 
@@ -67,7 +60,7 @@
             <i class="bi bi-trash"></i> Eliminar
           </button>
 
-          
+
 
           <!-- <button
             class="btn btn-sm btn-dark"
