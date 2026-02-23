@@ -24,7 +24,7 @@ export class ClienteDetalleComponent implements OnInit {
   clienteId!: number;
 
   // ✅ productos comprados del cliente (cliente_producto)
-  // Backend: [{ productoId, codigo, nombre, cantidad, entregado, fechaEntrega }]
+  // Backend: [{ productoId, codigo, nombre, cantidad, entregado, fechaEntrega, ... }]
   clienteProductos: any[] = [];
 
   // ✅ Maps por productoId
@@ -207,7 +207,6 @@ export class ClienteDetalleComponent implements OnInit {
     return cp?.entregado === true;
   }
 
-  // ✅ MODIFICADO: ahora recarga clienteProductos + catálogo + trabajos
   eliminarProductoCliente(cp: any): void {
     if (!cp || this.isEntregado(cp)) {
       alert('No se puede eliminar: el producto ya está entregado.');
@@ -229,12 +228,13 @@ export class ClienteDetalleComponent implements OnInit {
       .subscribe({
         next: () => {
           this.cargarClienteProductos(this.clienteId);
-          this.cargarProductos(); // ✅ stock real
           this.cargarTrabajos(this.clienteId);
+          this.cargarProductos(); // ✅ stock real BD tras devolver
         },
         error: (err) => {
           console.error(err);
           alert('No se pudo eliminar el producto del cliente.');
+          this.cargarProductos();
         },
       });
   }
@@ -246,31 +246,46 @@ export class ClienteDetalleComponent implements OnInit {
   // ---------------- TRABAJOS ----------------
   private normalizarTrabajos(): void {
     this.trabajos = (this.trabajos ?? []).map((t) => {
-      const importeLegacy = ClienteDetalleComponent.toNumber(t?.importe);
+      // ✅ Compatibilidad con el DTO nuevo:
+      // - nombre -> descripcion
+      // - cantidad -> unidades
+      // - pagado -> importePagado
+      const descripcion =
+        t?.descripcion != null && String(t.descripcion).trim().length > 0
+          ? t.descripcion
+          : (t?.nombre ?? '');
 
+      const unidadesRaw = t?.unidades != null ? t.unidades : t?.cantidad;
       const unidades =
-        t?.unidades != null ? ClienteDetalleComponent.toNumber(t.unidades) : 1;
+        unidadesRaw != null ? ClienteDetalleComponent.toNumber(unidadesRaw) : 1;
 
       const precioUnitario =
         t?.precioUnitario != null
           ? ClienteDetalleComponent.toNumber(t.precioUnitario)
-          : t?.importeUnitario != null
-            ? ClienteDetalleComponent.toNumber(t.importeUnitario)
-            : importeLegacy;
+          : 0;
 
       const descuento =
         t?.descuento != null
           ? ClienteDetalleComponent.toNumber(t.descuento)
           : 0;
 
+      const importePagado =
+        t?.importePagado != null
+          ? ClienteDetalleComponent.toNumber(t.importePagado)
+          : t?.pagado != null
+            ? ClienteDetalleComponent.toNumber(t.pagado)
+            : 0;
+
       const entregado = t?.entregado === true;
       const fechaEntrega = t?.fechaEntrega ?? t?.fecha_entrega ?? null;
 
       return {
         ...t,
+        descripcion,
         unidades: unidades <= 0 ? 1 : unidades,
         precioUnitario: precioUnitario < 0 ? 0 : precioUnitario,
         descuento: descuento < 0 ? 0 : descuento,
+        importePagado: importePagado < 0 ? 0 : importePagado,
         entregado,
         fechaEntrega,
       };
@@ -330,14 +345,26 @@ export class ClienteDetalleComponent implements OnInit {
   agregarTrabajo(): void {
     if (!this.cliente?.id) return;
 
-    const desc = ClienteDetalleComponent.safeTrim(this.nuevoTrabajo.descripcion);
-    const unidades = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.unidades);
-    const precioUnitario = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.precioUnitario);
-    const descuento = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.descuento);
-    const pagadoInicial = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.importePagado);
+    const desc = ClienteDetalleComponent.safeTrim(
+      this.nuevoTrabajo.descripcion,
+    );
+    const unidades = ClienteDetalleComponent.toNumber(
+      this.nuevoTrabajo.unidades,
+    );
+    const precioUnitario = ClienteDetalleComponent.toNumber(
+      this.nuevoTrabajo.precioUnitario,
+    );
+    const descuento = ClienteDetalleComponent.toNumber(
+      this.nuevoTrabajo.descuento,
+    );
+    const pagadoInicial = ClienteDetalleComponent.toNumber(
+      this.nuevoTrabajo.importePagado,
+    );
 
     if (!desc || unidades <= 0 || precioUnitario <= 0) {
-      alert('Debes introducir descripción, unidades (>0) y precio unitario (>0).');
+      alert(
+        'Debes introducir descripción, unidades (>0) y precio unitario (>0).',
+      );
       return;
     }
     if (descuento < 0 || descuento > 100) {
@@ -362,9 +389,13 @@ export class ClienteDetalleComponent implements OnInit {
     const empresa = this.getEmpresaActual();
 
     this.http
-      .post(`${this.apiUrl}/trabajos/cliente/${this.cliente.id}`, trabajoAEnviar, {
-        headers: { 'X-Empresa': empresa },
-      })
+      .post(
+        `${this.apiUrl}/trabajos/cliente/${this.cliente.id}`,
+        trabajoAEnviar,
+        {
+          headers: { 'X-Empresa': empresa },
+        },
+      )
       .subscribe({
         next: () => {
           this.cargarTrabajos(this.cliente.id);
@@ -387,7 +418,11 @@ export class ClienteDetalleComponent implements OnInit {
       });
   }
 
-  // ✅ MODIFICADO: al borrar trabajo, también recarga productos
+  /**
+   * ✅ CORREGIDO:
+   * - SIEMPRE borra por /trabajos/{id}
+   * - El backend se encarga de reponer stock si el trabajo tenía productoId
+   */
   eliminarTrabajo(t: any): void {
     if (!this.cliente?.id) return;
 
@@ -396,17 +431,21 @@ export class ClienteDetalleComponent implements OnInit {
       return;
     }
 
+    if (!confirm('¿Seguro que deseas eliminar este trabajo?')) return;
+
     const id = Number(t?.id);
     if (!id) return;
-
-    if (!confirm('¿Seguro que deseas eliminar este trabajo?')) return;
 
     this.http.delete(`${this.apiUrl}/trabajos/${id}`).subscribe({
       next: () => {
         this.cargarTrabajos(this.cliente.id);
-        this.cargarProductos(); // ✅ stock real
+        this.cargarClienteProductos(this.clienteId);
+        this.cargarProductos();
       },
-      error: (err) => console.error('Error al eliminar trabajo:', err),
+      error: (err) => {
+        console.error('Error al eliminar trabajo:', err);
+        alert('No se pudo eliminar el trabajo.');
+      },
     });
   }
 
@@ -484,7 +523,9 @@ export class ClienteDetalleComponent implements OnInit {
     const fecha = ClienteDetalleComponent.safeTrim(this.nuevoPago.fecha);
     const importe = ClienteDetalleComponent.toNumber(this.nuevoPago.importe);
     const metodo = ClienteDetalleComponent.safeTrim(this.nuevoPago.metodo);
-    const observaciones = ClienteDetalleComponent.safeTrim(this.nuevoPago.observaciones);
+    const observaciones = ClienteDetalleComponent.safeTrim(
+      this.nuevoPago.observaciones,
+    );
 
     if (!ClienteDetalleComponent.isValidISODate(fecha)) {
       alert('Fecha inválida.');
@@ -553,13 +594,6 @@ export class ClienteDetalleComponent implements OnInit {
     });
   }
 
-  getTotalPagos(): number {
-    return (this.pagos ?? []).reduce(
-      (acc, p) => acc + ClienteDetalleComponent.toNumber(p?.importe),
-      0,
-    );
-  }
-
   // ---------------- TOTALES ----------------
   calcularTotales(): void {
     const totalTrabajos = (this.trabajos ?? []).reduce(
@@ -567,9 +601,13 @@ export class ClienteDetalleComponent implements OnInit {
       0,
     );
 
-    const desc = ClienteDetalleComponent.safeTrim(this.nuevoTrabajo.descripcion);
+    const desc = ClienteDetalleComponent.safeTrim(
+      this.nuevoTrabajo.descripcion,
+    );
     const u = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.unidades);
-    const p = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.precioUnitario);
+    const p = ClienteDetalleComponent.toNumber(
+      this.nuevoTrabajo.precioUnitario,
+    );
 
     const incluirBorrador = desc.length > 0 && u > 0 && p > 0;
     const netoBorrador = incluirBorrador ? this.getNetoNuevoTrabajo() : 0;
@@ -584,11 +622,15 @@ export class ClienteDetalleComponent implements OnInit {
     );
 
     const pagadoBorrador = incluirBorrador
-      ? Math.max(0, ClienteDetalleComponent.toNumber(this.nuevoTrabajo.importePagado))
+      ? Math.max(
+          0,
+          ClienteDetalleComponent.toNumber(this.nuevoTrabajo.importePagado),
+        )
       : 0;
 
     const totalImporte = totalTrabajos + netoBorrador;
-    const totalPagado = pagadoHistorial + pagadoInicialTrabajos + pagadoBorrador;
+    const totalPagado =
+      pagadoHistorial + pagadoInicialTrabajos + pagadoBorrador;
 
     this.cliente = {
       ...this.cliente,
@@ -596,18 +638,6 @@ export class ClienteDetalleComponent implements OnInit {
       totalPagado,
       saldoPendiente: totalImporte - totalPagado,
     };
-  }
-
-  getTotalImporte(): number {
-    return ClienteDetalleComponent.toNumber(this.cliente?.totalImporte);
-  }
-
-  getTotalPagado(): number {
-    return ClienteDetalleComponent.toNumber(this.cliente?.totalPagado);
-  }
-
-  getSaldoPendiente(): number {
-    return ClienteDetalleComponent.toNumber(this.cliente?.saldoPendiente);
   }
 
   // ---------------- CATÁLOGO PRODUCTOS ----------------
@@ -633,7 +663,6 @@ export class ClienteDetalleComponent implements OnInit {
     });
   }
 
-  // ✅ MODIFICADO: ahora recarga productos al final
   addProducto(p: IProducto): void {
     if (!this.clienteId) return;
 
@@ -663,24 +692,20 @@ export class ClienteDetalleComponent implements OnInit {
         empresa,
       )
       .subscribe({
-        next: (trabajoCreado: any) => {
+        next: () => {
+          // optimista stock
           (p as any).stock = stock - cantidad;
 
+          // reset inputs
           this.qtyMap[productoId] = 1;
           this.dtoMap[productoId] = 0;
           this.pagadoMap[productoId] = 0;
 
-          if (trabajoCreado) {
-            this.trabajos = [trabajoCreado, ...(this.trabajos ?? [])];
-            this.normalizarTrabajos();
-            this.calcularTotales();
-          } else {
-            this.cargarTrabajos(this.clienteId);
-          }
+          // ✅ RECARGA SIEMPRE desde backend (evita DTOs incompletos en pantalla)
+          this.cargarTrabajos(this.clienteId);
 
+          // refrescar cliente_productos y catálogo
           this.cargarClienteProductos(this.clienteId);
-
-          // ✅ CLAVE: recargar catálogo para stock REAL
           this.cargarProductos();
         },
         error: (err: HttpErrorResponse) => {
@@ -689,9 +714,12 @@ export class ClienteDetalleComponent implements OnInit {
           const msg =
             typeof (err as any)?.error === 'string'
               ? (err as any).error
-              : ((err as any)?.error?.message ?? 'No se pudo añadir el producto');
+              : ((err as any)?.error?.message ??
+                'No se pudo añadir el producto');
 
           alert(msg);
+
+          // volver a estado real
           this.cargarProductos();
         },
       });

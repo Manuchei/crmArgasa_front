@@ -1,17 +1,20 @@
 <div class="container mt-4" *ngIf="cliente">
-
   <!-- CABECERA -->
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
     <div>
       <h3 class="mb-1">{{ cliente.nombreApellidos }}</h3>
       <div class="text-muted">
-        <span *ngIf="cliente.nombreComercial"><b>Nombre comercial:</b> {{ cliente.nombreComercial }}</span>
-        <span *ngIf="cliente.cifDni" class="ms-3"><b>CIF/DNI:</b> {{ cliente.cifDni }}</span>
+        <span *ngIf="cliente.nombreComercial">
+          <b>Nombre comercial:</b> {{ cliente.nombreComercial }}
+        </span>
+        <span *ngIf="cliente.cifDni" class="ms-3">
+          <b>CIF/DNI:</b> {{ cliente.cifDni }}
+        </span>
       </div>
     </div>
 
     <div class="d-flex gap-2">
-      <button class="btn btn-dark" (click)="crearAlbaran()" [disabled]="creandoAlbaran">
+      <button type="button" class="btn btn-dark" (click)="crearAlbaran()" [disabled]="creandoAlbaran">
         <span *ngIf="!creandoAlbaran">🧾 Crear albarán</span>
         <span *ngIf="creandoAlbaran">Creando...</span>
       </button>
@@ -23,7 +26,9 @@
     <div class="col-md-6">
       <div class="p-3 border rounded shadow-sm bg-white">
         <div><b>Dirección:</b> {{ cliente.direccion }}</div>
-        <div><b>CP / Población:</b> {{ cliente.codigoPostal }} - {{ cliente.poblacion }}</div>
+        <div>
+          <b>CP / Población:</b> {{ cliente.codigoPostal }} - {{ cliente.poblacion }}
+        </div>
         <div><b>Provincia:</b> {{ cliente.provincia }}</div>
       </div>
     </div>
@@ -57,20 +62,26 @@
         <td>#{{ a.id }}</td>
         <td>{{ a.empresa }}</td>
         <td>{{ a.fechaEmision || '-' }}</td>
-        <td>{{ (a.total || a.totalImporte || 0) | number:'1.2-2' }} €</td>
+        <td>{{ (a.total || a.totalImporte || 0) | number: '1.2-2' }} €</td>
         <td>
           <span class="badge" [ngClass]="a.confirmado ? 'bg-success' : 'bg-secondary'">
             {{ a.confirmado ? 'Sí' : 'No' }}
           </span>
         </td>
         <td>
-          <button class="btn btn-sm btn-primary" (click)="verAlbaran(a)">Ver</button>
-          <button class="btn btn-sm btn-outline-dark" (click)="imprimirAlbaran(a)">Imprimir</button>
+          <button type="button" class="btn btn-sm btn-primary" (click)="verAlbaran(a)">
+            Ver
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-dark" (click)="imprimirAlbaran(a)">
+            Imprimir
+          </button>
         </td>
       </tr>
 
       <tr *ngIf="albaranes.length === 0">
-        <td colspan="6" class="text-muted">Este cliente no tiene albaranes todavía.</td>
+        <td colspan="6" class="text-muted">
+          Este cliente no tiene albaranes todavía.
+        </td>
       </tr>
     </tbody>
   </table>
@@ -87,7 +98,7 @@
   <div class="d-flex justify-content-between align-items-center">
     <h5 class="mb-0">Historial de pagos</h5>
     <div class="fw-bold">
-      Total pagado (historial): {{ getTotalPagos() | number:'1.2-2' }} €
+      Total pagado (historial): {{ (cliente?.totalPagado || 0) | number: '1.2-2' }} €
     </div>
   </div>
 
@@ -104,16 +115,20 @@
     <tbody>
       <tr *ngFor="let p of pagos">
         <td>{{ p.fecha || '-' }}</td>
-        <td>{{ p.importe | number:'1.2-2' }}</td>
+        <td>{{ p.importe | number: '1.2-2' }}</td>
         <td>{{ p.metodo || '-' }}</td>
         <td class="text-start">{{ p.observaciones || '-' }}</td>
         <td>
-          <button class="btn btn-sm btn-danger" (click)="eliminarPago(p.id)">Eliminar</button>
+          <button type="button" class="btn btn-sm btn-danger" (click)="eliminarPago(p.id)">
+            Eliminar
+          </button>
         </td>
       </tr>
 
       <tr *ngIf="pagos.length === 0">
-        <td colspan="5" class="text-muted">Este cliente no tiene pagos registrados.</td>
+        <td colspan="5" class="text-muted">
+          Este cliente no tiene pagos registrados.
+        </td>
       </tr>
     </tbody>
   </table>
@@ -122,20 +137,20 @@
   <h6 class="mt-3">Registrar nuevo pago</h6>
   <div class="row g-2">
     <div class="col-md-3">
-      <input type="date" class="form-control" [(ngModel)]="nuevoPago.fecha">
+      <input type="date" class="form-control" [(ngModel)]="nuevoPago.fecha" />
     </div>
     <div class="col-md-3">
-      <input type="number" class="form-control" [(ngModel)]="nuevoPago.importe" placeholder="Importe">
+      <input type="number" class="form-control" [(ngModel)]="nuevoPago.importe" placeholder="Importe" />
     </div>
     <div class="col-md-3">
-      <input type="text" class="form-control" [(ngModel)]="nuevoPago.metodo" placeholder="Método">
+      <input type="text" class="form-control" [(ngModel)]="nuevoPago.metodo" placeholder="Método" />
     </div>
     <div class="col-md-3">
-      <input type="text" class="form-control" [(ngModel)]="nuevoPago.observaciones" placeholder="Observaciones">
+      <input type="text" class="form-control" [(ngModel)]="nuevoPago.observaciones" placeholder="Observaciones" />
     </div>
   </div>
 
-  <button class="btn btn-success w-100 mt-2" (click)="agregarPago()" [disabled]="creandoPago">
+  <button type="button" class="btn btn-success w-100 mt-2" (click)="agregarPago()" [disabled]="creandoPago">
     <span *ngIf="!creandoPago">Registrar pago</span>
     <span *ngIf="creandoPago">...</span>
   </button>
@@ -146,7 +161,7 @@
   <div class="d-flex justify-content-between align-items-center mt-4">
     <h4 class="mb-0">Añadir producto</h4>
 
-    <button class="btn btn-outline-primary btn-sm" (click)="cargarProductos()">
+    <button type="button" class="btn btn-outline-primary btn-sm" (click)="cargarProductos()">
       🔄 Recargar productos
     </button>
   </div>
@@ -169,29 +184,31 @@
       <tr *ngFor="let p of productos">
         <td>{{ p.codigo }}</td>
         <td>{{ p.nombre }}</td>
-        <td class="text-end">{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
+        <td class="text-end">
+          {{ (p.precioSinIva || 0) | number: '1.2-2' }} €
+        </td>
         <td class="text-center">{{ p.stock }}</td>
 
         <!-- ✅ Cantidad -->
-        <td class="text-center" style="max-width: 110px;">
+        <td class="text-center" style="max-width: 110px">
           <input type="number" class="form-control form-control-sm text-center" [ngModel]="getQty(p.id || 0)"
             (ngModelChange)="setQty(p.id || 0, $event, p.stock)" min="1" [max]="p.stock" />
         </td>
 
         <!-- ✅ Descuento -->
-        <td class="text-center" style="max-width: 110px;">
+        <td class="text-center" style="max-width: 110px">
           <input type="number" class="form-control form-control-sm text-center" [ngModel]="getDto(p.id || 0)"
             (ngModelChange)="setDto(p.id || 0, $event)" min="0" max="100" />
         </td>
 
         <!-- ✅ Pagado -->
-        <td class="text-center" style="max-width: 130px;">
+        <td class="text-center" style="max-width: 130px">
           <input type="number" class="form-control form-control-sm text-center" [ngModel]="getPagado(p.id || 0)"
             (ngModelChange)="setPagado(p.id || 0, $event)" min="0" step="0.01" />
         </td>
 
         <td class="text-end">
-          <button class="btn btn-primary btn-sm" (click)="addProducto(p)"
+          <button type="button" class="btn btn-primary btn-sm" (click)="addProducto(p)"
             [disabled]="p.stock === 0 || getQty(p.id || 0) > p.stock">
             ➕ Añadir
           </button>
@@ -207,8 +224,6 @@
   </table>
 
   <hr class="my-4" />
-
-
 
   <!-- TRABAJOS -->
   <h5>Trabajos realizados</h5>
@@ -231,10 +246,10 @@
       <tr *ngFor="let t of trabajos">
         <td class="text-start">{{ t.descripcion }}</td>
         <td class="text-end">{{ t.unidades }}</td>
-        <td class="text-end">{{ t.precioUnitario | number:'1.2-2' }}</td>
+        <td class="text-end">{{ t.precioUnitario | number: '1.2-2' }}</td>
         <td class="text-end">{{ t.descuento }}%</td>
-        <td class="text-end">{{ getNetoTrabajo(t) | number:'1.2-2' }}</td>
-        <td class="text-end">{{ t.importePagado | number:'1.2-2' }}</td>
+        <td class="text-end">{{ getNetoTrabajo(t) | number: '1.2-2' }}</td>
+        <td class="text-end">{{ t.importePagado | number: '1.2-2' }}</td>
 
         <td>
           <span class="badge" [ngClass]="t.entregado ? 'bg-success' : 'bg-secondary'">
@@ -250,11 +265,14 @@
         </td>
 
         <td>
-          <button class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t)" [disabled]="t.entregado"
-            [title]="t.entregado ? 'No se puede eliminar: ya está entregado' : 'Eliminar'">
+          <button type="button" class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t)" [disabled]="t.entregado"
+            [title]="
+              t.entregado
+                ? 'No se puede eliminar: ya está entregado'
+                : 'Eliminar'
+            ">
             Eliminar
           </button>
-
 
           <span *ngIf="t.entregado" class="ms-2 badge bg-light text-dark">
             🔒 Bloqueado
@@ -270,12 +288,17 @@
 
   <!-- TOTALES -->
   <div class="text-end mt-3 fw-bold">
-    <p>Total: {{ getTotalImporte() | number:'1.2-2' }} €</p>
-    <p class="text-success">Pagado: {{ getTotalPagado() | number:'1.2-2' }} €</p>
+    <p>Total: {{ (cliente?.totalImporte || 0) | number: '1.2-2' }} €</p>
+    <p class="text-success">
+      Pagado: {{ (cliente?.totalPagado || 0) | number: '1.2-2' }} €
+    </p>
     <p>
       <b>Saldo pendiente:</b>
-      <span [ngClass]="{ 'text-danger': getSaldoPendiente() > 0, 'text-success': getSaldoPendiente() <= 0 }">
-        {{ getSaldoPendiente() | number:'1.2-2' }} €
+      <span [ngClass]="{
+          'text-danger': (cliente?.saldoPendiente || 0) > 0,
+          'text-success': (cliente?.saldoPendiente || 0) <= 0
+        }">
+        {{ (cliente?.saldoPendiente || 0) | number: '1.2-2' }} €
       </span>
     </p>
   </div>
@@ -300,36 +323,39 @@
     <tbody>
       <tr>
         <td>
-          <input class="form-control" [(ngModel)]="nuevoTrabajo.descripcion" (ngModelChange)="onNuevoTrabajoChange()">
+          <input class="form-control" [(ngModel)]="nuevoTrabajo.descripcion" (ngModelChange)="onNuevoTrabajoChange()" />
         </td>
         <td>
           <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.unidades"
-            (ngModelChange)="onNuevoTrabajoChange()" min="1">
+            (ngModelChange)="onNuevoTrabajoChange()" min="1" />
         </td>
         <td>
           <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.precioUnitario"
-            (ngModelChange)="onNuevoTrabajoChange()" step="0.01">
+            (ngModelChange)="onNuevoTrabajoChange()" step="0.01" />
         </td>
         <td>
           <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.descuento"
-            (ngModelChange)="onNuevoTrabajoChange()" min="0" max="100">
+            (ngModelChange)="onNuevoTrabajoChange()" min="0" max="100" />
         </td>
         <td class="fw-bold text-end">
-          {{ getNetoNuevoTrabajo() | number:'1.2-2' }}
+          {{ getNetoNuevoTrabajo() | number: '1.2-2' }}
         </td>
         <td>
           <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.importePagado"
-            (ngModelChange)="onNuevoTrabajoChange()" step="0.01">
+            (ngModelChange)="onNuevoTrabajoChange()" step="0.01" />
         </td>
         <td>
-          <button class="btn btn-success w-100" (click)="agregarTrabajo()">+</button>
+          <button type="button" class="btn btn-success w-100" (click)="agregarTrabajo()">
+            +
+          </button>
         </td>
       </tr>
     </tbody>
   </table>
 
   <div class="text-end mt-3">
-    <button class="btn btn-secondary" (click)="volverAClientes()">Volver a clientes</button>
+    <button type="button" class="btn btn-secondary" (click)="volverAClientes()">
+      Volver a clientes
+    </button>
   </div>
-
 </div>

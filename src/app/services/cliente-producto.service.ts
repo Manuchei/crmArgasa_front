@@ -18,20 +18,15 @@ export class ClienteProductoService {
   ): Observable<any> {
     const headers = new HttpHeaders({ 'X-Empresa': empresa });
 
-    const body = {
-      cantidad,
-      descuento,
-      importePagado,
-    };
+    const body = { cantidad, descuento, importePagado };
 
-    return this.http.post(
+    return this.http.post<any>(
       `${this.apiUrl}/${clienteId}/productos/${productoId}`,
       body,
       { headers },
     );
   }
 
-  // ✅ Listar productos asignados a un cliente
   getProductosCliente(clienteId: number, empresa?: string): Observable<any[]> {
     const headers = empresa
       ? new HttpHeaders({ 'X-Empresa': empresa })
@@ -42,8 +37,6 @@ export class ClienteProductoService {
     });
   }
 
-  // ✅ Eliminar un producto asignado a un cliente (por clienteId + productoId)
-  // Endpoint esperado: DELETE /api/clientes/{clienteId}/productos/{productoId}
   deleteProductoCliente(
     clienteId: number,
     productoId: number,
@@ -53,14 +46,12 @@ export class ClienteProductoService {
       ? new HttpHeaders({ 'X-Empresa': empresa })
       : undefined;
 
-    return this.http.delete(
+    return this.http.delete<any>(
       `${this.apiUrl}/${clienteId}/productos/${productoId}`,
       { headers },
     );
   }
 
-  // ✅ Alternativa si tu backend borra por ID del registro cliente_producto
-  // Endpoint esperado: DELETE /api/clientes/productos/{clienteProductoId}
   deleteProductoClienteById(
     clienteProductoId: number,
     empresa?: string,
@@ -69,7 +60,7 @@ export class ClienteProductoService {
       ? new HttpHeaders({ 'X-Empresa': empresa })
       : undefined;
 
-    return this.http.delete(
+    return this.http.delete<any>(
       `${this.apiUrl}/productos/${clienteProductoId}`,
       { headers },
     );
