@@ -67,4 +67,11 @@ export class ClientesService {
     const { empresa, saldoDebe, saldoPagado, pendiente, ...resto } = cliente;
     return resto;
   }
+
+  getProductosCliente(clienteId: number, empresa: string) {
+  return this.http.get<any[]>(
+    `http://localhost:9018/api/clientes/${clienteId}/productos`,
+    { params: { empresa } }
+  );
+}
 }
