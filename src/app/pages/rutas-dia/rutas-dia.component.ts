@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import { RutaService } from '../../services/ruta.service';
 import { ClientesService } from '../../services/cliente.service';
@@ -17,16 +18,19 @@ import { RutaDiaRequestDTO } from '../../interfaces/iruta-dia';
   styleUrls: ['./rutas-dia.component.css'],
 })
 export class RutasDiaComponent implements OnInit {
+  // ✅ PON AQUÍ LA RUTA REAL DEL LISTADO
+  private readonly RUTAS_LISTADO_URL = '/rutas';
+
   fecha = '';
   transportista = '';
   emailTransportista = '';
   estado = 'pendiente';
 
   clientes: any[] = [];
-
   rutas: any[] = [this.nuevaFila()];
 
   constructor(
+    private router: Router,
     private rutaService: RutaService,
     private clientesService: ClientesService,
     private productoService: ProductoServiceService,
@@ -37,15 +41,18 @@ export class RutasDiaComponent implements OnInit {
     this.cargarClientes();
   }
 
+  volverAListado(): void {
+    this.router.navigate(['/app/rutas']);
+  }
+
   private nuevaFila(): any {
     return {
       clienteId: null,
       tarea: '',
       observaciones: '',
       productos: [],
-
       // UI
-      productosCliente: [], // [{id,nombre,stock}]  <-- AQUÍ stock = PENDIENTE del cliente
+      productosCliente: [],
       productoSel: null,
       cantidadSel: 1,
     };
@@ -77,18 +84,12 @@ export class RutasDiaComponent implements OnInit {
     return c?.id != null ? `ID ${c.id}` : '';
   }
 
-  private getEmpresaSeleccionada(): string {
-    const svc: any = this.empresaService as any;
+  private getEmpresaSeleccionada(): 'ARGASA' | 'ELECTROLUGA' {
+    const emp = (localStorage.getItem('empresa_activa') || 'ARGASA')
+      .toUpperCase()
+      .trim();
 
-    const empresa =
-      (typeof svc.getEmpresaSeleccionada === 'function' &&
-        svc.getEmpresaSeleccionada()) ||
-      (typeof svc.getEmpresa === 'function' && svc.getEmpresa()) ||
-      localStorage.getItem('empresa') ||
-      localStorage.getItem('empresaSeleccionada') ||
-      'ARGASA';
-
-    return (empresa ?? '').toString().trim();
+    return emp === 'ELECTROLUGA' ? 'ELECTROLUGA' : 'ARGASA';
   }
 
   cargarClientes(): void {
@@ -101,8 +102,6 @@ export class RutasDiaComponent implements OnInit {
     });
   }
 
-  // ✅ cuando cambias cliente: cargo SUS productos y NORMALIZO
-  // IMPORTANTE: stock = pendiente (cantidadTotal - cantidadEntregada)
   onClienteChange(i: number): void {
     const r = this.rutas[i];
 
@@ -122,8 +121,6 @@ export class RutasDiaComponent implements OnInit {
 
         r.productosCliente = data
           .map((x: any) => {
-            // Normalmente viene ClienteProducto:
-            // { producto:{id,nombre...}, cantidadTotal, cantidadEntregada, estado ... }
             const prod = x?.producto ?? x;
 
             const id =
@@ -148,7 +145,6 @@ export class RutasDiaComponent implements OnInit {
               x?.cantidadEntregada ?? x?.entregada ?? x?.cantidadEntregado ?? 0,
             );
 
-            // ✅ si el backend ya manda "pendiente", úsalo
             const pendienteBackend = x?.pendiente ?? x?.pendienteReal;
 
             let pendiente = 0;
@@ -160,9 +156,7 @@ export class RutasDiaComponent implements OnInit {
 
             if (!id) return null;
 
-            // stock = pendiente del cliente (mínimo 0)
             const stock = Math.max(Number(pendiente) || 0, 0);
-
             return { id: Number(id), nombre: (nombre ?? '').toString(), stock };
           })
           .filter(Boolean);
@@ -180,12 +174,7 @@ export class RutasDiaComponent implements OnInit {
     if (this.rutas.length === 0) this.rutas.push(this.nuevaFila());
   }
 
-  // =========================
-  // ✅ STOCK / VALIDACIONES UI
-  // =========================
-
   private getStockProductoPendiente(productoId: number): number {
-    // aquí el "stock" es el PENDIENTE del cliente en la fila (productosCliente)
     for (const r of this.rutas) {
       const p = (r.productosCliente ?? []).find(
         (x: any) => Number(x.id) === Number(productoId),
@@ -196,7 +185,6 @@ export class RutasDiaComponent implements OnInit {
   }
 
   private getReservadoFormulario(productoId: number): number {
-    // suma de lo ya añadido en TODAS las rutas del formulario (para no pasarte)
     let total = 0;
     for (const r of this.rutas) {
       for (const it of r.productos ?? []) {
@@ -236,7 +224,6 @@ export class RutasDiaComponent implements OnInit {
 
   addProducto(i: number): void {
     const r = this.rutas[i];
-
     if (!this.canAddProducto(i)) return;
 
     const prodId = Number(r.productoSel);
@@ -286,8 +273,14 @@ export class RutasDiaComponent implements OnInit {
 
     this.rutaService.crearRutasDia(payload).subscribe({
       next: () => {
-        this.rutas = [this.nuevaFila()];
+        // ✅ el alert es "bloqueante": al pulsar OK continúa y redirige
         alert('Rutas guardadas correctamente');
+
+        // opcional: resetear antes o después, da igual
+        this.rutas = [this.nuevaFila()];
+
+        // ✅ volver al listado
+        this.router.navigate(['/app/rutas']);
       },
       error: (err: any) => {
         console.error(err);

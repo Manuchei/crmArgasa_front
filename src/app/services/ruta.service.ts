@@ -80,6 +80,10 @@ export class RutaService {
   }
 
   crearRutasDia(payload: RutaDiaRequestDTO): Observable<any> {
-    return this.http.post(`${this.apiUrl}/dia`, payload);
+    const body = { ...payload, empresa: this.getEmpresaActual() };
+
+    return this.http.post(`${this.apiUrl}/dia`, body, {
+      headers: this.headersEmpresa(),
+    });
   }
 }

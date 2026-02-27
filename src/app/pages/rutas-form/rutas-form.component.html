@@ -57,14 +57,8 @@
             </select>
           </div>
 
-          <!-- Destino -->
-          <div class="col-md-6">
-            <label class="form-label">Destino</label>
-            <input type="text" class="form-control" formControlName="destino" />
-            <div class="text-danger mt-1" *ngIf="enviado && f['destino'].invalid">
-              El destino es obligatorio.
-            </div>
-          </div>
+          <!-- ✅ Destino oculto -->
+          <input type="hidden" formControlName="destino" />
 
           <!-- Tarea -->
           <div class="col-md-6">
@@ -79,14 +73,14 @@
 
             <div class="row g-2 align-items-end" [formGroup]="lineaForm">
               <div class="col-md-7">
-                <label class="form-label">Producto</label>
-                <select class="form-select" formControlName="productoId" [disabled]="!rutaForm.value.clienteId"
-                  (change)="onProductoChange()">
+                <label class="form-label">Producto (solo pendientes)</label>
+                <select class="form-select" formControlName="productoId" [disabled]="!rutaForm.value.clienteId">
                   <option [ngValue]="null">— Selecciona producto —</option>
 
-                  <option *ngFor="let cp of clienteProductos" [ngValue]="cp.productoId">
-                    {{ cp.codigo }} - {{ cp.nombre }}
-                    <span *ngIf="cp.cantidad != null"> | Comprados: {{ cp.cantidad }}</span>
+                  <option *ngFor="let cp of clienteProductos" [ngValue]="cp.productoId"
+                    [disabled]="getDisponibles(cp.productoId) === 0">
+                    {{ cp.codigo ? cp.codigo + ' - ' : '' }}{{ cp.nombre }}
+                    | Pendiente: {{ getDisponibles(cp.productoId) }}
                   </option>
                 </select>
 
@@ -95,7 +89,7 @@
                 </div>
 
                 <div class="form-text" *ngIf="rutaForm.value.clienteId && clienteProductos.length === 0">
-                  Este cliente no tiene productos comprados.
+                  Este cliente no tiene productos pendientes de entrega.
                 </div>
               </div>
 
@@ -103,13 +97,19 @@
                 <label class="form-label">Cantidad</label>
                 <input type="number" class="form-control" formControlName="cantidad" min="1"
                   [max]="productoSeleccionado ? getDisponibles(productoSeleccionado.productoId) : 1" />
-                <div class="text-danger mt-1" *ngIf="lf['cantidad'].touched && lf['cantidad'].invalid">
+
+                <div class="text-danger mt-1" *ngIf="lf['cantidad'].touched && lf['cantidad'].errors?.['min']">
                   Cantidad mínima: 1
+                </div>
+
+                <div class="text-danger mt-1" *ngIf="lf['cantidad'].touched && lf['cantidad'].errors?.['max']">
+                  Te pasaste. Máximo disponible:
+                  {{ productoSeleccionado ? getDisponibles(productoSeleccionado.productoId) : 0 }}
                 </div>
 
                 <div class="text-danger mt-1"
                   *ngIf="productoSeleccionado && getDisponibles(productoSeleccionado.productoId) === 0">
-                  No quedan unidades disponibles para este producto.
+                  No quedan unidades pendientes para este producto.
                 </div>
               </div>
 

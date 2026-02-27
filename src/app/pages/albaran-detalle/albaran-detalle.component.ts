@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { EmpresaService } from './../../services/empresa.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
+import { Empresa } from '../../services/empresa.service';
 
 @Component({
   selector: 'app-albaran-detalle',
@@ -11,11 +14,15 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './albaran-detalle.component.html',
   styleUrls: ['./albaran-detalle.component.css'],
 })
-export class AlbaranDetalleComponent implements OnInit {
+export class AlbaranDetalleComponent implements OnInit, OnDestroy {
   albaran: any = null;
 
-  // ✅ clienteId para volver a /app/clientes/:id
+  private destroy$ = new Subject<void>();
+
   private clienteId: number | null = null;
+  private albaranId: number | null = null;
+
+  isConfirming = false;
 
   nuevaLinea: any = {
     codigo: '',
@@ -30,50 +37,136 @@ export class AlbaranDetalleComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private empresaService: EmpresaService,
   ) {}
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (isNaN(id)) {
-      alert('ID de albarán inválido');
-      return;
-    }
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((pm) => {
+      const id = Number(pm.get('id'));
+      if (isNaN(id) || id <= 0) {
+        alert('ID de albarán inválido');
+        return;
+      }
 
-    // 1) intentar cogerlo de query param (si vienes desde cliente)
-    const qpClienteId = Number(this.route.snapshot.queryParamMap.get('clienteId'));
-    if (!isNaN(qpClienteId) && qpClienteId > 0) {
-      this.clienteId = qpClienteId;
-      localStorage.setItem('clienteIdFromAlbaran', String(qpClienteId));
-    } else {
-      // 2) fallback: localStorage (si no hay queryParam)
-      const ls = Number(localStorage.getItem('clienteIdFromAlbaran'));
-      this.clienteId = !isNaN(ls) && ls > 0 ? ls : null;
-    }
+      this.albaran = null;
+      this.clienteId = null;
+      this.albaranId = id;
+      this.isConfirming = false;
 
-    this.cargarAlbaran(id);
+      // 1) queryParam (ideal)
+      const qpClienteId = Number(
+        this.route.snapshot.queryParamMap.get('clienteId'),
+      );
+      if (!isNaN(qpClienteId) && qpClienteId > 0) {
+        this.clienteId = qpClienteId;
+        this.setClienteIdCache(id, qpClienteId);
+      } else {
+        // 2) state
+        const stateClienteId = Number((history.state as any)?.clienteId);
+        if (!isNaN(stateClienteId) && stateClienteId > 0) {
+          this.clienteId = stateClienteId;
+          this.setClienteIdCache(id, stateClienteId);
+        } else {
+          // 3) cache por albarán
+          this.clienteId = this.getClienteIdCache(id);
+        }
+      }
+
+      this.cargarAlbaran(id);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // =========================
+  //  EMPRESA (LA CLAVE REAL)
+  // =========================
+  private normalizarEmpresa(value: any): Empresa | null {
+    const e = (value ?? '').toString().trim().toUpperCase();
+    if (e === 'ARGASA' || e === 'ELECTROLUGA') return e as Empresa;
+    return null;
+  }
+
+  private asegurarEmpresaActivaOrDie(): void {
+    // Si ya hay empresa en el servicio, perfecto
+    const actual = this.empresaService.getEmpresa();
+    if (actual) return;
+
+    // Si no, intento sacarla del albarán
+    const empresa = this.normalizarEmpresa(this.albaran?.empresa);
+    if (!empresa) return;
+
+    // ✅ ESTO es lo que tu guard/servicio necesitan
+    localStorage.setItem('empresa_activa', empresa);
+    this.empresaService.setEmpresa(empresa);
+  }
+
+  // =========================
+  //  ClienteId cache helpers
+  // =========================
+  private storageKey(albaranId: number) {
+    return `clienteIdFromAlbaran_${albaranId}`;
+  }
+
+  private setClienteIdCache(albaranId: number, clienteId: number) {
+    localStorage.setItem(this.storageKey(albaranId), String(clienteId));
+  }
+
+  private getClienteIdCache(albaranId: number): number | null {
+    const v = Number(localStorage.getItem(this.storageKey(albaranId)));
+    return !isNaN(v) && v > 0 ? v : null;
   }
 
   private resolverClienteIdDesdeAlbaran(data: any): number | null {
-    // Por si tu backend devuelve alguna de estas variantes:
-    const a = Number(data?.clienteId);
-    if (!isNaN(a) && a > 0) return a;
+    const candidates = [
+      data?.clienteId,
+      data?.idCliente,
+      data?.id_cliente,
+      data?.cliente?.id,
+      data?.cliente?.idCliente,
+      data?.cliente?.id_cliente,
+    ];
 
-    const b = Number(data?.cliente?.id);
-    if (!isNaN(b) && b > 0) return b;
+    for (const v of candidates) {
+      const n = Number(v);
+      if (!isNaN(n) && n > 0) return n;
+    }
+    return null;
+  }
 
-    const c = Number(data?.cliente?.idCliente);
-    if (!isNaN(c) && c > 0) return c;
+  private getClienteIdSeguro(): number | null {
+    if (this.clienteId) return this.clienteId;
+
+    const fromMem = this.resolverClienteIdDesdeAlbaran(this.albaran);
+    if (fromMem && this.albaranId) {
+      this.clienteId = fromMem;
+      this.setClienteIdCache(this.albaranId, fromMem);
+      return fromMem;
+    }
+
+    if (this.albaranId) {
+      const cached = this.getClienteIdCache(this.albaranId);
+      if (cached) {
+        this.clienteId = cached;
+        return cached;
+      }
+    }
 
     return null;
   }
 
+  // =========================
+  //  API
+  // =========================
   cargarAlbaran(id: number): void {
     this.http.get<any>(`${this.apiUrl}/albaranes/${id}`).subscribe({
       next: (data) => {
         this.albaran = data;
 
-        // ✅ normalizar dtoPct y campos numéricos
         this.albaran.lineas = (this.albaran.lineas ?? []).map((l: any) => ({
           ...l,
           dtoPct: l?.dtoPct ?? 0,
@@ -82,12 +175,14 @@ export class AlbaranDetalleComponent implements OnInit {
           totalLinea: l?.totalLinea ?? 0,
         }));
 
-        // 3) si el backend trae clienteId, lo guardamos y pisamos si estaba vacío
         const fromApi = this.resolverClienteIdDesdeAlbaran(this.albaran);
-        if (!this.clienteId && fromApi) {
+        if (fromApi && this.albaranId) {
           this.clienteId = fromApi;
-          localStorage.setItem('clienteIdFromAlbaran', String(fromApi));
+          this.setClienteIdCache(this.albaranId, fromApi);
         }
+
+        // ✅ IMPORTANTÍSIMO: en cuanto cargo el albarán, fijo empresa_activa si hace falta
+        this.asegurarEmpresaActivaOrDie();
       },
       error: (err) => {
         console.error('Error cargando albarán:', err);
@@ -96,44 +191,53 @@ export class AlbaranDetalleComponent implements OnInit {
     });
   }
 
+  // =========================
+  //  Navegación
+  // =========================
   volverACliente(): void {
-    const id = this.clienteId;
+    // ✅ antes de navegar: seteo empresa_activa + EmpresaService
+    this.asegurarEmpresaActivaOrDie();
 
+    const id = this.getClienteIdSeguro();
     if (!id) {
-      console.warn('No tengo clienteId. Usa queryParam o localStorage. albaran=', this.albaran);
-      alert('No se puede volver al cliente');
+      this.router.navigateByUrl('/app/clientes');
       return;
     }
 
-    this.router.navigate(['/app/clientes', id]);
+    this.router.navigateByUrl(`/app/clientes/${id}`);
   }
 
   confirmar(): void {
-    if (!this.albaran?.id) return;
+    if (!this.albaran?.id || this.isConfirming) return;
+
+    const clienteIdSeguro = this.getClienteIdSeguro(); // puede ser null
+    this.isConfirming = true;
 
     this.http
       .post<any>(`${this.apiUrl}/albaranes/${this.albaran.id}/confirmar`, {})
       .subscribe({
-        next: (data) => {
-          this.albaran = data;
+        next: () => {
+          // ✅ antes de navegar: seteo empresa_activa + EmpresaService
+          this.asegurarEmpresaActivaOrDie();
 
-          // por si ahora devuelve clienteId
-          const fromApi = this.resolverClienteIdDesdeAlbaran(this.albaran);
-          if (!this.clienteId && fromApi) {
-            this.clienteId = fromApi;
-            localStorage.setItem('clienteIdFromAlbaran', String(fromApi));
+          if (clienteIdSeguro) {
+            this.router.navigateByUrl(`/app/clientes/${clienteIdSeguro}`);
+            return;
           }
 
-          // ✅ VOLVER al detalle del cliente al confirmar
-          this.volverACliente();
+          this.router.navigateByUrl('/app/albaranes');
         },
         error: (err) => {
           console.error('Error confirmando albarán:', err);
           alert('No se pudo confirmar el albarán');
+          this.isConfirming = false;
         },
       });
   }
 
+  // =========================
+  //  Líneas
+  // =========================
   agregarLinea(): void {
     if (!this.albaran?.id || this.albaran.confirmado) return;
 
@@ -165,6 +269,15 @@ export class AlbaranDetalleComponent implements OnInit {
         next: (albaranActualizado) => {
           this.albaran = albaranActualizado;
 
+          const fromApi = this.resolverClienteIdDesdeAlbaran(this.albaran);
+          if (fromApi && this.albaranId) {
+            this.clienteId = fromApi;
+            this.setClienteIdCache(this.albaranId, fromApi);
+          }
+
+          // por si vino empresa y el servicio estaba vacío
+          this.asegurarEmpresaActivaOrDie();
+
           this.nuevaLinea = {
             codigo: '',
             descripcion: '',
@@ -184,7 +297,9 @@ export class AlbaranDetalleComponent implements OnInit {
     if (!this.albaran?.id || this.albaran.confirmado) return;
 
     this.http
-      .delete<any>(`${this.apiUrl}/albaranes/${this.albaran.id}/lineas/${lineaId}`)
+      .delete<any>(
+        `${this.apiUrl}/albaranes/${this.albaran.id}/lineas/${lineaId}`,
+      )
       .subscribe({
         next: (albaranActualizado) => {
           this.albaran = albaranActualizado;

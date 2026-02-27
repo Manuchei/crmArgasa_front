@@ -12,11 +12,21 @@ import { RutaService } from '../../services/ruta.service';
 import { TransportistaService } from '../../services/transportista.service';
 import { Itrasnportista } from '../../interfaces/itrasnportista';
 import { HttpClient } from '@angular/common/http';
-import { ClienteProductoService } from '../../services/cliente-producto.service';
+
+// ✅ usamos el servicio que trae líneas del cliente (compras / trabajos)
+import { ClientesService } from '../../services/cliente.service';
 
 interface IRutaLineaDto {
   productoId: number;
   cantidad: number;
+}
+
+// UI para productos pendientes
+interface IProductoPendienteUI {
+  productoId: number;
+  codigo?: string;
+  nombre: string;
+  pendiente: number; // unidades pendientes reales (>=0)
 }
 
 @Component({
@@ -42,13 +52,12 @@ export class RutasFormComponent implements OnInit {
   clientes: any[] = [];
   private apiUrl = 'http://localhost:9018/api';
 
-  // ✅ productos comprados del cliente
-  // Backend devuelve: [{ productoId, codigo, nombre, cantidad }]
-  clienteProductos: any[] = [];
+  // ✅ productos PENDIENTES del cliente (solo pendientes)
+  clienteProductos: IProductoPendienteUI[] = [];
   lineas: IRutaLineaDto[] = [];
 
-  // ✅ producto seleccionado para calcular disponibles/max
-  productoSeleccionado: any = null;
+  // ✅ producto seleccionado
+  productoSeleccionado: IProductoPendienteUI | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -57,7 +66,7 @@ export class RutasFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
-    private clienteProductoService: ClienteProductoService,
+    private clientesService: ClientesService,
   ) {}
 
   ngOnInit(): void {
@@ -67,15 +76,14 @@ export class RutasFormComponent implements OnInit {
       emailTransportista: ['', [Validators.required, Validators.email]],
       fecha: ['', Validators.required],
       estado: ['pendiente', Validators.required],
-      destino: ['', Validators.required],
+      destino: [''], // oculto en HTML
       tarea: [''],
       observaciones: [''],
     });
 
-    // ✅ formulario para añadir líneas
     this.lineaForm = this.fb.group({
       productoId: [null, Validators.required],
-      cantidad: [1, [Validators.required, Validators.min(1)]],
+      cantidad: [1, [Validators.required, Validators.min(1)]], // max dinámico
     });
 
     this.cargarClientes();
@@ -87,21 +95,23 @@ export class RutasFormComponent implements OnInit {
       this.cargarRuta(this.idRuta);
     }
 
-    // ✅ Autocompletar destino + cargar productos cliente + reset líneas si cambia cliente
+    // ✅ al cambiar cliente: reset + cargar pendientes
     this.rutaForm.get('clienteId')?.valueChanges.subscribe((id) => {
-      this.autocompletarDestinoPorCliente(id);
-
-      // reset selección producto
       this.productoSeleccionado = null;
+      this.lineas = [];
+      this.lineaForm.reset({ productoId: null, cantidad: 1 });
 
       if (id) {
-        this.lineas = [];
-        this.lineaForm.reset({ productoId: null, cantidad: 1 });
-        this.cargarProductosCliente(+id);
+        this.cargarProductosPendientesCliente(+id);
       } else {
         this.clienteProductos = [];
-        this.lineas = [];
+        this.actualizarValidadorCantidad();
       }
+    });
+
+    // ✅ al cambiar producto: refrescar seleccionado + validadores
+    this.lineaForm.get('productoId')?.valueChanges.subscribe(() => {
+      this.onProductoChange();
     });
   }
 
@@ -121,7 +131,6 @@ export class RutasFormComponent implements OnInit {
 
   onSelectTransportista(id: string): void {
     if (!id) return;
-
     const t = this.transportistas.find((x) => x.id === +id);
     if (!t) return;
 
@@ -131,126 +140,183 @@ export class RutasFormComponent implements OnInit {
     });
   }
 
-  private autocompletarDestinoPorCliente(clienteId: any): void {
-    if (!clienteId) return;
-
-    const c = this.clientes.find((x) => x.id === +clienteId);
-    if (!c) return;
-
-    const destinoAuto =
-      (c.direccionCompleta && String(c.direccionCompleta).trim()) ||
-      this.buildDireccionCompleta(c);
-
-    // ✅ si estás editando, no pisamos un destino ya escrito
-    const destinoActual = (this.rutaForm.get('destino')?.value || '')
-      .toString()
+  private getEmpresaSeleccionada(): 'ARGASA' | 'ELECTROLUGA' {
+    const emp = (localStorage.getItem('empresa_activa') || 'ARGASA')
+      .toUpperCase()
       .trim();
-    if (this.idRuta && destinoActual) return;
-
-    this.rutaForm.patchValue({ destino: destinoAuto });
+    return emp === 'ELECTROLUGA' ? 'ELECTROLUGA' : 'ARGASA';
   }
 
-  private buildDireccionCompleta(c: any): string {
-    const dir = (c.direccion || '').toString().trim();
-    const cp = (c.codigoPostal ?? '').toString().trim();
-    const pob = (c.poblacion || '').toString().trim();
-    const prov = (c.provincia || '').toString().trim();
+  // =========================================================
+  // ✅ PENDIENTES REALES: FILTRA ENTREGADOS DE VERDAD
+  // =========================================================
+  private esEntregado(x: any): boolean {
+    const entregado =
+      x?.entregado ??
+      x?.isEntregado ??
+      x?.entregadoBool ??
+      x?.entregaRealizada ??
+      null;
 
-    const p1 = [dir].filter(Boolean).join('');
-    const p2 = [cp, pob].filter(Boolean).join(' ');
-    const p3 = prov ? `(${prov})` : '';
+    if (typeof entregado === 'boolean') return entregado;
 
-    return [p1, p2, p3].filter(Boolean).join(', ').trim();
+    if (typeof entregado === 'string') {
+      const v = entregado.toLowerCase().trim();
+      if (v === 'si' || v === 'sí' || v === 'true' || v === 'entregado')
+        return true;
+      if (v === 'no' || v === 'false' || v === 'pendiente') return false;
+    }
+
+    const estado = (x?.estado ?? '').toString().toLowerCase().trim();
+    if (
+      estado === 'entregado' ||
+      estado === 'entregada' ||
+      estado === 'entregados'
+    )
+      return true;
+
+    // si hay fechaEntrega y no está vacía, lo tratamos como entregado
+    const fechaEntrega =
+      x?.fechaEntrega ?? x?.fecha_entrega ?? x?.fechaDeEntrega;
+    if (fechaEntrega != null && String(fechaEntrega).trim() !== '') return true;
+
+    return false;
   }
 
-  // ✅ cargar productos COMPRADOS del cliente (DTO: productoId, codigo, nombre, cantidad)
-  cargarProductosCliente(clienteId: number): void {
-    this.clienteProductoService.getProductosCliente(clienteId).subscribe({
-      next: (data) => {
-        const lista = data ?? [];
+  private unidadesDeLinea(x: any): number {
+    const u =
+      x?.unidades ??
+      x?.cantidad ??
+      x?.cantidadTotal ??
+      x?.total ??
+      x?.asignado ??
+      1;
+    const n = Number(u);
+    return Number.isFinite(n) && n > 0 ? n : 1;
+  }
 
-        // ✅ evitar duplicados por productoId (por si el backend devolviera repetidos)
-        const map = new Map<number, any>();
+  cargarProductosPendientesCliente(clienteId: number): void {
+    const empresa = this.getEmpresaSeleccionada();
 
-        for (const cp of lista) {
-          const pid = +cp?.productoId;
-          if (!pid) continue;
+    this.clientesService.getProductosCliente(clienteId, empresa).subscribe({
+      next: (res: any) => {
+        // ✅ NO asumimos paginación; si viene paginado usamos content si existe
+        const lista: any[] = Array.isArray(res)
+          ? res
+          : Array.isArray(res?.content)
+            ? res.content
+            : [];
+
+        const map = new Map<number, IProductoPendienteUI>();
+
+        for (const x of lista) {
+          // 🔥 CLAVE: si está entregado, NO cuenta como pendiente
+          if (this.esEntregado(x)) continue;
+
+          const prod = x?.producto ?? x;
+
+          const productoId =
+            prod?.id ??
+            prod?.productoId ??
+            x?.productoId ??
+            x?.producto?.id ??
+            null;
+
+          if (!productoId) continue;
+
+          const nombre =
+            prod?.nombre ??
+            prod?.descripcion ??
+            x?.nombre ??
+            x?.descripcion ??
+            '';
+
+          const codigo = prod?.codigo ?? x?.codigo ?? '';
+
+          // unidades pendientes de ESTA línea no entregada
+          const pendiente = Math.max(this.unidadesDeLinea(x), 0);
+          if (pendiente <= 0) continue;
+
+          const pid = Number(productoId);
 
           if (!map.has(pid)) {
-            map.set(pid, cp);
+            map.set(pid, {
+              productoId: pid,
+              codigo: codigo?.toString() ?? '',
+              nombre: (nombre ?? '').toString(),
+              pendiente,
+            });
           } else {
-            const existente = map.get(pid);
-            const c1 = +(existente?.cantidad ?? 0);
-            const c2 = +(cp?.cantidad ?? 0);
-            existente.cantidad = c1 + c2;
-            map.set(pid, existente);
+            const cur = map.get(pid)!;
+            cur.pendiente = (cur.pendiente || 0) + pendiente;
+            map.set(pid, cur);
           }
         }
 
-        this.clienteProductos = Array.from(map.values());
+        // ✅ solo productos con pendiente > 0
+        this.clienteProductos = Array.from(map.values()).filter(
+          (p) => (p.pendiente ?? 0) > 0,
+        );
 
-        // si ya hay producto seleccionado, refrescamos referencia
+        // refrescar selección
         const pidSel = +this.lineaForm.value.productoId;
         this.productoSeleccionado =
           this.clienteProductos.find((x) => +x.productoId === pidSel) ?? null;
 
-        // reajusta max y cantidad si hace falta
-        this.ajustarCantidadSiExcedeDisponibles();
+        // si lo seleccionado ya no existe, limpiamos
+        if (pidSel && !this.productoSeleccionado) {
+          this.lineaForm.patchValue({ productoId: null }, { emitEvent: false });
+        }
+
+        this.actualizarValidadorCantidad();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error(err);
         this.clienteProductos = [];
         this.productoSeleccionado = null;
+        this.actualizarValidadorCantidad();
       },
     });
   }
 
-  // ✅ cuando cambias el select de producto
   onProductoChange(): void {
     const productoId = +this.lineaForm.value.productoId;
     this.productoSeleccionado =
       this.clienteProductos.find((x) => +x.productoId === +productoId) ?? null;
 
-    this.ajustarCantidadSiExcedeDisponibles();
+    this.actualizarValidadorCantidad();
   }
 
-  // ✅ cuántas unidades de un producto ya están en la ruta
   getCantidadEnRuta(productoId: number): number {
     return this.lineas
       .filter((l) => +l.productoId === +productoId)
       .reduce((acc, l) => acc + (+l.cantidad || 0), 0);
   }
 
-  // ✅ disponibles restantes (comprados - ya añadidos)
+  // ✅ disponibles restantes (pendiente - ya añadidos)
   getDisponibles(productoId: number): number {
     const cp = this.clienteProductos.find(
       (x) => +x?.productoId === +productoId,
     );
-    const comprados = +(cp?.cantidad ?? 0);
+    const pendiente = +(cp?.pendiente ?? 0);
     const ya = this.getCantidadEnRuta(productoId);
-    return Math.max(comprados - ya, 0);
+    return Math.max(pendiente - ya, 0);
   }
 
-  private ajustarCantidadSiExcedeDisponibles(): void {
-    if (!this.productoSeleccionado) return;
+  private actualizarValidadorCantidad(): void {
+    const ctrl = this.lineaForm.get('cantidad');
+    if (!ctrl) return;
 
-    const pid = +this.productoSeleccionado.productoId;
-    const disponibles = this.getDisponibles(pid);
+    const pid = +this.lineaForm.value.productoId;
+    const max = pid ? this.getDisponibles(pid) : 0;
 
-    const actual = +this.lineaForm.value.cantidad || 1;
-    if (actual > disponibles && disponibles > 0) {
-      this.lineaForm.patchValue(
-        { cantidad: disponibles },
-        { emitEvent: false },
-      );
-    }
-    if (disponibles === 0) {
-      // dejamos 1 pero el botón estará deshabilitado
-      this.lineaForm.patchValue({ cantidad: 1 }, { emitEvent: false });
-    }
+    const validators = [Validators.required, Validators.min(1)];
+    if (pid) validators.push(Validators.max(Math.max(max, 1)));
+
+    ctrl.setValidators(validators);
+    ctrl.updateValueAndValidity({ emitEvent: false });
   }
 
-  // ✅ añadir una línea (producto + cantidad) a la ruta
   addLinea(): void {
     this.error = '';
     this.lineaForm.markAllAsTouched();
@@ -261,15 +327,15 @@ export class RutasFormComponent implements OnInit {
 
     const disponibles = this.getDisponibles(productoId);
 
-    // ✅ BLOQUEO: no permitir superar los comprados
+    // ✅ bloqueo duro: NO te lo corrige, te avisa
     if (cantidad > disponibles) {
       const cp = this.clienteProductos.find(
         (x) => +x.productoId === +productoId,
       );
       const nombre = cp
-        ? `${cp.codigo} - ${cp.nombre}`
+        ? `${cp.codigo ? cp.codigo + ' - ' : ''}${cp.nombre}`
         : `Producto ${productoId}`;
-      this.error = `No puedes añadir ${cantidad}. Solo quedan ${disponibles} disponibles de ${nombre}.`;
+      this.error = `No puedes añadir ${cantidad}. Solo quedan ${disponibles} pendientes de ${nombre}.`;
       return;
     }
 
@@ -280,30 +346,15 @@ export class RutasFormComponent implements OnInit {
       this.lineas.push({ productoId, cantidad });
     }
 
-    // reset
     this.lineaForm.reset({ productoId: null, cantidad: 1 });
     this.productoSeleccionado = null;
 
-    this.rutaForm
-      .get('tarea')
-      ?.updateValueAndValidity({ onlySelf: true, emitEvent: false });
+    this.actualizarValidadorCantidad();
   }
 
-  // ✅ quitar línea
   removeLinea(productoId: number): void {
     this.lineas = this.lineas.filter((l) => l.productoId !== productoId);
-
-    // recalcular disponibles si ese producto estaba seleccionado
-    if (
-      this.productoSeleccionado &&
-      +this.productoSeleccionado.productoId === +productoId
-    ) {
-      this.ajustarCantidadSiExcedeDisponibles();
-    }
-
-    this.rutaForm
-      .get('tarea')
-      ?.updateValueAndValidity({ onlySelf: true, emitEvent: false });
+    this.actualizarValidadorCantidad();
   }
 
   private tieneTarea(): boolean {
@@ -319,13 +370,12 @@ export class RutasFormComponent implements OnInit {
     return this.tieneTarea() || this.tieneProductos();
   }
 
-  // ✅ nombre de producto para la tabla
   getNombreProducto(productoId: number): string {
     const cp = this.clienteProductos.find(
-      (x: any) => +x?.productoId === +productoId,
+      (x) => +x?.productoId === +productoId,
     );
     if (!cp) return `Producto ${productoId}`;
-    return `${cp.codigo} - ${cp.nombre} (Comprados: ${cp.cantidad ?? 0})`;
+    return `${cp.codigo ? cp.codigo + ' - ' : ''}${cp.nombre} (Pendiente: ${cp.pendiente})`;
   }
 
   cargarRuta(id: number): void {
@@ -334,7 +384,6 @@ export class RutasFormComponent implements OnInit {
     this.rutaService.getRuta(id).subscribe({
       next: (ruta: any) => {
         const fecha = ruta.fecha ? ruta.fecha.toString().substring(0, 10) : '';
-
         const clienteId = ruta?.cliente?.id ?? ruta?.clienteId ?? null;
 
         this.rutaForm.patchValue({
@@ -344,11 +393,10 @@ export class RutasFormComponent implements OnInit {
           fecha,
           estado: ruta.estado,
           observaciones: ruta.observaciones,
-          destino: ruta.destino,
-          tarea: ruta.tarea,
+          destino: ruta.destino ?? '',
+          tarea: ruta.tarea ?? '',
         });
 
-        // ✅ si tu backend devuelve lineas en GET /rutas/{id}
         if (Array.isArray(ruta?.lineas)) {
           this.lineas = ruta.lineas
             .map((l: any) => ({
@@ -358,7 +406,7 @@ export class RutasFormComponent implements OnInit {
             .filter((x: any) => x.productoId);
         }
 
-        if (clienteId) this.cargarProductosCliente(+clienteId);
+        if (clienteId) this.cargarProductosPendientesCliente(+clienteId);
 
         this.cargando = false;
       },
@@ -376,7 +424,6 @@ export class RutasFormComponent implements OnInit {
 
     if (this.rutaForm.invalid) return;
 
-    // ✅ regla: debe haber TAREA o PRODUCTOS (al menos uno)
     if (!this.validarTareaOProductos()) {
       this.error =
         'Debes indicar una tarea o añadir al menos un producto para entregar.';
@@ -385,9 +432,7 @@ export class RutasFormComponent implements OnInit {
 
     const payload = {
       ...this.rutaForm.value,
-      // ✅ si no hay tarea, enviamos '' (por si backend no acepta null)
       tarea: (this.rutaForm.value.tarea || '').toString().trim(),
-      // ✅ si no hay productos, enviamos []
       lineas: this.lineas ?? [],
     };
 

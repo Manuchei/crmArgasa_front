@@ -14,9 +14,11 @@
         ⬅ Volver al cliente
       </button>
 
-      <button class="btn btn-success" (click)="confirmar()" [disabled]="albaran.confirmado">
-        ✅ Confirmar
-      </button>
+      <button class="btn btn-success"
+        (click)="confirmar()"
+        [disabled]="albaran.confirmado || isConfirming">
+  ✅ Confirmar
+</button>
     </div>
   </div>
 
@@ -45,7 +47,9 @@
         <td>{{ (l.dtoPct ?? 0) | number:'1.0-2' }}</td>
         <td>{{ (l.totalLinea ?? 0) | number:'1.2-2' }} €</td>
         <td>
-          <button class="btn btn-sm btn-danger" (click)="eliminarLinea(l.id)" [disabled]="albaran.confirmado">
+          <button class="btn btn-sm btn-danger"
+                  (click)="eliminarLinea(l.id)"
+                  [disabled]="albaran.confirmado">
             🗑️
           </button>
         </td>
@@ -67,7 +71,6 @@
 
   <h6>Añadir línea</h6>
 
-  <!-- Cabeceras inputs -->
   <div class="row g-2 mb-1 fw-semibold text-muted small">
     <div class="col-md-2">Código</div>
     <div class="col-md-4">Descripción</div>
@@ -77,7 +80,6 @@
     <div class="col-md-1 text-center">Acción</div>
   </div>
 
-  <!-- Inputs -->
   <div class="row g-2 align-items-center">
     <div class="col-md-2">
       <input class="form-control" placeholder="Código" [(ngModel)]="nuevaLinea.codigo" />
@@ -105,7 +107,11 @@
     </div>
 
     <div class="col-md-1 d-grid">
-      <button class="btn btn-primary" (click)="agregarLinea()" [disabled]="albaran.confirmado">+</button>
+      <button class="btn btn-primary"
+              (click)="agregarLinea()"
+              [disabled]="albaran.confirmado">
+        +
+      </button>
     </div>
   </div>
 </div>

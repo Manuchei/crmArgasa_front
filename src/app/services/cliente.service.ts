@@ -31,10 +31,14 @@ export class ClientesService {
   }
 
   actualizarCliente(id: number, cliente: ICliente): Observable<ICliente> {
-    return this.http.put<ICliente>(`${this.apiUrl}/${id}`, this.limpiarPayload(cliente), {
-      headers: this.jsonHeaders,
-      responseType: 'json',
-    });
+    return this.http.put<ICliente>(
+      `${this.apiUrl}/${id}`,
+      this.limpiarPayload(cliente),
+      {
+        headers: this.jsonHeaders,
+        responseType: 'json',
+      },
+    );
   }
 
   eliminarCliente(id: number): Observable<void> {
@@ -49,10 +53,14 @@ export class ClientesService {
 
   // ✅ Añadir un trabajo nuevo a un cliente existente
   agregarTrabajo(idCliente: number, trabajo: ITrabajo): Observable<ICliente> {
-    return this.http.post<ICliente>(`${this.apiUrl}/${idCliente}/trabajos`, trabajo, {
-      headers: this.jsonHeaders,
-      responseType: 'json',
-    });
+    return this.http.post<ICliente>(
+      `${this.apiUrl}/${idCliente}/trabajos`,
+      trabajo,
+      {
+        headers: this.jsonHeaders,
+        responseType: 'json',
+      },
+    );
   }
 
   // ---------------------------------------
@@ -69,9 +77,9 @@ export class ClientesService {
   }
 
   getProductosCliente(clienteId: number, empresa: string) {
-  return this.http.get<any[]>(
-    `http://localhost:9018/api/clientes/${clienteId}/productos`,
-    { params: { empresa } }
-  );
-}
+    return this.http.get<any[]>(
+      `http://localhost:9018/api/clientes/${clienteId}/productos/pendientes`,
+      { headers: { 'X-Empresa': empresa } },
+    );
+  }
 }
