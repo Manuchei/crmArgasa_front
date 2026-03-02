@@ -246,10 +246,6 @@ export class ClienteDetalleComponent implements OnInit {
   // ---------------- TRABAJOS ----------------
   private normalizarTrabajos(): void {
     this.trabajos = (this.trabajos ?? []).map((t) => {
-      // ✅ Compatibilidad con el DTO nuevo:
-      // - nombre -> descripcion
-      // - cantidad -> unidades
-      // - pagado -> importePagado
       const descripcion =
         t?.descripcion != null && String(t.descripcion).trim().length > 0
           ? t.descripcion
@@ -418,11 +414,6 @@ export class ClienteDetalleComponent implements OnInit {
       });
   }
 
-  /**
-   * ✅ CORREGIDO:
-   * - SIEMPRE borra por /trabajos/{id}
-   * - El backend se encarga de reponer stock si el trabajo tenía productoId
-   */
   eliminarTrabajo(t: any): void {
     if (!this.cliente?.id) return;
 
@@ -459,12 +450,21 @@ export class ClienteDetalleComponent implements OnInit {
 
     this.router.navigate(['/app/albaranes', a.id], {
       queryParams: { clienteId: this.cliente?.id },
+      state: { clienteId: this.cliente?.id },
     });
   }
 
+  /**
+   * ✅ CORREGIDO:
+   * - La ruta de imprimir está FUERA de /app en tu routing:
+   *   path: 'imprimir/albaran/:id'
+   * - Por tanto NO hay que abrir '/app/imprimir/...'
+   */
   imprimirAlbaran(a: any): void {
     if (!a?.id) return;
-    const url = `${window.location.origin}/app/imprimir/albaran/${a.id}`;
+
+    // ✅ SIN /app
+    const url = `${window.location.origin}/imprimir/albaran/${a.id}`;
     window.open(url, '_blank');
   }
 
@@ -494,7 +494,10 @@ export class ClienteDetalleComponent implements OnInit {
           }
 
           this.cargarAlbaranes(this.cliente.id);
-          this.router.navigate(['/app/albaranes', albaran.id]);
+          this.router.navigate(['/app/albaranes', albaran.id], {
+            queryParams: { clienteId: this.cliente?.id },
+            state: { clienteId: this.cliente?.id },
+          });
         },
         error: (err) => {
           this.creandoAlbaran = false;
@@ -693,18 +696,13 @@ export class ClienteDetalleComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          // optimista stock
           (p as any).stock = stock - cantidad;
 
-          // reset inputs
           this.qtyMap[productoId] = 1;
           this.dtoMap[productoId] = 0;
           this.pagadoMap[productoId] = 0;
 
-          // ✅ RECARGA SIEMPRE desde backend (evita DTOs incompletos en pantalla)
           this.cargarTrabajos(this.clienteId);
-
-          // refrescar cliente_productos y catálogo
           this.cargarClienteProductos(this.clienteId);
           this.cargarProductos();
         },
@@ -718,8 +716,6 @@ export class ClienteDetalleComponent implements OnInit {
                 'No se pudo añadir el producto');
 
           alert(msg);
-
-          // volver a estado real
           this.cargarProductos();
         },
       });

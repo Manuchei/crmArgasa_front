@@ -46,6 +46,7 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
       const id = Number(pm.get('id'));
       if (isNaN(id) || id <= 0) {
         alert('ID de albarán inválido');
+        this.router.navigateByUrl('/app/clientes');
         return;
       }
 
@@ -83,7 +84,7 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
   }
 
   // =========================
-  //  EMPRESA (LA CLAVE REAL)
+  //  EMPRESA
   // =========================
   private normalizarEmpresa(value: any): Empresa | null {
     const e = (value ?? '').toString().trim().toUpperCase();
@@ -91,17 +92,13 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  private asegurarEmpresaActivaOrDie(): void {
-    // Si ya hay empresa en el servicio, perfecto
+  private asegurarEmpresaActiva(): void {
     const actual = this.empresaService.getEmpresa();
     if (actual) return;
 
-    // Si no, intento sacarla del albarán
     const empresa = this.normalizarEmpresa(this.albaran?.empresa);
     if (!empresa) return;
 
-    // ✅ ESTO es lo que tu guard/servicio necesitan
-    localStorage.setItem('empresa_activa', empresa);
     this.empresaService.setEmpresa(empresa);
   }
 
@@ -163,40 +160,42 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
   //  API
   // =========================
   cargarAlbaran(id: number): void {
-    this.http.get<any>(`${this.apiUrl}/albaranes/${id}`).subscribe({
-      next: (data) => {
-        this.albaran = data;
+    this.http
+      .get<any>(`${this.apiUrl}/albaranes/${id}`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.albaran = data;
 
-        this.albaran.lineas = (this.albaran.lineas ?? []).map((l: any) => ({
-          ...l,
-          dtoPct: l?.dtoPct ?? 0,
-          unidades: l?.unidades ?? 0,
-          precio: l?.precio ?? 0,
-          totalLinea: l?.totalLinea ?? 0,
-        }));
+          this.albaran.lineas = (this.albaran.lineas ?? []).map((l: any) => ({
+            ...l,
+            dtoPct: l?.dtoPct ?? 0,
+            unidades: l?.unidades ?? 0,
+            precio: l?.precio ?? 0,
+            totalLinea: l?.totalLinea ?? 0,
+          }));
 
-        const fromApi = this.resolverClienteIdDesdeAlbaran(this.albaran);
-        if (fromApi && this.albaranId) {
-          this.clienteId = fromApi;
-          this.setClienteIdCache(this.albaranId, fromApi);
-        }
+          const fromApi = this.resolverClienteIdDesdeAlbaran(this.albaran);
+          if (fromApi && this.albaranId) {
+            this.clienteId = fromApi;
+            this.setClienteIdCache(this.albaranId, fromApi);
+          }
 
-        // ✅ IMPORTANTÍSIMO: en cuanto cargo el albarán, fijo empresa_activa si hace falta
-        this.asegurarEmpresaActivaOrDie();
-      },
-      error: (err) => {
-        console.error('Error cargando albarán:', err);
-        alert('No se pudo cargar el albarán');
-      },
-    });
+          this.asegurarEmpresaActiva();
+        },
+        error: (err) => {
+          console.error('Error cargando albarán:', err);
+          alert('No se pudo cargar el albarán');
+          this.router.navigateByUrl('/app/clientes');
+        },
+      });
   }
 
   // =========================
   //  Navegación
   // =========================
   volverACliente(): void {
-    // ✅ antes de navegar: seteo empresa_activa + EmpresaService
-    this.asegurarEmpresaActivaOrDie();
+    this.asegurarEmpresaActiva();
 
     const id = this.getClienteIdSeguro();
     if (!id) {
@@ -204,28 +203,36 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.router.navigateByUrl(`/app/clientes/${id}`);
+    this.router.navigate(['/app/clientes', id]);
   }
 
+  /**
+   * ✅ CORREGIDO:
+   * - NO capturamos clienteId antes (puede ser null)
+   * - lo resolvemos DESPUÉS del POST (y si el backend devuelve albarán actualizado, mejor)
+   */
   confirmar(): void {
     if (!this.albaran?.id || this.isConfirming) return;
 
-    const clienteIdSeguro = this.getClienteIdSeguro(); // puede ser null
     this.isConfirming = true;
 
     this.http
       .post<any>(`${this.apiUrl}/albaranes/${this.albaran.id}/confirmar`, {})
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          // ✅ antes de navegar: seteo empresa_activa + EmpresaService
-          this.asegurarEmpresaActivaOrDie();
+        next: (albaranActualizado) => {
+          if (albaranActualizado) this.albaran = albaranActualizado;
 
+          this.asegurarEmpresaActiva();
+
+          const clienteIdSeguro = this.getClienteIdSeguro();
           if (clienteIdSeguro) {
-            this.router.navigateByUrl(`/app/clientes/${clienteIdSeguro}`);
+            this.router.navigate(['/app/clientes', clienteIdSeguro]);
             return;
           }
 
-          this.router.navigateByUrl('/app/albaranes');
+          // fallback (solo si de verdad no hay forma)
+          this.router.navigateByUrl('/app/clientes');
         },
         error: (err) => {
           console.error('Error confirmando albarán:', err);
@@ -265,6 +272,7 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
 
     this.http
       .post<any>(`${this.apiUrl}/albaranes/${this.albaran.id}/lineas`, payload)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (albaranActualizado) => {
           this.albaran = albaranActualizado;
@@ -275,8 +283,7 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
             this.setClienteIdCache(this.albaranId, fromApi);
           }
 
-          // por si vino empresa y el servicio estaba vacío
-          this.asegurarEmpresaActivaOrDie();
+          this.asegurarEmpresaActiva();
 
           this.nuevaLinea = {
             codigo: '',
@@ -300,6 +307,7 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
       .delete<any>(
         `${this.apiUrl}/albaranes/${this.albaran.id}/lineas/${lineaId}`,
       )
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (albaranActualizado) => {
           this.albaran = albaranActualizado;

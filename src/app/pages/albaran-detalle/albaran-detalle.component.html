@@ -14,11 +14,9 @@
         ⬅ Volver al cliente
       </button>
 
-      <button class="btn btn-success"
-        (click)="confirmar()"
-        [disabled]="albaran.confirmado || isConfirming">
-  ✅ Confirmar
-</button>
+      <button class="btn btn-success" (click)="confirmar()" [disabled]="albaran.confirmado || isConfirming">
+        ✅ Confirmar
+      </button>
     </div>
   </div>
 
@@ -47,9 +45,7 @@
         <td>{{ (l.dtoPct ?? 0) | number:'1.0-2' }}</td>
         <td>{{ (l.totalLinea ?? 0) | number:'1.2-2' }} €</td>
         <td>
-          <button class="btn btn-sm btn-danger"
-                  (click)="eliminarLinea(l.id)"
-                  [disabled]="albaran.confirmado">
+          <button class="btn btn-sm btn-danger" (click)="eliminarLinea(l.id)" [disabled]="albaran.confirmado">
             🗑️
           </button>
         </td>
@@ -90,26 +86,22 @@
     </div>
 
     <div class="col-md-2">
-      <input type="number" class="form-control" placeholder="Uds"
-             [(ngModel)]="nuevaLinea.unidades" min="0" step="0.01" />
+      <input type="number" class="form-control" placeholder="Uds" [(ngModel)]="nuevaLinea.unidades" min="0"
+        step="0.01" />
     </div>
 
     <div class="col-md-2">
-      <input type="number" class="form-control" placeholder="Precio"
-             [(ngModel)]="nuevaLinea.precio" min="0" step="0.01" />
+      <input type="number" class="form-control" placeholder="Precio" [(ngModel)]="nuevaLinea.precio" min="0"
+        step="0.01" />
     </div>
 
     <div class="col-md-1">
-      <input type="number" class="form-control" placeholder="Dto"
-             [ngModel]="nuevaLinea.dtoPct ?? 0"
-             (ngModelChange)="nuevaLinea.dtoPct = ($event ?? 0)"
-             min="0" max="100" step="0.01" />
+      <input type="number" class="form-control" placeholder="Dto" [ngModel]="nuevaLinea.dtoPct ?? 0"
+        (ngModelChange)="nuevaLinea.dtoPct = ($event ?? 0)" min="0" max="100" step="0.01" />
     </div>
 
     <div class="col-md-1 d-grid">
-      <button class="btn btn-primary"
-              (click)="agregarLinea()"
-              [disabled]="albaran.confirmado">
+      <button class="btn btn-primary" (click)="agregarLinea()" [disabled]="albaran.confirmado">
         +
       </button>
     </div>

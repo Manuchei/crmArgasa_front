@@ -4,14 +4,13 @@ import { BehaviorSubject } from 'rxjs';
 export type Empresa = 'ARGASA' | 'ELECTROLUGA';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class EmpresaService {
-
   private readonly empresaKey = 'empresa_activa';
 
   private empresaSubject = new BehaviorSubject<Empresa | null>(
-    this.getEmpresaFromStorage()
+    this.getEmpresaFromStorage(),
   );
 
   readonly empresa$ = this.empresaSubject.asObservable();
@@ -23,16 +22,37 @@ export class EmpresaService {
     }
   }
 
+  private normalizarEmpresa(value: any): Empresa | null {
+    const e = (value ?? '').toString().trim().toUpperCase();
+    if (e === 'ARGASA' || e === 'ELECTROLUGA') return e as Empresa;
+    return null;
+  }
+
   private getEmpresaFromStorage(): Empresa | null {
-    const e = localStorage.getItem(this.empresaKey);
-    if (e === 'ARGASA' || e === 'ELECTROLUGA') return e;
+    return this.normalizarEmpresa(localStorage.getItem(this.empresaKey));
+  }
+
+  /**
+   * ✅ Rehidrata el servicio desde localStorage sin volver a escribirlo.
+   * Útil para pestañas nuevas / refresh / rutas directas.
+   */
+  rehidratarDesdeStorage(): Empresa | null {
+    const fromLs = this.getEmpresaFromStorage();
+    if (fromLs) {
+      this.empresaSubject.next(fromLs);
+      this.aplicarTema(fromLs);
+      return fromLs;
+    }
     return null;
   }
 
   setEmpresa(empresa: Empresa): void {
-    localStorage.setItem(this.empresaKey, empresa);
-    this.empresaSubject.next(empresa);
-    this.aplicarTema(empresa);
+    const e = this.normalizarEmpresa(empresa);
+    if (!e) return;
+
+    localStorage.setItem(this.empresaKey, e);
+    this.empresaSubject.next(e);
+    this.aplicarTema(e);
   }
 
   clearEmpresa(): void {
@@ -42,10 +62,13 @@ export class EmpresaService {
   }
 
   getEmpresa(): Empresa | null {
-    return this.empresaSubject.value;
+    // ✅ Si por lo que sea está vacío en memoria, intento rehidratar
+    const actual = this.empresaSubject.value;
+    if (actual) return actual;
+    return this.rehidratarDesdeStorage();
   }
 
-  // 🎨 THEMING (lo dejamos, luego lo retocas)
+  // 🎨 THEMING
   private aplicarTema(empresa: Empresa): void {
     const body = document.body;
     body.classList.remove('tema-argasa', 'tema-electroluga');
