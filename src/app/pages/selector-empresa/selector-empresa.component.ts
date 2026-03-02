@@ -8,23 +8,27 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './selector-empresa.component.html',
-  styleUrls: ['./selector-empresa.component.css']
+  styleUrls: ['./selector-empresa.component.css'],
 })
 export class SelectorEmpresaComponent implements OnInit {
-
   constructor(
     private empresaService: EmpresaService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
-    // 🔥 CLAVE: limpiar empresa previa
+    // Limpia solo el estado en memoria
     this.empresaService.clearEmpresa();
   }
 
   seleccionarEmpresa(empresa: Empresa) {
     console.log('Empresa seleccionada:', empresa);
+
     this.empresaService.setEmpresa(empresa);
-    this.router.navigate(['/app']);
+
+    // ⚠️ Usa SIEMPRE la misma clave que tu empresa.guard
+    localStorage.setItem('empresa', empresa);
+
+    this.router.navigateByUrl('/app/dashboard');
   }
 }

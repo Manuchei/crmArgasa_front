@@ -15,19 +15,28 @@ export class LoginFormComponent {
   password = '';
   errorMsg = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   onSubmit() {
-    console.log('Login fake → entramos como ADMIN');
+    this.errorMsg = '';
 
-    // 🔥 FORZAMOS SESIÓN
-    localStorage.setItem('token', 'fake-token');
-    localStorage.setItem('rol', 'ROLE_ADMIN');
-    localStorage.setItem(
-      'usuario',
-      JSON.stringify({ email: 'admin@empresa.com' })
-    );
+    const credentials = {
+      email: this.email,
+      password: this.password,
+    };
 
-    this.router.navigate(['/dashboard']); // o la ruta principal
+    this.authService.login(credentials).subscribe({
+      next: () => {
+        // ✅ Login OK → vamos al selector de empresa (siempre después del login)
+        this.router.navigate(['/empresa']); // ajusta si tu ruta real es otra
+      },
+      error: (err) => {
+        console.error('Login error:', err);
+        this.errorMsg = 'Credenciales incorrectas';
+      },
+    });
   }
 }

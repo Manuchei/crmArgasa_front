@@ -14,6 +14,8 @@
 
     <button class="btn btn-primary w-100" [disabled]="!loginForm.valid">Entrar</button>
 
-    <p class="text-danger mt-3" *ngIf="errorMsg">{{ errorMsg }}</p>
+    <div *ngIf="errorMsg" class="error">
+      {{ errorMsg }}
+    </div>
   </form>
 </div>

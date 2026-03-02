@@ -1,6 +1,7 @@
 import { ApplicationConfig, LOCALE_ID } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './interceptors/auth.interceptor';
 
 import {
   provideNativeDateAdapter,
@@ -13,8 +14,7 @@ import { empresaInterceptor } from './interceptors/empresa.interceptor';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient(withInterceptors([empresaInterceptor])),
-
+    provideHttpClient(withInterceptors([empresaInterceptor, authInterceptor])),
     // ✅ Necesario para que funcione MatDatepicker
     provideNativeDateAdapter(),
 

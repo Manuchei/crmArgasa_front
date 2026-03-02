@@ -17,7 +17,7 @@ const checkEmpresa = (stateUrl?: string, qpEmpresa?: string | null) => {
   if (actual) return true;
 
   // 2) Rehidratar desde localStorage
-  const stored = normalizar(localStorage.getItem('empresa_activa'));
+  const stored = normalizar(localStorage.getItem('empresa'));
   if (stored) {
     empresaService.setEmpresa(stored);
     return true;
@@ -42,7 +42,7 @@ const checkEmpresa = (stateUrl?: string, qpEmpresa?: string | null) => {
   }
 
   // 5) Si no hay empresa válida, al selector
-  return router.parseUrl('/');
+  return router.parseUrl('/empresa');
 };
 
 // ✅ IMPORTANTE: ahora usamos los args (route, state) para leer query params

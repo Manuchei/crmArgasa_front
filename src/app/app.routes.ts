@@ -25,6 +25,8 @@ import { AlbaranDetalleComponent } from './pages/albaran-detalle/albaran-detalle
 import { FacturasListComponent } from './pages/facturas/facturas-list/facturas-list.component';
 
 import { empresaGuard, empresaChildGuard } from './guards/empresa.guard';
+import { authGuard } from './guards/auth.guard';
+
 import { ImprimirFacturaComponent } from './pages/imprimir-factura/imprimir-factura.component';
 import { ProductosComponent } from './pages/productos/productos.component';
 import { RutasVerComponent } from './pages/rutas-ver/rutas-ver.component';
@@ -33,27 +35,33 @@ export const routes: Routes = [
   // 🔐 LOGIN
   { path: 'login', component: LoginFormComponent },
 
-  // 🏢 SELECTOR DE EMPRESA (pantalla inicial)
-  { path: '', component: SelectorEmpresaComponent },
+  // 🏢 SELECTOR DE EMPRESA (solo si estás logueado)
+  {
+    path: 'empresa',
+    component: SelectorEmpresaComponent,
+    canActivate: [authGuard],
+  },
 
-  // ✅ IMPRIMIR FUERA DEL GUARD (para que no te redirija al selector)
-  // ✅ OJO: aquí NO va "app/" delante, porque ya lo estamos definiendo fuera
+  // ✅ imprimir protegido
   {
     path: 'imprimir/albaran/:id',
     loadComponent: () =>
-      import('./pages/alabaran-imprimir/alabaran-imprimir.component')
-        .then(m => m.AlbaranImprimirComponent),
+      import('./pages/alabaran-imprimir/alabaran-imprimir.component').then(
+        (m) => m.AlbaranImprimirComponent,
+      ),
+    canActivate: [authGuard, empresaGuard],
   },
   {
     path: 'imprimir/factura/:id',
     component: ImprimirFacturaComponent,
+    canActivate: [authGuard, empresaGuard],
   },
 
-  // 🚀 APP REAL (misma app para Argasa / Electroluga)
+  // 🚀 APP REAL
   {
     path: 'app',
-    canActivate: [empresaGuard],
-    canActivateChild: [empresaChildGuard],
+    canActivate: [authGuard, empresaGuard],
+    canActivateChild: [authGuard, empresaChildGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
@@ -73,7 +81,7 @@ export const routes: Routes = [
       { path: 'rutas/nueva', component: RutasFormComponent },
       { path: 'rutas/editar/:id', component: RutasFormComponent },
       { path: 'rutas/dia', component: RutasDiaComponent },
-      { path: 'rutas/ver/:id', component:RutasVerComponent},
+      { path: 'rutas/ver/:id', component: RutasVerComponent },
 
       { path: 'calendario', component: CalendarioLlamadas2Component },
 
@@ -83,10 +91,13 @@ export const routes: Routes = [
 
       { path: 'facturas', component: FacturasListComponent },
 
-      { path: 'productos', component: ProductosComponent},
+      { path: 'productos', component: ProductosComponent },
     ],
   },
 
-  // ❌ CUALQUIER OTRA RUTA
-  { path: '**', redirectTo: '' },
+  // 🧭 raíz → login
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+
+  // ❌ cualquier otra ruta → login
+  { path: '**', redirectTo: 'login' },
 ];

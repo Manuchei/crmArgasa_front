@@ -14,7 +14,6 @@ import { EmpresaService, Empresa } from '../../services/empresa.service';
   styleUrls: ['./navbar.component.css'],
 })
 export class NavbarComponent implements OnInit, OnDestroy {
-
   usuario: any = null;
   rol: string | null = null;
   empresa: Empresa | null = null;
@@ -31,10 +30,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.usuario = this.auth.getUsuario();
     this.rol = this.auth.getRol();
 
-    this.empresaSub = this.empresaService.empresa$
-      .subscribe((empresa: Empresa | null) => {
-        this.empresa = empresa;
-      });
+    this.empresaSub = this.empresaService.empresa$.subscribe((empresa) => {
+      this.empresa = empresa;
+    });
   }
 
   ngOnDestroy(): void {
@@ -42,11 +40,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   cambiarEmpresa(): void {
+    // ✅ NO hacemos logout
+    // ✅ Solo limpiamos la empresa y vamos al selector
     this.empresaService.clearEmpresa();
-    this.router.navigate(['']);
+    this.router.navigate(['/empresa']);
   }
 
   logout(): void {
+    // ✅ Logout completo
     this.auth.logout();
     this.empresaService.clearEmpresa();
     this.router.navigate(['/login']);
