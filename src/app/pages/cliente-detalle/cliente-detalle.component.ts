@@ -646,7 +646,7 @@ export class ClienteDetalleComponent implements OnInit {
   // ---------------- CATÁLOGO PRODUCTOS ----------------
   cargarProductos(): void {
     const empresa = this.getEmpresaActual();
-    this.productosService.list(empresa).subscribe({
+    this.productosService.list().subscribe({
       next: (res) => {
         this.productos = res ?? [];
 

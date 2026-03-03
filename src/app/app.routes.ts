@@ -26,10 +26,13 @@ import { FacturasListComponent } from './pages/facturas/facturas-list/facturas-l
 
 import { empresaGuard, empresaChildGuard } from './guards/empresa.guard';
 import { authGuard } from './guards/auth.guard';
+import { roleGuard } from './guards/role.guard';
 
 import { ImprimirFacturaComponent } from './pages/imprimir-factura/imprimir-factura.component';
 import { ProductosComponent } from './pages/productos/productos.component';
 import { RutasVerComponent } from './pages/rutas-ver/rutas-ver.component';
+import { dashboardRedirectGuard } from './guards/dashboard-redirect.guard';
+import { DashboardUserComponent } from './pages/dashboard-user/dashboard-user.component';
 
 export const routes: Routes = [
   // 🔐 LOGIN
@@ -65,33 +68,123 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
-      { path: 'dashboard', component: DashboardComponent },
+      // ✅ todos los roles logueados
+      {
+        path: 'dashboard',
+        component: DashboardComponent,
+        canActivate: [dashboardRedirectGuard],
+      },
 
-      { path: 'clientes', component: ClientesComponent },
-      { path: 'clientes/nuevo', component: NuevoClienteComponent },
-      { path: 'clientes/editar/:id', component: EditarClienteComponent },
-      { path: 'clientes/:id', component: ClienteDetalleComponent },
+      // ✅ dashboard solo para USER (y admin no hace falta)
+      {
+        path: 'dashboard-user',
+        component: DashboardUserComponent,
+        canActivate: [roleGuard(['USER'])],
+      },
 
-      { path: 'proveedores', component: ProveedoresComponent },
-      { path: 'proveedores/nuevo', component: NuevoProveedorComponent },
-      { path: 'proveedores/editar/:id', component: EditarProveedorComponent },
-      { path: 'proveedores/:id', component: VerProveedorComponent },
+      // ✅ ADMIN + USER
+      {
+        path: 'clientes',
+        component: ClientesComponent,
+        canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
+      {
+        path: 'clientes/nuevo',
+        component: NuevoClienteComponent,
+        canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
+      {
+        path: 'clientes/editar/:id',
+        component: EditarClienteComponent,
+        canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
+      {
+        path: 'clientes/:id',
+        component: ClienteDetalleComponent,
+        canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
 
-      { path: 'rutas', component: RutasListComponent },
-      { path: 'rutas/nueva', component: RutasFormComponent },
-      { path: 'rutas/editar/:id', component: RutasFormComponent },
-      { path: 'rutas/dia', component: RutasDiaComponent },
-      { path: 'rutas/ver/:id', component: RutasVerComponent },
+      // ✅ ADMIN + USER
+      {
+        path: 'proveedores',
+        component: ProveedoresComponent,
+        canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
+      {
+        path: 'proveedores/nuevo',
+        component: NuevoProveedorComponent,
+        canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
+      {
+        path: 'proveedores/editar/:id',
+        component: EditarProveedorComponent,
+        canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
+      {
+        path: 'proveedores/:id',
+        component: VerProveedorComponent,
+        canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
 
-      { path: 'calendario', component: CalendarioLlamadas2Component },
+      // ✅ ADMIN + TRANSPORTISTA
+      {
+        path: 'rutas',
+        component: RutasListComponent,
+        canActivate: [roleGuard(['ADMIN', 'TRANSPORTISTA'])],
+      },
+      {
+        path: 'rutas/nueva',
+        component: RutasFormComponent,
+        canActivate: [roleGuard(['ADMIN', 'TRANSPORTISTA'])],
+      },
+      {
+        path: 'rutas/editar/:id',
+        component: RutasFormComponent,
+        canActivate: [roleGuard(['ADMIN', 'TRANSPORTISTA'])],
+      },
+      {
+        path: 'rutas/dia',
+        component: RutasDiaComponent,
+        canActivate: [roleGuard(['ADMIN', 'TRANSPORTISTA'])],
+      },
+      {
+        path: 'rutas/ver/:id',
+        component: RutasVerComponent,
+        canActivate: [roleGuard(['ADMIN', 'TRANSPORTISTA'])],
+      },
 
-      { path: 'transportistas', component: TransportistasComponent },
+      // ✅ Calendario: ADMIN + USER (si quieres también TRANSPORTISTA, añádelo aquí)
+      {
+        path: 'calendario',
+        component: CalendarioLlamadas2Component,
+        canActivate: [roleGuard(['ADMIN'])],
+      },
 
-      { path: 'albaranes/:id', component: AlbaranDetalleComponent },
+      // ✅ Transportistas: SOLO ADMIN (por ahora)
+      {
+        path: 'transportistas',
+        component: TransportistasComponent,
+        canActivate: [roleGuard(['ADMIN'])],
+      },
 
-      { path: 'facturas', component: FacturasListComponent },
+      // ✅ ADMIN (ajústalo si quieres)
+      {
+        path: 'albaranes/:id',
+        component: AlbaranDetalleComponent,
+        canActivate: [roleGuard(['ADMIN'])],
+      },
+      {
+        path: 'facturas',
+        component: FacturasListComponent,
+        canActivate: [roleGuard(['ADMIN'])],
+      },
 
-      { path: 'productos', component: ProductosComponent },
+      // ✅ ADMIN + USER
+      {
+        path: 'productos',
+        component: ProductosComponent,
+        canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
     ],
   },
 

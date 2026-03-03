@@ -32,7 +32,7 @@ export class AuthService {
 
         // Guardamos email del usuario
         localStorage.setItem('usuario', JSON.stringify({ email: payload.sub }));
-      })
+      }),
     );
   }
 
@@ -93,5 +93,25 @@ export class AuthService {
     localStorage.removeItem(this.rolKey);
     localStorage.removeItem('usuario');
     localStorage.removeItem('exp');
+  }
+
+  hasRole(...roles: string[]): boolean {
+    const rol = (this.getRol() ?? '').toUpperCase().trim();
+    return roles.some((r) => {
+      const rr = r.toUpperCase().trim();
+      return rol === rr || rol === `ROLE_${rr}`;
+    });
+  }
+
+  isAdmin(): boolean {
+    return this.hasRole('ADMIN');
+  }
+
+  isTransportista(): boolean {
+    return this.hasRole('TRANSPORTISTA');
+  }
+
+  isUser(): boolean {
+    return this.hasRole('USER');
   }
 }

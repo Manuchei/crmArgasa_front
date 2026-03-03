@@ -1,9 +1,11 @@
 import { ProductoServiceService } from './../../services/producto-service.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { IProducto } from '../../interfaces/iproducto';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { EmpresaService, Empresa } from '../../services/empresa.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-productos',
@@ -11,11 +13,10 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './productos.component.html',
   styleUrl: './productos.component.css',
 })
-export class ProductosComponent implements OnInit {
+export class ProductosComponent implements OnInit, OnDestroy {
   productos: IProducto[] = [];
 
-  // si tú ya tienes empresa seleccionada en app, úsala aquí
-  empresaSeleccionada: string = 'ARGASA';
+  empresaActiva: Empresa | null = null;
 
   form: IProducto = {
     codigo: '',
@@ -25,24 +26,46 @@ export class ProductosComponent implements OnInit {
     precioSinIva: 0,
   };
 
-  // ✅ ajuste por productoId
   ajusteMap: Record<number, number> = {};
-
   loading = false;
 
-  constructor(private productosService: ProductoServiceService) {}
+  private empresaSub?: Subscription;
+
+  constructor(
+    private productosService: ProductoServiceService,
+    private empresaService: EmpresaService,
+  ) {}
 
   ngOnInit(): void {
-    this.cargar();
+    // empresa actual
+    this.empresaActiva = this.empresaService.getEmpresa();
+
+    // recarga si cambia
+    this.empresaSub = this.empresaService.empresa$.subscribe((empresa) => {
+      this.empresaActiva = empresa;
+      if (empresa) this.cargar();
+    });
+
+    if (this.empresaActiva) this.cargar();
+  }
+
+  ngOnDestroy(): void {
+    this.empresaSub?.unsubscribe();
   }
 
   cargar() {
-    this.productosService.list(this.empresaSeleccionada).subscribe((res) => {
+    // ✅ ya no se pasa empresa: va por header X-Empresa (interceptor)
+    this.productosService.list().subscribe((res) => {
       this.productos = res;
     });
   }
 
   crear() {
+    if (!this.empresaActiva) {
+      alert('Empresa no seleccionada');
+      return;
+    }
+
     if (!this.form.codigo?.trim() || !this.form.nombre?.trim()) {
       alert('Código y nombre son obligatorios');
       return;
@@ -54,15 +77,14 @@ export class ProductosComponent implements OnInit {
 
     this.loading = true;
 
+    // ✅ Aunque mandes empresa, el backend debería forzar la del tenant
     const payload: IProducto = {
       codigo: this.form.codigo.trim(),
       nombre: this.form.nombre.trim(),
       stock: this.form.stock,
-      empresa: this.empresaSeleccionada,
-      precioSinIva: this.form.precioSinIva, // ✅ AÑADIR
+      empresa: this.empresaActiva,
+      precioSinIva: this.form.precioSinIva,
     };
-
-    console.log('ENVIANDO:', payload);
 
     this.productosService.create(payload).subscribe({
       next: (nuevo) => {
@@ -71,9 +93,9 @@ export class ProductosComponent implements OnInit {
           codigo: '',
           nombre: '',
           stock: 5,
-          empresa: this.empresaSeleccionada,
+          empresa: this.empresaActiva!,
           precioSinIva: 0,
-        }; // reset form
+        };
         this.loading = false;
       },
       error: (err: HttpErrorResponse) => {
@@ -84,65 +106,53 @@ export class ProductosComponent implements OnInit {
       },
     });
   }
-  // ✅ mapa de ajustes por productoId (cantidad a subir/bajar)
 
-// ✅ getter seguro para el input
-getAjuste(productoId: any): number {
-  const id = Number(productoId);
-  const v = Number(this.ajusteMap[id] ?? 1);
-  return isNaN(v) || v <= 0 ? 1 : v;
-}
-
-// ✅ setter seguro (normaliza a >= 1)
-setAjuste(productoId: any, value: any): void {
-  const id = Number(productoId);
-  let v = Number(value);
-  if (isNaN(v) || v <= 0) v = 1;
-  this.ajusteMap[id] = v;
-}
-
-// ✅ subir N unidades
-subirStock(p: any): void {
-  const id = Number(p?.id);
-  if (!id) return;
-
-  const cant = this.getAjuste(id);
-
-  this.productosService.ajustarStock(id, +cant).subscribe({
-    next: (prodActualizado) => {
-      p.stock = prodActualizado.stock;
-      this.ajusteMap[id] = 1; // reset
-    },
-    error: (err) => {
-      console.error(err);
-      alert('No se pudo subir el stock');
-    }
-  });
-}
-
-// ✅ bajar N unidades (no permite negativo)
-bajarStock(p: any): void {
-  const id = Number(p?.id);
-  if (!id) return;
-
-  const cant = this.getAjuste(id);
-  const stock = Number(p?.stock ?? 0);
-
-  if (cant > stock) {
-    alert('No puedes bajar más de lo que hay en stock.');
-    return;
+  getAjuste(productoId: any): number {
+    const id = Number(productoId);
+    const v = Number(this.ajusteMap[id] ?? 1);
+    return isNaN(v) || v <= 0 ? 1 : v;
   }
 
-  this.productosService.ajustarStock(id, -cant).subscribe({
-    next: (prodActualizado) => {
-      p.stock = prodActualizado.stock;
-      this.ajusteMap[id] = 1; // reset
-    },
-    error: (err) => {
-      console.error(err);
-      alert('No se pudo bajar el stock');
-    }
-  });
-}
+  setAjuste(productoId: any, value: any): void {
+    const id = Number(productoId);
+    let v = Number(value);
+    if (isNaN(v) || v <= 0) v = 1;
+    this.ajusteMap[id] = v;
+  }
 
+  subirStock(p: any): void {
+    const id = Number(p?.id);
+    if (!id) return;
+
+    const cant = this.getAjuste(id);
+
+    this.productosService.ajustarStock(id, +cant).subscribe({
+      next: (prodActualizado) => {
+        p.stock = prodActualizado.stock;
+        this.ajusteMap[id] = 1;
+      },
+      error: () => alert('No se pudo subir el stock'),
+    });
+  }
+
+  bajarStock(p: any): void {
+    const id = Number(p?.id);
+    if (!id) return;
+
+    const cant = this.getAjuste(id);
+    const stock = Number(p?.stock ?? 0);
+
+    if (cant > stock) {
+      alert('No puedes bajar más de lo que hay en stock.');
+      return;
+    }
+
+    this.productosService.ajustarStock(id, -cant).subscribe({
+      next: (prodActualizado) => {
+        p.stock = prodActualizado.stock;
+        this.ajusteMap[id] = 1;
+      },
+      error: () => alert('No se pudo bajar el stock'),
+    });
+  }
 }

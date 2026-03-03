@@ -1,0 +1,59 @@
+<div class="container mt-4">
+
+    <!-- KPIs -->
+    <div class="row g-4 mb-4">
+
+        <!-- CLIENTES -->
+        <div class="col-md-4">
+            <div class="card text-white shadow bg-primary kpi-card" (click)="go('/app/clientes')">
+                <div class="card-body text-center">
+                    <h6>Clientes</h6>
+                    <h2>{{ clientes }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROVEEDORES -->
+        <div class="col-md-4">
+            <div class="card text-white shadow bg-secondary kpi-card" (click)="go('/app/proveedores')">
+                <div class="card-body text-center">
+                    <h6>Proveedores</h6>
+                    <h2>{{ proveedores }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRODUCTOS -->
+        <div class="col-md-4">
+            <div class="card text-white shadow bg-success kpi-card" (click)="go('/app/productos')">
+                <div class="card-body text-center">
+                    <h6>Productos</h6>
+                    <h2>{{ productos }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <button class="btn btn-primary w-100" routerLink="/app/clientes/nuevo">
+                ➕ Nuevo cliente
+            </button>
+        </div>
+
+        <div class="col-md-4">
+            <button class="btn btn-secondary w-100" routerLink="/app/proveedores/nuevo">
+                ➕ Nuevo proveedor
+            </button>
+        </div>
+
+        <div class="col-md-4">
+            <button class="btn btn-success w-100" routerLink="/app/productos">
+                📦 Ver productos
+            </button>
+        </div>
+    </div>
+
+</div>

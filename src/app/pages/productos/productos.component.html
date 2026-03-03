@@ -2,10 +2,6 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Productos</h3>
 
-    <select class="form-select w-auto" [(ngModel)]="empresaSeleccionada" (change)="cargar()">
-      <option value="ARGASA">ARGASA</option>
-      <option value="ELECTROLUGA">ELECTROLUGA</option>
-    </select>
   </div>
 
   <!-- FORMULARIO ALTA -->
@@ -15,41 +11,24 @@
       <div class="row g-2">
         <div class="col-md-3">
           <label class="form-label">Código</label>
-          <input class="form-control"
-                 [(ngModel)]="form.codigo"
-                 name="codigo"
-                 placeholder="P-001"
-                 required>
+          <input class="form-control" [(ngModel)]="form.codigo" name="codigo" placeholder="P-001" required>
         </div>
 
         <div class="col-md-4">
           <label class="form-label">Nombre</label>
-          <input class="form-control"
-                 [(ngModel)]="form.nombre"
-                 name="nombre"
-                 placeholder="Tornillo 6mm"
-                 required>
+          <input class="form-control" [(ngModel)]="form.nombre" name="nombre" placeholder="Tornillo 6mm" required>
         </div>
 
         <!-- ✅ NUEVO: PRECIO SIN IVA -->
         <div class="col-md-2">
           <label class="form-label">Precio (sin IVA)</label>
-          <input type="number"
-                 class="form-control text-end"
-                 [(ngModel)]="form.precioSinIva"
-                 name="precioSinIva"
-                 min="0"
-                 step="0.01"
-                 placeholder="0.00">
+          <input type="number" class="form-control text-end" [(ngModel)]="form.precioSinIva" name="precioSinIva" min="0"
+            step="0.01" placeholder="0.00">
         </div>
 
         <div class="col-md-1">
           <label class="form-label">Stock</label>
-          <input type="number"
-                 class="form-control"
-                 [(ngModel)]="form.stock"
-                 name="stock"
-                 min="0">
+          <input type="number" class="form-control" [(ngModel)]="form.stock" name="stock" min="0">
         </div>
 
         <div class="col-md-2 d-flex align-items-end">
@@ -63,52 +42,49 @@
 
   <!-- LISTADO -->
   <table class="table table-striped align-middle">
-  <thead>
-    <tr>
-      <th>Código</th>
-      <th>Nombre</th>
-      <th class="text-end">Precio (sin IVA)</th>
-      <th class="text-center">Stock</th>
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th class="text-end">Precio (sin IVA)</th>
+        <th class="text-center">Stock</th>
 
-      <!-- ✅ NUEVO -->
-      <th class="text-center">Ajuste</th>
-      <th class="text-end">Stock (+/-)</th>
-    </tr>
-  </thead>
+        <!-- ✅ NUEVO -->
+        <th class="text-center">Ajuste</th>
+        <th class="text-end">Stock (+/-)</th>
+      </tr>
+    </thead>
 
-  <tbody>
-    <tr *ngFor="let p of productos">
-      <td>{{ p.codigo }}</td>
-      <td>{{ p.nombre }}</td>
-      <td class="text-end">{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
+    <tbody>
+      <tr *ngFor="let p of productos">
+        <td>{{ p.codigo }}</td>
+        <td>{{ p.nombre }}</td>
+        <td class="text-end">{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
 
-      <td class="text-center">
-        <span class="badge" [class.bg-success]="p.stock>0" [class.bg-danger]="p.stock===0">
-          {{ p.stock }}
-        </span>
-      </td>
+        <td class="text-center">
+          <span class="badge" [class.bg-success]="p.stock>0" [class.bg-danger]="p.stock===0">
+            {{ p.stock }}
+          </span>
+        </td>
 
-      <!-- ✅ Ajuste -->
-      <td class="text-center" style="max-width:140px;">
-        <input type="number"
-               class="form-control form-control-sm text-center"
-               [ngModel]="getAjuste(p.id)"
-               (ngModelChange)="setAjuste(p.id, $event)"
-               min="1">
-      </td>
+        <!-- ✅ Ajuste -->
+        <td class="text-center" style="max-width:140px;">
+          <input type="number" class="form-control form-control-sm text-center" [ngModel]="getAjuste(p.id)"
+            (ngModelChange)="setAjuste(p.id, $event)" min="1">
+        </td>
 
-      <!-- ✅ Botones -->
-      <td class="text-end">
-        <button class="btn btn-sm btn-outline-success me-2" (click)="subirStock(p)">
-          + Subir
-        </button>
+        <!-- ✅ Botones -->
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-success me-2" (click)="subirStock(p)">
+            + Subir
+          </button>
 
-        <button class="btn btn-sm btn-outline-danger" (click)="bajarStock(p)" [disabled]="(p.stock || 0) === 0">
-          - Bajar
-        </button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+          <button class="btn btn-sm btn-outline-danger" (click)="bajarStock(p)" [disabled]="(p.stock || 0) === 0">
+            - Bajar
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
 </div>

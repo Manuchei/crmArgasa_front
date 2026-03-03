@@ -24,11 +24,12 @@
     </div>
   </div>
 
-  <!-- PRÓXIMAS LLAMADAS -->
-  <div class="card shadow-sm mb-4">
+  <!-- PRÓXIMAS LLAMADAS (SOLO ADMIN) -->
+  <div class="card shadow-sm mb-4" *ngIf="isAdmin()">
     <div class="card-header fw-bold">
       📞 Próximas llamadas
     </div>
+
     <table class="table mb-0">
       <thead>
         <tr>
@@ -48,44 +49,48 @@
           <td>{{ call.fecha | date:'HH:mm' }}</td>
           <td>
             <span class="estado-pill" [ngClass]="{
-        'estado-pendiente': (call.estado || '').toLowerCase() === 'pendiente',
-        'estado-realizada': (call.estado || '').toLowerCase() === 'realizada',
-        'estado-cancelada': (call.estado || '').toLowerCase() === 'cancelada'
-      }">
+              'estado-pendiente': (call.estado || '').toLowerCase() === 'pendiente',
+              'estado-realizada': (call.estado || '').toLowerCase() === 'realizada',
+              'estado-cancelada': (call.estado || '').toLowerCase() === 'cancelada'
+            }">
               {{ call.estado || 'pendiente' }}
             </span>
           </td>
         </tr>
 
-
         <tr *ngIf="calls.length === 0">
           <td colspan="5" class="text-center text-muted">
             No hay llamadas próximas
           </td>
-
         </tr>
       </tbody>
-
     </table>
   </div>
 
   <!-- ACCIONES -->
   <div class="row g-3">
-    <div class="col-md-4">
+
+    <!-- ADMIN + USER -->
+    <div class="col-md-4" *ngIf="isAdmin() || isUser()">
       <button class="btn btn-primary w-100" routerLink="/app/clientes/nuevo">
         ➕ Nuevo cliente
       </button>
     </div>
-    <div class="col-md-4">
+
+    <!-- ADMIN (y si algún día quieres permitir transportista desde dashboard, añade isTransportista()) -->
+    <div class="col-md-4" *ngIf="isAdmin()">
       <button class="btn btn-success w-100" routerLink="/app/rutas/nueva">
         ➕ Nueva ruta
       </button>
     </div>
-    <div class="col-md-4">
+
+    <!-- SOLO ADMIN -->
+    <div class="col-md-4" *ngIf="isAdmin()">
       <button class="btn btn-warning w-100" routerLink="/app/calendario">
         ➕ Nueva llamada
       </button>
     </div>
+
   </div>
 
 </div>

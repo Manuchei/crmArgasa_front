@@ -15,58 +15,53 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
 
-        <!-- Siempre visible -->
-        <li class="nav-item">
+        <!-- Inicio: NO para transportista -->
+        <li class="nav-item" *ngIf="canInicio()">
           <a class="nav-link" routerLink="/app/dashboard" routerLinkActive="active">
             🏠 Inicio
           </a>
         </li>
 
-        <!-- SOLO ADMIN -->
-        <ng-container *ngIf="rol?.includes('ADMIN')">
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/app/clientes" routerLinkActive="active">
-              👥 Clientes
-            </a>
-          </li>
+        <!-- ADMIN + USER -->
+        <li class="nav-item" *ngIf="canClientes()">
+          <a class="nav-link" routerLink="/app/clientes" routerLinkActive="active">
+            👥 Clientes
+          </a>
+        </li>
 
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/app/proveedores" routerLinkActive="active">
-              🔧 Proveedores
-            </a>
-          </li>
+        <li class="nav-item" *ngIf="canProveedores()">
+          <a class="nav-link" routerLink="/app/proveedores" routerLinkActive="active">
+            🔧 Proveedores
+          </a>
+        </li>
 
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/app/rutas" routerLinkActive="active">
-              🗺️ Rutas
-            </a>
-          </li>
+        <li class="nav-item" *ngIf="canProductos()">
+          <a class="nav-link" routerLink="/app/productos" routerLinkActive="active">
+            📦 Productos
+          </a>
+        </li>
 
+        <!-- ADMIN + TRANSPORTISTA -->
+        <li class="nav-item" *ngIf="canRutas()">
+          <a class="nav-link" routerLink="/app/rutas" routerLinkActive="active">
+            🗺️ Rutas
+          </a>
+        </li>
 
-
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/app/productos" routerLinkActive="active">
-              📦 Productos
-            </a>
-          </li>
-        </ng-container>
-
-        <!-- SOLO USER -->
-        <ng-container *ngIf="rol?.includes('USER')">
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/app/clientes" routerLinkActive="active">
-              📁 Mis Clientes
-            </a>
-          </li>
-        </ng-container>
-
-        <!-- Siempre visible -->
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/app/calendario" routerLinkActive="active"
-           >
+        <!-- Calendario: SOLO ADMIN -->
+        <li class="nav-item" *ngIf="canCalendario()">
+          <a class="nav-link" routerLink="/app/calendario" routerLinkActive="active">
             📅 Calendario
           </a>
         </li>
+
+        <!-- Transportistas: SOLO ADMIN -->
+        <li class="nav-item" *ngIf="canTransportistas()">
+          <a class="nav-link" routerLink="/app/transportistas" routerLinkActive="active">
+            🚚 Transportistas
+          </a>
+        </li>
+
       </ul>
 
       <!-- Usuario -->

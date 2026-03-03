@@ -21,9 +21,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private empresaSub?: Subscription;
 
   constructor(
-    private auth: AuthService,
+    public auth: AuthService,
     private empresaService: EmpresaService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -39,15 +39,47 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.empresaSub?.unsubscribe();
   }
 
+  // ✅ helpers permisos
+  isTransportistaOnly(): boolean {
+    return this.auth.hasRole('TRANSPORTISTA') && !this.auth.hasRole('ADMIN');
+  }
+
+  canInicio(): boolean {
+    // Transportista NO
+    return !this.isTransportistaOnly();
+  }
+
+  canClientes(): boolean {
+    return this.auth.hasRole('ADMIN', 'USER');
+  }
+
+  canProveedores(): boolean {
+    return this.auth.hasRole('ADMIN', 'USER');
+  }
+
+  canProductos(): boolean {
+    return this.auth.hasRole('ADMIN', 'USER');
+  }
+
+  canRutas(): boolean {
+    return this.auth.hasRole('ADMIN', 'TRANSPORTISTA');
+  }
+
+  canCalendario(): boolean {
+    // ✅ SOLO ADMIN (User NO, Transportista NO)
+    return this.auth.hasRole('ADMIN');
+  }
+
+  canTransportistas(): boolean {
+    return this.auth.hasRole('ADMIN');
+  }
+
   cambiarEmpresa(): void {
-    // ✅ NO hacemos logout
-    // ✅ Solo limpiamos la empresa y vamos al selector
     this.empresaService.clearEmpresa();
     this.router.navigate(['/empresa']);
   }
 
   logout(): void {
-    // ✅ Logout completo
     this.auth.logout();
     this.empresaService.clearEmpresa();
     this.router.navigate(['/login']);
