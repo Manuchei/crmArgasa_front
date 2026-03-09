@@ -72,18 +72,19 @@ export class RutasFormComponent implements OnInit {
   ngOnInit(): void {
     this.rutaForm = this.fb.group({
       clienteId: [null, Validators.required],
+      transportistaId: [null],
       nombreTransportista: ['', Validators.required],
       emailTransportista: ['', [Validators.required, Validators.email]],
       fecha: ['', Validators.required],
       estado: ['pendiente', Validators.required],
-      destino: [''], // oculto en HTML
+      destino: [''],
       tarea: [''],
       observaciones: [''],
     });
 
     this.lineaForm = this.fb.group({
       productoId: [null, Validators.required],
-      cantidad: [1, [Validators.required, Validators.min(1)]], // max dinámico
+      cantidad: [1, [Validators.required, Validators.min(1)]],
     });
 
     this.cargarClientes();
@@ -95,7 +96,6 @@ export class RutasFormComponent implements OnInit {
       this.cargarRuta(this.idRuta);
     }
 
-    // ✅ al cambiar cliente: reset + cargar pendientes
     this.rutaForm.get('clienteId')?.valueChanges.subscribe((id) => {
       this.productoSeleccionado = null;
       this.lineas = [];
@@ -109,9 +109,12 @@ export class RutasFormComponent implements OnInit {
       }
     });
 
-    // ✅ al cambiar producto: refrescar seleccionado + validadores
     this.lineaForm.get('productoId')?.valueChanges.subscribe(() => {
       this.onProductoChange();
+    });
+
+    this.rutaForm.get('transportistaId')?.valueChanges.subscribe((id) => {
+      this.onSelectTransportista(id);
     });
   }
 
@@ -123,14 +126,25 @@ export class RutasFormComponent implements OnInit {
   }
 
   cargarTransportistas(): void {
+    const empresa = this.getEmpresaSeleccionada();
+
     this.transportistaService.getAll().subscribe({
-      next: (data) => (this.transportistas = data),
+      next: (data) => {
+        this.transportistas = (data ?? []).filter((t) => t.empresa === empresa);
+      },
       error: (err) => console.error(err),
     });
   }
 
-  onSelectTransportista(id: string): void {
-    if (!id) return;
+  onSelectTransportista(id: any): void {
+    if (!id) {
+      this.rutaForm.patchValue({
+        nombreTransportista: '',
+        emailTransportista: '',
+      });
+      return;
+    }
+
     const t = this.transportistas.find((x) => x.id === +id);
     if (!t) return;
 
@@ -147,9 +161,6 @@ export class RutasFormComponent implements OnInit {
     return emp === 'ELECTROLUGA' ? 'ELECTROLUGA' : 'ARGASA';
   }
 
-  // =========================================================
-  // ✅ PENDIENTES REALES: FILTRA ENTREGADOS DE VERDAD
-  // =========================================================
   private esEntregado(x: any): boolean {
     const entregado =
       x?.entregado ??
@@ -175,7 +186,6 @@ export class RutasFormComponent implements OnInit {
     )
       return true;
 
-    // si hay fechaEntrega y no está vacía, lo tratamos como entregado
     const fechaEntrega =
       x?.fechaEntrega ?? x?.fecha_entrega ?? x?.fechaDeEntrega;
     if (fechaEntrega != null && String(fechaEntrega).trim() !== '') return true;
@@ -200,7 +210,6 @@ export class RutasFormComponent implements OnInit {
 
     this.clientesService.getProductosCliente(clienteId, empresa).subscribe({
       next: (res: any) => {
-        // ✅ NO asumimos paginación; si viene paginado usamos content si existe
         const lista: any[] = Array.isArray(res)
           ? res
           : Array.isArray(res?.content)
@@ -210,7 +219,6 @@ export class RutasFormComponent implements OnInit {
         const map = new Map<number, IProductoPendienteUI>();
 
         for (const x of lista) {
-          // 🔥 CLAVE: si está entregado, NO cuenta como pendiente
           if (this.esEntregado(x)) continue;
 
           const prod = x?.producto ?? x;
@@ -233,7 +241,6 @@ export class RutasFormComponent implements OnInit {
 
           const codigo = prod?.codigo ?? x?.codigo ?? '';
 
-          // unidades pendientes de ESTA línea no entregada
           const pendiente = Math.max(this.unidadesDeLinea(x), 0);
           if (pendiente <= 0) continue;
 
@@ -253,17 +260,14 @@ export class RutasFormComponent implements OnInit {
           }
         }
 
-        // ✅ solo productos con pendiente > 0
         this.clienteProductos = Array.from(map.values()).filter(
           (p) => (p.pendiente ?? 0) > 0,
         );
 
-        // refrescar selección
         const pidSel = +this.lineaForm.value.productoId;
         this.productoSeleccionado =
           this.clienteProductos.find((x) => +x.productoId === pidSel) ?? null;
 
-        // si lo seleccionado ya no existe, limpiamos
         if (pidSel && !this.productoSeleccionado) {
           this.lineaForm.patchValue({ productoId: null }, { emitEvent: false });
         }
@@ -293,7 +297,6 @@ export class RutasFormComponent implements OnInit {
       .reduce((acc, l) => acc + (+l.cantidad || 0), 0);
   }
 
-  // ✅ disponibles restantes (pendiente - ya añadidos)
   getDisponibles(productoId: number): number {
     const cp = this.clienteProductos.find(
       (x) => +x?.productoId === +productoId,
@@ -327,7 +330,6 @@ export class RutasFormComponent implements OnInit {
 
     const disponibles = this.getDisponibles(productoId);
 
-    // ✅ bloqueo duro: NO te lo corrige, te avisa
     if (cantidad > disponibles) {
       const cp = this.clienteProductos.find(
         (x) => +x.productoId === +productoId,
@@ -388,6 +390,7 @@ export class RutasFormComponent implements OnInit {
 
         this.rutaForm.patchValue({
           clienteId,
+          transportistaId: null,
           nombreTransportista: ruta.nombreTransportista,
           emailTransportista: ruta.emailTransportista,
           fecha,
@@ -430,9 +433,17 @@ export class RutasFormComponent implements OnInit {
       return;
     }
 
+    const formValue = this.rutaForm.value;
+
     const payload = {
-      ...this.rutaForm.value,
-      tarea: (this.rutaForm.value.tarea || '').toString().trim(),
+      clienteId: formValue.clienteId,
+      nombreTransportista: formValue.nombreTransportista,
+      emailTransportista: formValue.emailTransportista,
+      fecha: formValue.fecha,
+      estado: formValue.estado,
+      destino: formValue.destino,
+      tarea: (formValue.tarea || '').toString().trim(),
+      observaciones: formValue.observaciones,
       lineas: this.lineas ?? [],
     };
 

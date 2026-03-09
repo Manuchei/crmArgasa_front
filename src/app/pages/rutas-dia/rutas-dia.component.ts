@@ -7,6 +7,8 @@ import { RutaService } from '../../services/ruta.service';
 import { ClientesService } from '../../services/cliente.service';
 import { EmpresaService } from '../../services/empresa.service';
 import { ProductoServiceService } from './../../services/producto-service.service';
+import { TransportistaService } from '../../services/transportista.service';
+import { Itrasnportista } from '../../interfaces/itrasnportista';
 
 import { RutaDiaRequestDTO } from '../../interfaces/iruta-dia';
 
@@ -18,7 +20,6 @@ import { RutaDiaRequestDTO } from '../../interfaces/iruta-dia';
   styleUrls: ['./rutas-dia.component.css'],
 })
 export class RutasDiaComponent implements OnInit {
-  // ✅ PON AQUÍ LA RUTA REAL DEL LISTADO
   private readonly RUTAS_LISTADO_URL = '/rutas';
 
   fecha = '';
@@ -28,6 +29,8 @@ export class RutasDiaComponent implements OnInit {
 
   clientes: any[] = [];
   rutas: any[] = [this.nuevaFila()];
+  transportistas: Itrasnportista[] = [];
+  transportistaId: number | null = null;
 
   constructor(
     private router: Router,
@@ -35,10 +38,12 @@ export class RutasDiaComponent implements OnInit {
     private clientesService: ClientesService,
     private productoService: ProductoServiceService,
     private empresaService: EmpresaService,
+    private transportistaService: TransportistaService,
   ) {}
 
   ngOnInit(): void {
     this.cargarClientes();
+    this.cargarTransportistas();
   }
 
   volverAListado(): void {
@@ -51,7 +56,6 @@ export class RutasDiaComponent implements OnInit {
       tarea: '',
       observaciones: '',
       productos: [],
-      // UI
       productosCliente: [],
       productoSel: null,
       cantidadSel: 1,
@@ -100,6 +104,33 @@ export class RutasDiaComponent implements OnInit {
       },
       error: (err: any) => console.error('Error clientes', err),
     });
+  }
+
+  cargarTransportistas(): void {
+    const empresa = this.getEmpresaSeleccionada();
+
+    this.transportistaService.getAll().subscribe({
+      next: (data) => {
+        this.transportistas = (data ?? []).filter((t) => t.empresa === empresa);
+      },
+      error: (err) => console.error('Error transportistas', err),
+    });
+  }
+
+  onTransportistaChange(): void {
+    if (!this.transportistaId) {
+      this.transportista = '';
+      this.emailTransportista = '';
+      return;
+    }
+
+    const t = this.transportistas.find(
+      (x) => x.id === Number(this.transportistaId),
+    );
+    if (!t) return;
+
+    this.transportista = t.nombre;
+    this.emailTransportista = t.email;
   }
 
   onClienteChange(i: number): void {
@@ -273,13 +304,8 @@ export class RutasDiaComponent implements OnInit {
 
     this.rutaService.crearRutasDia(payload).subscribe({
       next: () => {
-        // ✅ el alert es "bloqueante": al pulsar OK continúa y redirige
         alert('Rutas guardadas correctamente');
-
-        // opcional: resetear antes o después, da igual
         this.rutas = [this.nuevaFila()];
-
-        // ✅ volver al listado
         this.router.navigate(['/app/rutas']);
       },
       error: (err: any) => {

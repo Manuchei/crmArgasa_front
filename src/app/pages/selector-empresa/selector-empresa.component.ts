@@ -22,13 +22,8 @@ export class SelectorEmpresaComponent implements OnInit {
   }
 
   seleccionarEmpresa(empresa: Empresa) {
-    console.log('Empresa seleccionada:', empresa);
-
-    this.empresaService.setEmpresa(empresa);
-
-    // ⚠️ Usa SIEMPRE la misma clave que tu empresa.guard
-    localStorage.setItem('empresa', empresa);
-
-    this.router.navigateByUrl('/app/dashboard');
-  }
+  console.log('Empresa seleccionada:', empresa);
+  this.empresaService.setEmpresa(empresa);
+  this.router.navigateByUrl('/app/dashboard');
+}
 }

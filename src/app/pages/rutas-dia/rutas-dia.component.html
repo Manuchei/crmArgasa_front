@@ -9,12 +9,17 @@
 
     <div class="col-md-3">
       <label class="form-label">Transportista</label>
-      <input class="form-control" type="text" [(ngModel)]="transportista" placeholder="Nombre" />
+      <select class="form-select" [(ngModel)]="transportistaId" (ngModelChange)="onTransportistaChange()">
+        <option [ngValue]="null">-- Selecciona transportista --</option>
+        <option *ngFor="let t of transportistas" [ngValue]="t.id">
+          {{ t.nombre }}
+        </option>
+      </select>
     </div>
 
     <div class="col-md-3">
       <label class="form-label">Email transportista</label>
-      <input class="form-control" type="email" [(ngModel)]="emailTransportista" placeholder="email@..." />
+      <input class="form-control" type="email" [(ngModel)]="emailTransportista" placeholder="email@..." readonly />
     </div>
 
     <div class="col-md-3">
