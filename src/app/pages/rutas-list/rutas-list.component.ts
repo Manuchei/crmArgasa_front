@@ -12,8 +12,8 @@ interface GrupoTransportista {
 }
 
 interface GrupoFecha {
-  fechaKey: string; // "2026-01-30"
-  fechaLabel: string; // "30/01/2026"
+  fechaKey: string;
+  fechaLabel: string;
   transportistas: GrupoTransportista[];
   total: number;
 }
@@ -22,8 +22,8 @@ interface GrupoFecha {
   selector: 'app-rutas-list',
   standalone: true,
   templateUrl: './rutas-list.component.html',
-  imports: [FormsModule, NgIf, NgFor],
   styleUrls: ['./rutas-list.component.scss'],
+  imports: [FormsModule, NgIf, NgFor],
 })
 export class RutasListComponent implements OnInit {
   rutas: Ruta[] = [];
@@ -35,8 +35,6 @@ export class RutasListComponent implements OnInit {
 
   cargando = false;
   error = '';
-
-  // acordeón manual (sin JS de Bootstrap)
   openIndex: number | null = null;
 
   constructor(
@@ -48,32 +46,50 @@ export class RutasListComponent implements OnInit {
     this.cargarRutas();
   }
 
-  // -----------------------------
-  // ACORDEÓN MANUAL
-  // -----------------------------
   toggle(i: number): void {
     this.openIndex = this.openIndex === i ? null : i;
   }
 
-  // -----------------------------
-  // SET
-  // -----------------------------
-  private setRutas(rutas: Ruta[]): void {
-    this.rutas = rutas ?? [];
+  private setRutas(rutas: Ruta[] | null | undefined): void {
+    this.rutas = Array.isArray(rutas) ? rutas : [];
     this.grouped = this.agruparRutas(this.rutas);
 
-    // opcional: abrir el primer grupo automáticamente
-    if (this.grouped.length > 0 && this.openIndex === null) {
+    if (this.grouped.length > 0) {
       this.openIndex = 0;
+    } else {
+      this.openIndex = null;
     }
   }
 
-  // -----------------------------
-  // CARGA
-  // -----------------------------
+  private getErrorMessage(err: any, fallback: string): string {
+    console.error('Detalle error:', err);
+
+    if (typeof err?.error === 'string' && err.error.trim() !== '') {
+      return err.error;
+    }
+
+    if (
+      typeof err?.error?.message === 'string' &&
+      err.error.message.trim() !== ''
+    ) {
+      return err.error.message;
+    }
+
+    if (typeof err?.message === 'string' && err.message.trim() !== '') {
+      return err.message;
+    }
+
+    if (err?.status) {
+      return `${fallback} (HTTP ${err.status})`;
+    }
+
+    return fallback;
+  }
+
   cargarRutas(): void {
     this.cargando = true;
     this.error = '';
+    this.openIndex = null;
 
     this.rutaService.getRutas().subscribe({
       next: (data) => {
@@ -81,79 +97,97 @@ export class RutasListComponent implements OnInit {
         this.cargando = false;
       },
       error: (err) => {
-        console.error(err);
-        this.error = 'Error al cargar las rutas';
+        this.error = this.getErrorMessage(err, 'Error al cargar las rutas');
+        this.setRutas([]);
         this.cargando = false;
       },
     });
   }
 
-  // -----------------------------
-  // FILTROS (uno activo cada vez)
-  // -----------------------------
   filtrarNombre(): void {
+    this.error = '';
+
     if (!this.filtroNombre || this.filtroNombre.trim() === '') {
       this.cargarRutas();
       return;
     }
 
     this.cargando = true;
-    this.rutaService.filtrarPorTransportista(this.filtroNombre).subscribe({
-      next: (r) => {
-        this.setRutas(r);
-        this.cargando = false;
-      },
-      error: (err) => {
-        console.error(err);
-        this.error = 'Error al filtrar por transportista';
-        this.cargando = false;
-      },
-    });
+    this.openIndex = null;
+
+    this.rutaService
+      .filtrarPorTransportista(this.filtroNombre.trim())
+      .subscribe({
+        next: (rutas) => {
+          this.setRutas(rutas);
+          this.cargando = false;
+        },
+        error: (err) => {
+          this.error = this.getErrorMessage(
+            err,
+            'Error al filtrar por transportista',
+          );
+          this.setRutas([]);
+          this.cargando = false;
+        },
+      });
   }
 
   filtrarEstado(): void {
+    this.error = '';
+
     if (!this.filtroEstado) {
       this.cargarRutas();
       return;
     }
 
     this.cargando = true;
+    this.openIndex = null;
+
     this.rutaService.filtrarPorEstado(this.filtroEstado).subscribe({
-      next: (r) => {
-        this.setRutas(r);
+      next: (rutas) => {
+        this.setRutas(rutas);
         this.cargando = false;
       },
       error: (err) => {
-        console.error(err);
-        this.error = 'Error al filtrar por estado';
+        this.error = this.getErrorMessage(err, 'Error al filtrar por estado');
+        this.setRutas([]);
         this.cargando = false;
       },
     });
   }
 
   filtrarFecha(): void {
+    this.error = '';
+
     if (!this.filtroFecha) {
       this.cargarRutas();
       return;
     }
 
     this.cargando = true;
+    this.openIndex = null;
+
     this.rutaService.filtrarPorFecha(this.filtroFecha).subscribe({
-      next: (r) => {
-        this.setRutas(r);
+      next: (rutas) => {
+        this.setRutas(rutas);
         this.cargando = false;
       },
       error: (err) => {
-        console.error(err);
-        this.error = 'Error al filtrar por fecha';
+        this.error = this.getErrorMessage(err, 'Error al filtrar por fecha');
+        this.setRutas([]);
         this.cargando = false;
       },
     });
   }
 
-  // -----------------------------
-  // NAVEGACIÓN
-  // -----------------------------
+  limpiarFiltros(): void {
+    this.filtroEstado = '';
+    this.filtroNombre = '';
+    this.filtroFecha = '';
+    this.cargarRutas();
+  }
+
   nuevaRuta(): void {
     this.router.navigate(['/app/rutas/nueva']);
   }
@@ -163,98 +197,97 @@ export class RutasListComponent implements OnInit {
   }
 
   editarRuta(ruta: Ruta): void {
-    if (ruta.id) {
+    if (ruta?.id != null) {
       this.router.navigate(['/app/rutas/editar', ruta.id]);
     }
   }
 
-  // -----------------------------
-  // ACCIONES
-  // -----------------------------
+  verRuta(id: number): void {
+    this.router.navigate(['/app/rutas/ver', id]);
+  }
+
   eliminarRuta(ruta: Ruta): void {
-    if (!ruta.id) return;
+    if (!ruta?.id) return;
+
     if (confirm(`¿Seguro que quieres eliminar la ruta ${ruta.id}?`)) {
       this.rutaService.eliminarRuta(ruta.id).subscribe({
         next: () => this.cargarRutas(),
         error: (err) => {
-          console.error(err);
-          alert('Error al eliminar la ruta');
+          alert(this.getErrorMessage(err, 'Error al eliminar la ruta'));
         },
       });
     }
   }
 
   cerrarRuta(ruta: Ruta): void {
-    if (!ruta.id) return;
+    if (!ruta?.id) return;
+
     if (confirm(`¿Cerrar la ruta ${ruta.id}?`)) {
       this.rutaService.cerrarRuta(ruta.id).subscribe({
         next: () => this.cargarRutas(),
         error: (err) => {
-          console.error(err);
-          alert('Error al cerrar la ruta');
+          alert(this.getErrorMessage(err, 'Error al cerrar la ruta'));
         },
       });
     }
   }
 
-  // -----------------------------
-  // HELPERS (fecha/estado)
-  // -----------------------------
   private formatFechaLabel(fechaKey: string): string {
-    // "2026-01-30" -> "30/01/2026"
     const [y, m, d] = (fechaKey || '').split('-');
-    if (!y || !m || !d) return fechaKey;
+    if (!y || !m || !d) return fechaKey || 'Sin fecha';
     return `${d}/${m}/${y}`;
   }
 
   private getFechaKey(r: Ruta): string {
-    // "2026-01-30" o "2026-01-30T00:00:00"
-    return (r.fecha || '').toString().substring(0, 10);
+    const fecha = (r?.fecha || '').toString().trim();
+    if (!fecha) return 'Sin fecha';
+    return fecha.substring(0, 10);
   }
 
   private getTransportistaKey(r: Ruta): string {
-    return (r.nombreTransportista || 'Sin transportista').toString().trim();
+    return (r?.nombreTransportista || 'Sin transportista').toString().trim();
   }
 
   private getTransportistaEmail(r: Ruta): string | undefined {
-    return r.emailTransportista || undefined;
+    const email = (r as any)?.emailTransportista;
+    return email ? String(email) : undefined;
   }
 
-  // -----------------------------
-  // AGRUPACIÓN
-  // -----------------------------
   private agruparRutas(rutas: Ruta[]): GrupoFecha[] {
     const mapFecha = new Map<string, Map<string, GrupoTransportista>>();
 
     for (const r of rutas) {
       const fechaKey = this.getFechaKey(r);
-      const tKey = this.getTransportistaKey(r);
+      const transportistaKey = this.getTransportistaKey(r);
 
-      if (!mapFecha.has(fechaKey)) mapFecha.set(fechaKey, new Map());
-      const mapT = mapFecha.get(fechaKey)!;
+      if (!mapFecha.has(fechaKey)) {
+        mapFecha.set(fechaKey, new Map<string, GrupoTransportista>());
+      }
 
-      if (!mapT.has(tKey)) {
-        mapT.set(tKey, {
-          nombre: tKey,
+      const mapTransportistas = mapFecha.get(fechaKey)!;
+
+      if (!mapTransportistas.has(transportistaKey)) {
+        mapTransportistas.set(transportistaKey, {
+          nombre: transportistaKey,
           email: this.getTransportistaEmail(r),
           rutas: [],
         });
       }
-      mapT.get(tKey)!.rutas.push(r);
+
+      mapTransportistas.get(transportistaKey)!.rutas.push(r);
     }
 
-    // fechas desc
-    const fechas = Array.from(mapFecha.keys()).sort((a, b) =>
+    const fechasOrdenadas = Array.from(mapFecha.keys()).sort((a, b) =>
       b.localeCompare(a),
     );
 
-    return fechas.map((fechaKey) => {
+    return fechasOrdenadas.map((fechaKey) => {
       const transportistasMap = mapFecha.get(fechaKey)!;
 
       const transportistas = Array.from(transportistasMap.values())
         .map((t) => ({
           ...t,
-          rutas: t.rutas.sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
+          rutas: [...t.rutas].sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
         }))
         .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
@@ -269,63 +302,56 @@ export class RutasListComponent implements OnInit {
     });
   }
 
-  // --- Helpers para mostrar tarea/entrega en el listado ---
+  private nombreProductoFromLinea(linea: any): string {
+    const p = linea?.producto;
 
-private nombreProductoFromLinea(linea: any): string {
-  // soporta linea.producto.nombre / linea.productoId / linea.nombreProducto si lo tuvieras
-  const p = linea?.producto;
-  if (p?.nombre) return p.nombre;
-  if (p?.codigo && p?.nombre) return `${p.codigo} - ${p.nombre}`;
-  if (linea?.nombreProducto) return linea.nombreProducto;
-  if (linea?.productoId) return `Producto ${linea.productoId}`;
-  return 'Producto';
-}
+    if (p?.codigo && p?.nombre) return `${p.codigo} - ${p.nombre}`;
+    if (p?.nombre) return p.nombre;
+    if (linea?.nombreProducto) return linea.nombreProducto;
+    if (linea?.productoId) return `Producto ${linea.productoId}`;
 
-getResumenEntrega(ruta: any, maxItems: number = 2): string | null {
-  const lineas = ruta?.lineas;
-  if (!Array.isArray(lineas) || lineas.length === 0) return null;
+    return 'Producto';
+  }
 
-  const parts = lineas
-    .slice(0, maxItems)
-    .map((l: any) => `${l?.cantidad ?? 1}x ${this.nombreProductoFromLinea(l)}`);
+  getResumenEntrega(ruta: any, maxItems: number = 2): string | null {
+    const lineas = ruta?.lineas;
 
-  const extra = lineas.length > maxItems ? ` +${lineas.length - maxItems}` : '';
-  return `📦 Entrega: ${parts.join(', ')}${extra}`;
-}
+    if (!Array.isArray(lineas) || lineas.length === 0) return null;
 
-getResumenTarea(ruta: any): string | null {
-  const t = (ruta?.tarea ?? '').toString().trim();
-  if (!t) return null;
-  return `🛠 Tarea: ${t}`;
-}
+    const parts = lineas
+      .slice(0, maxItems)
+      .map(
+        (l: any) => `${l?.cantidad ?? 1}x ${this.nombreProductoFromLinea(l)}`,
+      );
 
-// Para el "chip" principal (1 línea). Prioriza entrega si existe.
-getResumenPrincipal(ruta: any): string {
-  const entrega = this.getResumenEntrega(ruta, 2);
-  const tarea = this.getResumenTarea(ruta);
+    const extra =
+      lineas.length > maxItems ? ` +${lineas.length - maxItems}` : '';
 
-  // si hay entrega, esa es la principal
-  if (entrega) return entrega;
+    return `📦 Entrega: ${parts.join(', ')}${extra}`;
+  }
 
-  // si no hay entrega pero sí tarea
-  if (tarea) return tarea;
+  getResumenTarea(ruta: any): string | null {
+    const tarea = (ruta?.tarea ?? '').toString().trim();
+    if (!tarea) return null;
+    return `🛠 Tarea: ${tarea}`;
+  }
 
-  return '—';
-}
+  getResumenPrincipal(ruta: any): string {
+    const entrega = this.getResumenEntrega(ruta, 2);
+    const tarea = this.getResumenTarea(ruta);
 
-// Para mostrar una segunda línea (solo si hay ambas)
-getResumenSecundario(ruta: any): string | null {
-  const entrega = this.getResumenEntrega(ruta, 2);
-  const tarea = this.getResumenTarea(ruta);
+    if (entrega) return entrega;
+    if (tarea) return tarea;
 
-  // si hay ambas, ponemos la tarea como secundaria
-  if (entrega && tarea) return tarea;
+    return '—';
+  }
 
-  return null;
-}
+  getResumenSecundario(ruta: any): string | null {
+    const entrega = this.getResumenEntrega(ruta, 2);
+    const tarea = this.getResumenTarea(ruta);
 
+    if (entrega && tarea) return tarea;
 
-  verRuta(id: number): void {
-    this.router.navigate(['/app/rutas/ver', id]);
+    return null;
   }
 }

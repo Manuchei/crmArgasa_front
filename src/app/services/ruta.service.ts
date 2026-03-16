@@ -4,7 +4,9 @@ import { Observable } from 'rxjs';
 import { Ruta } from '../interfaces/iruta';
 import { RutaDiaRequestDTO } from '../interfaces/iruta-dia';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class RutaService {
   private apiUrl = 'http://localhost:9018/api/rutas';
 
@@ -14,11 +16,27 @@ export class RutaService {
     const emp = (localStorage.getItem('empresa_activa') || 'ARGASA')
       .toUpperCase()
       .trim();
+
     return emp === 'ELECTROLUGA' ? 'ELECTROLUGA' : 'ARGASA';
   }
 
+  private getToken(): string {
+    return localStorage.getItem('token') || '';
+  }
+
   private headersEmpresa(): HttpHeaders {
-    return new HttpHeaders().set('X-Empresa', this.getEmpresaActual());
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'X-Empresa': this.getEmpresaActual(),
+    });
+
+    const token = this.getToken();
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    return headers;
   }
 
   getRutas(): Observable<Ruta[]> {
@@ -60,9 +78,12 @@ export class RutaService {
   }
 
   filtrarPorTransportista(nombre: string): Observable<Ruta[]> {
-    return this.http.get<Ruta[]>(`${this.apiUrl}/transportista/${nombre}`, {
-      headers: this.headersEmpresa(),
-    });
+    return this.http.get<Ruta[]>(
+      `${this.apiUrl}/transportista/${encodeURIComponent(nombre)}`,
+      {
+        headers: this.headersEmpresa(),
+      },
+    );
   }
 
   filtrarPorFecha(fecha: string): Observable<Ruta[]> {

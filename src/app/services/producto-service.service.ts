@@ -1,26 +1,92 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { IProducto } from '../interfaces/iproducto';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { IProducto } from '../interfaces/iproducto';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class ProductoServiceService {
-  private baseUrl = 'http://localhost:9018/api/productos';
+  private apiUrl = 'http://localhost:9018/api/productos';
 
   constructor(private http: HttpClient) {}
 
-  list(): Observable<IProducto[]> {
-    return this.http.get<IProducto[]>(this.baseUrl);
+  private getEmpresa(): 'ARGASA' | 'ELECTROLUGA' {
+    const empresa = (localStorage.getItem('empresa_activa') || 'ARGASA')
+      .toUpperCase()
+      .trim();
+
+    return empresa === 'ELECTROLUGA' ? 'ELECTROLUGA' : 'ARGASA';
   }
 
-  create(producto: IProducto): Observable<IProducto> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<IProducto>(this.baseUrl, producto, { headers });
+  private getToken(): string {
+    return localStorage.getItem('token') || '';
   }
 
-  ajustarStock(productoId: number, delta: number) {
-    return this.http.patch<any>(`${this.baseUrl}/${productoId}/stock`, {
-      delta,
+  private headers(): HttpHeaders {
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'X-Empresa': this.getEmpresa(),
     });
+
+    const token = this.getToken();
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    return headers;
+  }
+
+  // =========================
+  // LISTADO
+  // =========================
+  getProductos(): Observable<IProducto[]> {
+    return this.http.get<IProducto[]>(this.apiUrl, {
+      headers: this.headers(),
+    });
+  }
+
+  // Alias para el componente
+  list(): Observable<IProducto[]> {
+    return this.getProductos();
+  }
+
+  // =========================
+  // CREAR
+  // =========================
+  crearProducto(producto: IProducto): Observable<IProducto> {
+    const body: IProducto = {
+      ...producto,
+      empresa: this.getEmpresa(),
+    };
+
+    return this.http.post<IProducto>(this.apiUrl, body, {
+      headers: this.headers(),
+    });
+  }
+
+  // Alias para el componente
+  create(producto: IProducto): Observable<IProducto> {
+    return this.crearProducto(producto);
+  }
+
+  // =========================
+  // STOCK
+  // =========================
+  ajustarStock(id: number, delta: number): Observable<IProducto> {
+    return this.http.patch<IProducto>(
+      `${this.apiUrl}/${id}/stock`,
+      { delta },
+      { headers: this.headers() },
+    );
+  }
+
+  subirStock(id: number, cantidad: number): Observable<IProducto> {
+    return this.ajustarStock(id, Math.abs(cantidad));
+  }
+
+  bajarStock(id: number, cantidad: number): Observable<IProducto> {
+    return this.ajustarStock(id, -Math.abs(cantidad));
   }
 }
