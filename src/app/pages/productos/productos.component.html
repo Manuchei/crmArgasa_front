@@ -7,14 +7,19 @@
     <div class="card-header">Crear producto</div>
     <div class="card-body">
       <div class="row g-2">
-        <div class="col-md-3">
+        <div class="col-md-2">
           <label class="form-label">Código</label>
           <input class="form-control" [(ngModel)]="form.codigo" name="codigo" placeholder="P-001" required />
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label class="form-label">Nombre</label>
           <input class="form-control" [(ngModel)]="form.nombre" name="nombre" placeholder="Tornillo 6mm" required />
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Modelo</label>
+          <input class="form-control" [(ngModel)]="form.modelo" name="modelo" placeholder="Bosch X200" />
         </div>
 
         <div class="col-md-2">
@@ -37,46 +42,104 @@
     </div>
   </div>
 
-  <table class="table table-striped align-middle">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th class="text-end">Precio (sin IVA)</th>
-        <th class="text-center">Stock</th>
-        <th class="text-center">Ajuste</th>
-        <th class="text-end">Stock (+/-)</th>
-      </tr>
-    </thead>
+  <div class="card mb-4">
+    <div class="card-header">Listado de productos</div>
+    <div class="card-body p-0">
+      <table class="table table-striped align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Modelo</th>
+            <th class="text-end">Precio (sin IVA)</th>
+            <th class="text-center">Stock</th>
+            <th class="text-center">Ajuste</th>
+            <th class="text-end">Stock (+/-)</th>
+          </tr>
+        </thead>
 
-    <tbody>
-      <tr *ngFor="let p of productos">
-        <td>{{ p.codigo }}</td>
-        <td>{{ p.nombre }}</td>
-        <td class="text-end">{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
+        <tbody>
+          <tr *ngFor="let p of productos">
+            <td>{{ p.codigo }}</td>
+            <td>{{ p.nombre }}</td>
+            <td>{{ p.modelo || '-' }}</td>
+            <td class="text-end">
+              {{ (p.precioSinIva || 0) | number:'1.2-2' }} €
+            </td>
 
-        <td class="text-center">
-          <span class="badge" [class.bg-success]="(p.stock || 0) > 0" [class.bg-danger]="(p.stock || 0) === 0">
-            {{ p.stock }}
-          </span>
-        </td>
+            <td class="text-center">
+              <span class="badge" [class.bg-success]="(p.stock || 0) > 0" [class.bg-danger]="(p.stock || 0) === 0">
+                {{ p.stock }}
+              </span>
+            </td>
 
-        <td class="text-center" style="max-width: 140px;">
-          <input type="number" class="form-control form-control-sm text-center" [ngModel]="getAjuste(p.id ?? 0)"
-            (ngModelChange)="setAjuste(p.id ?? 0, $event)" min="1" />
-        </td>
+            <td class="text-center" style="max-width: 140px;">
+              <input type="number" class="form-control form-control-sm text-center" [ngModel]="getAjuste(p.id ?? 0)"
+                (ngModelChange)="setAjuste(p.id ?? 0, $event)" min="1" />
+            </td>
 
-        <td class="text-end">
-          <button class="btn btn-sm btn-outline-success me-2" (click)="subirStock(p)" [disabled]="!p.id">
-            + Subir
-          </button>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-success me-2" (click)="subirStock(p)" [disabled]="!p.id">
+                + Subir
+              </button>
 
-          <button class="btn btn-sm btn-outline-danger" (click)="bajarStock(p)"
-            [disabled]="!p.id || (p.stock || 0) === 0">
-            - Bajar
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+              <button class="btn btn-sm btn-outline-danger" (click)="bajarStock(p)"
+                [disabled]="!p.id || (p.stock || 0) === 0">
+                - Bajar
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="productos.length === 0">
+            <td colspan="7" class="text-center py-3">
+              No hay productos cargados.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Historial de movimientos</div>
+    <div class="card-body p-0">
+      <table class="table table-bordered table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Tipo</th>
+            <th class="text-center">Cantidad</th>
+            <th class="text-center">Stock anterior</th>
+            <th class="text-center">Stock nuevo</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of movimientos">
+            <td>{{ m.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              {{ m.producto?.nombre || '-' }}
+              <span *ngIf="m.producto?.modelo"> - {{ m.producto?.modelo }}</span>
+            </td>
+            <td>
+              <span class="badge" [class.bg-success]="m.tipo === 'ENTRADA'" [class.bg-danger]="m.tipo === 'SALIDA'">
+                {{ m.tipo }}
+              </span>
+            </td>
+            <td class="text-center">{{ m.cantidad }}</td>
+            <td class="text-center">{{ m.stockAnterior }}</td>
+            <td class="text-center">{{ m.stockNuevo }}</td>
+            <td>{{ m.motivo || '-' }}</td>
+          </tr>
+
+          <tr *ngIf="movimientos.length === 0">
+            <td colspan="7" class="text-center py-3">
+              No hay movimientos registrados.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

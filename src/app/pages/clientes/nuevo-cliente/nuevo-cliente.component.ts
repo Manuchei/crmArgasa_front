@@ -1,7 +1,14 @@
 import { Router } from '@angular/router';
-import { NgFor, NgIf, CurrencyPipe, DecimalPipe, NgClass } from '@angular/common';
+import {
+  NgFor,
+  NgIf,
+  CurrencyPipe,
+  DecimalPipe,
+  NgClass,
+} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ClientesService } from '../../../services/cliente.service';
 import { ICliente } from '../../../interfaces/icliente';
 import { ITrabajo } from '../../../interfaces/itrabajo';
@@ -20,27 +27,36 @@ export class NuevoClienteComponent {
     codigoPostal: '',
     poblacion: '',
     provincia: '',
+
+    direccionEntrega: '',
+    codigoPostalEntrega: '',
+    poblacionEntrega: '',
+    provinciaEntrega: '',
+
     telefono: '',
     movil: '',
     cifDni: '',
     email: '',
+    numeroCuenta: '',
     totalImporte: 0,
     totalPagado: 0,
     trabajos: [],
   };
 
-  // ✅ ahora: uds + precio/u + dto
   nuevoTrabajo: ITrabajo = {
     descripcion: '',
     unidades: 1,
     precioUnitario: 0,
     descuento: 0,
-    importe: 0, // lo usaremos como NETO al guardar
+    importe: 0,
     importePagado: 0,
     pagado: false,
   };
 
-  constructor(private clienteService: ClientesService, private router: Router) {}
+  constructor(
+    private clienteService: ClientesService,
+    private router: Router,
+  ) {}
 
   private toNumber(v: any): number {
     const n = Number(v);
@@ -51,11 +67,39 @@ export class NuevoClienteComponent {
     return Math.round((n + Number.EPSILON) * 100) / 100;
   }
 
-  // ✅ neto del formulario
+  private getErrorMessage(err: any, fallback: string): string {
+    if (!err) return fallback;
+
+    if (typeof err.error === 'string' && err.error.trim()) {
+      return err.error;
+    }
+
+    if (err.error?.numeroCuenta) {
+      return err.error.numeroCuenta;
+    }
+
+    if (err.error?.error) {
+      return err.error.error;
+    }
+
+    if (err.error?.message) {
+      return err.error.message;
+    }
+
+    if (err.message) {
+      return err.message;
+    }
+
+    return fallback;
+  }
+
   getNetoNuevoTrabajo(): number {
     const u = Math.max(0, this.toNumber(this.nuevoTrabajo.unidades ?? 1));
     const p = Math.max(0, this.toNumber(this.nuevoTrabajo.precioUnitario ?? 0));
-    const dto = Math.min(100, Math.max(0, this.toNumber(this.nuevoTrabajo.descuento ?? 0)));
+    const dto = Math.min(
+      100,
+      Math.max(0, this.toNumber(this.nuevoTrabajo.descuento ?? 0)),
+    );
 
     const bruto = u * p;
     const neto = bruto * (1 - dto / 100);
@@ -70,9 +114,12 @@ export class NuevoClienteComponent {
     const importePagado = this.toNumber(this.nuevoTrabajo.importePagado ?? 0);
 
     if (!desc || unidades <= 0 || precioUnitario <= 0) {
-      alert('Debes introducir descripción, unidades (>0) y precio unitario (>0).');
+      alert(
+        'Debes introducir descripción, unidades (>0) y precio unitario (>0).',
+      );
       return;
     }
+
     if (descuento < 0 || descuento > 100) {
       alert('El descuento debe estar entre 0 y 100.');
       return;
@@ -85,7 +132,7 @@ export class NuevoClienteComponent {
       unidades,
       precioUnitario,
       descuento,
-      importe: neto, // ✅ guardamos el neto en importe (legacy)
+      importe: neto,
       importePagado,
       pagado: importePagado >= neto,
     };
@@ -107,24 +154,28 @@ export class NuevoClienteComponent {
   recalcularTotales(): void {
     this.cliente.totalImporte = this.cliente.trabajos.reduce(
       (sum: number, t: ITrabajo) => sum + (this.toNumber(t.importe) || 0),
-      0
+      0,
     );
 
     this.cliente.totalPagado = this.cliente.trabajos.reduce(
       (sum: number, t: ITrabajo) => sum + (this.toNumber(t.importePagado) || 0),
-      0
+      0,
     );
   }
 
   guardarCliente(): void {
-    if (!this.cliente.nombreApellidos) {
-      alert('Por favor, completa el campo obligatorio (Nombre y apellidos o Empresa).');
+    if (!this.cliente.nombreApellidos?.trim()) {
+      alert(
+        'Por favor, completa el campo obligatorio (Nombre y apellidos o Empresa).',
+      );
       return;
     }
 
-    // ✅ Seguridad extra: nunca mandar empresa desde el front
     const payload: ICliente = {
       ...this.cliente,
+      numeroCuenta:
+        this.cliente.numeroCuenta?.replace(/\s+/g, '').toUpperCase().trim() ||
+        '',
       empresa: undefined,
     };
 
@@ -133,9 +184,11 @@ export class NuevoClienteComponent {
         alert('✅ Cliente añadido correctamente.');
         this.router.navigate(['/app/clientes']);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         console.error('Error al crear cliente:', err);
-        alert('❌ No se pudo crear el cliente.');
+        alert(
+          '❌ ' + this.getErrorMessage(err, 'No se pudo crear el cliente.'),
+        );
       },
     });
   }

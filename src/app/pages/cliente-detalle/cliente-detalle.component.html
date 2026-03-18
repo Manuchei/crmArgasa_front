@@ -23,26 +23,96 @@
 
   <!-- DATOS CLIENTE -->
   <div class="row mt-3 g-3">
+    <!-- FACTURACIÓN -->
     <div class="col-md-6">
-      <div class="p-3 border rounded shadow-sm bg-white">
-        <div><b>Dirección:</b> {{ cliente.direccion }}</div>
-        <div>
-          <b>CP / Población:</b> {{ cliente.codigoPostal }} - {{ cliente.poblacion }}
+      <div class="card h-100 shadow-sm border-0 cliente-card">
+        <div class="card-body">
+          <h6 class="card-title mb-3 cliente-titulo">Facturación</h6>
+
+          <div class="dato-linea">
+            <span class="dato-label">Dirección:</span>
+            <span>{{ cliente.direccion || '-' }}</span>
+          </div>
+
+          <div class="dato-linea">
+            <span class="dato-label">CP / Población:</span>
+            <span>{{ cliente.codigoPostal || '-' }} - {{ cliente.poblacion || '-' }}</span>
+          </div>
+
+          <div class="dato-linea">
+            <span class="dato-label">Provincia:</span>
+            <span>{{ cliente.provincia || '-' }}</span>
+          </div>
         </div>
-        <div><b>Provincia:</b> {{ cliente.provincia }}</div>
       </div>
     </div>
 
+    <!-- ENTREGA -->
     <div class="col-md-6">
-      <div class="p-3 border rounded shadow-sm bg-white">
-        <div><b>Teléfono:</b> {{ cliente.telefono }}</div>
-        <div><b>Móvil:</b> {{ cliente.movil }}</div>
-        <div><b>Email:</b> {{ cliente.email }}</div>
+      <div class="card h-100 shadow-sm border-0 cliente-card">
+        <div class="card-body">
+          <h6 class="card-title mb-3 cliente-titulo">Entrega</h6>
+
+          <div class="dato-linea">
+            <span class="dato-label">Dirección:</span>
+            <span>{{ cliente.direccionEntrega || cliente.direccion || '-' }}</span>
+          </div>
+
+          <div class="dato-linea">
+            <span class="dato-label">CP / Población:</span>
+            <span>
+              {{ cliente.codigoPostalEntrega || cliente.codigoPostal || '-' }}
+              -
+              {{ cliente.poblacionEntrega || cliente.poblacion || '-' }}
+            </span>
+          </div>
+
+          <div class="dato-linea">
+            <span class="dato-label">Provincia:</span>
+            <span>{{ cliente.provinciaEntrega || cliente.provincia || '-' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACTO -->
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm border-0 cliente-card">
+        <div class="card-body">
+          <h6 class="card-title mb-3 cliente-titulo">Contacto</h6>
+
+          <div class="dato-linea">
+            <span class="dato-label">Teléfono:</span>
+            <span>{{ cliente.telefono || '-' }}</span>
+          </div>
+
+          <div class="dato-linea">
+            <span class="dato-label">Móvil:</span>
+            <span>{{ cliente.movil || '-' }}</span>
+          </div>
+
+          <div class="dato-linea">
+            <span class="dato-label">Email:</span>
+            <span class="text-break">{{ cliente.email || '-' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATOS BANCARIOS -->
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm border-0 cliente-card">
+        <div class="card-body">
+          <h6 class="card-title mb-3 cliente-titulo">Datos bancarios</h6>
+
+          <div class="dato-linea align-items-start">
+            <span class="dato-label">Nº cuenta:</span>
+            <span class="text-break iban-text">{{ cliente.numeroCuenta || '-' }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
-  <hr class="my-4" />
 
   <!-- ALBARANES -->
   <h5 class="mb-2">Albaranes</h5>

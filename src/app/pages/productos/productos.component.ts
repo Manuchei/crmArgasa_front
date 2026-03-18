@@ -1,6 +1,7 @@
 import { ProductoServiceService } from './../../services/producto-service.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { IProducto } from '../../interfaces/iproducto';
+import { IProductoMovimiento } from '../../interfaces/iproducto-movimiento';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -15,12 +16,14 @@ import { Subscription } from 'rxjs';
 })
 export class ProductosComponent implements OnInit, OnDestroy {
   productos: IProducto[] = [];
+  movimientos: IProductoMovimiento[] = [];
 
   empresaActiva: Empresa | null = null;
 
   form: IProducto = {
     codigo: '',
     nombre: '',
+    modelo: '',
     stock: 5,
     empresa: 'ARGASA',
     precioSinIva: 0,
@@ -44,12 +47,14 @@ export class ProductosComponent implements OnInit, OnDestroy {
         this.empresaActiva = empresa;
         if (empresa) {
           this.cargar();
+          this.cargarMovimientos();
         }
       },
     );
 
     if (this.empresaActiva) {
       this.cargar();
+      this.cargarMovimientos();
     }
   }
 
@@ -73,6 +78,17 @@ export class ProductosComponent implements OnInit, OnDestroy {
     });
   }
 
+  cargarMovimientos(): void {
+    this.productosService.getMovimientos().subscribe({
+      next: (res: IProductoMovimiento[]) => {
+        this.movimientos = res;
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error(err);
+      },
+    });
+  }
+
   crear(): void {
     if (!this.empresaActiva) {
       alert('Empresa no seleccionada');
@@ -89,11 +105,17 @@ export class ProductosComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.form.precioSinIva < 0) {
+      alert('El precio no puede ser negativo');
+      return;
+    }
+
     this.loading = true;
 
     const payload: IProducto = {
       codigo: this.form.codigo.trim(),
       nombre: this.form.nombre.trim(),
+      modelo: this.form.modelo?.trim() || '',
       stock: this.form.stock,
       empresa: this.empresaActiva,
       precioSinIva: this.form.precioSinIva,
@@ -105,6 +127,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
         this.form = {
           codigo: '',
           nombre: '',
+          modelo: '',
           stock: 5,
           empresa: this.empresaActiva!,
           precioSinIva: 0,
@@ -142,11 +165,13 @@ export class ProductosComponent implements OnInit, OnDestroy {
     if (!id) return;
 
     const cant = this.getAjuste(id);
+    const motivo = prompt('Motivo de la subida de stock (opcional):') || '';
 
-    this.productosService.ajustarStock(id, cant).subscribe({
+    this.productosService.ajustarStock(id, cant, motivo).subscribe({
       next: (prodActualizado: IProducto) => {
         p.stock = prodActualizado.stock;
         this.ajusteMap[id] = 1;
+        this.cargarMovimientos();
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
@@ -167,10 +192,13 @@ export class ProductosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.productosService.ajustarStock(id, -cant).subscribe({
+    const motivo = prompt('Motivo de la bajada de stock (opcional):') || '';
+
+    this.productosService.ajustarStock(id, -cant, motivo).subscribe({
       next: (prodActualizado: IProducto) => {
         p.stock = prodActualizado.stock;
         this.ajusteMap[id] = 1;
+        this.cargarMovimientos();
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);

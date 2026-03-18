@@ -47,7 +47,7 @@
           {{ (c.totalPagado || 0) - (c.totalImporte || 0) | number: '1.2-2' }}
         </td>
 
-        <td class="d-flex justify-content-center gap-2">
+        <td class="acciones-col">
           <button class="btn btn-sm btn-primary" [routerLink]="['/app/clientes', c.id]">
             <i class="bi bi-eye"></i> Ver
           </button>
@@ -59,10 +59,11 @@
           <button class="btn btn-sm btn-danger" (click)="eliminarCliente(c.id!)">
             <i class="bi bi-trash"></i> Eliminar
           </button>
+        </td>
 
 
 
-          <!-- <button
+        <!-- <button
             class="btn btn-sm btn-dark"
             (click)="c?.id && generarFactura(c)"
             [disabled]="!c?.id || generandoFacturaId === c.id || (c.pendiente ?? 0) <= 0"
@@ -70,7 +71,6 @@
             <span *ngIf="generandoFacturaId !== c.id">🧾 Facturar</span>
             <span *ngIf="generandoFacturaId === c.id">Generando...</span>
           </button> -->
-        </td>
       </tr>
 
       <tr *ngIf="clientesFiltrados.length === 0">

@@ -1,0 +1,37 @@
+.cliente-card {
+  border-radius: 14px;
+  background:  #f5f7fa;
+  border: 1px solid #e3e6ea;
+}
+
+.cliente-card .card-body {
+  padding: 1.25rem 1.25rem;
+}
+
+.dato-linea {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  line-height: 1.45;
+}
+
+.dato-label {
+  min-width: 140px;
+  font-weight: 600;
+  color: #212529;
+  flex-shrink: 0;
+}
+
+.iban-text {
+  font-family: monospace;
+  font-size: 0.98rem;
+  word-break: break-word;
+}
+
+.cliente-titulo {
+  color: #000;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #e3e6ea;
+  padding-bottom: 6px;
+}

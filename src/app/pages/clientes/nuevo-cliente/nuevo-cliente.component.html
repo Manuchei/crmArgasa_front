@@ -10,6 +10,7 @@
       </div>
     </div>
 
+    <h5 class="mt-3">Dirección de facturación</h5>
     <div class="row mb-3">
       <div class="col-md-8">
         <label>Dirección</label>
@@ -29,6 +30,36 @@
       <div class="col-md-6">
         <label>Provincia</label>
         <input [(ngModel)]="cliente.provincia" name="provincia" class="form-control" />
+      </div>
+    </div>
+
+    <h5 class="mt-3">Dirección de entrega</h5>
+    <div class="row mb-3">
+      <div class="col-md-8">
+        <label>Dirección de entrega</label>
+        <input [(ngModel)]="cliente.direccionEntrega" name="direccionEntrega" class="form-control" />
+      </div>
+      <div class="col-md-4">
+        <label>Código Postal entrega</label>
+        <input [(ngModel)]="cliente.codigoPostalEntrega" name="codigoPostalEntrega" class="form-control" />
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label>Población entrega</label>
+        <input [(ngModel)]="cliente.poblacionEntrega" name="poblacionEntrega" class="form-control" />
+      </div>
+      <div class="col-md-6">
+        <label>Provincia entrega</label>
+        <input [(ngModel)]="cliente.provinciaEntrega" name="provinciaEntrega" class="form-control" />
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <label class="form-label">Número de cuenta</label>
+        <input type="text" class="form-control" [(ngModel)]="cliente.numeroCuenta" name="numeroCuenta">
       </div>
     </div>
 
@@ -58,146 +89,92 @@
 
     <h5 class="mt-4">Compras del cliente</h5>
 
-<!-- ✅ Cabeceras encima de los inputs -->
-<div class="row g-2 mb-1 fw-semibold text-muted small">
-  <div class="col-md-4">Descripción</div>
-  <div class="col-md-1 text-end">Uds</div>
-  <div class="col-md-2 text-end">Precio/U (€)</div>
-  <div class="col-md-1 text-end">Dto %</div>
-  <div class="col-md-2 text-end">Importe neto (€)</div>
-  <div class="col-md-1 text-end">Pagado (€)</div>
-  <div class="col-md-1 text-center">Acción</div>
-</div>
+    <div class="row g-2 mb-1 fw-semibold text-muted small">
+      <div class="col-md-4">Descripción</div>
+      <div class="col-md-1 text-end">Uds</div>
+      <div class="col-md-2 text-end">Precio/U (€)</div>
+      <div class="col-md-1 text-end">Dto %</div>
+      <div class="col-md-2 text-end">Importe neto (€)</div>
+      <div class="col-md-1 text-end">Pagado (€)</div>
+      <div class="col-md-1 text-center">Acción</div>
+    </div>
 
-<!-- ✅ Fila de inputs -->
-<div class="row g-2 align-items-center mb-3">
-  <div class="col-md-4">
-    <input
-      [(ngModel)]="nuevoTrabajo.descripcion"
-      name="descripcion"
-      placeholder="Descripción"
-      class="form-control"
-      (ngModelChange)="recalcularTotales()"
-    />
-  </div>
+    <div class="row g-2 align-items-center mb-3">
+      <div class="col-md-4">
+        <input [(ngModel)]="nuevoTrabajo.descripcion" name="descripcion" placeholder="Descripción" class="form-control"
+          (ngModelChange)="recalcularTotales()" />
+      </div>
 
-  <div class="col-md-1">
-    <input
-      [(ngModel)]="nuevoTrabajo.unidades"
-      name="unidades"
-      placeholder="Uds"
-      type="number"
-      class="form-control text-end"
-      min="1"
-      step="1"
-      (ngModelChange)="recalcularTotales()"
-    />
-  </div>
+      <div class="col-md-1">
+        <input [(ngModel)]="nuevoTrabajo.unidades" name="unidades" placeholder="Uds" type="number"
+          class="form-control text-end" min="1" step="1" (ngModelChange)="recalcularTotales()" />
+      </div>
 
-  <div class="col-md-2">
-    <input
-      [(ngModel)]="nuevoTrabajo.precioUnitario"
-      name="precioUnitario"
-      placeholder="Precio/U (€)"
-      type="number"
-      class="form-control text-end"
-      min="0"
-      step="0.01"
-      (ngModelChange)="recalcularTotales()"
-    />
-  </div>
+      <div class="col-md-2">
+        <input [(ngModel)]="nuevoTrabajo.precioUnitario" name="precioUnitario" placeholder="Precio/U (€)" type="number"
+          class="form-control text-end" min="0" step="0.01" (ngModelChange)="recalcularTotales()" />
+      </div>
 
-  <div class="col-md-1">
-    <input
-      [ngModel]="nuevoTrabajo.descuento ?? 0"
-      (ngModelChange)="nuevoTrabajo.descuento = ($event ?? 0); recalcularTotales()"
-      name="descuento"
-      placeholder="Dto %"
-      type="number"
-      class="form-control text-end"
-      min="0"
-      max="100"
-      step="0.01"
-    />
-  </div>
+      <div class="col-md-1">
+        <input [ngModel]="nuevoTrabajo.descuento ?? 0"
+          (ngModelChange)="nuevoTrabajo.descuento = ($event ?? 0); recalcularTotales()" name="descuento"
+          placeholder="Dto %" type="number" class="form-control text-end" min="0" max="100" step="0.01" />
+      </div>
 
-  <!-- ✅ Neto calculado -->
-  <div class="col-md-2">
-    <input
-      class="form-control text-end fw-bold"
-      [value]="(getNetoNuevoTrabajo() | number:'1.2-2')"
-      disabled
-    />
-  </div>
+      <div class="col-md-2">
+        <input class="form-control text-end fw-bold" [value]="(getNetoNuevoTrabajo() | number:'1.2-2')" disabled />
+      </div>
 
-  <div class="col-md-1">
-    <input
-      [(ngModel)]="nuevoTrabajo.importePagado"
-      name="importePagado"
-      placeholder="Pagado (€)"
-      type="number"
-      class="form-control text-end"
-      min="0"
-      step="0.01"
-      (ngModelChange)="recalcularTotales()"
-    />
-  </div>
+      <div class="col-md-1">
+        <input [(ngModel)]="nuevoTrabajo.importePagado" name="importePagado" placeholder="Pagado (€)" type="number"
+          class="form-control text-end" min="0" step="0.01" (ngModelChange)="recalcularTotales()" />
+      </div>
 
-  <div class="col-md-1 d-grid">
-    <button type="button" class="btn btn-primary" (click)="agregarTrabajo()">+</button>
-  </div>
-</div>
+      <div class="col-md-1 d-grid">
+        <button type="button" class="btn btn-primary" (click)="agregarTrabajo()">+</button>
+      </div>
+    </div>
 
-<!-- ✅ Tabla -->
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Descripción</th>
-      <th class="text-end">Uds</th>
-      <th class="text-end">Precio/U (€)</th>
-      <th class="text-end">Dto %</th>
-      <th class="text-end">Importe neto (€)</th>
-      <th class="text-end">Pagado (€)</th>
-      <th class="text-end">Diferencia (€)</th>
-      <th>Acción</th>
-    </tr>
-  </thead>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th class="text-end">Uds</th>
+          <th class="text-end">Precio/U (€)</th>
+          <th class="text-end">Dto %</th>
+          <th class="text-end">Importe neto (€)</th>
+          <th class="text-end">Pagado (€)</th>
+          <th class="text-end">Diferencia (€)</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
 
-  <tbody>
-    <tr *ngFor="let t of cliente.trabajos; let i = index">
-      <td>{{ t.descripcion }}</td>
-      <td class="text-end">{{ t.unidades ?? 1 }}</td>
-      <td class="text-end">{{ (t.precioUnitario ?? 0) | number:'1.2-2' }}</td>
-      <td class="text-end">{{ (t.descuento ?? 0) | number:'1.0-2' }}</td>
+      <tbody>
+        <tr *ngFor="let t of cliente.trabajos; let i = index">
+          <td>{{ t.descripcion }}</td>
+          <td class="text-end">{{ t.unidades ?? 1 }}</td>
+          <td class="text-end">{{ (t.precioUnitario ?? 0) | number:'1.2-2' }}</td>
+          <td class="text-end">{{ (t.descuento ?? 0) | number:'1.0-2' }}</td>
+          <td class="text-end">{{ (t.importe ?? 0) | number:'1.2-2' }}</td>
+          <td class="text-end">{{ (t.importePagado ?? 0) | number:'1.2-2' }}</td>
+          <td class="text-end" [ngClass]="{'text-danger': (t.importePagado ?? 0) < (t.importe ?? 0)}">
+            {{ ((t.importe ?? 0) - (t.importePagado ?? 0)) | number:'1.2-2' }}
+          </td>
+          <td>
+            <button type="button" class="btn btn-danger btn-sm"
+              (click)="cliente.trabajos.splice(i,1); recalcularTotales()">
+              x
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-      <!-- ✅ importe = neto -->
-      <td class="text-end">{{ (t.importe ?? 0) | number:'1.2-2' }}</td>
-
-      <td class="text-end">{{ (t.importePagado ?? 0) | number:'1.2-2' }}</td>
-
-      <td class="text-end" [ngClass]="{'text-danger': (t.importePagado ?? 0) < (t.importe ?? 0)}">
-        {{ ((t.importe ?? 0) - (t.importePagado ?? 0)) | number:'1.2-2' }}
-      </td>
-
-      <td>
-        <button
-          type="button"
-          class="btn btn-danger btn-sm"
-          (click)="cliente.trabajos.splice(i,1); recalcularTotales()"
-        >
-          x
-        </button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<div class="text-end">
-  <p><b>Total debe:</b> {{ cliente.totalImporte | currency:'EUR' }}</p>
-  <p><b>Total pagado:</b> {{ cliente.totalPagado | currency:'EUR' }}</p>
-  <p><b>Diferencia total:</b> {{ (cliente.totalImporte - cliente.totalPagado) | currency:'EUR' }}</p>
-</div>
-
+    <div class="text-end">
+      <p><b>Total debe:</b> {{ cliente.totalImporte | currency:'EUR' }}</p>
+      <p><b>Total pagado:</b> {{ cliente.totalPagado | currency:'EUR' }}</p>
+      <p><b>Diferencia total:</b> {{ (cliente.totalImporte - cliente.totalPagado) | currency:'EUR' }}</p>
+    </div>
 
     <div class="text-end mt-3">
       <button class="btn btn-success" type="submit">Guardar cliente</button>

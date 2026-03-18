@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { IProducto } from '../interfaces/iproducto';
+import { IProductoMovimiento } from '../interfaces/iproducto-movimiento';
 
 @Injectable({
   providedIn: 'root',
@@ -38,23 +39,16 @@ export class ProductoServiceService {
     return headers;
   }
 
-  // =========================
-  // LISTADO
-  // =========================
   getProductos(): Observable<IProducto[]> {
     return this.http.get<IProducto[]>(this.apiUrl, {
       headers: this.headers(),
     });
   }
 
-  // Alias para el componente
   list(): Observable<IProducto[]> {
     return this.getProductos();
   }
 
-  // =========================
-  // CREAR
-  // =========================
   crearProducto(producto: IProducto): Observable<IProducto> {
     const body: IProducto = {
       ...producto,
@@ -66,27 +60,53 @@ export class ProductoServiceService {
     });
   }
 
-  // Alias para el componente
   create(producto: IProducto): Observable<IProducto> {
     return this.crearProducto(producto);
   }
 
-  // =========================
-  // STOCK
-  // =========================
-  ajustarStock(id: number, delta: number): Observable<IProducto> {
+  ajustarStock(
+    id: number,
+    delta: number,
+    motivo?: string,
+  ): Observable<IProducto> {
     return this.http.patch<IProducto>(
       `${this.apiUrl}/${id}/stock`,
-      { delta },
+      {
+        delta,
+        motivo: motivo?.trim() || null,
+      },
       { headers: this.headers() },
     );
   }
 
-  subirStock(id: number, cantidad: number): Observable<IProducto> {
-    return this.ajustarStock(id, Math.abs(cantidad));
+  subirStock(
+    id: number,
+    cantidad: number,
+    motivo?: string,
+  ): Observable<IProducto> {
+    return this.ajustarStock(id, Math.abs(cantidad), motivo);
   }
 
-  bajarStock(id: number, cantidad: number): Observable<IProducto> {
-    return this.ajustarStock(id, -Math.abs(cantidad));
+  bajarStock(
+    id: number,
+    cantidad: number,
+    motivo?: string,
+  ): Observable<IProducto> {
+    return this.ajustarStock(id, -Math.abs(cantidad), motivo);
+  }
+
+  getMovimientos(): Observable<IProductoMovimiento[]> {
+    return this.http.get<IProductoMovimiento[]>(`${this.apiUrl}/movimientos`, {
+      headers: this.headers(),
+    });
+  }
+
+  getMovimientosPorProducto(id: number): Observable<IProductoMovimiento[]> {
+    return this.http.get<IProductoMovimiento[]>(
+      `${this.apiUrl}/${id}/movimientos`,
+      {
+        headers: this.headers(),
+      },
+    );
   }
 }
