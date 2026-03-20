@@ -23,11 +23,15 @@ export class ClienteDetalleComponent implements OnInit {
   productos: IProducto[] = [];
   clienteId!: number;
 
-  // ✅ productos comprados del cliente (cliente_producto)
-  // Backend: [{ productoId, codigo, nombre, cantidad, entregado, fechaEntrega, ... }]
+  pestanaActiva:
+    | 'datos'
+    | 'albaranes'
+    | 'facturacion'
+    | 'pagos'
+    | 'productos-trabajos' = 'datos';
+
   clienteProductos: any[] = [];
 
-  // ✅ Maps por productoId
   qtyMap: Record<number, number> = {};
   dtoMap: Record<number, number> = {};
   pagadoMap: Record<number, number> = {};
@@ -47,8 +51,8 @@ export class ClienteDetalleComponent implements OnInit {
     metodo: '',
     observaciones: '',
   };
-  creandoPago = false;
 
+  creandoPago = false;
   creandoAlbaran = false;
 
   private apiUrl = 'http://localhost:9018/api';
@@ -61,7 +65,32 @@ export class ClienteDetalleComponent implements OnInit {
     private productosService: ProductoServiceService,
   ) {}
 
-  // ---------- helpers ----------
+  cambiarPestana(
+    pestana:
+      | 'datos'
+      | 'albaranes'
+      | 'facturacion'
+      | 'pagos'
+      | 'productos-trabajos',
+  ): void {
+    this.pestanaActiva = pestana;
+  }
+
+  private activarPestanaDesdeNavegacion(): void {
+    const state = history.state;
+
+    if (state?.volverA === 'albaranes') {
+      this.pestanaActiva = 'albaranes';
+      return;
+    }
+
+    const saved = localStorage.getItem('clienteDetallePestana');
+    if (saved === 'albaranes') {
+      this.pestanaActiva = 'albaranes';
+      localStorage.removeItem('clienteDetallePestana');
+    }
+  }
+
   private static toNumber(v: any): number {
     const n = Number(v);
     return isNaN(n) ? 0 : n;
@@ -105,7 +134,6 @@ export class ClienteDetalleComponent implements OnInit {
     return fromLS || 'ARGASA';
   }
 
-  // ---------------- PRODUCTOS: qty/dto/pagado helpers ----------------
   getQty(productoId: number): number {
     if (!productoId) return 1;
     const v = Number(this.qtyMap[productoId] ?? 1);
@@ -148,12 +176,10 @@ export class ClienteDetalleComponent implements OnInit {
     this.pagadoMap[productoId] = isNaN(v) ? 0 : Math.max(0, v);
   }
 
-  // ---------------- Navegación ----------------
   volverAClientes(): void {
     this.router.navigate(['/app/clientes']);
   }
 
-  // ---------------- INIT ----------------
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (isNaN(id) || id <= 0) {
@@ -164,28 +190,26 @@ export class ClienteDetalleComponent implements OnInit {
 
     this.clienteId = id;
 
+    this.activarPestanaDesdeNavegacion();
+
     this.cargarCliente(id);
     this.cargarTrabajos(id);
     this.cargarAlbaranes(id);
     this.cargarPagos(id);
-
-    // ✅ cargar cliente_producto
     this.cargarClienteProductos(id);
   }
 
-  // ---------------- CLIENTE ----------------
   cargarCliente(id: number): void {
     this.http.get(`${this.apiUrl}/clientes/${id}`).subscribe({
       next: (data: any) => {
         this.cliente = data;
         this.calcularTotales();
-        this.cargarProductos(); // catálogo
+        this.cargarProductos();
       },
       error: (err) => console.error('Error al cargar cliente:', err),
     });
   }
 
-  // ---------------- CLIENTE_PRODUCTO (Comprados) ----------------
   cargarClienteProductos(clienteId: number): void {
     const empresa = this.getEmpresaActual();
 
@@ -216,8 +240,9 @@ export class ClienteDetalleComponent implements OnInit {
     const productoId = Number(cp.productoId);
     if (!productoId) return;
 
-    if (!confirm('¿Seguro que deseas eliminar este producto del cliente?'))
+    if (!confirm('¿Seguro que deseas eliminar este producto del cliente?')) {
       return;
+    }
 
     this.cpService
       .deleteProductoCliente(
@@ -229,7 +254,7 @@ export class ClienteDetalleComponent implements OnInit {
         next: () => {
           this.cargarClienteProductos(this.clienteId);
           this.cargarTrabajos(this.clienteId);
-          this.cargarProductos(); // ✅ stock real BD tras devolver
+          this.cargarProductos();
         },
         error: (err) => {
           console.error(err);
@@ -243,7 +268,6 @@ export class ClienteDetalleComponent implements OnInit {
     return cp?.fechaEntrega || cp?.fecha_entrega || cp?.fechaEntregaReal || '-';
   }
 
-  // ---------------- TRABAJOS ----------------
   private normalizarTrabajos(): void {
     this.trabajos = (this.trabajos ?? []).map((t) => {
       const descripcion =
@@ -363,6 +387,7 @@ export class ClienteDetalleComponent implements OnInit {
       );
       return;
     }
+
     if (descuento < 0 || descuento > 100) {
       alert('El descuento debe estar entre 0 y 100.');
       return;
@@ -440,30 +465,22 @@ export class ClienteDetalleComponent implements OnInit {
     });
   }
 
-  // ---------------- ALBARANES ----------------
   verAlbaran(a: any): void {
     if (!a?.id) return;
 
     if (this.cliente?.id) {
       localStorage.setItem('clienteIdFromAlbaran', String(this.cliente.id));
+      localStorage.setItem('clienteDetallePestana', 'albaranes');
     }
 
     this.router.navigate(['/app/albaranes', a.id], {
       queryParams: { clienteId: this.cliente?.id },
-      state: { clienteId: this.cliente?.id },
+      state: { clienteId: this.cliente?.id, volverA: 'albaranes' },
     });
   }
 
-  /**
-   * ✅ CORREGIDO:
-   * - La ruta de imprimir está FUERA de /app en tu routing:
-   *   path: 'imprimir/albaran/:id'
-   * - Por tanto NO hay que abrir '/app/imprimir/...'
-   */
   imprimirAlbaran(a: any): void {
     if (!a?.id) return;
-
-    // ✅ SIN /app
     const url = `${window.location.origin}/imprimir/albaran/${a.id}`;
     window.open(url, '_blank');
   }
@@ -481,6 +498,7 @@ export class ClienteDetalleComponent implements OnInit {
     if (!this.cliente?.id) return;
 
     this.creandoAlbaran = true;
+    localStorage.setItem('clienteDetallePestana', 'albaranes');
 
     this.http
       .post<any>(`${this.apiUrl}/albaranes/clientes/${this.cliente.id}`, {})
@@ -496,7 +514,7 @@ export class ClienteDetalleComponent implements OnInit {
           this.cargarAlbaranes(this.cliente.id);
           this.router.navigate(['/app/albaranes', albaran.id], {
             queryParams: { clienteId: this.cliente?.id },
-            state: { clienteId: this.cliente?.id },
+            state: { clienteId: this.cliente?.id, volverA: 'albaranes' },
           });
         },
         error: (err) => {
@@ -507,7 +525,26 @@ export class ClienteDetalleComponent implements OnInit {
       });
   }
 
-  // ---------------- PAGOS ----------------
+  eliminarAlbaran(a: any): void {
+    if (!a?.id) return;
+
+    const confirmado = confirm(
+      `¿Seguro que deseas eliminar el albarán #${a.id}?`,
+    );
+    if (!confirmado) return;
+
+    this.http.delete(`${this.apiUrl}/albaranes/${a.id}`).subscribe({
+      next: () => {
+        this.albaranes = this.albaranes.filter((alb) => alb.id !== a.id);
+        alert('Albarán eliminado correctamente.');
+      },
+      error: (err) => {
+        console.error('Error al eliminar albarán:', err);
+        alert('No se pudo eliminar el albarán.');
+      },
+    });
+  }
+
   cargarPagos(clienteId: number): void {
     this.http
       .get<any[]>(`${this.apiUrl}/pagos/cliente/${clienteId}`)
@@ -534,6 +571,7 @@ export class ClienteDetalleComponent implements OnInit {
       alert('Fecha inválida.');
       return;
     }
+
     if (importe <= 0) {
       alert('El importe del pago debe ser mayor que 0.');
       return;
@@ -597,7 +635,6 @@ export class ClienteDetalleComponent implements OnInit {
     });
   }
 
-  // ---------------- TOTALES ----------------
   calcularTotales(): void {
     const totalTrabajos = (this.trabajos ?? []).reduce(
       (acc, t) => acc + this.getNetoTrabajo(t),
@@ -643,9 +680,7 @@ export class ClienteDetalleComponent implements OnInit {
     };
   }
 
-  // ---------------- CATÁLOGO PRODUCTOS ----------------
   cargarProductos(): void {
-    const empresa = this.getEmpresaActual();
     this.productosService.list().subscribe({
       next: (res) => {
         this.productos = res ?? [];

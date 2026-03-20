@@ -101,12 +101,9 @@ export class ProductoServiceService {
     });
   }
 
-  getMovimientosPorProducto(id: number): Observable<IProductoMovimiento[]> {
-    return this.http.get<IProductoMovimiento[]>(
-      `${this.apiUrl}/${id}/movimientos`,
-      {
-        headers: this.headers(),
-      },
-    );
-  }
+  getMovimientosPorProducto(id: number) {
+  return this.http.get<any[]>(`${this.apiUrl}/${id}/movimientos`, {
+    headers: this.headers(),
+  });
+}
 }

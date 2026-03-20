@@ -18,7 +18,6 @@
    IMPRESIÓN FACTURA
    =============================== */
 @media print {
-
   /* Oculta todo lo marcado como no imprimible */
   .no-print,
   .ref-origen {
@@ -66,4 +65,22 @@
   .table thead {
     background: #fff !important;
   }
+}
+
+.acciones-factura {
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.acciones-factura .btn {
+  min-width: 78px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0 12px;
 }

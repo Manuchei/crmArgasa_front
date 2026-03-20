@@ -16,7 +16,8 @@ import { Subscription } from 'rxjs';
 })
 export class ProductosComponent implements OnInit, OnDestroy {
   productos: IProducto[] = [];
-  movimientos: IProductoMovimiento[] = [];
+  movimientosProducto: IProductoMovimiento[] = [];
+  productoSeleccionado: IProducto | null = null;
 
   empresaActiva: Empresa | null = null;
 
@@ -31,6 +32,9 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
   ajusteMap: Record<number, number> = {};
   loading = false;
+  filtroCodigo = '';
+  filtroProducto = '';
+  mostrarModalMovimientos = false;
 
   private empresaSub?: Subscription;
 
@@ -47,14 +51,13 @@ export class ProductosComponent implements OnInit, OnDestroy {
         this.empresaActiva = empresa;
         if (empresa) {
           this.cargar();
-          this.cargarMovimientos();
+          this.cerrarMovimientos();
         }
       },
     );
 
     if (this.empresaActiva) {
       this.cargar();
-      this.cargarMovimientos();
     }
   }
 
@@ -78,17 +81,6 @@ export class ProductosComponent implements OnInit, OnDestroy {
     });
   }
 
-  cargarMovimientos(): void {
-    this.productosService.getMovimientos().subscribe({
-      next: (res: IProductoMovimiento[]) => {
-        this.movimientos = res;
-      },
-      error: (err: HttpErrorResponse) => {
-        console.error(err);
-      },
-    });
-  }
-
   crear(): void {
     if (!this.empresaActiva) {
       alert('Empresa no seleccionada');
@@ -97,11 +89,6 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
     if (!this.form.codigo?.trim() || !this.form.nombre?.trim()) {
       alert('Código y nombre son obligatorios');
-      return;
-    }
-
-    if (this.form.stock < 0) {
-      alert('El stock no puede ser negativo');
       return;
     }
 
@@ -171,7 +158,10 @@ export class ProductosComponent implements OnInit, OnDestroy {
       next: (prodActualizado: IProducto) => {
         p.stock = prodActualizado.stock;
         this.ajusteMap[id] = 1;
-        this.cargarMovimientos();
+
+        if (this.productoSeleccionado?.id === id) {
+          this.verMovimientos(p);
+        }
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
@@ -185,25 +175,76 @@ export class ProductosComponent implements OnInit, OnDestroy {
     if (!id) return;
 
     const cant = this.getAjuste(id);
-    const stock = Number(p?.stock ?? 0);
-
-    if (cant > stock) {
-      alert('No puedes bajar más de lo que hay en stock.');
-      return;
-    }
-
     const motivo = prompt('Motivo de la bajada de stock (opcional):') || '';
 
     this.productosService.ajustarStock(id, -cant, motivo).subscribe({
       next: (prodActualizado: IProducto) => {
         p.stock = prodActualizado.stock;
         this.ajusteMap[id] = 1;
-        this.cargarMovimientos();
+
+        if (this.productoSeleccionado?.id === id) {
+          this.verMovimientos(p);
+        }
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
         alert(err.error?.message || err.error || 'No se pudo bajar el stock');
       },
     });
+  }
+
+  verMovimientos(p: IProducto): void {
+    const id = Number(p?.id);
+    if (!id) return;
+
+    this.productoSeleccionado = p;
+    this.filtroCodigo = '';
+    this.mostrarModalMovimientos = true;
+
+    this.productosService.getMovimientosPorProducto(id).subscribe({
+      next: (res: IProductoMovimiento[]) => {
+        this.movimientosProducto = res;
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error(err);
+        alert(
+          err.error?.message ||
+            err.error ||
+            'No se pudieron cargar los movimientos',
+        );
+      },
+    });
+  }
+
+  cerrarMovimientos(): void {
+    this.mostrarModalMovimientos = false;
+    this.productoSeleccionado = null;
+    this.movimientosProducto = [];
+    this.filtroCodigo = '';
+  }
+
+  get movimientosFiltrados(): IProductoMovimiento[] {
+    const filtro = this.filtroCodigo.trim().toLowerCase();
+
+    if (!filtro) return this.movimientosProducto;
+
+    return this.movimientosProducto.filter((m) =>
+      (m.producto?.codigo || '').toLowerCase().includes(filtro),
+    );
+  }
+
+  get productosFiltrados(): IProducto[] {
+    const filtro = this.filtroProducto.trim().toLowerCase();
+
+    if (!filtro) {
+      return this.productos;
+    }
+
+    return this.productos.filter(
+      (p) =>
+        (p.codigo || '').toLowerCase().includes(filtro) ||
+        (p.nombre || '').toLowerCase().includes(filtro) ||
+        (p.modelo || '').toLowerCase().includes(filtro),
+    );
   }
 }

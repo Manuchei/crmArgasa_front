@@ -21,93 +21,121 @@
     </div>
   </div>
 
+  <!-- PESTAÑAS -->
+  <div class="tabs-clientes mt-4">
+    <button type="button" class="tab-btn" [class.active]="pestanaActiva === 'datos'" (click)="cambiarPestana('datos')">
+      Datos del cliente
+    </button>
+
+    <button type="button" class="tab-btn" [class.active]="pestanaActiva === 'albaranes'"
+      (click)="cambiarPestana('albaranes')">
+      Albaranes
+    </button>
+
+    <button type="button" class="tab-btn" [class.active]="pestanaActiva === 'facturacion'"
+      (click)="cambiarPestana('facturacion')">
+      Facturación
+    </button>
+
+    <button type="button" class="tab-btn" [class.active]="pestanaActiva === 'pagos'" (click)="cambiarPestana('pagos')">
+      Historial de pagos
+    </button>
+
+    <button type="button" class="tab-btn" [class.active]="pestanaActiva === 'productos-trabajos'"
+      (click)="cambiarPestana('productos-trabajos')">
+      Añadir producto y trabajos realizados
+    </button>
+  </div>
+
   <!-- DATOS CLIENTE -->
-  <div class="row mt-3 g-3">
-    <!-- FACTURACIÓN -->
-    <div class="col-md-6">
-      <div class="card h-100 shadow-sm border-0 cliente-card">
-        <div class="card-body">
-          <h6 class="card-title mb-3 cliente-titulo">Facturación</h6>
+  <div *ngIf="pestanaActiva === 'datos'" class="tab-content-box">
+    <div class="row mt-3 g-3">
+      <!-- FACTURACIÓN -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0 cliente-card">
+          <div class="card-body">
+            <h6 class="card-title mb-3 cliente-titulo">Facturación</h6>
 
-          <div class="dato-linea">
-            <span class="dato-label">Dirección:</span>
-            <span>{{ cliente.direccion || '-' }}</span>
-          </div>
+            <div class="dato-linea">
+              <span class="dato-label">Dirección:</span>
+              <span>{{ cliente.direccion || '-' }}</span>
+            </div>
 
-          <div class="dato-linea">
-            <span class="dato-label">CP / Población:</span>
-            <span>{{ cliente.codigoPostal || '-' }} - {{ cliente.poblacion || '-' }}</span>
-          </div>
+            <div class="dato-linea">
+              <span class="dato-label">CP / Población:</span>
+              <span>{{ cliente.codigoPostal || '-' }} - {{ cliente.poblacion || '-' }}</span>
+            </div>
 
-          <div class="dato-linea">
-            <span class="dato-label">Provincia:</span>
-            <span>{{ cliente.provincia || '-' }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ENTREGA -->
-    <div class="col-md-6">
-      <div class="card h-100 shadow-sm border-0 cliente-card">
-        <div class="card-body">
-          <h6 class="card-title mb-3 cliente-titulo">Entrega</h6>
-
-          <div class="dato-linea">
-            <span class="dato-label">Dirección:</span>
-            <span>{{ cliente.direccionEntrega || cliente.direccion || '-' }}</span>
-          </div>
-
-          <div class="dato-linea">
-            <span class="dato-label">CP / Población:</span>
-            <span>
-              {{ cliente.codigoPostalEntrega || cliente.codigoPostal || '-' }}
-              -
-              {{ cliente.poblacionEntrega || cliente.poblacion || '-' }}
-            </span>
-          </div>
-
-          <div class="dato-linea">
-            <span class="dato-label">Provincia:</span>
-            <span>{{ cliente.provinciaEntrega || cliente.provincia || '-' }}</span>
+            <div class="dato-linea">
+              <span class="dato-label">Provincia:</span>
+              <span>{{ cliente.provincia || '-' }}</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- CONTACTO -->
-    <div class="col-md-6">
-      <div class="card h-100 shadow-sm border-0 cliente-card">
-        <div class="card-body">
-          <h6 class="card-title mb-3 cliente-titulo">Contacto</h6>
+      <!-- ENTREGA -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0 cliente-card">
+          <div class="card-body">
+            <h6 class="card-title mb-3 cliente-titulo">Entrega</h6>
 
-          <div class="dato-linea">
-            <span class="dato-label">Teléfono:</span>
-            <span>{{ cliente.telefono || '-' }}</span>
-          </div>
+            <div class="dato-linea">
+              <span class="dato-label">Dirección:</span>
+              <span>{{ cliente.direccionEntrega || cliente.direccion || '-' }}</span>
+            </div>
 
-          <div class="dato-linea">
-            <span class="dato-label">Móvil:</span>
-            <span>{{ cliente.movil || '-' }}</span>
-          </div>
+            <div class="dato-linea">
+              <span class="dato-label">CP / Población:</span>
+              <span>
+                {{ cliente.codigoPostalEntrega || cliente.codigoPostal || '-' }}
+                -
+                {{ cliente.poblacionEntrega || cliente.poblacion || '-' }}
+              </span>
+            </div>
 
-          <div class="dato-linea">
-            <span class="dato-label">Email:</span>
-            <span class="text-break">{{ cliente.email || '-' }}</span>
+            <div class="dato-linea">
+              <span class="dato-label">Provincia:</span>
+              <span>{{ cliente.provinciaEntrega || cliente.provincia || '-' }}</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- DATOS BANCARIOS -->
-    <div class="col-md-6">
-      <div class="card h-100 shadow-sm border-0 cliente-card">
-        <div class="card-body">
-          <h6 class="card-title mb-3 cliente-titulo">Datos bancarios</h6>
+      <!-- CONTACTO -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0 cliente-card">
+          <div class="card-body">
+            <h6 class="card-title mb-3 cliente-titulo">Contacto</h6>
 
-          <div class="dato-linea align-items-start">
-            <span class="dato-label">Nº cuenta:</span>
-            <span class="text-break iban-text">{{ cliente.numeroCuenta || '-' }}</span>
+            <div class="dato-linea">
+              <span class="dato-label">Teléfono:</span>
+              <span>{{ cliente.telefono || '-' }}</span>
+            </div>
+
+            <div class="dato-linea">
+              <span class="dato-label">Móvil:</span>
+              <span>{{ cliente.movil || '-' }}</span>
+            </div>
+
+            <div class="dato-linea">
+              <span class="dato-label">Email:</span>
+              <span class="text-break">{{ cliente.email || '-' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DATOS BANCARIOS -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0 cliente-card">
+          <div class="card-body">
+            <h6 class="card-title mb-3 cliente-titulo">Datos bancarios</h6>
+
+            <div class="dato-linea align-items-start">
+              <span class="dato-label">Nº cuenta:</span>
+              <span class="text-break iban-text">{{ cliente.numeroCuenta || '-' }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -115,313 +143,318 @@
   </div>
 
   <!-- ALBARANES -->
-  <h5 class="mb-2">Albaranes</h5>
-  <table class="table table-striped table-hover text-center align-middle shadow-sm">
-    <thead class="table-dark">
-      <tr>
-        <th>Nº</th>
-        <th>Empresa</th>
-        <th>Fecha</th>
-        <th>Total</th>
-        <th>Confirmado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let a of albaranes">
-        <td>#{{ a.id }}</td>
-        <td>{{ a.empresa }}</td>
-        <td>{{ a.fechaEmision || '-' }}</td>
-        <td>{{ (a.total || a.totalImporte || 0) | number: '1.2-2' }} €</td>
-        <td>
-          <span class="badge" [ngClass]="a.confirmado ? 'bg-success' : 'bg-secondary'">
-            {{ a.confirmado ? 'Sí' : 'No' }}
-          </span>
-        </td>
-        <td>
-          <button type="button" class="btn btn-sm btn-primary" (click)="verAlbaran(a)">
-            Ver
-          </button>
-          <button type="button" class="btn btn-sm btn-outline-dark" (click)="imprimirAlbaran(a)">
-            Imprimir
-          </button>
-        </td>
-      </tr>
+  <div *ngIf="pestanaActiva === 'albaranes'" class="tab-content-box">
+    <h5 class="mb-2">Albaranes</h5>
+    <table class="table table-striped table-hover text-center align-middle shadow-sm">
+      <thead class="table-dark">
+        <tr>
+          <th>Nº</th>
+          <th>Empresa</th>
+          <th>Fecha</th>
+          <th>Total</th>
+          <th>Confirmado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of albaranes">
+          <td>#{{ a.id }}</td>
+          <td>{{ a.empresa }}</td>
+          <td>{{ a.fechaEmision || '-' }}</td>
+          <td>{{ (a.total || a.totalImporte || 0) | number: '1.2-2' }} €</td>
+          <td>
+            <span class="badge" [ngClass]="a.confirmado ? 'bg-success' : 'bg-secondary'">
+              {{ a.confirmado ? 'Sí' : 'No' }}
+            </span>
+          </td>
+          <td>
+            <div class="acciones-albaran">
+              <button type="button" class="btn btn-sm btn-secondary" (click)="verAlbaran(a)">
+                Ver
+              </button>
 
-      <tr *ngIf="albaranes.length === 0">
-        <td colspan="6" class="text-muted">
-          Este cliente no tiene albaranes todavía.
-        </td>
-      </tr>
-    </tbody>
-  </table>
+              <button type="button" class="btn btn-sm btn-outline-dark" (click)="imprimirAlbaran(a)">
+                Imprimir
+              </button>
 
-  <hr class="my-4" />
+              <button type="button" class="btn btn-sm btn-danger" (click)="eliminarAlbaran(a)">
+                Eliminar
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="albaranes.length === 0">
+          <td colspan="6" class="text-muted">
+            Este cliente no tiene albaranes todavía.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <!-- FACTURACIÓN -->
-  <h5 class="mb-2">Facturación</h5>
-  <app-facturar-v2 *ngIf="cliente?.id" [clienteId]="cliente.id"></app-facturar-v2>
-
-  <hr class="my-4" />
-
-  <!-- HISTORIAL DE PAGOS -->
-  <div class="d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Historial de pagos</h5>
-    <div class="fw-bold">
-      Total pagado (historial): {{ (cliente?.totalPagado || 0) | number: '1.2-2' }} €
-    </div>
+  <div *ngIf="pestanaActiva === 'facturacion'" class="tab-content-box">
+    <h5 class="mb-2">Facturación</h5>
+    <app-facturar-v2 *ngIf="cliente?.id" [clienteId]="cliente.id"></app-facturar-v2>
   </div>
 
-  <table class="table table-striped table-hover text-center align-middle shadow-sm mt-2">
-    <thead class="table-dark">
-      <tr>
-        <th>Fecha</th>
-        <th>Importe (€)</th>
-        <th>Método</th>
-        <th>Observaciones</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let p of pagos">
-        <td>{{ p.fecha || '-' }}</td>
-        <td>{{ p.importe | number: '1.2-2' }}</td>
-        <td>{{ p.metodo || '-' }}</td>
-        <td class="text-start">{{ p.observaciones || '-' }}</td>
-        <td>
-          <button type="button" class="btn btn-sm btn-danger" (click)="eliminarPago(p.id)">
-            Eliminar
-          </button>
-        </td>
-      </tr>
-
-      <tr *ngIf="pagos.length === 0">
-        <td colspan="5" class="text-muted">
-          Este cliente no tiene pagos registrados.
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <!-- REGISTRAR PAGO -->
-  <h6 class="mt-3">Registrar nuevo pago</h6>
-  <div class="row g-2">
-    <div class="col-md-3">
-      <input type="date" class="form-control" [(ngModel)]="nuevoPago.fecha" />
+  <!-- PAGOS -->
+  <div *ngIf="pestanaActiva === 'pagos'" class="tab-content-box">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Historial de pagos</h5>
+      <div class="fw-bold">
+        Total pagado (historial): {{ (cliente?.totalPagado || 0) | number: '1.2-2' }} €
+      </div>
     </div>
-    <div class="col-md-3">
-      <input type="number" class="form-control" [(ngModel)]="nuevoPago.importe" placeholder="Importe" />
+
+    <table class="table table-striped table-hover text-center align-middle shadow-sm mt-2">
+      <thead class="table-dark">
+        <tr>
+          <th>Fecha</th>
+          <th>Importe (€)</th>
+          <th>Método</th>
+          <th>Observaciones</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of pagos">
+          <td>{{ p.fecha || '-' }}</td>
+          <td>{{ p.importe | number: '1.2-2' }}</td>
+          <td>{{ p.metodo || '-' }}</td>
+          <td class="text-start">{{ p.observaciones || '-' }}</td>
+          <td>
+            <button type="button" class="btn btn-sm btn-danger" (click)="eliminarPago(p.id)">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="pagos.length === 0">
+          <td colspan="5" class="text-muted">
+            Este cliente no tiene pagos registrados.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h6 class="mt-3">Registrar nuevo pago</h6>
+    <div class="row g-2">
+      <div class="col-md-3">
+        <input type="date" class="form-control" [(ngModel)]="nuevoPago.fecha" />
+      </div>
+      <div class="col-md-3">
+        <input type="number" class="form-control" [(ngModel)]="nuevoPago.importe" placeholder="Importe" />
+      </div>
+      <div class="col-md-3">
+        <input type="text" class="form-control" [(ngModel)]="nuevoPago.metodo" placeholder="Método" />
+      </div>
+      <div class="col-md-3">
+        <input type="text" class="form-control" [(ngModel)]="nuevoPago.observaciones" placeholder="Observaciones" />
+      </div>
     </div>
-    <div class="col-md-3">
-      <input type="text" class="form-control" [(ngModel)]="nuevoPago.metodo" placeholder="Método" />
-    </div>
-    <div class="col-md-3">
-      <input type="text" class="form-control" [(ngModel)]="nuevoPago.observaciones" placeholder="Observaciones" />
-    </div>
-  </div>
 
-  <button type="button" class="btn btn-success w-100 mt-2" (click)="agregarPago()" [disabled]="creandoPago">
-    <span *ngIf="!creandoPago">Registrar pago</span>
-    <span *ngIf="creandoPago">...</span>
-  </button>
-
-  <hr class="my-4" />
-
-  <!-- PRODUCTOS -->
-  <div class="d-flex justify-content-between align-items-center mt-4">
-    <h4 class="mb-0">Añadir producto</h4>
-
-    <button type="button" class="btn btn-outline-primary btn-sm" (click)="cargarProductos()">
-      🔄 Recargar productos
+    <button type="button" class="btn btn-success w-100 mt-2" (click)="agregarPago()" [disabled]="creandoPago">
+      <span *ngIf="!creandoPago">Registrar pago</span>
+      <span *ngIf="creandoPago">...</span>
     </button>
   </div>
 
-  <table class="table table-hover align-middle mt-2">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th class="text-end">Precio (sin IVA)</th>
-        <th class="text-center">Stock</th>
-        <th class="text-center">Cant.</th>
-        <th class="text-center">Dto (%)</th>
-        <th class="text-center">Pagado (€)</th>
-        <th class="text-end">Acción</th>
-      </tr>
-    </thead>
+  <!-- PRODUCTOS Y TRABAJOS -->
+  <div *ngIf="pestanaActiva === 'productos-trabajos'" class="tab-content-box">
+    <!-- PRODUCTOS -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <h4 class="mb-0">Añadir producto</h4>
 
-    <tbody>
-      <tr *ngFor="let p of productos">
-        <td>{{ p.codigo }}</td>
-        <td>{{ p.nombre }}</td>
-        <td class="text-end">
-          {{ (p.precioSinIva || 0) | number: '1.2-2' }} €
-        </td>
-        <td class="text-center">{{ p.stock }}</td>
+      <button type="button" class="btn btn-outline-primary btn-sm" (click)="cargarProductos()">
+        🔄 Recargar productos
+      </button>
+    </div>
 
-        <!-- ✅ Cantidad -->
-        <td class="text-center" style="max-width: 110px">
-          <input type="number" class="form-control form-control-sm text-center" [ngModel]="getQty(p.id || 0)"
-            (ngModelChange)="setQty(p.id || 0, $event, p.stock)" min="1" [max]="p.stock" />
-        </td>
+    <table class="table table-hover align-middle mt-2">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th class="text-end">Precio (sin IVA)</th>
+          <th class="text-center">Stock</th>
+          <th class="text-center">Cant.</th>
+          <th class="text-center">Dto (%)</th>
+          <th class="text-center">Pagado (€)</th>
+          <th class="text-end">Acción</th>
+        </tr>
+      </thead>
 
-        <!-- ✅ Descuento -->
-        <td class="text-center" style="max-width: 110px">
-          <input type="number" class="form-control form-control-sm text-center" [ngModel]="getDto(p.id || 0)"
-            (ngModelChange)="setDto(p.id || 0, $event)" min="0" max="100" />
-        </td>
+      <tbody>
+        <tr *ngFor="let p of productos">
+          <td>{{ p.codigo }}</td>
+          <td>{{ p.nombre }}</td>
+          <td class="text-end">
+            {{ (p.precioSinIva || 0) | number: '1.2-2' }} €
+          </td>
+          <td class="text-center">{{ p.stock }}</td>
 
-        <!-- ✅ Pagado -->
-        <td class="text-center" style="max-width: 130px">
-          <input type="number" class="form-control form-control-sm text-center" [ngModel]="getPagado(p.id || 0)"
-            (ngModelChange)="setPagado(p.id || 0, $event)" min="0" step="0.01" />
-        </td>
+          <td class="text-center" style="max-width: 110px">
+            <input type="number" class="form-control form-control-sm text-center" [ngModel]="getQty(p.id || 0)"
+              (ngModelChange)="setQty(p.id || 0, $event, p.stock)" min="1" [max]="p.stock" />
+          </td>
 
-        <td class="text-end">
-          <button type="button" class="btn btn-primary btn-sm" (click)="addProducto(p)"
-            [disabled]="p.stock === 0 || getQty(p.id || 0) > p.stock">
-            ➕ Añadir
-          </button>
-        </td>
-      </tr>
+          <td class="text-center" style="max-width: 110px">
+            <input type="number" class="form-control form-control-sm text-center" [ngModel]="getDto(p.id || 0)"
+              (ngModelChange)="setDto(p.id || 0, $event)" min="0" max="100" />
+          </td>
 
-      <tr *ngIf="productos.length === 0">
-        <td colspan="8" class="text-muted text-center">
-          No hay productos para la empresa seleccionada.
-        </td>
-      </tr>
-    </tbody>
-  </table>
+          <td class="text-center" style="max-width: 130px">
+            <input type="number" class="form-control form-control-sm text-center" [ngModel]="getPagado(p.id || 0)"
+              (ngModelChange)="setPagado(p.id || 0, $event)" min="0" step="0.01" />
+          </td>
 
-  <hr class="my-4" />
+          <td class="text-end">
+            <button type="button" class="btn btn-primary btn-sm" (click)="addProducto(p)"
+              [disabled]="p.stock === 0 || getQty(p.id || 0) > p.stock">
+              ➕ Añadir
+            </button>
+          </td>
+        </tr>
 
-  <!-- TRABAJOS -->
-  <h5>Trabajos realizados</h5>
-  <table class="table table-striped text-center align-middle shadow-sm">
-    <thead class="table-dark">
-      <tr>
-        <th>Descripción</th>
-        <th class="text-end">Unidades</th>
-        <th class="text-end">Precio/U (€)</th>
-        <th class="text-end">Dto (%)</th>
-        <th class="text-end">Importe neto (€)</th>
-        <th class="text-end">Pagado (€)</th>
-        <th>Entregado</th>
-        <th>Fecha entrega</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
+        <tr *ngIf="productos.length === 0">
+          <td colspan="8" class="text-muted text-center">
+            No hay productos para la empresa seleccionada.
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-    <tbody>
-      <tr *ngFor="let t of trabajos">
-        <td class="text-start">{{ t.descripcion }}</td>
-        <td class="text-end">{{ t.unidades }}</td>
-        <td class="text-end">{{ t.precioUnitario | number: '1.2-2' }}</td>
-        <td class="text-end">{{ t.descuento }}%</td>
-        <td class="text-end">{{ getNetoTrabajo(t) | number: '1.2-2' }}</td>
-        <td class="text-end">{{ t.importePagado | number: '1.2-2' }}</td>
+    <hr class="my-4" />
 
-        <td>
-          <span class="badge" [ngClass]="t.entregado ? 'bg-success' : 'bg-secondary'">
-            {{ t.entregado ? 'Sí' : 'No' }}
-          </span>
-        </td>
+    <!-- TRABAJOS -->
+    <h5>Trabajos realizados</h5>
+    <table class="table table-striped text-center align-middle shadow-sm">
+      <thead class="table-dark">
+        <tr>
+          <th>Descripción</th>
+          <th class="text-end">Unidades</th>
+          <th class="text-end">Precio/U (€)</th>
+          <th class="text-end">Dto (%)</th>
+          <th class="text-end">Importe neto (€)</th>
+          <th class="text-end">Pagado (€)</th>
+          <th>Entregado</th>
+          <th>Fecha entrega</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
 
-        <td>
-          <span *ngIf="t.entregado; else sinFecha">
-            {{ t.fechaEntrega || t.fecha_entrega || '-' }}
-          </span>
-          <ng-template #sinFecha>-</ng-template>
-        </td>
+      <tbody>
+        <tr *ngFor="let t of trabajos">
+          <td class="text-start">{{ t.descripcion }}</td>
+          <td class="text-end">{{ t.unidades }}</td>
+          <td class="text-end">{{ t.precioUnitario | number: '1.2-2' }}</td>
+          <td class="text-end">{{ t.descuento }}%</td>
+          <td class="text-end">{{ getNetoTrabajo(t) | number: '1.2-2' }}</td>
+          <td class="text-end">{{ t.importePagado | number: '1.2-2' }}</td>
 
-        <td>
-          <button type="button" class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t)" [disabled]="t.entregado"
-            [title]="
-              t.entregado
-                ? 'No se puede eliminar: ya está entregado'
-                : 'Eliminar'
-            ">
-            Eliminar
-          </button>
+          <td>
+            <span class="badge" [ngClass]="t.entregado ? 'bg-success' : 'bg-secondary'">
+              {{ t.entregado ? 'Sí' : 'No' }}
+            </span>
+          </td>
 
-          <span *ngIf="t.entregado" class="ms-2 badge bg-light text-dark">
-            🔒 Bloqueado
-          </span>
-        </td>
-      </tr>
+          <td>
+            <span *ngIf="t.entregado; else sinFecha">
+              {{ t.fechaEntrega || t.fecha_entrega || '-' }}
+            </span>
+            <ng-template #sinFecha>-</ng-template>
+          </td>
 
-      <tr *ngIf="trabajos.length === 0">
-        <td colspan="9" class="text-muted">No hay trabajos registrados.</td>
-      </tr>
-    </tbody>
-  </table>
+          <td>
+            <button type="button" class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t)" [disabled]="t.entregado"
+              [title]="
+                t.entregado
+                  ? 'No se puede eliminar: ya está entregado'
+                  : 'Eliminar'
+              ">
+              Eliminar
+            </button>
 
-  <!-- TOTALES -->
-  <div class="text-end mt-3 fw-bold">
-    <p>Total: {{ (cliente?.totalImporte || 0) | number: '1.2-2' }} €</p>
-    <p class="text-success">
-      Pagado: {{ (cliente?.totalPagado || 0) | number: '1.2-2' }} €
-    </p>
-    <p>
-      <b>Saldo pendiente:</b>
-      <span [ngClass]="{
-          'text-danger': (cliente?.saldoPendiente || 0) > 0,
-          'text-success': (cliente?.saldoPendiente || 0) <= 0
-        }">
-        {{ (cliente?.saldoPendiente || 0) | number: '1.2-2' }} €
-      </span>
-    </p>
+            <span *ngIf="t.entregado" class="ms-2 badge bg-light text-dark">
+              🔒 Bloqueado
+            </span>
+          </td>
+        </tr>
+
+        <tr *ngIf="trabajos.length === 0">
+          <td colspan="9" class="text-muted">No hay trabajos registrados.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="text-end mt-3 fw-bold">
+      <p>Total: {{ (cliente?.totalImporte || 0) | number: '1.2-2' }} €</p>
+      <p class="text-success">
+        Pagado: {{ (cliente?.totalPagado || 0) | number: '1.2-2' }} €
+      </p>
+      <p>
+        <b>Saldo pendiente:</b>
+        <span [ngClass]="{
+            'text-danger': (cliente?.saldoPendiente || 0) > 0,
+            'text-success': (cliente?.saldoPendiente || 0) <= 0
+          }">
+          {{ (cliente?.saldoPendiente || 0) | number: '1.2-2' }} €
+        </span>
+      </p>
+    </div>
+
+    <hr />
+
+    <h6 class="mt-4">Añadir nuevo trabajo</h6>
+
+    <table class="table table-bordered align-middle text-center shadow-sm">
+      <thead class="table-light">
+        <tr>
+          <th class="text-start">Descripción</th>
+          <th class="text-end">Unidades</th>
+          <th class="text-end">Precio/U (€)</th>
+          <th class="text-end">Dto (%)</th>
+          <th class="text-end">Importe neto (€)</th>
+          <th class="text-end">Pagado (€)</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <input class="form-control" [(ngModel)]="nuevoTrabajo.descripcion"
+              (ngModelChange)="onNuevoTrabajoChange()" />
+          </td>
+          <td>
+            <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.unidades"
+              (ngModelChange)="onNuevoTrabajoChange()" min="1" />
+          </td>
+          <td>
+            <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.precioUnitario"
+              (ngModelChange)="onNuevoTrabajoChange()" step="0.01" />
+          </td>
+          <td>
+            <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.descuento"
+              (ngModelChange)="onNuevoTrabajoChange()" min="0" max="100" />
+          </td>
+          <td class="fw-bold text-end">
+            {{ getNetoNuevoTrabajo() | number: '1.2-2' }}
+          </td>
+          <td>
+            <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.importePagado"
+              (ngModelChange)="onNuevoTrabajoChange()" step="0.01" />
+          </td>
+          <td>
+            <button type="button" class="btn btn-success w-100" (click)="agregarTrabajo()">
+              +
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-
-  <hr />
-
-  <!-- AÑADIR TRABAJO -->
-  <h6 class="mt-4">Añadir nuevo trabajo</h6>
-
-  <table class="table table-bordered align-middle text-center shadow-sm">
-    <thead class="table-light">
-      <tr>
-        <th class="text-start">Descripción</th>
-        <th class="text-end">Unidades</th>
-        <th class="text-end">Precio/U (€)</th>
-        <th class="text-end">Dto (%)</th>
-        <th class="text-end">Importe neto (€)</th>
-        <th class="text-end">Pagado (€)</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>
-          <input class="form-control" [(ngModel)]="nuevoTrabajo.descripcion" (ngModelChange)="onNuevoTrabajoChange()" />
-        </td>
-        <td>
-          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.unidades"
-            (ngModelChange)="onNuevoTrabajoChange()" min="1" />
-        </td>
-        <td>
-          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.precioUnitario"
-            (ngModelChange)="onNuevoTrabajoChange()" step="0.01" />
-        </td>
-        <td>
-          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.descuento"
-            (ngModelChange)="onNuevoTrabajoChange()" min="0" max="100" />
-        </td>
-        <td class="fw-bold text-end">
-          {{ getNetoNuevoTrabajo() | number: '1.2-2' }}
-        </td>
-        <td>
-          <input type="number" class="form-control text-end" [(ngModel)]="nuevoTrabajo.importePagado"
-            (ngModelChange)="onNuevoTrabajoChange()" step="0.01" />
-        </td>
-        <td>
-          <button type="button" class="btn btn-success w-100" (click)="agregarTrabajo()">
-            +
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 
   <div class="text-end mt-3">
     <button type="button" class="btn btn-secondary" (click)="volverAClientes()">

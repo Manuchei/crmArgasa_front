@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import {
   PendientesFacturacionDTO,
   CrearFacturaV2Request,
-  FacturaV2Response
+  FacturaV2Response,
 } from '../interfaces/facturacion-v2';
 import { Observable } from 'rxjs';
 
@@ -13,36 +13,50 @@ export class FacturacionV2Service {
 
   constructor(private http: HttpClient) {}
 
-  // ✅ Pendientes de facturar por cliente
   getPendientes(clienteId: number): Observable<PendientesFacturacionDTO> {
-    return this.http.get<PendientesFacturacionDTO>(`${this.baseUrl}/pendientes/cliente/${clienteId}`);
+    return this.http.get<PendientesFacturacionDTO>(
+      `${this.baseUrl}/pendientes/cliente/${clienteId}`,
+    );
   }
 
-  // ✅ Crear factura (borrador)
   crearFactura(req: CrearFacturaV2Request): Observable<FacturaV2Response> {
     return this.http.post<FacturaV2Response>(`${this.baseUrl}/facturas`, req);
   }
 
-  // ✅ Cancelar borrador
+  actualizarFactura(
+    facturaId: number,
+    payload: any,
+  ): Observable<FacturaV2Response> {
+    return this.http.put<FacturaV2Response>(
+      `${this.baseUrl}/facturas/${facturaId}`,
+      payload,
+    );
+  }
+
   cancelarBorrador(facturaId: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/facturas/${facturaId}`);
   }
 
-  // ✅ Emitir
   emitirFactura(facturaId: number): Observable<FacturaV2Response> {
-    return this.http.post<FacturaV2Response>(`${this.baseUrl}/facturas/${facturaId}/emitir`, {});
+    return this.http.post<FacturaV2Response>(
+      `${this.baseUrl}/facturas/${facturaId}/emitir`,
+      {},
+    );
   }
 
-  // ✅ Listar facturas (por cliente / estado)
-  listarFacturas(estado?: string, clienteId?: number): Observable<FacturaV2Response[]> {
+  listarFacturas(
+    estado?: string,
+    clienteId?: number,
+  ): Observable<FacturaV2Response[]> {
     const params: any = {};
     if (estado) params.estado = estado;
     if (clienteId != null) params.clienteId = clienteId;
 
-    return this.http.get<FacturaV2Response[]>(`${this.baseUrl}/facturas`, { params });
+    return this.http.get<FacturaV2Response[]>(`${this.baseUrl}/facturas`, {
+      params,
+    });
   }
 
-  // ✅ Detalle de una factura por ID (MISMO prefijo baseUrl)
   getFacturaById(id: number): Observable<FacturaV2Response> {
     return this.http.get<FacturaV2Response>(`${this.baseUrl}/facturas/${id}`);
   }

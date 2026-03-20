@@ -1,6 +1,6 @@
 .cliente-card {
   border-radius: 14px;
-  background:  #f5f7fa;
+  background: #f5f7fa;
   border: 1px solid #e3e6ea;
 }
 
@@ -34,4 +34,79 @@
   font-size: 1.1rem;
   border-bottom: 1px solid #e3e6ea;
   padding-bottom: 6px;
+}
+
+.tabs-clientes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 10px;
+}
+
+.tab-btn {
+  border: 1px solid #ced4da;
+  background: #f8f9fa;
+  color: #212529;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: #e9ecef;
+}
+
+.tab-btn.active {
+  background: #212529;
+  color: #fff;
+  border-color: #212529;
+}
+
+.tab-content-box {
+  margin-top: 10px;
+}
+
+.cliente-card {
+  border-radius: 14px;
+}
+
+.cliente-titulo {
+  font-weight: 700;
+}
+
+.dato-linea {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.dato-label {
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.iban-text {
+  word-break: break-word;
+}
+
+.acciones-albaran {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.acciones-albaran .btn {
+  min-width: 90px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  line-height: 1;
 }
