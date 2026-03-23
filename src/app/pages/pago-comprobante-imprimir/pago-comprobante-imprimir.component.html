@@ -1,0 +1,117 @@
+<button type="button" class="btn btn-dark btn-sm no-print" (click)="imprimirManual()">
+    Imprimir
+</button>
+
+<div class="hoja" *ngIf="comprobante">
+    <div class="cabecera-top">
+        <div class="empresa-box">
+            <img *ngIf="comprobante.empresaLogoUrl" [src]="comprobante.empresaLogoUrl" alt="Logo empresa"
+                class="logo-empresa" />
+
+            <div class="empresa-datos">
+                <div class="empresa-nombre">
+                    {{ comprobante.empresaNombre || comprobante.empresa || '-' }}
+                </div>
+
+                <div *ngIf="comprobante.empresaDireccion">
+                    {{ comprobante.empresaDireccion }}
+                </div>
+
+                <div>
+                    {{ comprobante.empresaCodigoPostal || '' }}
+                    {{ comprobante.empresaPoblacion || '' }}
+                    <span *ngIf="comprobante.empresaProvincia">
+                        ({{ comprobante.empresaProvincia }})
+                    </span>
+                </div>
+
+                <div *ngIf="comprobante.empresaTelefono">
+                    Tel: {{ comprobante.empresaTelefono }}
+                </div>
+
+                <div *ngIf="comprobante.empresaEmail">
+                    Email: {{ comprobante.empresaEmail }}
+                </div>
+
+                <div *ngIf="comprobante.empresaCif">
+                    CIF: {{ comprobante.empresaCif }}
+                </div>
+            </div>
+        </div>
+
+        <div class="doc-box">
+            <h2>COMPROBANTE DE PAGO</h2>
+            <div><b>Nº comprobante:</b> #{{ comprobante.id }}</div>
+            <div><b>Fecha:</b> {{ comprobante.fecha || '-' }}</div>
+            <div><b>Empresa:</b> {{ comprobante.empresa || '-' }}</div>
+
+            <div class="importe-grande">
+                {{ (comprobante.importe || 0) | number: '1.2-2' }} €
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="bloque">
+        <h5>Datos del cliente</h5>
+        <div><b>Nombre:</b> {{ comprobante.clienteNombreApellidos || '-' }}</div>
+        <div><b>CIF/DNI:</b> {{ comprobante.clienteCifDni || '-' }}</div>
+        <div><b>Dirección:</b> {{ comprobante.clienteDireccion || '-' }}</div>
+        <div>
+            <b>CP / Población:</b>
+            {{ comprobante.clienteCodigoPostal || '-' }} -
+            {{ comprobante.clientePoblacion || '-' }}
+        </div>
+        <div><b>Provincia:</b> {{ comprobante.clienteProvincia || '-' }}</div>
+        <div>
+            <b>Teléfono:</b>
+            {{ comprobante.clienteTelefono || comprobante.clienteMovil || '-' }}
+        </div>
+        <div><b>Email:</b> {{ comprobante.clienteEmail || '-' }}</div>
+    </div>
+
+    <hr />
+
+    <div class="bloque">
+        <h5>Detalle del pago</h5>
+
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th>Fecha</th>
+                    <th>Método</th>
+                    <th class="num">Importe</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Pago recibido de cliente</td>
+                    <td>{{ comprobante.fecha || '-' }}</td>
+                    <td>{{ comprobante.metodo || '-' }}</td>
+                    <td class="num">
+                        <b>{{ (comprobante.importe || 0) | number: '1.2-2' }} €</b>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="bloque" *ngIf="comprobante.observaciones">
+        <h5>Observaciones</h5>
+        <div>{{ comprobante.observaciones }}</div>
+    </div>
+
+    <div class="firmas">
+        <div class="firma">
+            <div class="linea"></div>
+            <div>Firma empresa</div>
+        </div>
+
+        <div class="firma">
+            <div class="linea"></div>
+            <div>Firma cliente</div>
+        </div>
+    </div>
+</div>

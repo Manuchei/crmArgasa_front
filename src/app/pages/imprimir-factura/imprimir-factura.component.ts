@@ -17,7 +17,10 @@ export class ImprimirFacturaComponent implements OnInit {
 
   private baseUrl = 'http://localhost:9018/api/facturacion-v2';
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) {}
+  constructor(
+    private route: ActivatedRoute,
+    private http: HttpClient,
+  ) {}
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -32,24 +35,20 @@ export class ImprimirFacturaComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    // ✅ En vez de /facturas/detalle (que NO admite POST), usamos GET por ID
     this.http.get<any>(`${this.baseUrl}/facturas/${id}`).subscribe({
-     next: (data) => {
-  this.factura = data;
+      next: (data) => {
+        this.factura = data;
 
-  // ✅ refuerzo: si el backend devuelve empresa, la guardamos
-  if (this.factura?.empresa) {
-    localStorage.setItem('empresa', String(this.factura.empresa));
-  }
+        if (this.factura?.empresa) {
+          localStorage.setItem('empresa', String(this.factura.empresa));
+        }
 
-  this.loading = false;
-},
-
+        this.loading = false;
+      },
       error: (err) => {
         console.error('Error cargando factura', err);
         this.loading = false;
 
-        // Si el backend devuelve texto plano, lo mostramos
         const backendText = typeof err?.error === 'string' ? err.error : null;
 
         this.error =
@@ -59,9 +58,44 @@ export class ImprimirFacturaComponent implements OnInit {
       },
     });
   }
-  
 
   imprimirManual(): void {
     window.print();
+  }
+
+  getEmisorVisualFactura(): any {
+    const emp = String(this.factura?.empresa || '')
+      .trim()
+      .toUpperCase();
+
+    if (emp === 'ARGASA') {
+      return {
+        nombre: 'Argasa Garrido S.L.',
+        cif: 'B36879617',
+        direccion: 'Rúa Pintor Laxeiro Nº15 Bajo',
+        codigoPostal: '36211',
+        poblacion: 'Vigo',
+        provincia: 'Pontevedra',
+        telefono: '607472159',
+        email: 'argasaluis@gmail.com',
+        logoUrl: '/assets/logos/argasa.png',
+      };
+    }
+
+    if (emp === 'ELECTROLUGA' || emp === 'LUGA') {
+      return {
+        nombre: 'ELECTROLUGA, S.L.U',
+        cif: 'B42722389',
+        direccion: 'Rúa Pintor Laxeiro Nº15 Bajo',
+        codigoPostal: '36211',
+        poblacion: 'Vigo',
+        provincia: 'Pontevedra',
+        telefono: '607472159',
+        email: 'electrolugaslu@gmail.com',
+        logoUrl: '/assets/logos/luga.png',
+      };
+    }
+
+    return this.factura?.emisor || null;
   }
 }

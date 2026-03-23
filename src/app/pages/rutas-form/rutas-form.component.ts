@@ -208,79 +208,84 @@ export class RutasFormComponent implements OnInit {
   cargarProductosPendientesCliente(clienteId: number): void {
     const empresa = this.getEmpresaSeleccionada();
 
-    this.clientesService.getProductosCliente(clienteId, empresa).subscribe({
-      next: (res: any) => {
-        const lista: any[] = Array.isArray(res)
-          ? res
-          : Array.isArray(res?.content)
-            ? res.content
-            : [];
+    this.clientesService
+      .getProductosCliente(clienteId, empresa, this.idRuta ?? null)
+      .subscribe({
+        next: (res: any) => {
+          const lista: any[] = Array.isArray(res)
+            ? res
+            : Array.isArray(res?.content)
+              ? res.content
+              : [];
 
-        const map = new Map<number, IProductoPendienteUI>();
+          const map = new Map<number, IProductoPendienteUI>();
 
-        for (const x of lista) {
-          if (this.esEntregado(x)) continue;
+          for (const x of lista) {
+            if (this.esEntregado(x)) continue;
 
-          const prod = x?.producto ?? x;
+            const prod = x?.producto ?? x;
 
-          const productoId =
-            prod?.id ??
-            prod?.productoId ??
-            x?.productoId ??
-            x?.producto?.id ??
-            null;
+            const productoId =
+              prod?.id ??
+              prod?.productoId ??
+              x?.productoId ??
+              x?.producto?.id ??
+              null;
 
-          if (!productoId) continue;
+            if (!productoId) continue;
 
-          const nombre =
-            prod?.nombre ??
-            prod?.descripcion ??
-            x?.nombre ??
-            x?.descripcion ??
-            '';
+            const nombre =
+              prod?.nombre ??
+              prod?.descripcion ??
+              x?.nombre ??
+              x?.descripcion ??
+              '';
 
-          const codigo = prod?.codigo ?? x?.codigo ?? '';
+            const codigo = prod?.codigo ?? x?.codigo ?? '';
 
-          const pendiente = Math.max(this.unidadesDeLinea(x), 0);
-          if (pendiente <= 0) continue;
+            const pendiente = Math.max(this.unidadesDeLinea(x), 0);
+            if (pendiente <= 0) continue;
 
-          const pid = Number(productoId);
+            const pid = Number(productoId);
 
-          if (!map.has(pid)) {
-            map.set(pid, {
-              productoId: pid,
-              codigo: codigo?.toString() ?? '',
-              nombre: (nombre ?? '').toString(),
-              pendiente,
-            });
-          } else {
-            const cur = map.get(pid)!;
-            cur.pendiente = (cur.pendiente || 0) + pendiente;
-            map.set(pid, cur);
+            if (!map.has(pid)) {
+              map.set(pid, {
+                productoId: pid,
+                codigo: codigo?.toString() ?? '',
+                nombre: (nombre ?? '').toString(),
+                pendiente,
+              });
+            } else {
+              const cur = map.get(pid)!;
+              cur.pendiente = (cur.pendiente || 0) + pendiente;
+              map.set(pid, cur);
+            }
           }
-        }
 
-        this.clienteProductos = Array.from(map.values()).filter(
-          (p) => (p.pendiente ?? 0) > 0,
-        );
+          this.clienteProductos = Array.from(map.values()).filter(
+            (p) => (p.pendiente ?? 0) > 0,
+          );
 
-        const pidSel = +this.lineaForm.value.productoId;
-        this.productoSeleccionado =
-          this.clienteProductos.find((x) => +x.productoId === pidSel) ?? null;
+          const pidSel = +this.lineaForm.value.productoId;
+          this.productoSeleccionado =
+            this.clienteProductos.find((x) => +x.productoId === pidSel) ?? null;
 
-        if (pidSel && !this.productoSeleccionado) {
-          this.lineaForm.patchValue({ productoId: null }, { emitEvent: false });
-        }
+          if (pidSel && !this.productoSeleccionado) {
+            this.lineaForm.patchValue(
+              { productoId: null },
+              { emitEvent: false },
+            );
+          }
 
-        this.actualizarValidadorCantidad();
-      },
-      error: (err: any) => {
-        console.error(err);
-        this.clienteProductos = [];
-        this.productoSeleccionado = null;
-        this.actualizarValidadorCantidad();
-      },
-    });
+          this.actualizarValidadorCantidad();
+        },
+        error: (err: any) => {
+          console.error(err);
+          this.clienteProductos = [];
+          this.productoSeleccionado = null;
+          this.actualizarValidadorCantidad();
+        },
+      });
   }
 
   onProductoChange(): void {
@@ -310,13 +315,7 @@ export class RutasFormComponent implements OnInit {
     const ctrl = this.lineaForm.get('cantidad');
     if (!ctrl) return;
 
-    const pid = +this.lineaForm.value.productoId;
-    const max = pid ? this.getDisponibles(pid) : 0;
-
-    const validators = [Validators.required, Validators.min(1)];
-    if (pid) validators.push(Validators.max(Math.max(max, 1)));
-
-    ctrl.setValidators(validators);
+    ctrl.setValidators([Validators.required, Validators.min(1)]);
     ctrl.updateValueAndValidity({ emitEvent: false });
   }
 

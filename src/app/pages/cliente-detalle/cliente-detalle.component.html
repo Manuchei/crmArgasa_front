@@ -225,9 +225,15 @@
           <td>{{ p.metodo || '-' }}</td>
           <td class="text-start">{{ p.observaciones || '-' }}</td>
           <td>
-            <button type="button" class="btn btn-sm btn-danger" (click)="eliminarPago(p.id)">
-              Eliminar
-            </button>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+              <button type="button" class="btn btn-sm btn-outline-dark" (click)="imprimirComprobantePago(p)">
+                Comprobante
+              </button>
+
+              <button type="button" class="btn btn-sm btn-danger" (click)="eliminarPago(p.id)">
+                Eliminar
+              </button>
+            </div>
           </td>
         </tr>
 
@@ -368,18 +374,33 @@
           </td>
 
           <td>
-            <button type="button" class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t)" [disabled]="t.entregado"
-              [title]="
-                t.entregado
-                  ? 'No se puede eliminar: ya está entregado'
-                  : 'Eliminar'
-              ">
-              Eliminar
-            </button>
+            <div *ngIf="!t.entregado; else bloqueadoEntregado" class="d-flex gap-2 justify-content-center flex-wrap">
+              <button type="button" class="btn btn-sm btn-outline-success" (click)="sumarUnidadTrabajo(t)"
+                title="Añadir una unidad">
+                +1
+              </button>
 
-            <span *ngIf="t.entregado" class="ms-2 badge bg-light text-dark">
-              🔒 Bloqueado
-            </span>
+              <button type="button" class="btn btn-sm btn-outline-warning" (click)="restarUnidadTrabajo(t)"
+                title="Quitar una unidad">
+                -1
+              </button>
+
+              <button type="button" class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t)"
+                title="Eliminar línea completa">
+                Eliminar
+              </button>
+            </div>
+
+            <ng-template #bloqueadoEntregado>
+              <button type="button" class="btn btn-sm btn-danger" disabled
+                title="No se puede eliminar: ya está entregado">
+                Eliminar
+              </button>
+
+              <span class="ms-2 badge bg-light text-dark">
+                🔒 Bloqueado
+              </span>
+            </ng-template>
           </td>
         </tr>
 

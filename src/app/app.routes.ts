@@ -33,6 +33,7 @@ import { ProductosComponent } from './pages/productos/productos.component';
 import { RutasVerComponent } from './pages/rutas-ver/rutas-ver.component';
 import { dashboardRedirectGuard } from './guards/dashboard-redirect.guard';
 import { DashboardUserComponent } from './pages/dashboard-user/dashboard-user.component';
+import { PagoComprobanteImprimirComponent } from './pages/pago-comprobante-imprimir/pago-comprobante-imprimir.component';
 
 export const routes: Routes = [
   // 🔐 LOGIN
@@ -59,6 +60,11 @@ export const routes: Routes = [
     component: ImprimirFacturaComponent,
     canActivate: [authGuard, empresaGuard],
   },
+{
+  path: 'imprimir/pago/:id',
+  component: PagoComprobanteImprimirComponent,
+  canActivate: [authGuard, empresaGuard],
+},
 
   // 🚀 APP REAL
   {

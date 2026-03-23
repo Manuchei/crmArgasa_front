@@ -92,16 +92,19 @@
 
               <div class="col-md-3">
                 <label class="form-label">Cantidad</label>
-                <input type="number" class="form-control" formControlName="cantidad" min="1"
-                  [max]="productoSeleccionado ? getDisponibles(productoSeleccionado.productoId) : 1" />
+                <input type="number" class="form-control" formControlName="cantidad" min="1" step="1" />
 
                 <div class="text-danger mt-1" *ngIf="lf['cantidad'].touched && lf['cantidad'].errors?.['min']">
                   Cantidad mínima: 1
                 </div>
 
-                <div class="text-danger mt-1" *ngIf="lf['cantidad'].touched && lf['cantidad'].errors?.['max']">
+                <div class="text-danger mt-1" *ngIf="
+    productoSeleccionado &&
+    lf['cantidad'].touched &&
+    (lf['cantidad'].value || 0) > getDisponibles(productoSeleccionado.productoId)
+  ">
                   Te pasaste. Máximo disponible:
-                  {{ productoSeleccionado ? getDisponibles(productoSeleccionado.productoId) : 0 }}
+                  {{ getDisponibles(productoSeleccionado.productoId) }}
                 </div>
 
                 <div class="text-danger mt-1"

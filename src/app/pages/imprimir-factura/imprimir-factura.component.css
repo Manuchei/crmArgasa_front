@@ -1,156 +1,159 @@
-/* barra superior solo para pantalla */
-.barra { padding: 12px; }
-.estado { padding: 12px; color: #666; }
-.error  { padding: 12px; color: #b00020; font-weight: 600; }
+:host {
+  display: block;
+  background: #f5f5f5;
+  min-height: 100vh;
+  padding: 16px;
+}
 
-.hoja{
-  width: 820px;
+.factura {
+  width: 900px;
   margin: 20px auto;
+  background: #fff;
+  color: #111;
+  padding: 28px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   font-family: Arial, sans-serif;
   font-size: 13px;
-  color: #111;
 }
 
-.cabecera{
-  display:flex;
+.cabecera-top {
+  display: flex;
   justify-content: space-between;
-  align-items:flex-start;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 30px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
-.cabecera h2{
-  margin: 0 0 6px 0;
-  letter-spacing: 0.5px;
+.empresa-box {
+  flex: 1;
 }
 
-.badge{
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 12px;
-  border: 1px solid #333;
-  background: #f1f1f1;
+.logo-empresa {
+  max-width: 260px;
+  max-height: 120px;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 12px;
 }
 
-.bloque h5{
-  margin: 0 0 8px 0;
-}
-
-.tabla{
-  width:100%;
-  border-collapse: collapse;
-}
-
-.tabla th, .tabla td{
-  border: 1px solid #333;
-  padding: 8px;
-  vertical-align: top;
-}
-
-.num{
-  width: 110px;
-  text-align:right;
-  white-space: nowrap;
-}
-
-.muted{ color:#666; }
-
-.totales{
-  width: 360px;
-  margin-left: auto;
-  display:flex;
-  flex-direction: column;
-  gap: 6px;
+.empresa-datos {
   font-size: 14px;
+  line-height: 1.5;
 }
 
-.totales > div{
-  display:flex;
-  justify-content: space-between;
-  gap: 12px;
+.empresa-nombre {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
 }
 
-.totalFinal{ font-size: 16px; }
+.doc-box {
+  min-width: 260px;
+  text-align: right;
+  border: 2px solid #111;
+  border-radius: 8px;
+  padding: 14px 18px;
+}
 
-/* ✅ impresión: fuera UI, fuera navbar, solo A4 */
-@media print{
-  .no-print,
-  header, nav, .navbar, .topbar,
-  app-header, app-navbar, app-topbar,
-  .app-shell, .layout, .sidebar {
-    display: none !important;
-  }
-
-  @page{
-    size: A4;
-    margin: 12mm;
-  }
-
-  body{
-    margin: 0 !important;
-    background: #fff !important;
-  }
-
-  .hoja{
-    width: auto !important;
-    margin: 0 !important;
-  }
-
-  hr{
-    border: none;
-    border-top: 1px solid #999;
-  }
-
-  /* Bloques de datos (emisor/cliente) */
-.bloque-datos{
+.bloque-datos {
   border: 1px solid #ddd;
   padding: 12px;
   border-radius: 8px;
 }
 
-/* Evita que € y números partan línea */
 .money,
-.nowrap{
+.nowrap {
   white-space: nowrap;
   display: inline-block;
 }
 
-/* Ajustes tabla para que no se descuadre */
-.tabla-lineas td,
-.tabla-lineas th{
-  vertical-align: middle;
-}
-
-/* Anchos recomendados para columnas numéricas */
-.col-cant { width: 70px; }
-.col-iva  { width: 60px; }
-.col-eur  { width: 120px; }
-
-/* Totales */
-.tabla-totales{
-  width: 320px;
-}
-.tabla-totales td{
-  vertical-align: middle;
-}
-
-/* Imprimir: oculta botones */
-@media print {
-  .no-print { display: none !important; }
-  .container { margin: 0 !important; padding: 0 !important; }
-  .bloque-datos { border-color: #999; }
-}
-
-.money{
+.money {
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
-  white-space: nowrap;
 }
 
-td.num, th.num{
-  text-align: right;
+.tabla-lineas td,
+.tabla-lineas th {
+  vertical-align: middle;
 }
 
+.col-cant {
+  width: 70px;
+}
 
+.col-iva {
+  width: 60px;
+}
+
+.col-eur {
+  width: 120px;
+}
+
+.tabla-totales {
+  width: 320px;
+}
+
+.tabla-totales td {
+  vertical-align: middle;
+}
+
+.no-print {
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+@media print {
+  .no-print,
+  header,
+  nav,
+  .navbar,
+  .topbar,
+  app-header,
+  app-navbar,
+  app-topbar,
+  .app-shell,
+  .layout,
+  .sidebar {
+    display: none !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  :host {
+    background: #fff;
+    padding: 0;
+  }
+
+  body {
+    margin: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .container {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .factura {
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none;
+  }
+
+  .bloque-datos {
+    border-color: #999;
+  }
+
+  .logo-empresa {
+    max-width: 220px;
+    max-height: 100px;
+  }
 }

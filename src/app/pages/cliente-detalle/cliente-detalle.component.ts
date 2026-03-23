@@ -255,6 +255,7 @@ export class ClienteDetalleComponent implements OnInit {
           this.cargarClienteProductos(this.clienteId);
           this.cargarTrabajos(this.clienteId);
           this.cargarProductos();
+          this.cargarCliente(this.clienteId);
         },
         error: (err) => {
           console.error(err);
@@ -420,6 +421,9 @@ export class ClienteDetalleComponent implements OnInit {
       .subscribe({
         next: () => {
           this.cargarTrabajos(this.cliente.id);
+          this.cargarClienteProductos(this.cliente.id);
+          this.cargarProductos();
+          this.cargarCliente(this.cliente.id);
 
           this.nuevoTrabajo = {
             descripcion: '',
@@ -457,12 +461,100 @@ export class ClienteDetalleComponent implements OnInit {
         this.cargarTrabajos(this.cliente.id);
         this.cargarClienteProductos(this.clienteId);
         this.cargarProductos();
+        this.cargarCliente(this.clienteId);
       },
       error: (err) => {
         console.error('Error al eliminar trabajo:', err);
         alert('No se pudo eliminar el trabajo.');
       },
     });
+  }
+
+  sumarUnidadTrabajo(t: any): void {
+    if (!t || t.entregado === true) {
+      return;
+    }
+
+    const productoId = Number(t?.productoId);
+    if (!productoId) {
+      alert('Este trabajo no está vinculado a un producto.');
+      return;
+    }
+
+    const producto = this.productos.find(
+      (p: any) => Number(p?.id) === productoId,
+    );
+    const stock = Number((producto as any)?.stock ?? 0);
+
+    if (stock <= 0) {
+      alert('No hay stock disponible para añadir una unidad más.');
+      return;
+    }
+
+    const nuevaCantidad = Math.max(1, Number(t?.unidades ?? 1) + 1);
+    this.actualizarCantidadTrabajo(t, nuevaCantidad);
+  }
+
+  restarUnidadTrabajo(t: any): void {
+    if (!t || t.entregado === true) {
+      return;
+    }
+
+    const productoId = Number(t?.productoId);
+    if (!productoId) {
+      alert('Este trabajo no está vinculado a un producto.');
+      return;
+    }
+
+    const actual = Math.max(1, Number(t?.unidades ?? 1));
+    const nuevaCantidad = actual - 1;
+
+    if (nuevaCantidad <= 0) {
+      if (
+        !confirm(
+          'La cantidad quedará en 0. ¿Quieres eliminar esta línea completa?',
+        )
+      ) {
+        return;
+      }
+    }
+
+    this.actualizarCantidadTrabajo(t, nuevaCantidad);
+  }
+
+  private actualizarCantidadTrabajo(t: any, nuevaCantidad: number): void {
+    const productoId = Number(t?.productoId);
+    if (!productoId) return;
+
+    const empresa = this.getEmpresaActual();
+
+    this.http
+      .put(
+        `${this.apiUrl}/clientes/${this.clienteId}/productos/${productoId}/cantidad?cantidad=${nuevaCantidad}`,
+        {},
+        {
+          headers: { 'X-Empresa': empresa },
+        },
+      )
+      .subscribe({
+        next: () => {
+          this.cargarTrabajos(this.clienteId);
+          this.cargarClienteProductos(this.clienteId);
+          this.cargarProductos();
+          this.cargarCliente(this.clienteId);
+        },
+        error: (err: any) => {
+          console.error(err);
+
+          const msg =
+            typeof err?.error === 'string'
+              ? err.error
+              : err?.error?.message || 'Error al actualizar cantidad';
+
+          alert(msg);
+          this.cargarProductos();
+        },
+      });
   }
 
   verAlbaran(a: any): void {
@@ -482,6 +574,12 @@ export class ClienteDetalleComponent implements OnInit {
   imprimirAlbaran(a: any): void {
     if (!a?.id) return;
     const url = `${window.location.origin}/imprimir/albaran/${a.id}`;
+    window.open(url, '_blank');
+  }
+
+  imprimirComprobantePago(pago: any): void {
+    if (!pago?.id) return;
+    const url = `${window.location.origin}/imprimir/pago/${pago.id}`;
     window.open(url, '_blank');
   }
 
@@ -556,7 +654,6 @@ export class ClienteDetalleComponent implements OnInit {
         error: (err) => console.error('Error al cargar pagos:', err),
       });
   }
-
   agregarPago(): void {
     if (!this.cliente?.id) return;
 
@@ -574,6 +671,11 @@ export class ClienteDetalleComponent implements OnInit {
 
     if (importe <= 0) {
       alert('El importe del pago debe ser mayor que 0.');
+      return;
+    }
+
+    if (!metodo) {
+      alert('Debes indicar el método de pago.');
       return;
     }
 
@@ -607,6 +709,10 @@ export class ClienteDetalleComponent implements OnInit {
             metodo: '',
             observaciones: '',
           };
+
+          if (pagoCreado?.id) {
+            this.imprimirComprobantePago(pagoCreado);
+          }
         },
         error: (err) => {
           this.creandoPago = false;
@@ -740,6 +846,7 @@ export class ClienteDetalleComponent implements OnInit {
           this.cargarTrabajos(this.clienteId);
           this.cargarClienteProductos(this.clienteId);
           this.cargarProductos();
+          this.cargarCliente(this.clienteId);
         },
         error: (err: HttpErrorResponse) => {
           console.error('Error addProducto:', err);

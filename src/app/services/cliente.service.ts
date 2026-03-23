@@ -76,10 +76,19 @@ export class ClientesService {
     return resto;
   }
 
-  getProductosCliente(clienteId: number, empresa: string) {
-    return this.http.get<any[]>(
-      `http://localhost:9018/api/clientes/${clienteId}/productos/pendientes`,
-      { headers: { 'X-Empresa': empresa } },
-    );
+  getProductosCliente(
+    clienteId: number,
+    empresa: string,
+    excludeRutaId?: number | null,
+  ) {
+    let url = `http://localhost:9018/api/clientes/${clienteId}/productos/pendientes`;
+
+    if (excludeRutaId != null) {
+      url += `?excludeRutaId=${excludeRutaId}`;
+    }
+
+    return this.http.get<any[]>(url, {
+      headers: { 'X-Empresa': empresa },
+    });
   }
 }

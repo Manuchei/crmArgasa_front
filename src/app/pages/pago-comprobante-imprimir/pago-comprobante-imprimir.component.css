@@ -6,7 +6,7 @@
 }
 
 .hoja {
-  width: 820px;
+  width: 900px;
   margin: 20px auto;
   background: #fff;
   color: #111;
@@ -54,22 +54,10 @@
   padding: 14px 18px;
 }
 
-.badge-estado {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
+.importe-grande {
+  font-size: 28px;
   font-weight: 700;
-}
-
-.badge-estado.ok {
-  background: #198754;
-  color: #fff;
-}
-
-.badge-estado.no {
-  background: #dc3545;
-  color: #fff;
+  margin-top: 12px;
 }
 
 .bloque {
@@ -77,7 +65,7 @@
 }
 
 .bloque h5 {
-  margin: 0 0 8px 0;
+  margin-bottom: 10px;
 }
 
 .tabla {
@@ -87,37 +75,30 @@
 
 .tabla th,
 .tabla td {
-  border: 1px solid #333;
-  padding: 8px;
-  vertical-align: top;
+  border: 1px solid #d8d8d8;
+  padding: 10px;
 }
 
-.num {
+.tabla .num {
   text-align: right;
-  white-space: nowrap;
 }
 
-.muted {
-  color: #666;
-}
-
-.totales {
-  width: 320px;
-  margin-left: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 14px;
-}
-
-.totales > div {
+.firmas {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 32px;
+  margin-top: 72px;
 }
 
-.totalFinal {
-  font-size: 16px;
+.firma {
+  flex: 1;
+  text-align: center;
+}
+
+.linea {
+  border-top: 1px solid #111;
+  margin-bottom: 8px;
+  height: 36px;
 }
 
 .no-print {
@@ -167,14 +148,5 @@
   .logo-empresa {
     max-width: 220px;
     max-height: 100px;
-  }
-
-  hr {
-    border: none;
-    border-top: 1px solid #999;
-  }
-
-  .doc-lateral {
-    min-width: 260px;
   }
 }

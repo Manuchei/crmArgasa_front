@@ -1,34 +1,65 @@
-<!-- Botón imprimir (NO debe salir en impresión) -->
 <button class="btn btn-dark btn-sm no-print" (click)="imprimirManual()">
   <i class="bi bi-printer"></i> Imprimir
 </button>
 
 <div class="hoja" *ngIf="albaran">
+  <div class="cabecera-top">
+    <div class="empresa-box" *ngIf="getEmpresaVisualAlbaran() as emisor">
+      <img *ngIf="emisor.logoUrl" [src]="emisor.logoUrl" alt="Logo empresa" class="logo-empresa" />
 
-  <!-- CABECERA -->
-  <div class="cabecera">
-    <div class="left">
-      <h2>ALBARÁN</h2>
-      <div><b>Nº:</b> {{ albaran.numero || ('#' + albaran.id) }}</div>
-      <div><b>Fecha:</b> {{ albaran.fechaEmision }}</div>
-      <div><b>Empresa:</b> {{ albaran.empresa }}</div>
+      <div class="empresa-datos">
+        <div class="empresa-nombre">{{ emisor.nombre }}</div>
+
+        <div *ngIf="emisor.direccion">
+          {{ emisor.direccion }}
+        </div>
+
+        <div>
+          {{ emisor.codigoPostal || '' }}
+          {{ emisor.poblacion || '' }}
+          <span *ngIf="emisor.provincia">
+            ({{ emisor.provincia }})
+          </span>
+        </div>
+
+        <div *ngIf="emisor.telefono">
+          Tel: {{ emisor.telefono }}
+        </div>
+
+        <div *ngIf="emisor.email">
+          Email: {{ emisor.email }}
+        </div>
+
+        <div *ngIf="emisor.cif">
+          CIF: {{ emisor.cif }}
+        </div>
+      </div>
     </div>
 
-    <!-- Badge NO CONFIRMADO (NO debe salir en impresión) -->
-    <div class="right no-print">
-      <div class="badge" [class.ok]="albaran.confirmado" [class.no]="!albaran.confirmado">
-        {{ albaran.confirmado ? 'CONFIRMADO' : 'NO CONFIRMADO' }}
+    <div class="doc-lateral">
+      <div class="doc-box">
+        <h2>ALBARÁN</h2>
+        <div><b>Nº:</b> {{ albaran.numero || ('#' + albaran.id) }}</div>
+        <div><b>Fecha:</b> {{ albaran.fechaEmision }}</div>
+        <div><b>Empresa:</b> {{ albaran.empresa }}</div>
+      </div>
+
+      <div class="right no-print mt-2 text-end">
+        <div class="badge-estado" [class.ok]="albaran.confirmado" [class.no]="!albaran.confirmado">
+          {{ albaran.confirmado ? 'CONFIRMADO' : 'NO CONFIRMADO' }}
+        </div>
       </div>
     </div>
   </div>
 
   <hr>
 
-  <!-- CLIENTE (snapshot) -->
   <div class="bloque">
     <h5>Cliente</h5>
     <div><b>Nombre:</b> {{ albaran.nombreApellidos }}</div>
-    <div *ngIf="albaran.nombreComercial"><b>Nombre comercial:</b> {{ albaran.nombreComercial }}</div>
+    <div *ngIf="albaran.nombreComercial">
+      <b>Nombre comercial:</b> {{ albaran.nombreComercial }}
+    </div>
     <div><b>CIF/DNI:</b> {{ albaran.cifDni }}</div>
     <div><b>Dirección:</b> {{ albaran.direccion }}</div>
     <div><b>CP / Población:</b> {{ albaran.codigoPostal }} - {{ albaran.poblacion }}</div>
@@ -40,7 +71,6 @@
 
   <hr>
 
-  <!-- LÍNEAS -->
   <div class="bloque">
     <h5>Conceptos</h5>
 
@@ -70,17 +100,14 @@
 
   <hr>
 
-  <!-- TOTALES -->
   <div class="totales">
     <div><span>Subtotal:</span><b>{{ (albaran.subtotal || 0) | number:'1.2-2' }} €</b></div>
     <div><span>Descuento:</span><b>- {{ (albaran.totalDescuento || 0) | number:'1.2-2' }} €</b></div>
     <div class="totalFinal"><span>Total:</span><b>{{ (albaran.totalImporte || 0) | number:'1.2-2' }} €</b></div>
   </div>
 
-  <!-- EXTRA -->
   <div class="bloque extra" *ngIf="albaran.observaciones">
     <h5>Observaciones</h5>
     <div>{{ albaran.observaciones }}</div>
   </div>
-
 </div>
