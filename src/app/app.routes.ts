@@ -34,6 +34,8 @@ import { RutasVerComponent } from './pages/rutas-ver/rutas-ver.component';
 import { dashboardRedirectGuard } from './guards/dashboard-redirect.guard';
 import { DashboardUserComponent } from './pages/dashboard-user/dashboard-user.component';
 import { PagoComprobanteImprimirComponent } from './pages/pago-comprobante-imprimir/pago-comprobante-imprimir.component';
+import { InformeSaldosComponent } from './pages/informe-saldos/informe-saldos.component';
+import { InformesComponent } from './pages/informes/informes.component';
 
 export const routes: Routes = [
   // 🔐 LOGIN
@@ -60,11 +62,16 @@ export const routes: Routes = [
     component: ImprimirFacturaComponent,
     canActivate: [authGuard, empresaGuard],
   },
-{
-  path: 'imprimir/pago/:id',
-  component: PagoComprobanteImprimirComponent,
-  canActivate: [authGuard, empresaGuard],
-},
+  {
+    path: 'imprimir/pago/:id',
+    component: PagoComprobanteImprimirComponent,
+    canActivate: [authGuard, empresaGuard],
+  },
+
+  {
+    path: 'informes/saldos',
+    component: InformeSaldosComponent,
+  },
 
   // 🚀 APP REAL
   {
@@ -182,6 +189,12 @@ export const routes: Routes = [
       {
         path: 'facturas',
         component: FacturasListComponent,
+        canActivate: [roleGuard(['ADMIN'])],
+      },
+
+      {
+        path: 'informes',
+        component: InformesComponent,
         canActivate: [roleGuard(['ADMIN'])],
       },
 

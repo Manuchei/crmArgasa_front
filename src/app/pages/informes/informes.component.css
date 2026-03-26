@@ -1,0 +1,61 @@
+.informes-container {
+  max-width: 1200px;
+}
+
+.tabla-t-contable th,
+.tabla-t-contable td {
+  width: 50%;
+  vertical-align: top;
+}
+
+.columna-debe {
+  border-right: 2px solid #000;
+  min-height: 80px;
+}
+
+.columna-haber {
+  min-height: 80px;
+}
+
+.cliente-print-block {
+  margin-bottom: 30px;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+    .resumen-informe {
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .card {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+  }
+
+  .cliente-print-block {
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+  }
+
+  .cliente-print-block:not(:last-child) {
+    page-break-after: always;
+  }
+
+  .tabla-t-contable,
+  .table {
+    font-size: 12px;
+  }
+
+  .resumen-informe {
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.4;
+}
+}

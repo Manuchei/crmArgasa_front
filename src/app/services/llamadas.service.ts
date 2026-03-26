@@ -12,19 +12,19 @@ export class LlamadasService {
 
   constructor(private http: HttpClient) {}
 
-  // ✅ Empresa actual (misma idea que usas en el componente)
- private getEmpresaActual(): 'ARGASA' | 'ELECTROLUGA' {
-  const emp = (localStorage.getItem('empresa_activa') || 'ARGASA').toUpperCase();
-  return emp === 'ELECTROLUGA' ? 'ELECTROLUGA' : 'ARGASA';
-}
+  private getEmpresaActual(): 'ARGASA' | 'ELECTROLUGA' {
+    const emp = (
+      localStorage.getItem('empresa_activa') || 'ARGASA'
+    ).toUpperCase();
+    return emp === 'ELECTROLUGA' ? 'ELECTROLUGA' : 'ARGASA';
+  }
 
-
-
-  // ✅ CORREGIDO: ahora manda ?empresa=...
   getEventosCalendario(empresa?: string): Observable<IEventoCalendario[]> {
     const emp = (empresa ?? this.getEmpresaActual()).toUpperCase();
     const params = new HttpParams().set('empresa', emp);
-    return this.http.get<IEventoCalendario[]>(`${this.baseUrl}/eventos`, { params });
+    return this.http.get<IEventoCalendario[]>(`${this.baseUrl}/eventos`, {
+      params,
+    });
   }
 
   getById(id: number): Observable<ILlamada> {
@@ -32,29 +32,36 @@ export class LlamadasService {
   }
 
   crearLlamada(llamada: ILlamadaRequest): Observable<ILlamada> {
-  const empresa = this.getEmpresaActual();
-  return this.http.post<ILlamada>(this.baseUrl, { ...llamada, empresa });
-}
-
-actualizarLlamada(id: number, llamada: any): Observable<ILlamada> {
-  const empresa = this.getEmpresaActual();
-  return this.http.put<ILlamada>(`${this.baseUrl}/${id}`, { ...llamada, empresa });
-}
-
-
-  eliminarLlamada(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    const empresa = this.getEmpresaActual();
+    return this.http.post<ILlamada>(this.baseUrl, { ...llamada, empresa });
   }
 
-  // ✅ CORREGIDO: ahora manda ?empresa=...
+  actualizarLlamada(id: number, llamada: any): Observable<ILlamada> {
+    const empresa = this.getEmpresaActual();
+    return this.http.put<ILlamada>(`${this.baseUrl}/${id}`, {
+      ...llamada,
+      empresa,
+    });
+  }
+
+  eliminarLlamada(id: number): Observable<void> {
+    const empresa = this.getEmpresaActual();
+    const params = new HttpParams().set('empresa', empresa);
+    return this.http.delete<void>(`${this.baseUrl}/${id}`, { params });
+  }
+
   getLlamadasDia(fecha: string, empresa?: string): Observable<ILlamada[]> {
     const emp = (empresa ?? this.getEmpresaActual()).toUpperCase();
     const params = new HttpParams().set('empresa', emp);
-    return this.http.get<ILlamada[]>(`${this.baseUrl}/dia/${fecha}`, { params });
+    return this.http.get<ILlamada[]>(`${this.baseUrl}/dia/${fecha}`, {
+      params,
+    });
   }
 
-  getProximasLlamadas(limit = 10) {
-    // Si tu backend también filtra por empresa aquí, dímelo y lo ajusto igual.
-    return this.http.get<ILlamada[]>(`${this.baseUrl}/proximas?limit=${limit}`);
+  getProximasLlamadas(limit = 10): Observable<ILlamada[]> {
+    const empresa = this.getEmpresaActual();
+    const params = new HttpParams().set('limit', limit).set('empresa', empresa);
+
+    return this.http.get<ILlamada[]>(`${this.baseUrl}/proximas`, { params });
   }
 }

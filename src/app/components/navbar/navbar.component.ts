@@ -74,6 +74,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     return this.auth.hasRole('ADMIN');
   }
 
+  canInformes(): boolean {
+    return this.auth.hasRole('ADMIN');
+  }
+
   cambiarEmpresa(): void {
     this.empresaService.clearEmpresa();
     this.router.navigate(['/empresa']);

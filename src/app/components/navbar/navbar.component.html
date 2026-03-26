@@ -62,6 +62,13 @@
           </a>
         </li>
 
+        <!-- Informes: SOLO ADMIN -->
+        <li class="nav-item" *ngIf="canInformes()">
+          <a class="nav-link" routerLink="/app/informes" routerLinkActive="active">
+            📊 Informes
+          </a>
+        </li>
+
       </ul>
 
       <!-- Usuario -->

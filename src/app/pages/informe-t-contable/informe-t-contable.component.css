@@ -1,0 +1,37 @@
+.informe-t-container {
+  max-width: 1200px;
+}
+
+.tabla-t-contable th,
+.tabla-t-contable td {
+  width: 50%;
+  vertical-align: top;
+}
+
+.columna-debe {
+  border-right: 2px solid #000;
+  min-height: 80px;
+}
+
+.columna-haber {
+  min-height: 80px;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .card {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+  }
+
+  .tabla-t-contable {
+    font-size: 12px;
+  }
+}

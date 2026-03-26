@@ -8,6 +8,7 @@ import { RutaService } from './../../services/ruta.service';
 import { ProveedorService } from './../../services/proveedor.service';
 import { ClientesService } from './../../services/cliente.service';
 import { LlamadasService } from './../../services/llamadas.service';
+import { PushNotificationsService } from './../../services/push-notifications.service';
 import { ILlamada } from './../../interfaces/illamda';
 
 @Component({
@@ -26,6 +27,7 @@ export class DashboardComponent implements OnInit {
     private proveedorService: ProveedorService,
     private rutaService: RutaService,
     private llamadasService: LlamadasService,
+    private pushNotificationsService: PushNotificationsService,
     private router: Router,
     private auth: AuthService,
   ) {}
@@ -35,22 +37,21 @@ export class DashboardComponent implements OnInit {
   }
 
   isUser(): boolean {
-  return this.auth.hasRole('USER');
-}
+    return this.auth.hasRole('USER');
+  }
 
-isTransportista(): boolean {
-  return this.auth.hasRole('TRANSPORTISTA') && !this.auth.hasRole('ADMIN');
-}
+  isTransportista(): boolean {
+    return this.auth.hasRole('TRANSPORTISTA') && !this.auth.hasRole('ADMIN');
+  }
 
   ngOnInit(): void {
+    this.pushNotificationsService.solicitarPermisoYRegistrar();
+
     this.cargarKPIs();
     this.cargarHoy();
     this.cargarProximasLlamadas();
   }
 
-  // =========================
-  // KPIs SUPERIORES
-  // =========================
   cargarKPIs(): void {
     this.kpis = [
       {
@@ -87,20 +88,15 @@ isTransportista(): boolean {
     });
   }
 
-  // =========================
-  // BLOQUE HOY (REAL)
-  // =========================
   cargarHoy(): void {
     const hoy = this.formatDateYYYYMMDD(new Date());
 
-    // inicial (para que no parpadee vacío)
     this.today = [
       { icon: '📞', title: 'Llamadas hoy', value: 0 },
       { icon: '🗺️', title: 'Rutas hoy', value: 0 },
       { icon: '⏳', title: 'Pendientes', value: 0 },
     ];
 
-    // Llamadas hoy
     this.llamadasService.getLlamadasDia(hoy).subscribe({
       next: (llamadasHoy) => {
         const activas = (llamadasHoy ?? []).filter(
@@ -110,7 +106,6 @@ isTransportista(): boolean {
       },
     });
 
-    // Rutas hoy + pendientes
     this.rutaService.getRutas().subscribe({
       next: (rutas) => {
         const rutasHoy = (rutas ?? []).filter((r) => r.fecha === hoy);
@@ -133,9 +128,6 @@ isTransportista(): boolean {
     if (index >= 0) this.today[index].value = value;
   }
 
-  // =========================
-  // PRÓXIMAS LLAMADAS (REAL + FALLBACK)
-  // =========================
   cargarProximasLlamadas(): void {
     const hoy = this.formatDateYYYYMMDD(new Date());
 
@@ -146,13 +138,11 @@ isTransportista(): boolean {
       next: (res) => {
         const listaPendientes = filtrarPendientes(res);
 
-        // ✅ Si el backend devuelve próximas (pendientes), usamos eso
         if (listaPendientes.length > 0) {
           this.calls = listaPendientes;
           return;
         }
 
-        // ✅ Si viene vacío, fallback: mostramos las de HOY (pendientes)
         this.llamadasService.getLlamadasDia(hoy).subscribe({
           next: (hoyRes) => {
             this.calls = filtrarPendientes(hoyRes);
@@ -169,7 +159,6 @@ isTransportista(): boolean {
           err,
         );
 
-        // ✅ Fallback si falla el endpoint proximas
         this.llamadasService.getLlamadasDia(hoy).subscribe({
           next: (hoyRes) => {
             this.calls = filtrarPendientes(hoyRes);
@@ -183,16 +172,10 @@ isTransportista(): boolean {
     });
   }
 
-  // =========================
-  // NAVEGACIÓN
-  // =========================
   go(route: string): void {
     this.router.navigate([route]);
   }
 
-  // =========================
-  // UTILS
-  // =========================
   private formatDateYYYYMMDD(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');

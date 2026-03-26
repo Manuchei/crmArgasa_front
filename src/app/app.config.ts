@@ -15,10 +15,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([empresaInterceptor, authInterceptor])),
-    // ✅ Necesario para que funcione MatDatepicker
     provideNativeDateAdapter(),
-
-    // ✅ Opcional (pero recomendado): calendario y pipes en español
     { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
     { provide: LOCALE_ID, useValue: 'es-ES' },
   ],

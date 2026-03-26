@@ -1,0 +1,26 @@
+.informe-saldos-container {
+  max-width: 1200px;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .card {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+  }
+
+  .print-area {
+    margin-top: 0;
+  }
+
+  .table {
+    font-size: 12px;
+  }
+}
