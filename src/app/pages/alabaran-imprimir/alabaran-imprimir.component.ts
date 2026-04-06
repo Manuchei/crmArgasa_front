@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 })
 export class AlbaranImprimirComponent implements OnInit {
   albaran: any;
-  private apiUrl = 'http://localhost:9018/api';
+  private apiUrl = '/api';
 
   constructor(
     private route: ActivatedRoute,

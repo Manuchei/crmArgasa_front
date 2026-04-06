@@ -32,7 +32,7 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
     dtoPct: 0,
   };
 
-  private apiUrl = 'http://localhost:9018/api';
+  private apiUrl = '/api';
 
   constructor(
     private route: ActivatedRoute,

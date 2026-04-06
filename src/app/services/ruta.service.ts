@@ -3,12 +3,14 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Ruta } from '../interfaces/iruta';
 import { RutaDiaRequestDTO } from '../interfaces/iruta-dia';
+import { environment } from '../../enviroments/enviroment';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class RutaService {
-  private apiUrl = 'http://localhost:9018/api/rutas';
+  private apiUrl = `${environment.apiUrl}/rutas`;
 
   constructor(private http: HttpClient) {}
 

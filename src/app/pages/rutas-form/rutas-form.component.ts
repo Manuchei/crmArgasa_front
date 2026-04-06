@@ -50,7 +50,7 @@ export class RutasFormComponent implements OnInit {
 
   // ✅ clientes
   clientes: any[] = [];
-  private apiUrl = 'http://localhost:9018/api';
+  private apiUrl = '/api';
 
   // ✅ productos PENDIENTES del cliente (solo pendientes)
   clienteProductos: IProductoPendienteUI[] = [];

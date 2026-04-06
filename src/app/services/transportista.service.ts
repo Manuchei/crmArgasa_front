@@ -2,10 +2,12 @@ import { Itrasnportista } from './../interfaces/itrasnportista';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../enviroments/enviroment';
+
 
 @Injectable({ providedIn: 'root' })
 export class TransportistaService {
-  private apiUrl = 'http://localhost:9018/api/transportistas';
+  private apiUrl = `${environment.apiUrl}/transportistas`;
 
   constructor(private http: HttpClient) {}
 

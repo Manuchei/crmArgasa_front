@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, map, Observable } from 'rxjs';
+import { environment } from '../../enviroments/enviroment';
+
 
 @Injectable({ providedIn: 'root' })
 export class StatsService {
-  private api = 'http://localhost:9018/api';
+  private api = `${environment.apiUrl}/stats`;
 
   constructor(private http: HttpClient) {}
 

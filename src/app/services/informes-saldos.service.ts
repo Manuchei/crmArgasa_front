@@ -3,6 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HistorialSaldoResponse } from '../interfaces/historial-saldo';
 import { HistorialTContableResponse } from '../interfaces/t-contable.interface';
+import { environment } from '../../enviroments/enviroment';
+
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +12,7 @@ import { HistorialTContableResponse } from '../interfaces/t-contable.interface';
 export class InformesSaldosService {
   private http = inject(HttpClient);
 
-  private apiUrl = 'http://localhost:9018/api/informes/saldos';
+  private apiUrl = `${environment.apiUrl}/informes/saldos`;
 
   obtenerHistorialPorCliente(
     clienteId: number,

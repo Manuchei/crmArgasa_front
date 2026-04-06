@@ -55,7 +55,7 @@ export class ClienteDetalleComponent implements OnInit {
   creandoPago = false;
   creandoAlbaran = false;
 
-  private apiUrl = 'http://localhost:9018/api';
+  private apiUrl = '/api';
 
   constructor(
     private route: ActivatedRoute,

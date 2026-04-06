@@ -15,7 +15,7 @@ export class ImprimirFacturaComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  private baseUrl = 'http://localhost:9018/api/facturacion-v2';
+  private baseUrl = '/api/facturacion-v2';
 
   constructor(
     private route: ActivatedRoute,

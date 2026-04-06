@@ -5,7 +5,7 @@ import { IfacturaCliente } from '../../../interfaces/ifactura-cliente';
 
 @Injectable({ providedIn: 'root' })
 export class FacturasClientesService {
-  private baseUrl = 'http://localhost:9018/api/facturas-clientes';
+  private baseUrl = '/api/facturas-clientes';
 
   constructor(private http: HttpClient) {}
 

@@ -12,7 +12,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class PagoComprobanteImprimirComponent implements OnInit {
   comprobante: any;
-  private apiUrl = 'http://localhost:9018/api';
+  private apiUrl = '/api';
 
   constructor(
     private route: ActivatedRoute,

@@ -5,10 +5,12 @@ import { Observable } from 'rxjs';
 import { ILlamada } from '../interfaces/illamda';
 import { IEventoCalendario } from '../interfaces/ievento-calendario';
 import { ILlamadaRequest } from '../interfaces/illamada-request';
+import { environment } from '../../enviroments/enviroment';
+
 
 @Injectable({ providedIn: 'root' })
 export class LlamadasService {
-  private baseUrl = 'http://localhost:9018/api/llamadas';
+  private baseUrl = `${environment.apiUrl}/llamadas`;
 
   constructor(private http: HttpClient) {}
 

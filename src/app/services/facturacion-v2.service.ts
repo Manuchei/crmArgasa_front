@@ -6,10 +6,12 @@ import {
   FacturaV2Response,
 } from '../interfaces/facturacion-v2';
 import { Observable } from 'rxjs';
+import { environment } from '../../enviroments/enviroment';
+
 
 @Injectable({ providedIn: 'root' })
 export class FacturacionV2Service {
-  private baseUrl = 'http://localhost:9018/api/facturacion-v2';
+  private baseUrl = `${environment.apiUrl}/facturacion-v2`;
 
   constructor(private http: HttpClient) {}
 

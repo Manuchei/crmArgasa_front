@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../enviroments/enviroment';
+
 
 type PushSubscriptionJSONSafe = {
   endpoint?: string;
@@ -12,7 +14,7 @@ type PushSubscriptionJSONSafe = {
 
 @Injectable({ providedIn: 'root' })
 export class PushNotificationsService {
-  private apiUrl = 'http://localhost:9018/api/push';
+  private apiUrl = `${environment.apiUrl}/push`;
 
   constructor(private http: HttpClient) {}
 

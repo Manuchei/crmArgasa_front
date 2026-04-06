@@ -2,10 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams,HttpHeaders  } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { IfacturaCliente } from '../interfaces/ifactura-cliente';
+import { environment } from '../../enviroments/enviroment';
+
 
 @Injectable({ providedIn: 'root' })
 export class FacturasClientesService {
-  private baseUrl = 'http://localhost:9018/api/facturas-clientes';
+  private baseUrl = `${environment.apiUrl}/facturas-clientes`;
 
   constructor(private http: HttpClient) {}
 

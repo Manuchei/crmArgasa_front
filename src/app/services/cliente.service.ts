@@ -3,10 +3,12 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ICliente } from '../interfaces/icliente';
 import { ITrabajo } from '../interfaces/itrabajo';
+import { environment } from '../../enviroments/enviroment';
+
 
 @Injectable({ providedIn: 'root' })
 export class ClientesService {
-  private readonly apiUrl = 'http://localhost:9018/api/clientes';
+  private readonly apiUrl = `${environment.apiUrl}/clientes`;
 
   private readonly jsonHeaders = new HttpHeaders({
     'Content-Type': 'application/json',
@@ -81,7 +83,7 @@ export class ClientesService {
     empresa: string,
     excludeRutaId?: number | null,
   ) {
-    let url = `http://localhost:9018/api/clientes/${clienteId}/productos/pendientes`;
+    let url = `/api/clientes/${clienteId}/productos/pendientes`;
 
     if (excludeRutaId != null) {
       url += `?excludeRutaId=${excludeRutaId}`;

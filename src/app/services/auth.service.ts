@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../enviroments/enviroment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:9018/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
   private readonly tokenKey = 'token';
   private readonly rolKey = 'rol';
 
