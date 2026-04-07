@@ -6,7 +6,7 @@ import {
   FacturaV2Response,
 } from '../interfaces/facturacion-v2';
 import { Observable } from 'rxjs';
-import { environment } from '../../enviroments/enviroment';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({ providedIn: 'root' })

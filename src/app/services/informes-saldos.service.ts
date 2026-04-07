@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HistorialSaldoResponse } from '../interfaces/historial-saldo';
 import { HistorialTContableResponse } from '../interfaces/t-contable.interface';
-import { environment } from '../../enviroments/enviroment';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({

@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { ILlamada } from '../interfaces/illamda';
 import { IEventoCalendario } from '../interfaces/ievento-calendario';
 import { ILlamadaRequest } from '../interfaces/illamada-request';
-import { environment } from '../../enviroments/enviroment';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({ providedIn: 'root' })
