@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-
 type PushSubscriptionJSONSafe = {
   endpoint?: string;
   keys?: {
@@ -39,9 +38,9 @@ export class PushNotificationsService {
         return;
       }
 
-      // Registramos manualmente tu service worker propio
       const registration =
         await navigator.serviceWorker.register('/custom-sw.js');
+      await navigator.serviceWorker.ready;
 
       const keyResp = await firstValueFrom(
         this.http.get<{ publicKey: string }>(`${this.apiUrl}/public-key`),
@@ -70,16 +69,16 @@ export class PushNotificationsService {
         return;
       }
 
-      await firstValueFrom(
-        this.http.post(`${this.apiUrl}/subscribe`, {
-          empresa: this.getEmpresaActual(),
-          endpoint: subJson.endpoint,
-          keys: {
-            p256dh: subJson.keys.p256dh,
-            auth: subJson.keys.auth,
-          },
-        }),
-      );
+      const payload = {
+        empresa: this.getEmpresaActual(),
+        endpoint: subJson.endpoint,
+        keys: {
+          p256dh: subJson.keys.p256dh,
+          auth: subJson.keys.auth,
+        },
+      };
+
+      await firstValueFrom(this.http.post(`${this.apiUrl}/subscribe`, payload));
 
       console.log('Suscripción push registrada correctamente');
     } catch (error) {
