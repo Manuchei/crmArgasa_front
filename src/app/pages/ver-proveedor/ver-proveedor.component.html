@@ -1,20 +1,114 @@
 <div class="container mt-4" *ngIf="proveedor">
 
-  <!-- Cabecera -->
   <div class="card shadow-sm p-4 mb-4">
-    <h2>{{ proveedor.nombre }} {{ proveedor.apellido }}</h2>
+    <h2>{{ proveedor.nombre }}</h2>
 
-    <p><strong>Oficio:</strong> {{ proveedor.oficio }}</p>
-    <p><strong>Teléfono:</strong> {{ proveedor.telefono }}</p>
-    <p><strong>Email:</strong> {{ proveedor.email }}</p>
+    <div class="row mt-3">
+      <div class="col-md-6">
+        <p><strong>CIF:</strong> {{ proveedor.cif || '-' }}</p>
+        <p><strong>Oficio:</strong> {{ proveedor.oficio || '-' }}</p>
+        <p><strong>Teléfono:</strong> {{ proveedor.telefono || '-' }}</p>
+        <p><strong>Email:</strong> {{ proveedor.email || '-' }}</p>
+        <p><strong>Contacto:</strong> {{ proveedor.contacto || '-' }}</p>
+      </div>
 
-    <div class="mt-2">
-      <span *ngIf="proveedor.trabajaEnArgasa" class="badge bg-primary me-2">Argasa</span>
-      <span *ngIf="proveedor.trabajaEnLuga" class="badge bg-warning text-dark">Electroluga</span>
+      <div class="col-md-6">
+        <p><strong>Dirección:</strong> {{ proveedor.direccion || '-' }}</p>
+        <p><strong>Localidad:</strong> {{ proveedor.localidad || '-' }}</p>
+        <p><strong>Código postal:</strong> {{ proveedor.codigoPostal || '-' }}</p>
+        <p><strong>Provincia:</strong> {{ proveedor.provincia || '-' }}</p>
+        <p><strong>País:</strong> {{ proveedor.pais || '-' }}</p>
+        <p><strong>Fecha alta:</strong> {{ proveedor.fechaAltaProveedor || '-' }}</p>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <p><strong>Datos bancarios:</strong> {{ proveedor.datosBancarios || '-' }}</p>
+      <p><strong>Notas:</strong> {{ proveedor.notas || '-' }}</p>
+      <p><strong>Contactos:</strong> {{ proveedor.contactos || '-' }}</p>
     </div>
   </div>
 
-  <!-- TRABAJOS REALIZADOS -->
+  <div class="card shadow-sm p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="mb-0">Productos del proveedor</h4>
+    </div>
+
+    <div *ngIf="!proveedor.productos || proveedor.productos.length === 0" class="alert alert-light border mt-3">
+      Este proveedor no tiene productos asociados.
+    </div>
+
+    <div class="table-responsive" *ngIf="proveedor.productos && proveedor.productos.length > 0">
+      <table class="table table-bordered mt-3">
+        <thead class="table-dark">
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Modelo</th>
+            <th>Stock</th>
+            <th>Precio sin IVA</th>
+            <th style="width: 120px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let producto of proveedor.productos; let i = index">
+            <td>{{ producto.codigo }}</td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.modelo || '-' }}</td>
+            <td>{{ producto.stock }}</td>
+            <td>{{ producto.precioSinIva || 0 }} €</td>
+            <td>
+              <button type="button" class="btn btn-sm btn-danger" (click)="eliminarProducto(i)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card shadow-sm p-4 mb-4">
+    <h5>Añadir producto a este proveedor</h5>
+
+    <div class="row g-2 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label">Código</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoProducto.codigo" name="codigoProductoNuevo"
+          placeholder="Ej: JW101">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Nombre</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoProducto.nombre" name="nombreProductoNuevo"
+          placeholder="Ej: Chip A11">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Modelo</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoProducto.modelo" name="modeloProductoNuevo"
+          placeholder="Ej: 25">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Stock</label>
+        <input type="number" class="form-control" [(ngModel)]="nuevoProducto.stock" name="stockProductoNuevo" min="0">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Precio sin IVA</label>
+        <input type="number" step="0.01" class="form-control" [(ngModel)]="nuevoProducto.precioSinIva"
+          name="precioProductoNuevo" min="0">
+      </div>
+
+      <div class="col-md-1 d-grid">
+        <button type="button" class="btn btn-success" (click)="guardarProducto()" [disabled]="guardandoProducto">
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="card shadow-sm p-4">
     <h4>Trabajos realizados</h4>
 
@@ -32,22 +126,15 @@
       <tbody>
         <tr *ngFor="let trabajo of trabajos">
           <td>{{ trabajo.descripcion }}</td>
-
           <td>{{ trabajo.importe }}</td>
-
-          <!-- PAGADO (€) -->
           <td style="color: green;">
             {{ trabajo.importePagado || 0 }}
           </td>
-
-          <!-- DIFERENCIA (€) -->
-          <td 
-            [ngStyle]="{ color: (trabajo.importe - trabajo.importePagado) > 0 ? 'red' : 'green' }">
+          <td [ngStyle]="{ color: (trabajo.importe - trabajo.importePagado) > 0 ? 'red' : 'green' }">
             {{ (trabajo.importe - trabajo.importePagado) || 0 }}
           </td>
-
           <td>
-            <button class="btn btn-sm btn-danger" (click)="eliminarTrabajo(trabajo.id)">
+            <button type="button" class="btn btn-sm btn-danger" (click)="eliminarTrabajo(trabajo.id)">
               Eliminar
             </button>
           </td>
@@ -55,7 +142,6 @@
       </tbody>
     </table>
 
-    <!-- Totales -->
     <div class="mt-3 text-end">
       <p><b>Total:</b> {{ totalImporte }} €</p>
       <p style="color: green;"><b>Total pagado:</b> {{ totalPagado }} €</p>
@@ -65,53 +151,47 @@
     </div>
   </div>
 
-  <!-- AÑADIR NUEVO TRABAJO -->
   <div class="card shadow-sm p-4 mt-4">
     <h5>Añadir nuevo trabajo</h5>
 
     <div class="row g-2 align-items-end">
       <div class="col-md-6">
         <label>Descripción</label>
-        <input type="text"
-          class="form-control"
-          [(ngModel)]="nuevoTrabajo.descripcion"
+        <input type="text" class="form-control" [(ngModel)]="nuevoTrabajo.descripcion" name="descripcionTrabajoNuevo"
           placeholder="Ej: Reparación fuga">
       </div>
 
       <div class="col-md-2">
         <label>Importe (€)</label>
-        <input type="number"
-          class="form-control"
-          [(ngModel)]="nuevoTrabajo.importe">
+        <input type="number" class="form-control" [(ngModel)]="nuevoTrabajo.importe" name="importeTrabajoNuevo">
       </div>
 
       <div class="col-md-2">
         <label>Pagado (€)</label>
-        <input type="number"
-          class="form-control"
-          [(ngModel)]="nuevoTrabajo.importePagado">
+        <input type="number" class="form-control" [(ngModel)]="nuevoTrabajo.importePagado"
+          name="importePagadoTrabajoNuevo">
       </div>
 
       <div class="col-md-2 d-grid">
-        <button class="btn btn-success" (click)="guardarTrabajo()">+</button>
+        <button type="button" class="btn btn-success" (click)="guardarTrabajo()" [disabled]="guardandoTrabajo">
+          +
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- BOTONES -->
   <div class="mt-4 d-flex justify-content-between">
-    <button class="btn btn-secondary" (click)="volver()">
+    <button type="button" class="btn btn-secondary" (click)="volver()">
       Volver a proveedores
     </button>
 
-    <button class="btn btn-warning" (click)="irEditar()">
+    <button type="button" class="btn btn-warning" (click)="irEditar()">
       Editar proveedor
     </button>
   </div>
 
 </div>
 
-<!-- Si no existe proveedor -->
 <div *ngIf="!proveedor" class="text-center mt-5">
   <p>Cargando proveedor...</p>
 </div>

@@ -2,96 +2,134 @@
   <h2>Nuevo Proveedor</h2>
 
   <form (ngSubmit)="guardar()" #formProveedor="ngForm">
-
-    <!-- NOMBRE -->
-    <div class="mb-3">
-      <label class="form-label">Nombre</label>
-      <input type="text" class="form-control" [(ngModel)]="proveedor.nombre" name="nombre" required />
-    </div>
-
-    <!-- APELLIDO -->
-    <div class="mb-3">
-      <label class="form-label">Apellido</label>
-      <input type="text" class="form-control" [(ngModel)]="proveedor.apellido" name="apellido" required />
-    </div>
-
-    <!-- OFICIO -->
-    <div class="mb-3">
-      <label class="form-label">Oficio</label>
-      <select class="form-control" [(ngModel)]="proveedor.oficio">
-        <option value="">Seleccione un oficio...</option>
-        <option *ngFor="let o of oficios" [value]="o">{{ o }}</option>
-      </select>
-
-    </div>
-
-    <!-- TRABAJO REALIZADO (NUEVO CAMPO) -->
-    <!-- <div class="mb-3">
-      <label class="form-label">Trabajo realizado</label>
-      <textarea rows="2" class="form-control"
-                [(ngModel)]="proveedor.trabajoRealizado"
-                name="trabajoRealizado"
-                placeholder="Ej: Reparación de fuga, cambio de cuadro eléctrico..."
-                required></textarea>
-    </div> -->
-
-    <!-- TELEFONO -->
-    <div class="mb-3">
-      <label class="form-label">Teléfono</label>
-      <input type="text" class="form-control" [(ngModel)]="proveedor.telefono" name="telefono" required />
-    </div>
-
-    <!-- EMAIL -->
-    <div class="mb-3">
-      <label class="form-label">Email</label>
-      <input type="email" class="form-control" [(ngModel)]="proveedor.email" name="email" required />
-    </div>
-
-    <!-- CHECKBOXES EMPRESAS -->
-    <div class="row mb-3">
-      <div class="col">
-        <label>
-          <input type="checkbox" class="form-check-input" [(ngModel)]="proveedor.trabajaEnArgasa"
-            name="trabajaEnArgasa" />
-          Trabaja en Argasa
-        </label>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Nombre</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.nombre" name="nombre" required />
       </div>
 
-      <div class="col">
-        <label>
-          <input type="checkbox" class="form-check-input" [(ngModel)]="proveedor.trabajaEnLuga" name="trabajaEnLuga" />
-          Trabaja en Luga
-        </label>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">CIF</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.cif" name="cif" />
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Fecha alta proveedor</label>
+        <input type="date" class="form-control" [(ngModel)]="proveedor.fechaAltaProveedor" name="fechaAltaProveedor" />
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Oficio</label>
+        <select class="form-control" [(ngModel)]="proveedor.oficio" name="oficio">
+          <option value="">Seleccione un oficio...</option>
+          <option *ngFor="let o of oficios" [value]="o">{{ o }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-12 mb-3">
+        <label class="form-label">Dirección</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.direccion" name="direccion" />
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Localidad</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.localidad" name="localidad" />
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Código postal</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.codigoPostal" name="codigoPostal" />
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Provincia</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.provincia" name="provincia" />
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label">País</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.pais" name="pais" />
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Teléfono</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.telefono" name="telefono" required />
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" [(ngModel)]="proveedor.email" name="email" required />
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Contacto</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.contacto" name="contacto" />
+      </div>
+
+      <div class="col-md-12 mb-3">
+        <label class="form-label">Datos bancarios</label>
+        <textarea class="form-control" rows="3" [(ngModel)]="proveedor.datosBancarios" name="datosBancarios"></textarea>
+      </div>
+
+      <div class="col-md-12 mb-3">
+        <label class="form-label">Notas</label>
+        <textarea class="form-control" rows="3" [(ngModel)]="proveedor.notas" name="notas"></textarea>
+      </div>
+
+      <div class="col-md-12 mb-3">
+        <label class="form-label">Contactos</label>
+        <textarea class="form-control" rows="3" [(ngModel)]="proveedor.contactos" name="contactos"></textarea>
       </div>
     </div>
 
-    <!-- OBSERVACIONES
-    <div class="mb-3">
-      <label class="form-label">Observaciones</label>
-      <textarea rows="3" class="form-control"
-                [(ngModel)]="proveedor.observaciones"
-                name="observaciones"></textarea>
-    </div> -->
+    <hr class="my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="mb-0">Productos del proveedor</h4>
+      <button type="button" class="btn btn-outline-primary" (click)="agregarProducto()">
+        Añadir producto
+      </button>
+    </div>
 
-    <!-- IMPORTES -->
-    <!-- <div class="mb-3">
-      <label class="form-label">Coste total del arreglo</label>
-      <input type="number" class="form-control"
-             [(ngModel)]="proveedor.importeTotal" name="importeTotal" min="0">
+    <div *ngIf="!proveedor.productos?.length" class="alert alert-light border">
+      No hay productos añadidos todavía.
+    </div>
 
-      <label class="form-label mt-2">Importe pagado</label>
-      <input type="number" class="form-control"
-             [(ngModel)]="proveedor.importePagado" name="importePagado" min="0">
+    <div *ngFor="let producto of proveedor.productos; let i = index" class="border rounded p-3 mb-3">
+      <div class="row">
+        <div class="col-md-2 mb-3">
+          <label class="form-label">Código</label>
+          <input class="form-control" [(ngModel)]="producto.codigo" name="codigoProducto{{i}}">
+        </div>
 
-      <label class="form-label mt-2">Importe pendiente</label>
-      <input type="number" class="form-control"
-             [value]="(proveedor.importeTotal || 0) - (proveedor.importePagado || 0)" disabled>
-    </div> -->
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Nombre</label>
+          <input class="form-control" [(ngModel)]="producto.nombre" name="nombreProducto{{i}}">
+        </div>
 
-    <!-- BOTÓN GUARDAR -->
+        <div class="col-md-2 mb-3">
+          <label class="form-label">Modelo</label>
+          <input class="form-control" [(ngModel)]="producto.modelo" name="modeloProducto{{i}}">
+        </div>
+
+        <div class="col-md-2 mb-3">
+          <label class="form-label">Stock</label>
+          <input type="number" class="form-control" [(ngModel)]="producto.stock" name="stockProducto{{i}}">
+        </div>
+
+        <div class="col-md-2 mb-3">
+          <label class="form-label">Precio sin IVA</label>
+          <input type="number" step="0.01" class="form-control" [(ngModel)]="producto.precioSinIva"
+            name="precioProducto{{i}}">
+        </div>
+
+        <div class="col-md-1 d-flex align-items-end mb-3">
+          <button type="button" class="btn btn-danger w-100" (click)="eliminarProducto(i)">X</button>
+        </div>
+      </div>
+    </div>
+
     <div class="text-center mt-4">
       <button type="submit" class="btn btn-primary px-5">Guardar</button>
     </div>
-
   </form>
 </div>

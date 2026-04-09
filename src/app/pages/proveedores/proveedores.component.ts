@@ -111,11 +111,11 @@ export class ProveedoresComponent implements OnInit {
   }
 
   verProveedor(id: number) {
-    this.router.navigate(['/proveedores', id]);
+    this.router.navigate(['app/proveedores', id]);
   }
 
   editarProveedor(id: number) {
-    this.router.navigate(['/proveedores/editar', id]);
+    this.router.navigate(['app/proveedores/editar', id]);
   }
 
   eliminarProveedor(id: number) {
