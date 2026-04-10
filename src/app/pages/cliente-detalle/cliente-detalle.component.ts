@@ -1,12 +1,21 @@
 import { ProductoServiceService } from './../../services/producto-service.service';
 import { ClienteProductoService } from '../../services/cliente-producto.service';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {
+  ActivatedRoute,
+  Router,
+  RouterModule,
+} from '@angular/router';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+} from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FacturarV2Component } from '../../components/facturar-v2/facturar-v2.component';
 import { IProducto } from '../../interfaces/iproducto';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-cliente-detalle',
@@ -55,8 +64,7 @@ export class ClienteDetalleComponent implements OnInit {
   creandoPago = false;
   creandoAlbaran = false;
 
-  private apiUrl = '/api';
-
+private apiUrl = environment.apiUrl;
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
@@ -134,6 +142,24 @@ export class ClienteDetalleComponent implements OnInit {
     return fromLS || 'ARGASA';
   }
 
+  private getEmpresaHeaders(): HttpHeaders {
+    return new HttpHeaders({
+      'X-Empresa': this.getEmpresaActual(),
+    });
+  }
+
+  private logHttpError(contexto: string, err: any): void {
+    console.error(`Error en ${contexto}:`, err);
+
+    if (err instanceof HttpErrorResponse) {
+      console.error(`[${contexto}] status:`, err.status);
+      console.error(`[${contexto}] statusText:`, err.statusText);
+      console.error(`[${contexto}] message:`, err.message);
+      console.error(`[${contexto}] error:`, err.error);
+      console.error(`[${contexto}] url:`, err.url);
+    }
+  }
+
   getQty(productoId: number): number {
     if (!productoId) return 1;
     const v = Number(this.qtyMap[productoId] ?? 1);
@@ -200,14 +226,18 @@ export class ClienteDetalleComponent implements OnInit {
   }
 
   cargarCliente(id: number): void {
-    this.http.get(`${this.apiUrl}/clientes/${id}`).subscribe({
-      next: (data: any) => {
-        this.cliente = data;
-        this.calcularTotales();
-        this.cargarProductos();
-      },
-      error: (err) => console.error('Error al cargar cliente:', err),
-    });
+    this.http
+      .get(`${this.apiUrl}/clientes/${id}`, {
+        headers: this.getEmpresaHeaders(),
+      })
+      .subscribe({
+        next: (data: any) => {
+          this.cliente = data;
+          this.calcularTotales();
+          this.cargarProductos();
+        },
+        error: (err) => this.logHttpError('cargar cliente', err),
+      });
   }
 
   cargarClienteProductos(clienteId: number): void {
@@ -221,7 +251,7 @@ export class ClienteDetalleComponent implements OnInit {
         }));
       },
       error: (err) => {
-        console.error('Error cargando productos del cliente:', err);
+        this.logHttpError('cargar productos del cliente', err);
         this.clienteProductos = [];
       },
     });
@@ -258,7 +288,7 @@ export class ClienteDetalleComponent implements OnInit {
           this.cargarCliente(this.clienteId);
         },
         error: (err) => {
-          console.error(err);
+          this.logHttpError('eliminar producto del cliente', err);
           alert('No se pudo eliminar el producto del cliente.');
           this.cargarProductos();
         },
@@ -274,7 +304,7 @@ export class ClienteDetalleComponent implements OnInit {
       const descripcion =
         t?.descripcion != null && String(t.descripcion).trim().length > 0
           ? t.descripcion
-          : (t?.nombre ?? '');
+          : t?.nombre ?? '';
 
       const unidadesRaw = t?.unidades != null ? t.unidades : t?.cantidad;
       const unidades =
@@ -294,8 +324,8 @@ export class ClienteDetalleComponent implements OnInit {
         t?.importePagado != null
           ? ClienteDetalleComponent.toNumber(t.importePagado)
           : t?.pagado != null
-            ? ClienteDetalleComponent.toNumber(t.pagado)
-            : 0;
+          ? ClienteDetalleComponent.toNumber(t.pagado)
+          : 0;
 
       const entregado = t?.entregado === true;
       const fechaEntrega = t?.fechaEntrega ?? t?.fecha_entrega ?? null;
@@ -315,14 +345,16 @@ export class ClienteDetalleComponent implements OnInit {
 
   cargarTrabajos(clienteId: number): void {
     this.http
-      .get<any[]>(`${this.apiUrl}/trabajos/cliente/${clienteId}`)
+      .get<any[]>(`${this.apiUrl}/trabajos/cliente/${clienteId}`, {
+        headers: this.getEmpresaHeaders(),
+      })
       .subscribe({
         next: (data) => {
           this.trabajos = data ?? [];
           this.normalizarTrabajos();
           this.calcularTotales();
         },
-        error: (err) => console.error('Error al cargar trabajos:', err),
+        error: (err) => this.logHttpError('cargar trabajos', err),
       });
   }
 
@@ -437,7 +469,7 @@ export class ClienteDetalleComponent implements OnInit {
           this.calcularTotales();
         },
         error: (err) => {
-          console.error('Error al agregar trabajo:', err);
+          this.logHttpError('agregar trabajo', err);
           alert('No se pudo añadir el trabajo (revisa empresa / backend).');
         },
       });
@@ -464,7 +496,7 @@ export class ClienteDetalleComponent implements OnInit {
         this.cargarCliente(this.clienteId);
       },
       error: (err) => {
-        console.error('Error al eliminar trabajo:', err);
+        this.logHttpError('eliminar trabajo', err);
         alert('No se pudo eliminar el trabajo.');
       },
     });
@@ -544,7 +576,7 @@ export class ClienteDetalleComponent implements OnInit {
           this.cargarCliente(this.clienteId);
         },
         error: (err: any) => {
-          console.error(err);
+          this.logHttpError('actualizar cantidad de trabajo', err);
 
           const msg =
             typeof err?.error === 'string'
@@ -585,10 +617,13 @@ export class ClienteDetalleComponent implements OnInit {
 
   cargarAlbaranes(clienteId: number): void {
     this.http
-      .get<any[]>(`${this.apiUrl}/albaranes`, { params: { clienteId } as any })
+      .get<any[]>(`${this.apiUrl}/albaranes`, {
+        params: { clienteId } as any,
+        headers: this.getEmpresaHeaders(),
+      })
       .subscribe({
         next: (data) => (this.albaranes = data ?? []),
-        error: (err) => console.error('Error al cargar albaranes:', err),
+        error: (err) => this.logHttpError('cargar albaranes', err),
       });
   }
 
@@ -617,7 +652,7 @@ export class ClienteDetalleComponent implements OnInit {
         },
         error: (err) => {
           this.creandoAlbaran = false;
-          console.error('Error creando albarán:', err);
+          this.logHttpError('crear albarán', err);
           alert('No se pudo crear el albarán.');
         },
       });
@@ -637,7 +672,7 @@ export class ClienteDetalleComponent implements OnInit {
         alert('Albarán eliminado correctamente.');
       },
       error: (err) => {
-        console.error('Error al eliminar albarán:', err);
+        this.logHttpError('eliminar albarán', err);
         alert('No se pudo eliminar el albarán.');
       },
     });
@@ -645,15 +680,18 @@ export class ClienteDetalleComponent implements OnInit {
 
   cargarPagos(clienteId: number): void {
     this.http
-      .get<any[]>(`${this.apiUrl}/pagos/cliente/${clienteId}`)
+      .get<any[]>(`${this.apiUrl}/pagos/cliente/${clienteId}`, {
+        headers: this.getEmpresaHeaders(),
+      })
       .subscribe({
         next: (data) => {
           this.pagos = data ?? [];
           this.calcularTotales();
         },
-        error: (err) => console.error('Error al cargar pagos:', err),
+        error: (err) => this.logHttpError('cargar pagos', err),
       });
   }
+
   agregarPago(): void {
     if (!this.cliente?.id) return;
 
@@ -716,7 +754,7 @@ export class ClienteDetalleComponent implements OnInit {
         },
         error: (err) => {
           this.creandoPago = false;
-          console.error('Error al registrar pago:', err);
+          this.logHttpError('registrar pago', err);
           alert('No se pudo registrar el pago.');
         },
       });
@@ -735,7 +773,7 @@ export class ClienteDetalleComponent implements OnInit {
         this.calcularTotales();
       },
       error: (err) => {
-        console.error('Error al eliminar pago:', err);
+        this.logHttpError('eliminar pago', err);
         alert('No se pudo eliminar el pago.');
       },
     });
@@ -801,7 +839,7 @@ export class ClienteDetalleComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Error cargando productos:', err);
+        this.logHttpError('cargar productos', err);
         this.productos = [];
       },
     });
@@ -849,7 +887,7 @@ export class ClienteDetalleComponent implements OnInit {
           this.cargarCliente(this.clienteId);
         },
         error: (err: HttpErrorResponse) => {
-          console.error('Error addProducto:', err);
+          this.logHttpError('addProducto', err);
 
           const msg =
             typeof (err as any)?.error === 'string'

@@ -15,6 +15,10 @@ import { IProducto } from '../../interfaces/iproducto';
 export class VerProveedorComponent implements OnInit {
   proveedor: any;
   trabajos: any[] = [];
+  albaranes: any[] = [];
+
+  numeroAlbaranProveedor = '';
+  creandoAlbaran = false;
 
   nuevoTrabajo = {
     descripcion: '',
@@ -60,6 +64,7 @@ export class VerProveedorComponent implements OnInit {
         }
 
         this.cargarTrabajos();
+        this.cargarAlbaranes();
       },
       error: (err) => {
         console.error('Error cargando proveedor', err);
@@ -73,7 +78,7 @@ export class VerProveedorComponent implements OnInit {
 
     this.proveedorService.getTrabajosByProveedor(this.proveedor.id).subscribe({
       next: (data) => {
-        this.trabajos = data;
+        this.trabajos = data || [];
         this.calcularTotales();
       },
       error: (err) => {
@@ -81,6 +86,21 @@ export class VerProveedorComponent implements OnInit {
         alert('No se pudieron cargar los trabajos');
       },
     });
+  }
+
+  cargarAlbaranes() {
+    if (!this.proveedor?.id) return;
+
+    this.proveedorService
+      .listarAlbaranesProveedor(this.proveedor.id)
+      .subscribe({
+        next: (data) => {
+          this.albaranes = data || [];
+        },
+        error: (err) => {
+          console.error('Error cargando albaranes', err);
+        },
+      });
   }
 
   guardarTrabajo() {
@@ -105,9 +125,7 @@ export class VerProveedorComponent implements OnInit {
     this.proveedorService
       .crearTrabajoProveedor(this.proveedor.id, payload)
       .subscribe({
-        next: (res) => {
-          console.log('Trabajo guardado correctamente', res);
-
+        next: () => {
           this.nuevoTrabajo = {
             descripcion: '',
             importe: 0,
@@ -239,6 +257,64 @@ export class VerProveedorComponent implements OnInit {
           this.cargarProveedor();
         },
       });
+  }
+
+  generarAlbaran() {
+    if (!this.proveedor?.id) {
+      alert('Proveedor no cargado');
+      return;
+    }
+
+    if (!this.numeroAlbaranProveedor.trim()) {
+      alert('Introduce el nº de albarán del proveedor');
+      return;
+    }
+
+    this.creandoAlbaran = true;
+
+    const payload = {
+      numeroProveedor: this.numeroAlbaranProveedor.trim(),
+      fechaEmision: new Date().toISOString().slice(0, 10),
+    };
+
+    this.proveedorService
+      .crearAlbaranProveedor(this.proveedor.id, payload)
+      .subscribe({
+        next: () => {
+          this.creandoAlbaran = false;
+          this.numeroAlbaranProveedor = '';
+
+          alert('Albarán generado correctamente');
+          this.cargarAlbaranes();
+        },
+        error: (err) => {
+          console.error('Error al generar albarán', err);
+          this.creandoAlbaran = false;
+          alert(
+            err?.error?.message || err?.error || 'Error al generar el albarán',
+          );
+        },
+      });
+  }
+
+  eliminarAlbaran(albaran: any) {
+    if (!albaran?.id) return;
+
+    const confirmar = confirm(
+      `¿Seguro que deseas eliminar el albarán #${albaran.id}?`,
+    );
+
+    if (!confirmar) return;
+
+    this.proveedorService.eliminarAlbaranProveedor(albaran.id).subscribe({
+      next: () => {
+        this.cargarAlbaranes();
+      },
+      error: (err) => {
+        console.error('Error al eliminar albarán', err);
+        alert('No se pudo eliminar el albarán');
+      },
+    });
   }
 
   calcularTotales() {

@@ -1,8 +1,30 @@
 <div class="container mt-4" *ngIf="proveedor">
 
-  <div class="card shadow-sm p-4 mb-4">
-    <h2>{{ proveedor.nombre }}</h2>
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div>
+      <h2 class="mb-1">{{ proveedor.nombre }}</h2>
+      <div class="text-muted">
+        <span *ngIf="proveedor.cif">
+          <b>CIF:</b> {{ proveedor.cif }}
+        </span>
+        <span *ngIf="proveedor.oficio" class="ms-3">
+          <b>Oficio:</b> {{ proveedor.oficio }}
+        </span>
+      </div>
+    </div>
 
+    <div class="d-flex gap-2 flex-wrap">
+      <input type="text" class="form-control" style="min-width: 240px;" placeholder="Nº albarán proveedor"
+        [(ngModel)]="numeroAlbaranProveedor" name="numeroAlbaranProveedor" />
+
+      <button type="button" class="btn btn-dark" (click)="generarAlbaran()" [disabled]="creandoAlbaran">
+        <span *ngIf="!creandoAlbaran">🧾 Generar albarán</span>
+        <span *ngIf="creandoAlbaran">Generando...</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="card shadow-sm p-4 mb-4">
     <div class="row mt-3">
       <div class="col-md-6">
         <p><strong>CIF:</strong> {{ proveedor.cif || '-' }}</p>
@@ -109,38 +131,46 @@
     </div>
   </div>
 
-  <div class="card shadow-sm p-4">
+  <div class="card shadow-sm p-4 mb-4">
     <h4>Trabajos realizados</h4>
 
-    <table class="table table-bordered mt-3">
-      <thead class="table-dark">
-        <tr>
-          <th>Descripción</th>
-          <th>Importe (€)</th>
-          <th>Pagado (€)</th>
-          <th>Diferencia (€)</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
+    <div class="table-responsive">
+      <table class="table table-bordered mt-3">
+        <thead class="table-dark">
+          <tr>
+            <th>Descripción</th>
+            <th>Importe (€)</th>
+            <th>Pagado (€)</th>
+            <th>Diferencia (€)</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
 
-      <tbody>
-        <tr *ngFor="let trabajo of trabajos">
-          <td>{{ trabajo.descripcion }}</td>
-          <td>{{ trabajo.importe }}</td>
-          <td style="color: green;">
-            {{ trabajo.importePagado || 0 }}
-          </td>
-          <td [ngStyle]="{ color: (trabajo.importe - trabajo.importePagado) > 0 ? 'red' : 'green' }">
-            {{ (trabajo.importe - trabajo.importePagado) || 0 }}
-          </td>
-          <td>
-            <button type="button" class="btn btn-sm btn-danger" (click)="eliminarTrabajo(trabajo.id)">
-              Eliminar
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        <tbody>
+          <tr *ngFor="let trabajo of trabajos">
+            <td>{{ trabajo.descripcion }}</td>
+            <td>{{ trabajo.importe }}</td>
+            <td style="color: green;">
+              {{ trabajo.importePagado || 0 }}
+            </td>
+            <td [ngStyle]="{ color: (trabajo.importe - trabajo.importePagado) > 0 ? 'red' : 'green' }">
+              {{ (trabajo.importe - trabajo.importePagado) || 0 }}
+            </td>
+            <td>
+              <button type="button" class="btn btn-sm btn-danger" (click)="eliminarTrabajo(trabajo.id)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="trabajos.length === 0">
+            <td colspan="5" class="text-center text-muted">
+              Este proveedor no tiene trabajos registrados.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div class="mt-3 text-end">
       <p><b>Total:</b> {{ totalImporte }} €</p>
@@ -148,6 +178,54 @@
       <p style="color: red;">
         <b>Total pendiente:</b> {{ totalPendiente }} €
       </p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm p-4 mb-4">
+    <h4>Albaranes del proveedor</h4>
+
+    <div class="table-responsive">
+      <table class="table table-bordered mt-3">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Nº interno</th>
+            <th>Nº proveedor</th>
+            <th>Nº generado</th>
+            <th>Fecha</th>
+            <th>Total</th>
+            <th>Confirmado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let a of albaranes">
+            <td>#{{ a.id }}</td>
+            <td>{{ a.numeroInterno || '-' }}</td>
+            <td>{{ a.numeroProveedor || '-' }}</td>
+            <td>{{ a.numeroGenerado || '-' }}</td>
+            <td>{{ a.fechaEmision || '-' }}</td>
+            <td>{{ a.totalImporte || 0 }} €</td>
+            <td>
+              <span class="badge" [ngClass]="a.confirmado ? 'bg-success' : 'bg-secondary'">
+                {{ a.confirmado ? 'Sí' : 'No' }}
+              </span>
+            </td>
+            <td>
+              <button type="button" class="btn btn-sm btn-danger" (click)="eliminarAlbaran(a)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="albaranes.length === 0">
+            <td colspan="8" class="text-center text-muted">
+              Este proveedor no tiene albaranes todavía.
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 

@@ -10,6 +10,7 @@ import { Proveedor } from '../interfaces/iproveedor';
 export class ProveedorService {
   private apiProveedores = `${environment.apiUrl}/proveedores`;
   private apiTrabajos = `${environment.apiUrl}/trabajos-proveedor`;
+  private apiAlbaranesProveedor = `${environment.apiUrl}/albaranes-proveedor`;
 
   constructor(private http: HttpClient) {}
 
@@ -61,5 +62,26 @@ export class ProveedorService {
 
   eliminarTrabajo(idTrabajo: number): Observable<void> {
     return this.http.delete<void>(`${this.apiTrabajos}/${idTrabajo}`);
+  }
+
+  crearAlbaranProveedor(proveedorId: number, payload: any): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiAlbaranesProveedor}/proveedores/${proveedorId}`,
+      payload,
+    );
+  }
+
+  listarAlbaranesProveedor(proveedorId: number): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiAlbaranesProveedor}/proveedores/${proveedorId}`,
+    );
+  }
+
+  getAlbaranProveedorById(albaranId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiAlbaranesProveedor}/${albaranId}`);
+  }
+
+  eliminarAlbaranProveedor(albaranId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiAlbaranesProveedor}/${albaranId}`);
   }
 }
