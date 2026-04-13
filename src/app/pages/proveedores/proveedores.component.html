@@ -1,13 +1,11 @@
 <div class="container mt-4">
+  <h2 class="mb-3">Listado de proveedores</h2>
 
-  <h2 class="mb-3">Listado de Proveedores</h2>
-
-  <!-- FILTROS -->
   <div class="card p-3 mb-4">
     <div class="row">
       <div class="col-md-4">
         <label>Buscar por nombre</label>
-        <input type="text" class="form-control" [(ngModel)]="filtros.texto" (input)="filtrar()">
+        <input type="text" class="form-control" [(ngModel)]="filtros.texto" (input)="filtrar()" />
       </div>
 
       <div class="col-md-4">
@@ -27,69 +25,83 @@
           <option value="fontanero">Fontanero</option>
           <option value="pintor">Pintor</option>
           <option value="albañil">Albañil</option>
+          <option value="programador">Programador</option>
         </select>
       </div>
     </div>
 
     <div class="mt-3 text-end">
-      <button class="btn btn-secondary btn-sm" (click)="limpiarFiltros()">Limpiar filtros</button>
+      <button class="btn btn-secondary btn-sm" (click)="limpiarFiltros()">
+        Limpiar filtros
+      </button>
     </div>
   </div>
 
   <a routerLink="/app/proveedores/nuevo" class="btn btn-success mb-3">
-    + Nuevo Proveedor
+    + Nuevo proveedor
   </a>
 
-  <!-- TOTALES -->
   <div class="alert alert-info mt-2">
-    <b>Total facturado:</b> {{ totalFacturado }} € |
-    <b style="color: green">Total pagado:</b> {{ totalPagado }} € |
-    <b style="color: red">Total deuda:</b> {{ totalDeuda }} €
+    <b>Total compra:</b> {{ totalCompras | number:'1.2-2' }} € |
+    <b class="text-success">Total pagado:</b> {{ totalPagado | number:'1.2-2' }} € |
+    <b class="text-danger">Pendiente de pago:</b> {{ totalPendientePago | number:'1.2-2' }} €
   </div>
 
-  <!-- TABLA -->
-  <table class="table table-hover shadow-sm">
-    <thead class="table-dark">
-      <tr>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Oficio</th>
-        <th>Empresa</th>
-        <th>Teléfono</th>
-        <th>Total (€)</th>
-        <th>Pagado (€)</th>
-        <th>Debe (€)</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
+  <div class="table-responsive">
+    <table class="table table-hover shadow-sm align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Proveedor</th>
+          <th>Oficio</th>
+          <th>Empresa</th>
+          <th>Teléfono</th>
+          <th class="text-end">Total compra (€)</th>
+          <th class="text-end">Total pagado (€)</th>
+          <th class="text-end">Pendiente (€)</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
 
-    <tbody>
-      <tr *ngFor="let p of proveedores" (click)="verProveedor(p.id)" style="cursor:pointer">
+      <tbody>
+        <tr *ngFor="let p of proveedores" (click)="verProveedor(p.id!)" style="cursor: pointer">
+          <td>{{ getNombreCompleto(p) || '-' }}</td>
+          <td>{{ p.oficio || '-' }}</td>
+          <td>{{ getEmpresaLabel(p) }}</td>
+          <td>{{ p.telefono || '-' }}</td>
 
-        <td>{{ p.nombre }}</td>
-        <td>{{ p.apellido }}</td>
-        <td>{{ p.oficio }}</td>
-        <td>
-          <span *ngIf="p.trabajaEnArgasa">Argasa</span>
-          <span *ngIf="p.trabajaEnLuga">Luga</span>
-        </td>
-        <td>{{ p.telefono }}</td>
-        <td>{{ p.importeTotal || 0 }}</td>
+          <td class="text-end">
+            {{ (p.importeTotal || 0) | number:'1.2-2' }}
+          </td>
 
-        <td style="color: green;">{{ p.importePagado || 0 }}</td>
+          <td class="text-end text-success">
+            {{ (p.importePagado || 0) | number:'1.2-2' }}
+          </td>
 
-        <td [ngStyle]="{ color: p.importePendiente > 0 ? 'red' : 'green' }">
-          {{ p.importePendiente || 0 }}
-        </td>
+          <td class="text-end" [ngClass]="(p.importePendiente || 0) > 0 ? 'text-danger' : 'text-success'">
+            {{ (p.importePendiente || 0) | number:'1.2-2' }}
+          </td>
 
-        <td (click)="$event.stopPropagation()">
-          <button class="btn btn-outline-primary btn-sm me-2" (click)="verProveedor(p.id)">Ver</button>
-          <button class="btn btn-outline-warning btn-sm" (click)="editarProveedor(p.id)">Editar</button>
+          <td (click)="$event.stopPropagation()">
+            <button class="btn btn-outline-primary btn-sm me-2" (click)="verProveedor(p.id!)">
+              Ver
+            </button>
 
-          <button class="btn btn-outline-danger btn-sm" (click)="eliminarProveedor(p.id)">Borrar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+            <button class="btn btn-outline-warning btn-sm me-2" (click)="editarProveedor(p.id!)">
+              Editar
+            </button>
 
+            <button class="btn btn-outline-danger btn-sm" (click)="eliminarProveedor(p.id!)">
+              Borrar
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="proveedores.length === 0">
+          <td colspan="8" class="text-center text-muted">
+            No hay proveedores para mostrar.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

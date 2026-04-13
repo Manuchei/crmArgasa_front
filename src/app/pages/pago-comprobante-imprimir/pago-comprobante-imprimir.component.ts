@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-pago-comprobante-imprimir',
@@ -12,7 +13,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class PagoComprobanteImprimirComponent implements OnInit {
   comprobante: any;
-  private apiUrl = '/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private route: ActivatedRoute,

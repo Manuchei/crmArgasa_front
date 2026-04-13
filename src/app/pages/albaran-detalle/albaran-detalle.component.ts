@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { Empresa } from '../../services/empresa.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-albaran-detalle',
@@ -32,7 +33,7 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
     dtoPct: 0,
   };
 
-  private apiUrl = '/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private route: ActivatedRoute,

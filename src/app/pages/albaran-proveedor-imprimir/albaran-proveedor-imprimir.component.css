@@ -1,0 +1,185 @@
+:host {
+  display: block;
+  background: #f3f3f3;
+  min-height: 100vh;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.hoja {
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  margin: 0 auto;
+  padding: 18mm 14mm;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.12);
+  color: #111;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.35;
+  box-sizing: border-box;
+}
+
+.cabecera-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.empresa-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 48%;
+}
+
+.logo-empresa {
+  max-width: 180px;
+  max-height: 90px;
+  object-fit: contain;
+}
+
+.empresa-datos {
+  font-size: 13px;
+}
+
+.empresa-nombre {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.doc-lateral {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  width: 40%;
+}
+
+.doc-box {
+  border: 2px solid #222;
+  border-radius: 10px;
+  padding: 14px 18px;
+  width: 100%;
+  text-align: right;
+  box-sizing: border-box;
+}
+
+.doc-box h2 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  letter-spacing: 0.5px;
+}
+
+.badge-estado {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badge-estado.ok {
+  background: #19984f;
+}
+
+.badge-estado.no {
+  background: #a94442;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #cfcfcf;
+  margin: 18px 0;
+}
+
+.bloque h5 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabla th,
+.tabla td {
+  border: 1px solid #444;
+  padding: 8px 10px;
+}
+
+.tabla th {
+  text-align: left;
+  font-weight: 700;
+}
+
+.tabla .num,
+.totales .num {
+  text-align: right;
+}
+
+.muted {
+  color: #666;
+  font-style: italic;
+}
+
+.totales {
+  margin-top: 8px;
+  margin-left: auto;
+  width: 320px;
+  font-size: 15px;
+}
+
+.totales > div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.totalFinal {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.extra {
+  margin-top: 18px;
+}
+
+.no-print {
+  margin-bottom: 12px;
+}
+
+.right {
+  width: 100%;
+}
+
+@media print {
+  :host {
+    background: #fff;
+    padding: 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .hoja {
+    width: 100%;
+    min-height: auto;
+    margin: 0;
+    box-shadow: none;
+    padding: 10mm 10mm;
+  }
+
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+}

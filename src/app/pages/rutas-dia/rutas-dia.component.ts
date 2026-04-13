@@ -150,7 +150,7 @@ export class RutasDiaComponent implements OnInit {
       next: (res: any) => {
         const data = Array.isArray(res) ? res : (res?.content ?? []);
 
-        r.productosCliente = data
+        const normalizados = data
           .map((x: any) => {
             const prod = x?.producto ?? x;
 
@@ -168,6 +168,8 @@ export class RutasDiaComponent implements OnInit {
               x?.descripcion ??
               '';
 
+            const codigo = prod?.codigo ?? x?.codigo ?? '';
+
             const total = Number(
               x?.cantidadTotal ?? x?.total ?? x?.asignado ?? x?.cantidad ?? 0,
             );
@@ -176,23 +178,34 @@ export class RutasDiaComponent implements OnInit {
               x?.cantidadEntregada ?? x?.entregada ?? x?.cantidadEntregado ?? 0,
             );
 
-            const pendienteBackend = x?.pendiente ?? x?.pendienteReal;
+            const pendienteBackend =
+              x?.pendiente ?? x?.pendienteReal ?? x?.cantidadPendiente;
 
             let pendiente = 0;
+
             if (pendienteBackend != null && pendienteBackend !== '') {
               pendiente = Number(pendienteBackend) || 0;
             } else {
               pendiente = (Number(total) || 0) - (Number(entregada) || 0);
             }
 
-            if (!id) return null;
+            if (!id || pendiente <= 0) return null;
 
-            const stock = Math.max(Number(pendiente) || 0, 0);
-            return { id: Number(id), nombre: (nombre ?? '').toString(), stock };
+            return {
+              id: Number(id),
+              codigo: (codigo ?? '').toString(),
+              nombre: (nombre ?? '').toString(),
+              stock: Math.max(pendiente, 0),
+            };
           })
           .filter(Boolean);
+
+        r.productosCliente = normalizados;
       },
-      error: (err: any) => console.error('Error productos cliente', err),
+      error: (err: any) => {
+        console.error('Error productos cliente', err);
+        r.productosCliente = [];
+      },
     });
   }
 
@@ -276,7 +289,10 @@ export class RutasDiaComponent implements OnInit {
     const p = (r.productosCliente ?? []).find(
       (x: any) => Number(x.id) === Number(id),
     );
-    return p ? p.nombre || `Producto ${id}` : `Producto ${id}`;
+
+    if (!p) return `Producto ${id}`;
+
+    return `${p.codigo ? p.codigo + ' - ' : ''}${p.nombre}`;
   }
 
   guardarTodas(): void {

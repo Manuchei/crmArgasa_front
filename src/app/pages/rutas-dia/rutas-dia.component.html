@@ -75,8 +75,8 @@
             <option [ngValue]="null">-- Selecciona producto --</option>
             <option *ngFor="let p of r.productosCliente" [ngValue]="p.id"
               [disabled]="getStockDisponibleFormulario(p.id) === 0">
-              {{ p.nombre }} (ID {{ p.id }}) — Pendiente: {{ getStockDisponibleFormulario(p.id) }}
-            </option>
+              {{ p.codigo ? p.codigo + ' - ' : '' }}{{ p.nombre }}
+              — Pendiente: {{ getStockDisponibleFormulario(p.id) }} </option>
           </select>
         </div>
 

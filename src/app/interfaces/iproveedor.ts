@@ -24,9 +24,14 @@ export interface Proveedor {
   notas?: string;
   contactos?: string;
 
+  // backend actual
   importeTotal?: number;
   importePagado?: number;
   importePendiente?: number;
+
+  // aliases semánticos futuros si luego quieres migrar naming
+  totalCompras?: number;
+  pendientePago?: number;
 
   productos?: IProducto[];
 }

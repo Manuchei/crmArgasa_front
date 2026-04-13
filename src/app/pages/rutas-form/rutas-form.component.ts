@@ -16,6 +16,8 @@ import { HttpClient } from '@angular/common/http';
 // ✅ usamos el servicio que trae líneas del cliente (compras / trabajos)
 import { ClientesService } from '../../services/cliente.service';
 
+import { environment } from '../../../environments/environment';
+
 interface IRutaLineaDto {
   productoId: number;
   cantidad: number;
@@ -50,7 +52,7 @@ export class RutasFormComponent implements OnInit {
 
   // ✅ clientes
   clientes: any[] = [];
-  private apiUrl = '/api';
+  private apiUrl = environment.apiUrl;
 
   // ✅ productos PENDIENTES del cliente (solo pendientes)
   clienteProductos: IProductoPendienteUI[] = [];
@@ -221,8 +223,6 @@ export class RutasFormComponent implements OnInit {
           const map = new Map<number, IProductoPendienteUI>();
 
           for (const x of lista) {
-            if (this.esEntregado(x)) continue;
-
             const prod = x?.producto ?? x;
 
             const productoId =
@@ -243,7 +243,26 @@ export class RutasFormComponent implements OnInit {
 
             const codigo = prod?.codigo ?? x?.codigo ?? '';
 
-            const pendiente = Math.max(this.unidadesDeLinea(x), 0);
+            const total = Number(
+              x?.cantidadTotal ?? x?.total ?? x?.asignado ?? x?.cantidad ?? 0,
+            );
+
+            const entregada = Number(
+              x?.cantidadEntregada ?? x?.entregada ?? x?.cantidadEntregado ?? 0,
+            );
+
+            const pendienteBackend =
+              x?.pendiente ?? x?.pendienteReal ?? x?.cantidadPendiente;
+
+            let pendiente = 0;
+
+            if (pendienteBackend != null && pendienteBackend !== '') {
+              pendiente = Number(pendienteBackend) || 0;
+            } else {
+              pendiente = (Number(total) || 0) - (Number(entregada) || 0);
+            }
+
+            pendiente = Math.max(pendiente, 0);
             if (pendiente <= 0) continue;
 
             const pid = Number(productoId);
@@ -251,7 +270,7 @@ export class RutasFormComponent implements OnInit {
             if (!map.has(pid)) {
               map.set(pid, {
                 productoId: pid,
-                codigo: codigo?.toString() ?? '',
+                codigo: (codigo ?? '').toString(),
                 nombre: (nombre ?? '').toString(),
                 pendiente,
               });
@@ -287,7 +306,6 @@ export class RutasFormComponent implements OnInit {
         },
       });
   }
-
   onProductoChange(): void {
     const productoId = +this.lineaForm.value.productoId;
     this.productoSeleccionado =

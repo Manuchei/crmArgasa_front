@@ -10,8 +10,7 @@
             <select class="form-select" formControlName="clienteId">
               <option [ngValue]="null">— Selecciona cliente —</option>
               <option *ngFor="let c of clientes" [ngValue]="c.id">
-                {{ c.nombreApellidos }}
-                <span *ngIf="c.nombreComercial">({{ c.nombreComercial }})</span>
+                {{ c.nombreApellidos }}{{ c.nombreComercial ? ' (' + c.nombreComercial + ')' : '' }}
               </option>
             </select>
             <div class="text-danger mt-1" *ngIf="enviado && f['clienteId'].invalid">

@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProveedorService } from '../../services/proveedor.service';
+import { FacturasProveedoresService } from '../../services/facturas-proveedores.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IProducto } from '../../interfaces/iproducto';
+import { IfacturaProveedor } from '../../interfaces/ifactura-proveedor';
 
 @Component({
   selector: 'app-ver-proveedor',
@@ -13,12 +15,15 @@ import { IProducto } from '../../interfaces/iproducto';
   styleUrls: ['./ver-proveedor.component.css'],
 })
 export class VerProveedorComponent implements OnInit {
-  proveedor: any;
+  proveedor: any = null;
   trabajos: any[] = [];
   albaranes: any[] = [];
+  facturas: IfacturaProveedor[] = [];
 
   numeroAlbaranProveedor = '';
   creandoAlbaran = false;
+  generandoFactura = false;
+  cargandoFacturas = false;
 
   nuevoTrabajo = {
     descripcion: '',
@@ -26,14 +31,7 @@ export class VerProveedorComponent implements OnInit {
     importePagado: 0,
   };
 
-  nuevoProducto: IProducto = {
-    codigo: '',
-    nombre: '',
-    modelo: '',
-    stock: 0,
-    empresa: '',
-    precioSinIva: 0,
-  };
+  nuevoProducto: IProducto = this.getNuevoProductoVacio();
 
   totalImporte = 0;
   totalPagado = 0;
@@ -45,6 +43,7 @@ export class VerProveedorComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private proveedorService: ProveedorService,
+    private facturasProveedoresService: FacturasProveedoresService,
     private router: Router,
   ) {}
 
@@ -52,19 +51,47 @@ export class VerProveedorComponent implements OnInit {
     this.cargarProveedor();
   }
 
-  cargarProveedor() {
+  private getNuevoProductoVacio(): IProducto {
+    return {
+      codigo: '',
+      nombre: '',
+      modelo: '',
+      stock: 0,
+      empresa: '',
+      precioSinIva: 0,
+    };
+  }
+
+  private asegurarProductos(): void {
+    if (!this.proveedor) return;
+
+    if (!Array.isArray(this.proveedor.productos)) {
+      this.proveedor.productos = [];
+    }
+  }
+
+  private normalizarNumero(valor: any): number {
+    const numero = Number(valor);
+    return isNaN(numero) ? 0 : numero;
+  }
+
+  cargarProveedor(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
+
+    if (!id) {
+      alert('Id de proveedor no válido');
+      return;
+    }
 
     this.proveedorService.getProveedorById(id).subscribe({
       next: (data) => {
         this.proveedor = data;
+        this.asegurarProductos();
 
-        if (!this.proveedor.productos) {
-          this.proveedor.productos = [];
-        }
-
+        this.calcularTotales();
         this.cargarTrabajos();
         this.cargarAlbaranes();
+        this.cargarFacturas();
       },
       error: (err) => {
         console.error('Error cargando proveedor', err);
@@ -73,7 +100,7 @@ export class VerProveedorComponent implements OnInit {
     });
   }
 
-  cargarTrabajos() {
+  cargarTrabajos(): void {
     if (!this.proveedor?.id) return;
 
     this.proveedorService.getTrabajosByProveedor(this.proveedor.id).subscribe({
@@ -88,7 +115,7 @@ export class VerProveedorComponent implements OnInit {
     });
   }
 
-  cargarAlbaranes() {
+  cargarAlbaranes(): void {
     if (!this.proveedor?.id) return;
 
     this.proveedorService
@@ -103,7 +130,29 @@ export class VerProveedorComponent implements OnInit {
       });
   }
 
-  guardarTrabajo() {
+  cargarFacturas(): void {
+    if (!this.proveedor?.id) return;
+
+    this.cargandoFacturas = true;
+
+    this.facturasProveedoresService
+      .getByProveedor(this.proveedor.id)
+      .subscribe({
+        next: (data) => {
+          this.facturas = (data || []).map((f) => ({
+            ...f,
+            numeroFacturaProveedor: f.numeroFacturaProveedor ?? '',
+          }));
+          this.cargandoFacturas = false;
+        },
+        error: (err) => {
+          console.error('Error cargando facturas', err);
+          this.cargandoFacturas = false;
+        },
+      });
+  }
+
+  guardarTrabajo(): void {
     if (!this.proveedor?.id) {
       alert('Proveedor no cargado');
       return;
@@ -116,8 +165,8 @@ export class VerProveedorComponent implements OnInit {
 
     const payload = {
       descripcion: this.nuevoTrabajo.descripcion.trim(),
-      importe: Number(this.nuevoTrabajo.importe) || 0,
-      importePagado: Number(this.nuevoTrabajo.importePagado) || 0,
+      importe: this.normalizarNumero(this.nuevoTrabajo.importe),
+      importePagado: this.normalizarNumero(this.nuevoTrabajo.importePagado),
     };
 
     this.guardandoTrabajo = true;
@@ -145,7 +194,7 @@ export class VerProveedorComponent implements OnInit {
       });
   }
 
-  eliminarTrabajo(id: number) {
+  eliminarTrabajo(id: number): void {
     this.proveedorService.eliminarTrabajo(id).subscribe({
       next: () => {
         this.cargarTrabajos();
@@ -157,21 +206,25 @@ export class VerProveedorComponent implements OnInit {
     });
   }
 
-  guardarProducto() {
-    if (!this.proveedor) return;
+  guardarProducto(): void {
+    if (!this.proveedor?.id) {
+      alert('Proveedor no cargado');
+      return;
+    }
 
-    if (
-      !this.nuevoProducto.codigo.trim() ||
-      !this.nuevoProducto.nombre.trim()
-    ) {
+    const codigo = this.nuevoProducto.codigo?.trim();
+    const nombre = this.nuevoProducto.nombre?.trim();
+    const modelo = this.nuevoProducto.modelo?.trim() || '';
+
+    if (!codigo || !nombre) {
       alert('Código y nombre del producto son obligatorios');
       return;
     }
 
-    const existeCodigo = (this.proveedor.productos || []).some(
-      (p: IProducto) =>
-        p.codigo?.trim().toLowerCase() ===
-        this.nuevoProducto.codigo.trim().toLowerCase(),
+    this.asegurarProductos();
+
+    const existeCodigo = this.proveedor.productos.some(
+      (p: IProducto) => p.codigo?.trim().toLowerCase() === codigo.toLowerCase(),
     );
 
     if (existeCodigo) {
@@ -180,20 +233,15 @@ export class VerProveedorComponent implements OnInit {
     }
 
     const productoAInsertar: IProducto = {
-      codigo: this.nuevoProducto.codigo.trim(),
-      nombre: this.nuevoProducto.nombre.trim(),
-      modelo: this.nuevoProducto.modelo?.trim() || '',
-      stock: Number(this.nuevoProducto.stock) || 0,
-      precioSinIva: Number(this.nuevoProducto.precioSinIva) || 0,
+      codigo,
+      nombre,
+      modelo,
+      stock: this.normalizarNumero(this.nuevoProducto.stock),
+      precioSinIva: this.normalizarNumero(this.nuevoProducto.precioSinIva),
       empresa: '',
     };
 
-    if (!this.proveedor.productos) {
-      this.proveedor.productos = [];
-    }
-
     this.proveedor.productos = [...this.proveedor.productos, productoAInsertar];
-
     this.guardandoProducto = true;
 
     this.proveedorService
@@ -201,21 +249,12 @@ export class VerProveedorComponent implements OnInit {
       .subscribe({
         next: (proveedorActualizado) => {
           this.proveedor = proveedorActualizado;
+          this.asegurarProductos();
 
-          if (!this.proveedor.productos) {
-            this.proveedor.productos = [];
-          }
-
-          this.nuevoProducto = {
-            codigo: '',
-            nombre: '',
-            modelo: '',
-            stock: 0,
-            empresa: '',
-            precioSinIva: 0,
-          };
-
+          this.nuevoProducto = this.getNuevoProductoVacio();
           this.guardandoProducto = false;
+          this.calcularTotales();
+
           alert('Producto añadido correctamente');
         },
         error: (err) => {
@@ -229,10 +268,14 @@ export class VerProveedorComponent implements OnInit {
       });
   }
 
-  eliminarProducto(index: number) {
-    if (!this.proveedor || !this.proveedor.productos) return;
+  eliminarProducto(index: number): void {
+    if (!this.proveedor?.id) return;
+
+    this.asegurarProductos();
 
     const producto = this.proveedor.productos[index];
+    if (!producto) return;
+
     const confirmar = confirm(
       `¿Seguro que deseas eliminar el producto "${producto.nombre}"?`,
     );
@@ -247,9 +290,8 @@ export class VerProveedorComponent implements OnInit {
       .subscribe({
         next: (proveedorActualizado) => {
           this.proveedor = proveedorActualizado;
-          if (!this.proveedor.productos) {
-            this.proveedor.productos = [];
-          }
+          this.asegurarProductos();
+          this.calcularTotales();
         },
         error: (err) => {
           console.error('Error al eliminar producto', err);
@@ -259,7 +301,7 @@ export class VerProveedorComponent implements OnInit {
       });
   }
 
-  generarAlbaran() {
+  generarAlbaran(): void {
     if (!this.proveedor?.id) {
       alert('Proveedor no cargado');
       return;
@@ -280,12 +322,16 @@ export class VerProveedorComponent implements OnInit {
     this.proveedorService
       .crearAlbaranProveedor(this.proveedor.id, payload)
       .subscribe({
-        next: () => {
+        next: (albaran) => {
           this.creandoAlbaran = false;
           this.numeroAlbaranProveedor = '';
 
           alert('Albarán generado correctamente');
           this.cargarAlbaranes();
+
+          if (albaran?.id) {
+            this.verAlbaran(albaran);
+          }
         },
         error: (err) => {
           console.error('Error al generar albarán', err);
@@ -297,13 +343,97 @@ export class VerProveedorComponent implements OnInit {
       });
   }
 
-  eliminarAlbaran(albaran: any) {
+  generarFacturaProveedor(): void {
+    if (!this.proveedor?.id) {
+      alert('Proveedor no cargado');
+      return;
+    }
+
+    this.generandoFactura = true;
+
+    this.facturasProveedoresService.generar(this.proveedor.id).subscribe({
+      next: () => {
+        this.generandoFactura = false;
+        alert('Factura generada correctamente');
+        this.cargarFacturas();
+        this.cargarTrabajos();
+      },
+      error: (err) => {
+        console.error('Error al generar factura', err);
+        this.generandoFactura = false;
+        alert(
+          err?.error?.message || err?.error || 'Error al generar la factura',
+        );
+      },
+    });
+  }
+
+  guardarNumeroFacturaProveedor(factura: IfacturaProveedor): void {
+    if (!factura?.id) return;
+
+    const numero = (factura.numeroFacturaProveedor || '').trim();
+
+    this.facturasProveedoresService
+      .actualizarNumeroFacturaProveedor(factura.id, numero)
+      .subscribe({
+        next: (facturaActualizada) => {
+          factura.numeroFacturaProveedor =
+            facturaActualizada.numeroFacturaProveedor || '';
+          alert('Número de factura del proveedor guardado correctamente');
+        },
+        error: (err) => {
+          console.error('Error guardando número de factura proveedor', err);
+          alert(
+            err?.error?.message ||
+              err?.error ||
+              'No se pudo guardar el número de factura del proveedor',
+          );
+        },
+      });
+  }
+
+  pagarFactura(factura: IfacturaProveedor): void {
+    if (!factura?.id) return;
+
+    this.facturasProveedoresService.pagar(factura.id).subscribe({
+      next: () => {
+        alert('Factura marcada como pagada');
+        this.cargarFacturas();
+        this.cargarTrabajos();
+      },
+      error: (err) => {
+        console.error('Error al pagar factura', err);
+        alert(
+          err?.error?.message || err?.error || 'No se pudo pagar la factura',
+        );
+      },
+    });
+  }
+
+  verAlbaran(albaran: any): void {
+    if (!albaran?.id) return;
+
+    this.router.navigate(['/app/albaranes-proveedor', albaran.id], {
+      queryParams: { proveedorId: this.proveedor?.id },
+      state: { proveedorId: this.proveedor?.id, volverA: 'albaranes' },
+    });
+  }
+
+  editarAlbaran(albaran: any): void {
+    if (!albaran?.id) return;
+
+    this.router.navigate(['/app/albaranes-proveedor/editar', albaran.id], {
+      queryParams: { proveedorId: this.proveedor?.id },
+      state: { proveedorId: this.proveedor?.id, volverA: 'albaranes' },
+    });
+  }
+
+  eliminarAlbaran(albaran: any): void {
     if (!albaran?.id) return;
 
     const confirmar = confirm(
       `¿Seguro que deseas eliminar el albarán #${albaran.id}?`,
     );
-
     if (!confirmar) return;
 
     this.proveedorService.eliminarAlbaranProveedor(albaran.id).subscribe({
@@ -317,23 +447,34 @@ export class VerProveedorComponent implements OnInit {
     });
   }
 
-  calcularTotales() {
+  calcularTotales(): void {
     this.totalImporte = 0;
     this.totalPagado = 0;
 
     this.trabajos.forEach((t) => {
-      this.totalImporte += Number(t.importe) || 0;
-      this.totalPagado += Number(t.importePagado) || 0;
+      this.totalImporte += this.normalizarNumero(t.importe);
+      this.totalPagado += this.normalizarNumero(t.importePagado);
+    });
+
+    (this.proveedor?.productos || []).forEach((p: IProducto) => {
+      const precio = this.normalizarNumero(p.precioSinIva);
+      const stock = this.normalizarNumero(p.stock);
+      this.totalImporte += precio * stock;
     });
 
     this.totalPendiente = this.totalImporte - this.totalPagado;
+
+    if (this.totalPendiente < 0) {
+      this.totalPendiente = 0;
+    }
   }
 
-  volver() {
+  volver(): void {
     this.router.navigate(['/app/proveedores']);
   }
 
-  irEditar() {
+  irEditar(): void {
+    if (!this.proveedor?.id) return;
     this.router.navigate(['/app/proveedores/editar', this.proveedor.id]);
   }
 }

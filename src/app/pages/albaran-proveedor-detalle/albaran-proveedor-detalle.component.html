@@ -1,0 +1,241 @@
+<div class="container mt-4" *ngIf="albaran">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                        <h2 class="mb-0">Albarán de proveedor</h2>
+                        <span class="badge fs-6" [ngClass]="getEstadoBadgeClass()">
+                            {{ getEstadoLabel() }}
+                        </span>
+                    </div>
+
+                    <div class="text-muted mb-2">
+                        <div><b>ID:</b> #{{ albaran.id }}</div>
+                        <div><b>Fecha:</b> {{ albaran.fechaEmision || '-' }}</div>
+                        <div><b>Empresa:</b> {{ albaran.empresa || '-' }}</div>
+                    </div>
+
+                    <div class="fw-semibold fs-5">
+                        {{ getNombreProveedor() }}
+                    </div>
+
+                    <div class="text-muted">
+                        <span><b>Nº interno:</b> {{ albaran.numeroInterno || '-' }}</span>
+                        <span class="ms-3"><b>Nº proveedor:</b> {{ albaran.numeroProveedor || '-' }}</span>
+                        <span class="ms-3" *ngIf="albaran.numeroGenerado"><b>Nº generado:</b> {{ albaran.numeroGenerado
+                            }}</span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-outline-secondary" (click)="volverAProveedor()">
+                        ⬅ Volver
+                    </button>
+
+                    <button class="btn btn-warning" (click)="editarAlbaran()" [disabled]="!canEdit()">
+                        ✏️ Editar
+                    </button>
+
+                    <button class="btn btn-dark" (click)="imprimirAlbaran()">
+                        🖨️ Imprimir
+                    </button>
+
+                    <button class="btn btn-success" (click)="confirmar()"
+                        [disabled]="albaran.confirmado || isConfirming">
+                        <span *ngIf="!isConfirming">✅ Confirmar</span>
+                        <span *ngIf="isConfirming">Confirmando...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Datos del proveedor</h5>
+
+                    <div class="row g-2">
+                        <div class="col-md-6"><b>Nombre:</b> {{ getNombreProveedor() }}</div>
+                        <div class="col-md-6"><b>Contacto:</b> {{ albaran.contacto || '-' }}</div>
+
+                        <div class="col-md-6"><b>CIF:</b> {{ albaran.cif || '-' }}</div>
+                        <div class="col-md-6"><b>Oficio:</b> {{ albaran.oficio || '-' }}</div>
+
+                        <div class="col-md-6"><b>Teléfono:</b> {{ albaran.telefono || '-' }}</div>
+                        <div class="col-md-6"><b>Email:</b> {{ albaran.email || '-' }}</div>
+
+                        <div class="col-12"><b>Dirección:</b> {{ albaran.direccion || '-' }}</div>
+
+                        <div class="col-md-4"><b>CP:</b> {{ albaran.codigoPostal || '-' }}</div>
+                        <div class="col-md-4"><b>Localidad:</b> {{ albaran.localidad || '-' }}</div>
+                        <div class="col-md-4"><b>Provincia:</b> {{ albaran.provincia || '-' }}</div>
+
+                        <div class="col-md-6"><b>País:</b> {{ albaran.pais || '-' }}</div>
+                        <div class="col-md-6"><b>Datos bancarios:</b> {{ albaran.datosBancarios || '-' }}</div>
+
+                        <div class="col-12"><b>Notas:</b> {{ albaran.notas || '-' }}</div>
+                        <div class="col-12"><b>Contactos adicionales:</b> {{ albaran.contactos || '-' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Resumen económico</h5>
+
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span>Total compra</span>
+                        <strong>{{ getTotalCompra() | number:'1.2-2' }} €</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom"
+                        *ngIf="hasResumenPago()">
+                        <span>Total pagado</span>
+                        <strong class="text-success">{{ getTotalPagado() | number:'1.2-2' }} €</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center py-2" *ngIf="hasResumenPago()">
+                        <span>Pendiente de pago</span>
+                        <strong [ngClass]="getPendientePago() > 0 ? 'text-danger' : 'text-success'">
+                            {{ getPendientePago() | number:'1.2-2' }} €
+                        </strong>
+                    </div>
+
+                    <div class="small text-muted mt-3">
+                        En proveedores se recomienda trabajar con
+                        <b>compra, pagado y pendiente de pago</b>,
+                        no con "debe" como en clientes.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Totales del albarán</h5>
+
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span>Subtotal</span>
+                        <strong>{{ (albaran.subtotal ?? 0) | number:'1.2-2' }} €</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span>Descuento</span>
+                        <strong>{{ (albaran.totalDescuento ?? 0) | number:'1.2-2' }} €</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center py-2">
+                        <span>Total albarán</span>
+                        <strong>{{ (albaran.totalImporte ?? 0) | number:'1.2-2' }} €</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <h5 class="mb-3">Líneas del albarán</h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Código</th>
+                            <th>Descripción</th>
+                            <th class="text-end">Uds</th>
+                            <th class="text-end">Precio</th>
+                            <th class="text-end">Dto %</th>
+                            <th class="text-end">Base</th>
+                            <th class="text-end">Descuento</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let l of (albaran.lineas || [])">
+                            <td>{{ l.tipo || '-' }}</td>
+                            <td>{{ l.codigo || '-' }}</td>
+                            <td class="text-start">{{ l.descripcion || '-' }}</td>
+                            <td class="text-end">{{ l.unidades ?? 0 }}</td>
+                            <td class="text-end">{{ (l.precio ?? 0) | number:'1.2-2' }} €</td>
+                            <td class="text-end">{{ (l.dtoPct ?? 0) | number:'1.0-2' }}</td>
+                            <td class="text-end">{{ (l.baseLinea ?? 0) | number:'1.2-2' }} €</td>
+                            <td class="text-end">{{ (l.descuentoImporte ?? 0) | number:'1.2-2' }} €</td>
+                            <td class="text-end fw-semibold">{{ (l.totalLinea ?? 0) | number:'1.2-2' }} €</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-danger" (click)="eliminarLinea(l.id)"
+                                    [disabled]="albaran.confirmado">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+
+                        <tr *ngIf="(albaran.lineas || []).length === 0">
+                            <td colspan="10" class="text-center text-muted">
+                                Este albarán todavía no tiene líneas.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0" *ngIf="canEdit()">
+        <div class="card-body p-4">
+            <h5 class="mb-3">Añadir línea</h5>
+
+            <div class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label">Tipo</label>
+                    <select class="form-select" [(ngModel)]="nuevaLinea.tipo">
+                        <option value="MANUAL">Manual</option>
+                        <option value="PRODUCTO">Producto</option>
+                        <option value="TRABAJO">Trabajo</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Código</label>
+                    <input class="form-control" placeholder="Código" [(ngModel)]="nuevaLinea.codigo" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Descripción</label>
+                    <input class="form-control" placeholder="Descripción" [(ngModel)]="nuevaLinea.descripcion" />
+                </div>
+
+                <div class="col-md-1">
+                    <label class="form-label">Uds</label>
+                    <input type="number" class="form-control" placeholder="Uds" [(ngModel)]="nuevaLinea.unidades"
+                        min="1" step="0.01" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Precio</label>
+                    <input type="number" class="form-control" placeholder="Precio" [(ngModel)]="nuevaLinea.precio"
+                        min="0" step="0.01" />
+                </div>
+
+                <div class="col-md-1">
+                    <label class="form-label">Dto %</label>
+                    <input type="number" class="form-control" placeholder="Dto" [ngModel]="nuevaLinea.dtoPct ?? 0"
+                        (ngModelChange)="nuevaLinea.dtoPct = ($event ?? 0)" min="0" max="100" step="0.01" />
+                </div>
+
+                <div class="col-md-1 d-grid">
+                    <button class="btn btn-primary" (click)="agregarLinea()">
+                        +
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

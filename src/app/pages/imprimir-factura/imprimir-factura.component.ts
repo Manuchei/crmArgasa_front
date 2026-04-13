@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-imprimir-factura',
@@ -15,7 +16,7 @@ export class ImprimirFacturaComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  private baseUrl = '/api/facturacion-v2';
+  private baseUrl = environment.apiUrl;
 
   constructor(
     private route: ActivatedRoute,
@@ -35,28 +36,40 @@ export class ImprimirFacturaComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.http.get<any>(`${this.baseUrl}/facturas/${id}`).subscribe({
-      next: (data) => {
-        this.factura = data;
+    this.http
+      .get(`${this.baseUrl}/facturacion-v2/facturas/${id}`, {
+        responseType: 'text',
+      })
+      .subscribe({
+        next: (raw) => {
+          try {
+            const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+            this.factura = data;
 
-        if (this.factura?.empresa) {
-          localStorage.setItem('empresa', String(this.factura.empresa));
-        }
+            if (this.factura?.empresa) {
+              localStorage.setItem('empresa', String(this.factura.empresa));
+            }
 
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error cargando factura', err);
-        this.loading = false;
+            this.loading = false;
+          } catch (e) {
+            console.error('Respuesta no válida al cargar factura:', raw);
+            this.loading = false;
+            this.error =
+              'La respuesta de la factura no tiene un formato JSON válido.';
+          }
+        },
+        error: (err) => {
+          console.error('Error cargando factura', err);
+          this.loading = false;
 
-        const backendText = typeof err?.error === 'string' ? err.error : null;
+          const backendText = typeof err?.error === 'string' ? err.error : null;
 
-        this.error =
-          err?.error?.message ??
-          backendText ??
-          `No se pudo cargar la factura (HTTP ${err?.status ?? '?'})`;
-      },
-    });
+          this.error =
+            err?.error?.message ??
+            backendText ??
+            `No se pudo cargar la factura (HTTP ${err?.status ?? '?'})`;
+        },
+      });
   }
 
   imprimirManual(): void {

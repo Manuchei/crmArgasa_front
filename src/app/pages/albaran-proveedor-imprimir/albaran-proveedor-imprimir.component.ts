@@ -5,13 +5,13 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
 @Component({
-  selector: 'app-albaran-imprimir',
+  selector: 'app-albaran-proveedor-imprimir',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './alabaran-imprimir.component.html',
-  styleUrls: ['./alabaran-imprimir.component.css'],
+  templateUrl: './albaran-proveedor-imprimir.component.html',
+  styleUrls: ['./albaran-proveedor-imprimir.component.css'],
 })
-export class AlbaranImprimirComponent implements OnInit {
+export class AlbaranProveedorImprimirComponent implements OnInit {
   albaran: any;
   private apiUrl = environment.apiUrl;
 
@@ -25,7 +25,7 @@ export class AlbaranImprimirComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
 
-    this.http.get(`${this.apiUrl}/albaranes/${id}`).subscribe({
+    this.http.get(`${this.apiUrl}/albaranes-proveedor/${id}`).subscribe({
       next: (data: any) => {
         this.albaran = data;
 
@@ -35,7 +35,7 @@ export class AlbaranImprimirComponent implements OnInit {
         });
       },
       error: (err) => {
-        console.error('Error cargando albarán para imprimir:', err);
+        console.error('Error cargando albarán proveedor para imprimir:', err);
         alert('No se pudo cargar el albarán para imprimir.');
       },
     });
@@ -63,6 +63,7 @@ export class AlbaranImprimirComponent implements OnInit {
         logoUrl: '/assets/logos/argasa.png',
       };
     }
+
     if (emp === 'ELECTROLUGA' || emp === 'LUGA') {
       return {
         nombre: 'ELECTROLUGA, S.L.U',

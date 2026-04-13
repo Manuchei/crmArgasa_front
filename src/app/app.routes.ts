@@ -20,7 +20,11 @@ import { RutasDiaComponent } from './pages/rutas-dia/rutas-dia.component';
 
 import { CalendarioLlamadas2Component } from './pages/calendario-llamadas2/calendario-llamadas2.component';
 import { TransportistasComponent } from './pages/transportistas/transportistas.component';
+
 import { AlbaranDetalleComponent } from './pages/albaran-detalle/albaran-detalle.component';
+
+// ✅ NUEVO
+import { AlbaranProveedorDetalleComponent } from './pages/albaran-proveedor-detalle/albaran-proveedor-detalle.component';
 
 import { FacturasListComponent } from './pages/facturas/facturas-list/facturas-list.component';
 
@@ -38,17 +42,17 @@ import { InformeSaldosComponent } from './pages/informe-saldos/informe-saldos.co
 import { InformesComponent } from './pages/informes/informes.component';
 
 export const routes: Routes = [
-  // 🔐 LOGIN
   { path: 'login', component: LoginFormComponent },
 
-  // 🏢 SELECTOR DE EMPRESA (solo si estás logueado)
   {
     path: 'empresa',
     component: SelectorEmpresaComponent,
     canActivate: [authGuard],
   },
 
-  // ✅ imprimir protegido
+  // =========================
+  // 🧾 IMPRIMIR
+  // =========================
   {
     path: 'imprimir/albaran/:id',
     loadComponent: () =>
@@ -57,6 +61,17 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard, empresaGuard],
   },
+
+  // ✅ NUEVO (PROVEEDOR)
+  {
+    path: 'imprimir/albaran-proveedor/:id',
+    loadComponent: () =>
+      import('./pages/albaran-proveedor-imprimir/albaran-proveedor-imprimir.component').then(
+        (m) => m.AlbaranProveedorImprimirComponent,
+      ),
+    canActivate: [authGuard, empresaGuard],
+  },
+
   {
     path: 'imprimir/factura/:id',
     component: ImprimirFacturaComponent,
@@ -73,7 +88,9 @@ export const routes: Routes = [
     component: InformeSaldosComponent,
   },
 
-  // 🚀 APP REAL
+  // =========================
+  // 🚀 APP
+  // =========================
   {
     path: 'app',
     canActivate: [authGuard, empresaGuard],
@@ -81,21 +98,21 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
-      // ✅ todos los roles logueados
       {
         path: 'dashboard',
         component: DashboardComponent,
         canActivate: [dashboardRedirectGuard],
       },
 
-      // ✅ dashboard solo para USER (y admin no hace falta)
       {
         path: 'dashboard-user',
         component: DashboardUserComponent,
         canActivate: [roleGuard(['USER'])],
       },
 
-      // ✅ ADMIN + USER
+      // =========================
+      // CLIENTES
+      // =========================
       {
         path: 'clientes',
         component: ClientesComponent,
@@ -117,7 +134,9 @@ export const routes: Routes = [
         canActivate: [roleGuard(['ADMIN', 'USER'])],
       },
 
-      // ✅ ADMIN + USER
+      // =========================
+      // PROVEEDORES
+      // =========================
       {
         path: 'proveedores',
         component: ProveedoresComponent,
@@ -139,7 +158,9 @@ export const routes: Routes = [
         canActivate: [roleGuard(['ADMIN', 'USER'])],
       },
 
-      // ✅ ADMIN + TRANSPORTISTA
+      // =========================
+      // RUTAS
+      // =========================
       {
         path: 'rutas',
         component: RutasListComponent,
@@ -166,26 +187,44 @@ export const routes: Routes = [
         canActivate: [roleGuard(['ADMIN', 'TRANSPORTISTA'])],
       },
 
-      // ✅ Calendario: ADMIN + USER (si quieres también TRANSPORTISTA, añádelo aquí)
       {
         path: 'calendario',
         component: CalendarioLlamadas2Component,
         canActivate: [roleGuard(['ADMIN'])],
       },
 
-      // ✅ Transportistas: SOLO ADMIN (por ahora)
       {
         path: 'transportistas',
         component: TransportistasComponent,
         canActivate: [roleGuard(['ADMIN'])],
       },
 
-      // ✅ ADMIN (ajústalo si quieres)
+      // =========================
+      // 🧾 ALBARANES CLIENTE
+      // =========================
       {
         path: 'albaranes/:id',
         component: AlbaranDetalleComponent,
         canActivate: [roleGuard(['ADMIN'])],
       },
+
+      // =========================
+      // 🧾 ALBARANES PROVEEDOR (NUEVO)
+      // =========================
+      {
+        path: 'albaranes-proveedor/:id',
+        component: AlbaranProveedorDetalleComponent,
+        canActivate: [roleGuard(['ADMIN'])],
+      },
+      {
+        path: 'albaranes-proveedor/editar/:id',
+        component: AlbaranProveedorDetalleComponent,
+        canActivate: [roleGuard(['ADMIN'])],
+      },
+
+      // =========================
+      // FACTURAS
+      // =========================
       {
         path: 'facturas',
         component: FacturasListComponent,
@@ -198,7 +237,6 @@ export const routes: Routes = [
         canActivate: [roleGuard(['ADMIN'])],
       },
 
-      // ✅ ADMIN + USER
       {
         path: 'productos',
         component: ProductosComponent,
@@ -207,9 +245,6 @@ export const routes: Routes = [
     ],
   },
 
-  // 🧭 raíz → login
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-
-  // ❌ cualquier otra ruta → login
   { path: '**', redirectTo: 'login' },
 ];

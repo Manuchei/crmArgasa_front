@@ -1,0 +1,124 @@
+<button class="btn btn-dark btn-sm no-print" (click)="imprimirManual()">
+    <i class="bi bi-printer"></i> Imprimir
+</button>
+
+<div class="hoja" *ngIf="albaran">
+    <div class="cabecera-top">
+        <div class="empresa-box" *ngIf="getEmpresaVisualAlbaran() as emisor">
+            <img *ngIf="emisor.logoUrl" [src]="emisor.logoUrl" alt="Logo empresa" class="logo-empresa" />
+
+            <div class="empresa-datos">
+                <div class="empresa-nombre">{{ emisor.nombre }}</div>
+
+                <div *ngIf="emisor.direccion">
+                    {{ emisor.direccion }}
+                </div>
+
+                <div>
+                    {{ emisor.codigoPostal || '' }}
+                    {{ emisor.poblacion || '' }}
+                    <span *ngIf="emisor.provincia">
+                        ({{ emisor.provincia }})
+                    </span>
+                </div>
+
+                <div *ngIf="emisor.telefono">
+                    Tel: {{ emisor.telefono }}
+                </div>
+
+                <div *ngIf="emisor.email">
+                    Email: {{ emisor.email }}
+                </div>
+
+                <div *ngIf="emisor.cif">
+                    CIF: {{ emisor.cif }}
+                </div>
+            </div>
+        </div>
+
+        <div class="doc-lateral">
+            <div class="doc-box">
+                <h2>ALBARÁN</h2>
+                <div><b>Nº:</b> {{ albaran.numeroGenerado || albaran.numeroInterno || ('#' + albaran.id) }}</div>
+                <div><b>Fecha:</b> {{ albaran.fechaEmision }}</div>
+                <div><b>Empresa:</b> {{ albaran.empresa }}</div>
+            </div>
+
+            <div class="right no-print mt-2 text-end">
+                <div class="badge-estado" [class.ok]="albaran.confirmado" [class.no]="!albaran.confirmado">
+                    {{ albaran.confirmado ? 'CONFIRMADO' : 'NO CONFIRMADO' }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="bloque">
+        <h5>Proveedor</h5>
+
+        <div>
+            <b>Nombre:</b>
+            {{ albaran.nombre || '-' }}
+            <span *ngIf="albaran.apellido"> {{ albaran.apellido }}</span>
+        </div>
+
+        <div *ngIf="albaran.contacto">
+            <b>Contacto:</b> {{ albaran.contacto }}
+        </div>
+
+        <div><b>CIF:</b> {{ albaran.cif || '-' }}</div>
+        <div><b>Dirección:</b> {{ albaran.direccion || '-' }}</div>
+        <div><b>CP / Localidad:</b> {{ albaran.codigoPostal || '-' }} - {{ albaran.localidad || '-' }}</div>
+        <div><b>Provincia:</b> {{ albaran.provincia || '-' }}</div>
+        <div><b>País:</b> {{ albaran.pais || '-' }}</div>
+        <div><b>Teléfono:</b> {{ albaran.telefono || '-' }}</div>
+        <div><b>Email:</b> {{ albaran.email || '-' }}</div>
+
+        <div *ngIf="albaran.numeroProveedor">
+            <b>Nº albarán proveedor:</b> {{ albaran.numeroProveedor }}
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="bloque">
+        <h5>Conceptos</h5>
+
+        <table class="tabla" *ngIf="albaran.lineas?.length; else sinLineas">
+            <thead>
+                <tr>
+                    <th>Descripción</th>
+                    <th class="num">Base</th>
+                    <th class="num">Descuento</th>
+                    <th class="num">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let l of albaran.lineas">
+                    <td>{{ l.descripcion || '-' }}</td>
+                    <td class="num">{{ (l.baseLinea || 0) | number:'1.2-2' }} €</td>
+                    <td class="num">{{ (l.descuentoImporte || 0) | number:'1.2-2' }} €</td>
+                    <td class="num"><b>{{ (l.totalLinea || 0) | number:'1.2-2' }} €</b></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <ng-template #sinLineas>
+            <div class="muted">Este albarán no tiene líneas.</div>
+        </ng-template>
+    </div>
+
+    <hr />
+
+    <div class="totales">
+        <div><span>Subtotal:</span><b>{{ (albaran.subtotal || 0) | number:'1.2-2' }} €</b></div>
+        <div><span>Descuento:</span><b>- {{ (albaran.totalDescuento || 0) | number:'1.2-2' }} €</b></div>
+        <div class="totalFinal"><span>Total:</span><b>{{ (albaran.totalImporte || 0) | number:'1.2-2' }} €</b></div>
+    </div>
+
+    <div class="bloque extra" *ngIf="albaran.notas">
+        <h5>Notas</h5>
+        <div>{{ albaran.notas }}</div>
+    </div>
+</div>

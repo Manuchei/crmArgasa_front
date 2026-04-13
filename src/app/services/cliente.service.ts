@@ -5,7 +5,6 @@ import { ICliente } from '../interfaces/icliente';
 import { ITrabajo } from '../interfaces/itrabajo';
 import { environment } from '../../environments/environment';
 
-
 @Injectable({ providedIn: 'root' })
 export class ClientesService {
   private readonly apiUrl = `${environment.apiUrl}/clientes`;
@@ -47,13 +46,11 @@ export class ClientesService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  // ✅ Buscador: solo texto. La empresa la decide X-Empresa (TenantContext)
   buscarClientes(texto: string): Observable<ICliente[]> {
     const params = new HttpParams().set('texto', (texto ?? '').trim());
     return this.http.get<ICliente[]>(`${this.apiUrl}/buscar`, { params });
   }
 
-  // ✅ Añadir un trabajo nuevo a un cliente existente
   agregarTrabajo(idCliente: number, trabajo: ITrabajo): Observable<ICliente> {
     return this.http.post<ICliente>(
       `${this.apiUrl}/${idCliente}/trabajos`,
@@ -65,14 +62,6 @@ export class ClientesService {
     );
   }
 
-  // ---------------------------------------
-  // Helpers
-  // ---------------------------------------
-
-  /**
-   * ✅ No se envía empresa desde el frontend (la asigna el backend por X-Empresa).
-   * También elimina posibles campos "calculados" del front que no tengan por qué ir al backend.
-   */
   private limpiarPayload(cliente: ICliente): Partial<ICliente> {
     const { empresa, saldoDebe, saldoPagado, pendiente, ...resto } = cliente;
     return resto;
@@ -83,7 +72,7 @@ export class ClientesService {
     empresa: string,
     excludeRutaId?: number | null,
   ) {
-    let url = `/api/clientes/${clienteId}/productos/pendientes`;
+    let url = `${this.apiUrl}/${clienteId}/productos/pendientes`;
 
     if (excludeRutaId != null) {
       url += `?excludeRutaId=${excludeRutaId}`;
