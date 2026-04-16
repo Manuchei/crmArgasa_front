@@ -40,6 +40,7 @@ import { DashboardUserComponent } from './pages/dashboard-user/dashboard-user.co
 import { PagoComprobanteImprimirComponent } from './pages/pago-comprobante-imprimir/pago-comprobante-imprimir.component';
 import { InformeSaldosComponent } from './pages/informe-saldos/informe-saldos.component';
 import { InformesComponent } from './pages/informes/informes.component';
+import { FacturaProveedorComponent } from './pages/factura-proveedor/factura-proveedor.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginFormComponent },
@@ -68,6 +69,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/albaran-proveedor-imprimir/albaran-proveedor-imprimir.component').then(
         (m) => m.AlbaranProveedorImprimirComponent,
+      ),
+    canActivate: [authGuard, empresaGuard],
+  },
+
+  {
+    path: 'imprimir/factura-proveedor/:id',
+    loadComponent: () =>
+      import('./pages/imprimir-factura-proveedor/imprimir-factura-proveedor.component').then(
+        (m) => m.ImprimirFacturaProveedorComponent,
       ),
     canActivate: [authGuard, empresaGuard],
   },
@@ -140,6 +150,12 @@ export const routes: Routes = [
       {
         path: 'proveedores',
         component: ProveedoresComponent,
+        canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
+
+      {
+        path: 'facturas-proveedor/:id',
+        component: FacturaProveedorComponent,
         canActivate: [roleGuard(['ADMIN', 'USER'])],
       },
       {

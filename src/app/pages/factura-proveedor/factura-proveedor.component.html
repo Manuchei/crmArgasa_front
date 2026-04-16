@@ -1,0 +1,134 @@
+<div class="container mt-4 mb-5">
+
+    <div class="d-print-none mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h2 class="mb-0">Factura proveedor</h2>
+
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary" (click)="volver()">
+                Volver
+            </button>
+
+            <button type="button" class="btn btn-dark" (click)="imprimir()">
+                Imprimir
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="cargando" class="alert alert-info">
+        Cargando factura...
+    </div>
+
+    <div *ngIf="!cargando && error" class="alert alert-danger">
+        {{ error }}
+    </div>
+
+    <div *ngIf="!cargando && factura" class="card shadow-sm p-4 factura-print">
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h1 class="h3 fw-bold mb-1">{{ factura.empresa || 'Empresa' }}</h1>
+                <div class="text-muted">Factura de proveedor</div>
+            </div>
+
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <p class="mb-1">
+                    <strong>Nº interno:</strong> {{ factura.numeroInterno || '-' }}
+                </p>
+                <p class="mb-1">
+                    <strong>Nº factura proveedor:</strong> {{ factura.numeroFacturaProveedor || '-' }}
+                </p>
+                <p class="mb-1">
+                    <strong>Fecha:</strong> {{ factura.fechaEmision | date:'dd/MM/yyyy' }}
+                </p>
+                <p class="mb-0">
+                    <strong>Estado:</strong>
+                    <span class="badge bg-success ms-1" *ngIf="factura.pagada">Pagada</span>
+                    <span class="badge bg-warning text-dark ms-1" *ngIf="!factura.pagada">Pendiente</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5 class="border-bottom pb-2">Proveedor</h5>
+                <p class="mb-1"><strong>Nombre:</strong> {{ getNombreProveedor() }}</p>
+                <p class="mb-1"><strong>CIF:</strong> {{ getCifProveedor() }}</p>
+                <p class="mb-1"><strong>Teléfono:</strong> {{ getTelefonoProveedor() }}</p>
+                <p class="mb-1"><strong>Email:</strong> {{ getEmailProveedor() }}</p>
+                <p class="mb-0"><strong>Dirección:</strong> {{ getDireccionProveedor() }}</p>
+            </div>
+
+            <div class="col-md-6 mt-4 mt-md-0">
+                <h5 class="border-bottom pb-2">Albarán origen</h5>
+                <p class="mb-1"><strong>ID:</strong> {{ getAlbaran()?.id || '-' }}</p>
+                <p class="mb-1"><strong>Nº interno:</strong> {{ getAlbaran()?.numeroInterno || '-' }}</p>
+                <p class="mb-1"><strong>Nº proveedor:</strong> {{ getAlbaran()?.numeroProveedor || '-' }}</p>
+                <p class="mb-1"><strong>Nº generado:</strong> {{ getAlbaran()?.numeroGenerado || '-' }}</p>
+                <p class="mb-0">
+                    <strong>Fecha albarán:</strong>
+                    {{ getAlbaran()?.fechaEmision ? (getAlbaran()?.fechaEmision | date:'dd/MM/yyyy') : '-' }}
+                </p>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h5 class="border-bottom pb-2">Conceptos del albarán</h5>
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mt-3">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Código</th>
+                            <th>Descripción</th>
+                            <th class="text-end">Unidades</th>
+                            <th class="text-end">Precio</th>
+                            <th class="text-end">Dto. %</th>
+                            <th class="text-end">Total línea</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let linea of getLineasAlbaran()">
+                            <td>{{ linea.tipo || '-' }}</td>
+                            <td>{{ linea.codigo || '-' }}</td>
+                            <td>{{ linea.descripcion || '-' }}</td>
+                            <td class="text-end">{{ linea.unidades || 0 }}</td>
+                            <td class="text-end">{{ formatearImporte(linea.precio) }} €</td>
+                            <td class="text-end">{{ formatearImporte(linea.dtoPct) }}</td>
+                            <td class="text-end">{{ formatearImporte(linea.totalLinea) }} €</td>
+                        </tr>
+
+                        <tr *ngIf="getLineasAlbaran().length === 0">
+                            <td colspan="7" class="text-center text-muted">
+                                Esta factura no tiene líneas disponibles para mostrar.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row justify-content-end">
+            <div class="col-md-5">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <td><strong>Subtotal</strong></td>
+                            <td class="text-end">{{ formatearImporte(getSubtotalAlbaran()) }} €</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Descuento</strong></td>
+                            <td class="text-end">{{ formatearImporte(getDescuentoAlbaran()) }} €</td>
+                        </tr>
+                        <tr class="table-light">
+                            <td><strong>Total factura</strong></td>
+                            <td class="text-end"><strong>{{ formatearImporte(factura.totalImporte) }} €</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>

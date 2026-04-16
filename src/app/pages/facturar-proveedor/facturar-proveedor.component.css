@@ -1,0 +1,10 @@
+.acciones-factura {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ref-origen {
+  line-height: 1.1;
+}

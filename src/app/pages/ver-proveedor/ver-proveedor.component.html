@@ -222,6 +222,13 @@
                   Editar
                 </button>
 
+                <button type="button" class="btn btn-sm btn-primary"
+                  [disabled]="!a.confirmado || albaranGenerandoFacturaId === a.id"
+                  (click)="generarFacturaDesdeAlbaran(a)">
+                  <span *ngIf="albaranGenerandoFacturaId !== a.id">Generar factura</span>
+                  <span *ngIf="albaranGenerandoFacturaId === a.id">Generando...</span>
+                </button>
+
                 <button type="button" class="btn btn-sm btn-danger" (click)="eliminarAlbaran(a)">
                   Eliminar
                 </button>
@@ -239,69 +246,9 @@
     </div>
   </div>
 
-  <div class="card shadow-sm p-4 mb-4">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-      <h4 class="mb-0">Facturas del proveedor</h4>
-
-      <button type="button" class="btn btn-primary" (click)="generarFacturaProveedor()" [disabled]="generandoFactura">
-        <span *ngIf="!generandoFactura">🧾 Generar factura</span>
-        <span *ngIf="generandoFactura">Generando...</span>
-      </button>
-    </div>
-
-    <div *ngIf="cargandoFacturas" class="alert alert-info">
-      Cargando facturas...
-    </div>
-
-    <div class="table-responsive" *ngIf="!cargandoFacturas">
-      <table class="table table-bordered mt-3">
-        <thead class="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Nº interno</th>
-            <th>Nº factura proveedor</th>
-            <th>Fecha</th>
-            <th>Total</th>
-            <th>Estado</th>
-            <th style="min-width: 220px;">Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr *ngFor="let f of facturas">
-            <td>#{{ f.id }}</td>
-            <td>{{ f.numeroInterno || '-' }}</td>
-            <td>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="f.numeroFacturaProveedor"
-                [name]="'numeroFacturaProveedor_' + f.id" placeholder="Nº factura proveedor" />
-            </td>
-            <td>{{ f.fechaEmision | date:'dd/MM/yyyy' }}</td>
-            <td>{{ f.totalImporte | number:'1.2-2' }} €</td>
-            <td>
-              <span class="badge bg-success" *ngIf="f.pagada">Pagada</span>
-              <span class="badge bg-warning text-dark" *ngIf="!f.pagada">Pendiente</span>
-            </td>
-            <td>
-              <div class="d-flex gap-2 flex-wrap">
-                <button type="button" class="btn btn-sm btn-outline-primary" (click)="guardarNumeroFacturaProveedor(f)">
-                  Guardar nº
-                </button>
-
-                <button type="button" class="btn btn-sm btn-success" [disabled]="f.pagada" (click)="pagarFactura(f)">
-                  Pagar
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <tr *ngIf="facturas.length === 0">
-            <td colspan="7" class="text-center text-muted">
-              Este proveedor no tiene facturas todavía.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <!-- NUEVA FACTURACIÓN PROVEEDOR -->
+  <div class="mb-4">
+    <app-facturar-proveedor *ngIf="proveedor?.id" [proveedorId]="proveedor.id"></app-facturar-proveedor>
   </div>
 
   <div class="card shadow-sm p-4 mt-4">

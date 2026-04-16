@@ -6,11 +6,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IProducto } from '../../interfaces/iproducto';
 import { IfacturaProveedor } from '../../interfaces/ifactura-proveedor';
+import { FacturarProveedorComponent } from '../facturar-proveedor/facturar-proveedor.component';
 
 @Component({
   selector: 'app-ver-proveedor',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FacturarProveedorComponent],
   templateUrl: './ver-proveedor.component.html',
   styleUrls: ['./ver-proveedor.component.css'],
 })
@@ -22,8 +23,8 @@ export class VerProveedorComponent implements OnInit {
 
   numeroAlbaranProveedor = '';
   creandoAlbaran = false;
-  generandoFactura = false;
   cargandoFacturas = false;
+  albaranGenerandoFacturaId: number | null = null;
 
   nuevoTrabajo = {
     descripcion: '',
@@ -343,26 +344,38 @@ export class VerProveedorComponent implements OnInit {
       });
   }
 
-  generarFacturaProveedor(): void {
-    if (!this.proveedor?.id) {
-      alert('Proveedor no cargado');
+  generarFacturaDesdeAlbaran(albaran: any): void {
+    if (!albaran?.id) {
+      alert('Albarán no válido');
       return;
     }
 
-    this.generandoFactura = true;
+    if (!albaran.confirmado) {
+      alert('Primero debes confirmar el albarán');
+      return;
+    }
 
-    this.facturasProveedoresService.generar(this.proveedor.id).subscribe({
-      next: () => {
-        this.generandoFactura = false;
+    this.albaranGenerandoFacturaId = albaran.id;
+
+    this.facturasProveedoresService.generarDesdeAlbaran(albaran.id).subscribe({
+      next: (factura) => {
+        this.albaranGenerandoFacturaId = null;
+
+        if (!factura?.id) {
+          alert('No se ha podido generar la factura');
+          return;
+        }
+
         alert('Factura generada correctamente');
         this.cargarFacturas();
-        this.cargarTrabajos();
       },
       error: (err) => {
-        console.error('Error al generar factura', err);
-        this.generandoFactura = false;
+        console.error('Error al generar factura desde albarán', err);
+        this.albaranGenerandoFacturaId = null;
         alert(
-          err?.error?.message || err?.error || 'Error al generar la factura',
+          err?.error?.message ||
+            err?.error ||
+            'Error al generar la factura desde el albarán',
         );
       },
     });
@@ -399,7 +412,6 @@ export class VerProveedorComponent implements OnInit {
       next: () => {
         alert('Factura marcada como pagada');
         this.cargarFacturas();
-        this.cargarTrabajos();
       },
       error: (err) => {
         console.error('Error al pagar factura', err);
@@ -476,5 +488,27 @@ export class VerProveedorComponent implements OnInit {
   irEditar(): void {
     if (!this.proveedor?.id) return;
     this.router.navigate(['/app/proveedores/editar', this.proveedor.id]);
+  }
+
+  verFactura(factura: IfacturaProveedor): void {
+    if (!factura?.id) {
+      alert('Factura no válida');
+      return;
+    }
+
+    this.router.navigate(['/imprimir/factura-proveedor', factura.id]);
+  }
+
+  imprimirFactura(factura: IfacturaProveedor): void {
+    if (!factura?.id) {
+      alert('Factura no válida');
+      return;
+    }
+
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/imprimir/factura-proveedor', factura.id]),
+    );
+
+    window.open(url, '_blank');
   }
 }

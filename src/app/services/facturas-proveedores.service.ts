@@ -26,9 +26,26 @@ export class FacturasProveedoresService {
     return this.http.get<IfacturaProveedor>(`${this.baseUrl}/${facturaId}`);
   }
 
-  generar(proveedorId: number): Observable<IfacturaProveedor> {
+  generarDesdeAlbaran(albaranId: number): Observable<IfacturaProveedor> {
     return this.http.post<IfacturaProveedor>(
-      `${this.baseUrl}/generar/${proveedorId}`,
+      `${this.baseUrl}/generar-desde-albaran/${albaranId}`,
+      {},
+    );
+  }
+
+  actualizarFactura(
+    facturaId: number,
+    payload: Partial<IfacturaProveedor>,
+  ): Observable<IfacturaProveedor> {
+    return this.http.put<IfacturaProveedor>(
+      `${this.baseUrl}/${facturaId}`,
+      payload,
+    );
+  }
+
+  emitirFactura(facturaId: number): Observable<IfacturaProveedor> {
+    return this.http.put<IfacturaProveedor>(
+      `${this.baseUrl}/emitir/${facturaId}`,
       {},
     );
   }
@@ -54,5 +71,9 @@ export class FacturasProveedoresService {
       {},
       { params },
     );
+  }
+
+  eliminarBorrador(facturaId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${facturaId}`);
   }
 }

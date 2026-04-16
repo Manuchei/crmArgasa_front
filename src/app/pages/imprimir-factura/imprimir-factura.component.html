@@ -14,7 +14,12 @@
   <div *ngIf="factura && !loading" class="factura">
     <div class="cabecera-top">
       <div class="empresa-box" *ngIf="getEmisorVisualFactura() as emisor">
-        <img *ngIf="emisor.logoUrl" [src]="emisor.logoUrl" alt="Logo empresa" class="logo-empresa" />
+        <img
+          *ngIf="emisor.logoUrl"
+          [src]="emisor.logoUrl"
+          alt="Logo empresa"
+          class="logo-empresa"
+        />
 
         <div class="empresa-datos">
           <div class="empresa-nombre">{{ emisor.nombre || factura.empresa }}</div>
@@ -47,42 +52,39 @@
 
       <div class="doc-box">
         <h2>FACTURA</h2>
-        <div><b>Nº:</b> {{ factura.serie }}-{{ factura.numero }}</div>
-        <div><b>Fecha:</b> {{ factura.fechaEmision }}</div>
-        <div *ngIf="factura.estado"><b>Estado:</b> {{ factura.estado }}</div>
+        <div><b>Nº:</b> {{ getNumeroDocumento() }}</div>
+        <div><b>Fecha:</b> {{ getFechaDocumento() }}</div>
+        <div><b>Estado:</b> {{ getEstadoDocumento() }}</div>
       </div>
     </div>
 
     <hr />
 
     <div class="bloque-datos mb-3">
-      <h5 class="mb-2">Cliente</h5>
+      <h5 class="mb-2">{{ getTituloReceptor() }}</h5>
 
       <div>
-        <b>Nombre:</b>
-        {{ factura.cliente?.nombreComercial ?? factura.cliente?.nombreApellidos ?? '—' }}
+        <b>Nombre:</b> {{ getNombreReceptor() }}
       </div>
 
-      <div *ngIf="factura.cliente?.cifDni">
-        <b>CIF/DNI:</b> {{ factura.cliente?.cifDni }}
+      <div *ngIf="getCifDniReceptor()">
+        <b>CIF/DNI:</b> {{ getCifDniReceptor() }}
       </div>
 
-      <div *ngIf="factura.cliente?.direccion">
-        <b>Dirección:</b> {{ factura.cliente?.direccion }}
+      <div *ngIf="getDireccionReceptor()">
+        <b>Dirección:</b> {{ getDireccionReceptor() }}
       </div>
 
-      <div *ngIf="factura.cliente?.codigoPostal || factura.cliente?.poblacion || factura.cliente?.provincia">
-        <b>Localidad:</b>
-        {{ factura.cliente?.codigoPostal }} {{ factura.cliente?.poblacion }}
-        <span *ngIf="factura.cliente?.provincia">({{ factura.cliente?.provincia }})</span>
+      <div *ngIf="getLocalidadReceptor()">
+        <b>Localidad:</b> {{ getLocalidadReceptor() }}
       </div>
 
-      <div *ngIf="factura.cliente?.telefono">
-        <b>Teléfono:</b> {{ factura.cliente?.telefono }}
+      <div *ngIf="getTelefonoReceptor()">
+        <b>Teléfono:</b> {{ getTelefonoReceptor() }}
       </div>
 
-      <div *ngIf="factura.cliente?.email">
-        <b>Email:</b> {{ factura.cliente?.email }}
+      <div *ngIf="getEmailReceptor()">
+        <b>Email:</b> {{ getEmailReceptor() }}
       </div>
     </div>
 
@@ -99,20 +101,20 @@
       </thead>
 
       <tbody>
-        <tr *ngFor="let l of factura.lineas">
+        <tr *ngFor="let l of getLineasDocumento()">
           <td>{{ l.descripcion }}</td>
-          <td class="text-end">{{ l.cantidad }}</td>
+          <td class="text-end">{{ getCantidadLinea(l) }}</td>
           <td class="text-end">
-            <span class="money">{{ l.precioUnitario | number:'1.2-2' }} €</span>
+            <span class="money">{{ getPrecioLinea(l) | number:'1.2-2' }} €</span>
           </td>
           <td class="text-end">
-            <span class="money">{{ l.subtotal | number:'1.2-2' }} €</span>
+            <span class="money">{{ getSubtotalLinea(l) | number:'1.2-2' }} €</span>
           </td>
           <td class="text-end">
-            <span class="nowrap">{{ l.ivaPct }}%</span>
+            <span class="nowrap">{{ getIvaLinea(l) }}</span>
           </td>
           <td class="text-end">
-            <span class="money">{{ l.totalLinea | number:'1.2-2' }} €</span>
+            <span class="money">{{ getTotalLinea(l) | number:'1.2-2' }} €</span>
           </td>
         </tr>
       </tbody>
@@ -123,19 +125,19 @@
         <tr>
           <td>Base imponible</td>
           <td class="text-end">
-            <span class="money">{{ factura.baseImponible | number:'1.2-2' }} €</span>
+            <span class="money">{{ getBaseImponible() | number:'1.2-2' }} €</span>
           </td>
         </tr>
         <tr>
           <td>IVA</td>
           <td class="text-end">
-            <span class="money">{{ factura.ivaTotal | number:'1.2-2' }} €</span>
+            <span class="money">{{ getIvaTotal() | number:'1.2-2' }} €</span>
           </td>
         </tr>
         <tr class="fw-bold">
           <td>TOTAL</td>
           <td class="text-end">
-            <span class="money">{{ factura.total | number:'1.2-2' }} €</span>
+            <span class="money">{{ getTotalDocumento() | number:'1.2-2' }} €</span>
           </td>
         </tr>
       </table>
