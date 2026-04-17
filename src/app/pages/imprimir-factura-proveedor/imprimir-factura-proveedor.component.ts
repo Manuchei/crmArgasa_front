@@ -54,7 +54,10 @@ export class ImprimirFacturaProveedorComponent implements OnInit {
 
             this.loading = false;
           } catch (e) {
-            console.error('Respuesta no válida al cargar factura proveedor:', raw);
+            console.error(
+              'Respuesta no válida al cargar factura proveedor:',
+              raw,
+            );
             this.loading = false;
             this.error =
               'La respuesta de la factura no tiene un formato JSON válido.';
@@ -130,6 +133,10 @@ export class ImprimirFacturaProveedorComponent implements OnInit {
     return this.factura?.fechaEmision || '-';
   }
 
+  getFechaVencimiento(): string {
+    return this.factura?.fechaVencimiento || '-';
+  }
+
   getEstado(): string {
     return this.factura?.pagada ? 'PAGADA' : 'PENDIENTE';
   }
@@ -164,24 +171,20 @@ export class ImprimirFacturaProveedorComponent implements OnInit {
     return this.getProveedor()?.email || '-';
   }
 
-  getAlbaran(): any {
-    return this.factura?.albaranProveedor || {};
-  }
-
   getLineas(): any[] {
-    return this.getAlbaran()?.lineas || [];
+    return this.factura?.lineas || [];
   }
 
   getBaseImponible(): number {
-    return Number(this.getAlbaran()?.subtotal || this.factura?.totalImporte || 0);
+    return Number(this.factura?.baseImponible || 0);
   }
 
   getDescuentoTotal(): number {
-    return Number(this.getAlbaran()?.totalDescuento || 0);
+    return 0;
   }
 
   getIvaTotal(): number {
-    return 0;
+    return Number(this.factura?.ivaTotal || 0);
   }
 
   getTotal(): number {

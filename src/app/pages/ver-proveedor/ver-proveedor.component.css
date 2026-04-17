@@ -1,0 +1,71 @@
+.titulo-proveedor {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.subtitulo-proveedor {
+  font-size: 1.1rem;
+  color: #495057;
+}
+
+.tabs-detalle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tab-btn {
+  border: 1px solid #ced4da;
+  background: #fff;
+  color: #212529;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: #f8f9fa;
+}
+
+.tab-btn.active {
+  background: #212529;
+  color: #fff;
+  border-color: #212529;
+}
+
+.card-detalle {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  height: 100%;
+}
+
+.card-detalle h5 {
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.card-detalle p {
+  margin-bottom: 10px;
+}
+
+.input-albaran {
+  max-width: 350px;
+}
+
+.celda-numero-factura {
+  min-width: 220px;
+}
+
+.acciones-col {
+  min-width: 280px;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}

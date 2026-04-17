@@ -4,10 +4,10 @@ import {
   PendientesFacturacionDTO,
   CrearFacturaV2Request,
   FacturaV2Response,
+  ActualizarFacturaV2Request,
 } from '../interfaces/facturacion-v2';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-
 
 @Injectable({ providedIn: 'root' })
 export class FacturacionV2Service {
@@ -27,7 +27,7 @@ export class FacturacionV2Service {
 
   actualizarFactura(
     facturaId: number,
-    payload: any,
+    payload: ActualizarFacturaV2Request,
   ): Observable<FacturaV2Response> {
     return this.http.put<FacturaV2Response>(
       `${this.baseUrl}/facturas/${facturaId}`,

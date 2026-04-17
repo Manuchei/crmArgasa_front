@@ -97,6 +97,7 @@ export class FacturarProveedorComponent implements OnChanges {
     this.modoEdicion = true;
     this.facturaEdit = {
       fechaEmision: this.toInputDate(this.factura.fechaEmision),
+      fechaVencimiento: this.toInputDate(this.factura.fechaVencimiento),
       numeroFacturaProveedor: this.factura.numeroFacturaProveedor ?? '',
       lineas: (this.factura.lineas ?? []).map((l: ILineaFacturaProveedor) => ({
         id: l.id,
@@ -106,7 +107,7 @@ export class FacturarProveedorComponent implements OnChanges {
         cantidad: l.cantidad,
         precioUnitario: l.precioUnitario,
         descuentoPct: l.descuentoPct ?? 0,
-        ivaPct: l.ivaPct ?? 0,
+        ivaPct: l.ivaPct ?? 21,
         subtotal: l.subtotal,
         totalLinea: l.totalLinea,
       })),
@@ -160,7 +161,8 @@ export class FacturarProveedorComponent implements OnChanges {
     }
 
     const payload = {
-      fechaEmision: this.facturaEdit.fechaEmision,
+      fechaEmision: this.facturaEdit.fechaEmision || null,
+      fechaVencimiento: this.facturaEdit.fechaVencimiento || null,
       numeroFacturaProveedor: this.facturaEdit.numeroFacturaProveedor,
       lineas: lineas.map((l: any) => ({
         id: l.id,

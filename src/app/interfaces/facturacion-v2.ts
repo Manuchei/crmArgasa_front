@@ -1,7 +1,7 @@
 export interface ServicioPendienteDTO {
   id: number;
   descripcion: string;
-  fecha: string;      // ISO date
+  fecha: string;
   importe: number;
 }
 
@@ -23,12 +23,9 @@ export interface PendientesFacturacionDTO {
 export interface CrearFacturaV2Request {
   clienteId: number;
   serie: string;
-
-  // ✅ NOMBRES que espera el backend (CORREGIDO)
   servicioId: number[];
   lineasAlbaranIds: number[];
 }
-
 
 export interface LineaFacturaV2Response {
   id: number;
@@ -37,6 +34,7 @@ export interface LineaFacturaV2Response {
   descripcion: string;
   cantidad: number;
   precioUnitario: number;
+  descuentoPct: number;
   subtotal: number;
   ivaPct: number;
   totalLinea: number;
@@ -47,10 +45,24 @@ export interface FacturaV2Response {
   empresa: string;
   serie: string;
   numero: number;
-  fechaEmision: string; // ISO date
+  fechaEmision: string;
   estado: 'BORRADOR' | 'EMITIDA' | 'PAGADA' | 'ANULADA';
   baseImponible: number;
   ivaTotal: number;
   total: number;
   lineas: LineaFacturaV2Response[];
+}
+
+export interface LineaFacturaV2UpdateRequest {
+  id: number;
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+  descuentoPct: number;
+  ivaPct: number;
+}
+
+export interface ActualizarFacturaV2Request {
+  fechaEmision?: string | null;
+  lineas: LineaFacturaV2UpdateRequest[];
 }

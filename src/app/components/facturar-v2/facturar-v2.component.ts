@@ -188,9 +188,12 @@ export class FacturarV2Component implements OnInit, OnChanges {
         descripcion: l.descripcion,
         cantidad: l.cantidad,
         precioUnitario: l.precioUnitario,
+        descuentoPct: Number(l.descuentoPct ?? 0),
         ivaPct: l.ivaPct,
         subtotal: l.subtotal,
         totalLinea: l.totalLinea,
+        tipoOrigen: l.tipoOrigen,
+        origenId: l.origenId,
       })),
     };
 
@@ -231,11 +234,16 @@ export class FacturarV2Component implements OnInit, OnChanges {
         this.error = 'El precio unitario no puede ser negativo';
         return;
       }
+      if (Number(l.descuentoPct) < 0 || Number(l.descuentoPct) > 100) {
+        this.error = 'El descuento debe estar entre 0 y 100';
+        return;
+      }
       if (Number(l.ivaPct) < 0) {
         this.error = 'El IVA no puede ser negativo';
         return;
       }
     }
+
     const payload = {
       fechaEmision: this.facturaEdit.fechaEmision,
       lineas: lineas.map((l: any) => ({
@@ -243,9 +251,11 @@ export class FacturarV2Component implements OnInit, OnChanges {
         descripcion: String(l.descripcion).trim(),
         cantidad: Number(l.cantidad),
         precioUnitario: Number(l.precioUnitario),
+        descuentoPct: Number(l.descuentoPct),
         ivaPct: Number(l.ivaPct),
       })),
     };
+
     this.loading = true;
     this.error = null;
 
@@ -275,10 +285,17 @@ export class FacturarV2Component implements OnInit, OnChanges {
     for (const l of this.facturaEdit.lineas) {
       const cantidad = Number(l.cantidad) || 0;
       const precioUnitario = Number(l.precioUnitario) || 0;
+      const descuentoPct = Math.max(0, Math.min(100, Number(l.descuentoPct) || 0));
       const ivaPct = Number(l.ivaPct) || 0;
 
-      l.subtotal = this.round2(cantidad * precioUnitario);
-      l.totalLinea = this.round2(l.subtotal * (1 + ivaPct / 100));
+      const bruto = cantidad * precioUnitario;
+      const descuento = bruto * (descuentoPct / 100);
+      const subtotal = bruto - descuento;
+      const totalLinea = subtotal + subtotal * (ivaPct / 100);
+
+      l.descuentoPct = descuentoPct;
+      l.subtotal = this.round2(subtotal);
+      l.totalLinea = this.round2(totalLinea);
     }
   }
 

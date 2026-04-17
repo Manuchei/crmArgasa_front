@@ -140,6 +140,7 @@
               <th>Concepto</th>
               <th class="text-end">Cant.</th>
               <th class="text-end">Precio</th>
+              <th class="text-end">Dto %</th>
               <th class="text-end">Subtotal</th>
               <th class="text-end">IVA</th>
               <th class="text-end">Total</th>
@@ -156,6 +157,7 @@
               </td>
               <td class="text-end">{{ l.cantidad }}</td>
               <td class="text-end">{{ l.precioUnitario | number:'1.2-2' }} €</td>
+              <td class="text-end">{{ (l.descuentoPct || 0) | number:'1.2-2' }}%</td>
               <td class="text-end">{{ l.subtotal | number:'1.2-2' }} €</td>
               <td class="text-end">{{ l.ivaPct }}%</td>
               <td class="text-end">{{ l.totalLinea | number:'1.2-2' }} €</td>
@@ -193,6 +195,18 @@
                   [(ngModel)]="l.precioUnitario"
                   (ngModelChange)="onLineaEditChange()"
                   min="0"
+                  step="0.01"
+                />
+              </td>
+
+              <td class="text-end" style="width: 110px;">
+                <input
+                  type="number"
+                  class="form-control form-control-sm text-end"
+                  [(ngModel)]="l.descuentoPct"
+                  (ngModelChange)="onLineaEditChange()"
+                  min="0"
+                  max="100"
                   step="0.01"
                 />
               </td>

@@ -51,6 +51,7 @@
                     <div><b>Nº:</b> {{ getNumeroFacturaProveedor() }}</div>
                     <div><b>Nº interno:</b> {{ getNumeroInterno() }}</div>
                     <div><b>Fecha:</b> {{ getFechaEmision() }}</div>
+                    <div><b>Vencimiento de pago:</b> {{ getFechaVencimiento() }}</div>
                 </div>
 
                 <div class="estado-wrapper">
@@ -106,15 +107,15 @@
             <tbody>
                 <tr *ngFor="let l of getLineas()">
                     <td>{{ l.descripcion }}</td>
-                    <td class="text-end">{{ l.unidades || 0 }}</td>
+                    <td class="text-end">{{ l.cantidad || 0 }}</td>
                     <td class="text-end">
-                        <span class="money">{{ l.precio | number:'1.2-2' }} €</span>
+                        <span class="money">{{ l.precioUnitario | number:'1.2-2' }} €</span>
                     </td>
                     <td class="text-end">
-                        <span class="money">{{ l.baseLinea | number:'1.2-2' }} €</span>
+                        <span class="money">{{ l.subtotal | number:'1.2-2' }} €</span>
                     </td>
                     <td class="text-end">
-                        <span class="nowrap">—</span>
+                        <span class="nowrap">{{ l.ivaPct | number:'1.2-2' }}%</span>
                     </td>
                     <td class="text-end">
                         <span class="money">{{ l.totalLinea | number:'1.2-2' }} €</span>

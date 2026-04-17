@@ -5,7 +5,6 @@ import { FacturasProveedoresService } from '../../services/facturas-proveedores.
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IProducto } from '../../interfaces/iproducto';
-import { IfacturaProveedor } from '../../interfaces/ifactura-proveedor';
 import { FacturarProveedorComponent } from '../facturar-proveedor/facturar-proveedor.component';
 
 @Component({
@@ -19,12 +18,12 @@ export class VerProveedorComponent implements OnInit {
   proveedor: any = null;
   trabajos: any[] = [];
   albaranes: any[] = [];
-  facturas: IfacturaProveedor[] = [];
 
   numeroAlbaranProveedor = '';
   creandoAlbaran = false;
-  cargandoFacturas = false;
   albaranGenerandoFacturaId: number | null = null;
+
+  activeTab: 'datos' | 'albaranes' | 'facturacion' | 'productos' = 'datos';
 
   nuevoTrabajo = {
     descripcion: '',
@@ -50,6 +49,10 @@ export class VerProveedorComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarProveedor();
+  }
+
+  setActiveTab(tab: 'datos' | 'albaranes' | 'facturacion' | 'productos'): void {
+    this.activeTab = tab;
   }
 
   private getNuevoProductoVacio(): IProducto {
@@ -92,7 +95,6 @@ export class VerProveedorComponent implements OnInit {
         this.calcularTotales();
         this.cargarTrabajos();
         this.cargarAlbaranes();
-        this.cargarFacturas();
       },
       error: (err) => {
         console.error('Error cargando proveedor', err);
@@ -119,38 +121,14 @@ export class VerProveedorComponent implements OnInit {
   cargarAlbaranes(): void {
     if (!this.proveedor?.id) return;
 
-    this.proveedorService
-      .listarAlbaranesProveedor(this.proveedor.id)
-      .subscribe({
-        next: (data) => {
-          this.albaranes = data || [];
-        },
-        error: (err) => {
-          console.error('Error cargando albaranes', err);
-        },
-      });
-  }
-
-  cargarFacturas(): void {
-    if (!this.proveedor?.id) return;
-
-    this.cargandoFacturas = true;
-
-    this.facturasProveedoresService
-      .getByProveedor(this.proveedor.id)
-      .subscribe({
-        next: (data) => {
-          this.facturas = (data || []).map((f) => ({
-            ...f,
-            numeroFacturaProveedor: f.numeroFacturaProveedor ?? '',
-          }));
-          this.cargandoFacturas = false;
-        },
-        error: (err) => {
-          console.error('Error cargando facturas', err);
-          this.cargandoFacturas = false;
-        },
-      });
+    this.proveedorService.listarAlbaranesProveedor(this.proveedor.id).subscribe({
+      next: (data) => {
+        this.albaranes = data || [];
+      },
+      error: (err) => {
+        console.error('Error cargando albaranes', err);
+      },
+    });
   }
 
   guardarTrabajo(): void {
@@ -172,27 +150,25 @@ export class VerProveedorComponent implements OnInit {
 
     this.guardandoTrabajo = true;
 
-    this.proveedorService
-      .crearTrabajoProveedor(this.proveedor.id, payload)
-      .subscribe({
-        next: () => {
-          this.nuevoTrabajo = {
-            descripcion: '',
-            importe: 0,
-            importePagado: 0,
-          };
+    this.proveedorService.crearTrabajoProveedor(this.proveedor.id, payload).subscribe({
+      next: () => {
+        this.nuevoTrabajo = {
+          descripcion: '',
+          importe: 0,
+          importePagado: 0,
+        };
 
-          this.guardandoTrabajo = false;
-          this.cargarTrabajos();
-        },
-        error: (err) => {
-          console.error('Error al guardar trabajo', err);
-          this.guardandoTrabajo = false;
-          alert(
-            err?.error?.message || err?.error || 'Error al guardar el trabajo',
-          );
-        },
-      });
+        this.guardandoTrabajo = false;
+        this.cargarTrabajos();
+      },
+      error: (err) => {
+        console.error('Error al guardar trabajo', err);
+        this.guardandoTrabajo = false;
+        alert(
+          err?.error?.message || err?.error || 'Error al guardar el trabajo',
+        );
+      },
+    });
   }
 
   eliminarTrabajo(id: number): void {
@@ -245,28 +221,26 @@ export class VerProveedorComponent implements OnInit {
     this.proveedor.productos = [...this.proveedor.productos, productoAInsertar];
     this.guardandoProducto = true;
 
-    this.proveedorService
-      .actualizarProveedor(this.proveedor.id, this.proveedor)
-      .subscribe({
-        next: (proveedorActualizado) => {
-          this.proveedor = proveedorActualizado;
-          this.asegurarProductos();
+    this.proveedorService.actualizarProveedor(this.proveedor.id, this.proveedor).subscribe({
+      next: (proveedorActualizado) => {
+        this.proveedor = proveedorActualizado;
+        this.asegurarProductos();
 
-          this.nuevoProducto = this.getNuevoProductoVacio();
-          this.guardandoProducto = false;
-          this.calcularTotales();
+        this.nuevoProducto = this.getNuevoProductoVacio();
+        this.guardandoProducto = false;
+        this.calcularTotales();
 
-          alert('Producto añadido correctamente');
-        },
-        error: (err) => {
-          console.error('Error al guardar producto', err);
-          this.guardandoProducto = false;
-          alert(
-            err?.error?.message || err?.error || 'Error al añadir el producto',
-          );
-          this.cargarProveedor();
-        },
-      });
+        alert('Producto añadido correctamente');
+      },
+      error: (err) => {
+        console.error('Error al guardar producto', err);
+        this.guardandoProducto = false;
+        alert(
+          err?.error?.message || err?.error || 'Error al añadir el producto',
+        );
+        this.cargarProveedor();
+      },
+    });
   }
 
   eliminarProducto(index: number): void {
@@ -280,26 +254,23 @@ export class VerProveedorComponent implements OnInit {
     const confirmar = confirm(
       `¿Seguro que deseas eliminar el producto "${producto.nombre}"?`,
     );
-
     if (!confirmar) return;
 
     this.proveedor.productos.splice(index, 1);
     this.proveedor.productos = [...this.proveedor.productos];
 
-    this.proveedorService
-      .actualizarProveedor(this.proveedor.id, this.proveedor)
-      .subscribe({
-        next: (proveedorActualizado) => {
-          this.proveedor = proveedorActualizado;
-          this.asegurarProductos();
-          this.calcularTotales();
-        },
-        error: (err) => {
-          console.error('Error al eliminar producto', err);
-          alert('No se pudo eliminar el producto');
-          this.cargarProveedor();
-        },
-      });
+    this.proveedorService.actualizarProveedor(this.proveedor.id, this.proveedor).subscribe({
+      next: (proveedorActualizado) => {
+        this.proveedor = proveedorActualizado;
+        this.asegurarProductos();
+        this.calcularTotales();
+      },
+      error: (err) => {
+        console.error('Error al eliminar producto', err);
+        alert('No se pudo eliminar el producto');
+        this.cargarProveedor();
+      },
+    });
   }
 
   generarAlbaran(): void {
@@ -320,28 +291,26 @@ export class VerProveedorComponent implements OnInit {
       fechaEmision: new Date().toISOString().slice(0, 10),
     };
 
-    this.proveedorService
-      .crearAlbaranProveedor(this.proveedor.id, payload)
-      .subscribe({
-        next: (albaran) => {
-          this.creandoAlbaran = false;
-          this.numeroAlbaranProveedor = '';
+    this.proveedorService.crearAlbaranProveedor(this.proveedor.id, payload).subscribe({
+      next: (albaran) => {
+        this.creandoAlbaran = false;
+        this.numeroAlbaranProveedor = '';
 
-          alert('Albarán generado correctamente');
-          this.cargarAlbaranes();
+        alert('Albarán generado correctamente');
+        this.cargarAlbaranes();
 
-          if (albaran?.id) {
-            this.verAlbaran(albaran);
-          }
-        },
-        error: (err) => {
-          console.error('Error al generar albarán', err);
-          this.creandoAlbaran = false;
-          alert(
-            err?.error?.message || err?.error || 'Error al generar el albarán',
-          );
-        },
-      });
+        if (albaran?.id) {
+          this.verAlbaran(albaran);
+        }
+      },
+      error: (err) => {
+        console.error('Error al generar albarán', err);
+        this.creandoAlbaran = false;
+        alert(
+          err?.error?.message || err?.error || 'Error al generar el albarán',
+        );
+      },
+    });
   }
 
   generarFacturaDesdeAlbaran(albaran: any): void {
@@ -367,7 +336,7 @@ export class VerProveedorComponent implements OnInit {
         }
 
         alert('Factura generada correctamente');
-        this.cargarFacturas();
+        this.activeTab = 'facturacion';
       },
       error: (err) => {
         console.error('Error al generar factura desde albarán', err);
@@ -376,47 +345,6 @@ export class VerProveedorComponent implements OnInit {
           err?.error?.message ||
             err?.error ||
             'Error al generar la factura desde el albarán',
-        );
-      },
-    });
-  }
-
-  guardarNumeroFacturaProveedor(factura: IfacturaProveedor): void {
-    if (!factura?.id) return;
-
-    const numero = (factura.numeroFacturaProveedor || '').trim();
-
-    this.facturasProveedoresService
-      .actualizarNumeroFacturaProveedor(factura.id, numero)
-      .subscribe({
-        next: (facturaActualizada) => {
-          factura.numeroFacturaProveedor =
-            facturaActualizada.numeroFacturaProveedor || '';
-          alert('Número de factura del proveedor guardado correctamente');
-        },
-        error: (err) => {
-          console.error('Error guardando número de factura proveedor', err);
-          alert(
-            err?.error?.message ||
-              err?.error ||
-              'No se pudo guardar el número de factura del proveedor',
-          );
-        },
-      });
-  }
-
-  pagarFactura(factura: IfacturaProveedor): void {
-    if (!factura?.id) return;
-
-    this.facturasProveedoresService.pagar(factura.id).subscribe({
-      next: () => {
-        alert('Factura marcada como pagada');
-        this.cargarFacturas();
-      },
-      error: (err) => {
-        console.error('Error al pagar factura', err);
-        alert(
-          err?.error?.message || err?.error || 'No se pudo pagar la factura',
         );
       },
     });
@@ -488,27 +416,5 @@ export class VerProveedorComponent implements OnInit {
   irEditar(): void {
     if (!this.proveedor?.id) return;
     this.router.navigate(['/app/proveedores/editar', this.proveedor.id]);
-  }
-
-  verFactura(factura: IfacturaProveedor): void {
-    if (!factura?.id) {
-      alert('Factura no válida');
-      return;
-    }
-
-    this.router.navigate(['/imprimir/factura-proveedor', factura.id]);
-  }
-
-  imprimirFactura(factura: IfacturaProveedor): void {
-    if (!factura?.id) {
-      alert('Factura no válida');
-      return;
-    }
-
-    const url = this.router.serializeUrl(
-      this.router.createUrlTree(['/imprimir/factura-proveedor', factura.id]),
-    );
-
-    window.open(url, '_blank');
   }
 }

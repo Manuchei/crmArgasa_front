@@ -15,6 +15,7 @@ export interface IfacturaProveedor {
   id: number;
   empresa: string;
   fechaEmision: string;
+  fechaVencimiento?: string | null;
   estado: 'BORRADOR' | 'EMITIDA' | 'PAGADA';
   baseImponible: number;
   ivaTotal: number;
