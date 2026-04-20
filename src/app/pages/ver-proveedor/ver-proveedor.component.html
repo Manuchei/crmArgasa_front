@@ -1,16 +1,16 @@
-<div class="container mt-4" *ngIf="proveedor">
-  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-    <div>
-      <h1 class="titulo-proveedor mb-1">
+<div class="proveedor-detalle-page container-fluid mt-4" *ngIf="proveedor">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4 detalle-header">
+    <div class="header-info">
+      <h1 class="titulo-proveedor mb-1 text-break">
         {{ proveedor.nombreApellidos || proveedor.nombreComercial || proveedor.nombre }}
       </h1>
-      <p class="subtitulo-proveedor mb-0">
+      <p class="subtitulo-proveedor mb-0 text-break">
         <strong>CIF/DNI:</strong> {{ proveedor.cifDni || proveedor.cif || '-' }}
       </p>
     </div>
 
-    <div>
-      <button class="btn btn-dark" (click)="generarAlbaran()" [disabled]="creandoAlbaran">
+    <div class="header-actions">
+      <button class="btn btn-dark w-100 w-sm-auto" (click)="generarAlbaran()" [disabled]="creandoAlbaran">
         <i class="bi bi-file-earmark-text"></i>
         {{ creandoAlbaran ? 'Creando...' : 'Crear albarán' }}
       </button>
@@ -43,28 +43,26 @@
   <!-- DATOS -->
   <div *ngIf="activeTab === 'datos'">
     <div class="row g-3">
-      <div class="col-md-6">
+      <div class="col-12 col-lg-6">
         <div class="card-detalle">
           <h5>Datos generales</h5>
           <p><strong>Nombre:</strong> {{ proveedor.nombre || '-' }}</p>
-          <p><strong>Apellido:</strong> {{ proveedor.apellido || '-' }}</p>
           <p><strong>Oficio:</strong> {{ proveedor.oficio || '-' }}</p>
           <p><strong>CIF/DNI:</strong> {{ proveedor.cif || proveedor.cifDni || '-' }}</p>
           <p><strong>Fecha alta:</strong> {{ proveedor.fechaAltaProveedor || '-' }}</p>
         </div>
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-lg-6">
         <div class="card-detalle">
           <h5>Contacto</h5>
           <p><strong>Teléfono:</strong> {{ proveedor.telefono || '-' }}</p>
-          <p><strong>Email:</strong> {{ proveedor.email || '-' }}</p>
+          <p class="text-break"><strong>Email:</strong> {{ proveedor.email || '-' }}</p>
           <p><strong>Persona de contacto:</strong> {{ proveedor.contacto || '-' }}</p>
-          <p><strong>Contactos:</strong> {{ proveedor.contactos || '-' }}</p>
         </div>
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-lg-6">
         <div class="card-detalle">
           <h5>Dirección</h5>
           <p><strong>Dirección:</strong> {{ proveedor.direccion || '-' }}</p>
@@ -77,11 +75,11 @@
         </div>
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-lg-6">
         <div class="card-detalle">
           <h5>Datos bancarios y observaciones</h5>
-          <p><strong>IBAN:</strong> {{ proveedor.datosBancarios || '-' }}</p>
-          <p><strong>Notas:</strong> {{ proveedor.notas || '-' }}</p>
+          <p class="text-break"><strong>IBAN:</strong> {{ proveedor.datosBancarios || '-' }}</p>
+          <p class="text-break"><strong>Notas:</strong> {{ proveedor.notas || '-' }}</p>
         </div>
       </div>
     </div>
@@ -89,8 +87,8 @@
 
   <!-- ALBARANES -->
   <div *ngIf="activeTab === 'albaranes'">
-    <div class="mb-3 d-flex gap-2 align-items-center flex-wrap">
-      <input class="form-control" [(ngModel)]="numeroAlbaranProveedor" placeholder="Número proveedor" />
+    <div class="mb-3 d-flex gap-2 align-items-center flex-wrap albaran-toolbar">
+      <input class="form-control input-albaran" [(ngModel)]="numeroAlbaranProveedor" placeholder="Número proveedor" />
 
       <button class="btn btn-dark" (click)="generarAlbaran()" [disabled]="creandoAlbaran">
         Crear
@@ -98,7 +96,7 @@
     </div>
 
     <div class="table-responsive" *ngIf="albaranes.length > 0; else sinAlbaranes">
-      <table class="table table-striped table-hover text-center align-middle">
+      <table class="table table-striped table-hover text-center align-middle detalle-proveedor-table">
         <thead class="table-dark">
           <tr>
             <th>ID</th>
@@ -121,24 +119,26 @@
                 {{ a.confirmado ? 'Sí' : 'No' }}
               </span>
             </td>
-            <td>
-              <button class="btn btn-sm btn-secondary me-1" (click)="verAlbaran(a)">
-                Ver
-              </button>
+            <td class="acciones-col">
+              <div class="acciones-wrap">
+                <button class="btn btn-sm btn-secondary" (click)="verAlbaran(a)">
+                  Ver
+                </button>
 
-              <button class="btn btn-sm btn-outline-secondary me-1" (click)="editarAlbaran(a)">
-                Editar
-              </button>
+                <button class="btn btn-sm btn-outline-secondary" (click)="editarAlbaran(a)">
+                  Editar
+                </button>
 
-              <button class="btn btn-sm btn-primary me-1" (click)="generarFacturaDesdeAlbaran(a)"
-                [disabled]="!a.confirmado || albaranGenerandoFacturaId === a.id">
-                <span *ngIf="albaranGenerandoFacturaId !== a.id">Facturar</span>
-                <span *ngIf="albaranGenerandoFacturaId === a.id">Generando...</span>
-              </button>
+                <button class="btn btn-sm btn-primary" (click)="generarFacturaDesdeAlbaran(a)"
+                  [disabled]="!a.confirmado || albaranGenerandoFacturaId === a.id">
+                  <span *ngIf="albaranGenerandoFacturaId !== a.id">Facturar</span>
+                  <span *ngIf="albaranGenerandoFacturaId === a.id">Generando...</span>
+                </button>
 
-              <button class="btn btn-sm btn-danger" (click)="eliminarAlbaran(a)">
-                Eliminar
-              </button>
+                <button class="btn btn-sm btn-danger" (click)="eliminarAlbaran(a)">
+                  Eliminar
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -158,7 +158,7 @@
   <!-- PRODUCTOS / TRABAJOS -->
   <div *ngIf="activeTab === 'productos'">
     <div class="row g-4">
-      <div class="col-md-6">
+      <div class="col-12 col-xl-6">
         <div class="card-detalle">
           <h5>Nuevo producto</h5>
 
@@ -187,13 +187,13 @@
             <input type="number" class="form-control" [(ngModel)]="nuevoProducto.precioSinIva" />
           </div>
 
-          <button class="btn btn-dark" (click)="guardarProducto()" [disabled]="guardandoProducto">
+          <button class="btn btn-dark w-100 w-md-auto" (click)="guardarProducto()" [disabled]="guardandoProducto">
             {{ guardandoProducto ? 'Guardando...' : 'Guardar' }}
           </button>
         </div>
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-xl-6">
         <div class="card-detalle">
           <h5>Nuevo trabajo</h5>
 
@@ -212,7 +212,7 @@
             <input type="number" class="form-control" [(ngModel)]="nuevoTrabajo.importePagado" />
           </div>
 
-          <button class="btn btn-dark" (click)="guardarTrabajo()" [disabled]="guardandoTrabajo">
+          <button class="btn btn-dark w-100 w-md-auto" (click)="guardarTrabajo()" [disabled]="guardandoTrabajo">
             {{ guardandoTrabajo ? 'Guardando...' : 'Guardar' }}
           </button>
         </div>
@@ -223,7 +223,7 @@
           <h5 class="mb-3">Productos del proveedor</h5>
 
           <div class="table-responsive" *ngIf="proveedor?.productos?.length > 0; else sinProductos">
-            <table class="table table-striped table-hover align-middle text-center mb-0">
+            <table class="table table-striped table-hover align-middle text-center mb-0 detalle-proveedor-table">
               <thead class="table-dark">
                 <tr>
                   <th>Código</th>
@@ -237,7 +237,7 @@
               <tbody>
                 <tr *ngFor="let p of proveedor.productos; let i = index">
                   <td>{{ p.codigo }}</td>
-                  <td>{{ p.nombre }}</td>
+                  <td class="text-break">{{ p.nombre }}</td>
                   <td>{{ p.modelo || '-' }}</td>
                   <td>{{ p.stock }}</td>
                   <td>{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
@@ -262,7 +262,7 @@
           <h5 class="mb-3">Trabajos realizados</h5>
 
           <div class="table-responsive" *ngIf="trabajos.length > 0; else sinTrabajos">
-            <table class="table table-striped table-hover align-middle text-center mb-0">
+            <table class="table table-striped table-hover align-middle text-center mb-0 detalle-proveedor-table">
               <thead class="table-dark">
                 <tr>
                   <th>Descripción</th>
@@ -274,7 +274,7 @@
               </thead>
               <tbody>
                 <tr *ngFor="let t of trabajos">
-                  <td>{{ t.descripcion }}</td>
+                  <td class="text-break">{{ t.descripcion }}</td>
                   <td>{{ (t.importe || 0) | number:'1.2-2' }} €</td>
                   <td>{{ (t.importePagado || 0) | number:'1.2-2' }} €</td>
                   <td>{{ ((t.importe || 0) - (t.importePagado || 0)) | number:'1.2-2' }} €</td>
@@ -297,14 +297,14 @@
       <div class="col-12">
         <div class="card-detalle">
           <h5 class="mb-3">Totales</h5>
-          <div class="row">
-            <div class="col-md-4">
+          <div class="row g-2">
+            <div class="col-12 col-md-4">
               <p><strong>Total importe:</strong> {{ totalImporte | number:'1.2-2' }} €</p>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
               <p><strong>Total pagado:</strong> {{ totalPagado | number:'1.2-2' }} €</p>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
               <p><strong>Total pendiente:</strong> {{ totalPendiente | number:'1.2-2' }} €</p>
             </div>
           </div>
@@ -314,7 +314,7 @@
   </div>
 
   <div class="text-end mt-3">
-    <button class="btn btn-secondary" (click)="volver()">
+    <button class="btn btn-secondary w-100 w-sm-auto" (click)="volver()">
       Volver
     </button>
   </div>

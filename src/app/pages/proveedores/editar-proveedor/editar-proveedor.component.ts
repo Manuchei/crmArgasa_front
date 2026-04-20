@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Proveedor } from '../../../interfaces/iproveedor';
-import { IProducto } from '../../../interfaces/iproducto';
+import { ProveedorSaveDto } from '../../../interfaces/iproveedor-save';
 
 @Component({
   selector: 'app-editar-proveedor',
@@ -16,7 +16,6 @@ import { IProducto } from '../../../interfaces/iproducto';
 export class EditarProveedorComponent implements OnInit {
   proveedor: Proveedor = {
     nombre: '',
-    apellido: '',
     oficio: '',
     telefono: '',
     email: '',
@@ -30,7 +29,9 @@ export class EditarProveedorComponent implements OnInit {
     contacto: '',
     datosBancarios: '',
     notas: '',
-    contactos: '',
+    trabajaEnArgasa: false,
+    trabajaEnLuga: false,
+    trabajoRealizado: '',
     importeTotal: 0,
     importePagado: 0,
     importePendiente: 0,
@@ -72,48 +73,46 @@ export class EditarProveedorComponent implements OnInit {
     });
   }
 
-  agregarProducto() {
-    if (!this.proveedor.productos) {
-      this.proveedor.productos = [];
-    }
-
-    const nuevoProducto: IProducto = {
-      codigo: '',
-      nombre: '',
-      modelo: '',
-      stock: 0,
-      empresa: '',
-      precioSinIva: 0,
-    };
-
-    this.proveedor.productos.push(nuevoProducto);
+  private trim(value: any): string {
+    return typeof value === 'string' ? value.trim() : '';
   }
 
-  eliminarProducto(index: number) {
-    this.proveedor.productos?.splice(index, 1);
+  private buildProveedorSaveDto(): ProveedorSaveDto {
+    return {
+      id: this.proveedor.id,
+      nombre: this.trim(this.proveedor.nombre),
+      oficio: this.trim(this.proveedor.oficio),
+      empresa: this.trim(this.proveedor.empresa),
+      telefono: this.trim(this.proveedor.telefono),
+      email: this.trim(this.proveedor.email),
+      trabajaEnArgasa: !!this.proveedor.trabajaEnArgasa,
+      trabajaEnLuga: !!this.proveedor.trabajaEnLuga,
+      trabajoRealizado: this.trim(this.proveedor.trabajoRealizado),
+      direccion: this.trim(this.proveedor.direccion),
+      cif: this.trim(this.proveedor.cif),
+      fechaAltaProveedor: this.proveedor.fechaAltaProveedor || null,
+      localidad: this.trim(this.proveedor.localidad),
+      codigoPostal: this.trim(this.proveedor.codigoPostal),
+      provincia: this.trim(this.proveedor.provincia),
+      pais: this.trim(this.proveedor.pais),
+      contacto: this.trim(this.proveedor.contacto),
+      datosBancarios: this.trim(this.proveedor.datosBancarios)
+        .replace(/\s+/g, '')
+        .toUpperCase(),
+      notas: this.trim(this.proveedor.notas),
+    };
   }
 
   guardar() {
-    this.proveedor.importePendiente =
-      (Number(this.proveedor.importeTotal) || 0) -
-      (Number(this.proveedor.importePagado) || 0);
-
-    if (this.proveedor.productos) {
-      this.proveedor.productos = this.proveedor.productos
-        .filter((p) => p.codigo?.trim() || p.nombre?.trim())
-        .map((p) => ({
-          ...p,
-          codigo: p.codigo?.trim() || '',
-          nombre: p.nombre?.trim() || '',
-          modelo: p.modelo?.trim() || '',
-          stock: Number(p.stock) || 0,
-          precioSinIva: Number(p.precioSinIva) || 0,
-          empresa: '',
-        }));
+    if (!this.proveedor.id) {
+      alert('Proveedor no válido');
+      return;
     }
 
+    const payload = this.buildProveedorSaveDto();
+
     this.proveedorService
-      .actualizarProveedor(this.proveedor.id!, this.proveedor)
+      .actualizarProveedor(this.proveedor.id, payload)
       .subscribe({
         next: () => {
           alert('Proveedor actualizado correctamente');

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Proveedor } from '../interfaces/iproveedor';
+import { ProveedorSaveDto } from '../interfaces/iproveedor-save';
 
 @Injectable({
   providedIn: 'root',
@@ -22,11 +23,14 @@ export class ProveedorService {
     return this.http.get<Proveedor>(`${this.apiProveedores}/${id}`);
   }
 
-  crearProveedor(proveedor: Proveedor): Observable<Proveedor> {
+  crearProveedor(proveedor: ProveedorSaveDto): Observable<Proveedor> {
     return this.http.post<Proveedor>(this.apiProveedores, proveedor);
   }
 
-  actualizarProveedor(id: number, proveedor: Proveedor): Observable<Proveedor> {
+  actualizarProveedor(
+    id: number,
+    proveedor: ProveedorSaveDto,
+  ): Observable<Proveedor> {
     return this.http.put<Proveedor>(`${this.apiProveedores}/${id}`, proveedor);
   }
 

@@ -1,90 +1,101 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark no-print">
+<nav class="navbar navbar-expand-xl navbar-dark bg-dark no-print">
   <div class="container-fluid">
 
     <!-- EMPRESA ACTIVA -->
-    <span class="badge badge-empresa me-3">
+    <span class="badge badge-empresa me-2 me-xl-3">
       {{ empresa }}
     </span>
 
     <!-- BOTÓN HAMBURGUESA -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <button
+      class="navbar-toggler"
+      type="button"
+      (click)="toggleMenu()"
+      aria-controls="navbarNav"
+      [attr.aria-expanded]="menuOpen"
+      aria-label="Toggle navigation"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <!-- MENÚ -->
-    <div class="collapse navbar-collapse" id="navbarNav">
+    <div
+      id="navbarNav"
+      class="navbar-collapse"
+      [class.collapse]="!menuOpen"
+      [class.show]="menuOpen"
+    >
       <ul class="navbar-nav me-auto">
 
-        <!-- Inicio: NO para transportista -->
         <li class="nav-item" *ngIf="canInicio()">
-          <a class="nav-link" routerLink="/app/dashboard" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/dashboard" routerLinkActive="active" (click)="closeMenu()">
             🏠 Inicio
           </a>
         </li>
 
-        <!-- ADMIN + USER -->
         <li class="nav-item" *ngIf="canClientes()">
-          <a class="nav-link" routerLink="/app/clientes" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/clientes" routerLinkActive="active" (click)="closeMenu()">
             👥 Clientes
           </a>
         </li>
 
         <li class="nav-item" *ngIf="canProveedores()">
-          <a class="nav-link" routerLink="/app/proveedores" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/proveedores" routerLinkActive="active" (click)="closeMenu()">
             🔧 Proveedores
           </a>
         </li>
 
         <li class="nav-item" *ngIf="canProductos()">
-          <a class="nav-link" routerLink="/app/productos" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/productos" routerLinkActive="active" (click)="closeMenu()">
             📦 Productos
           </a>
         </li>
 
-        <!-- ADMIN + TRANSPORTISTA -->
         <li class="nav-item" *ngIf="canRutas()">
-          <a class="nav-link" routerLink="/app/rutas" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/rutas" routerLinkActive="active" (click)="closeMenu()">
             🗺️ Rutas
           </a>
         </li>
 
-        <!-- Calendario: SOLO ADMIN -->
         <li class="nav-item" *ngIf="canCalendario()">
-          <a class="nav-link" routerLink="/app/calendario" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/calendario" routerLinkActive="active" (click)="closeMenu()">
             📅 Calendario
           </a>
         </li>
 
-        <!-- Transportistas: SOLO ADMIN -->
         <li class="nav-item" *ngIf="canTransportistas()">
-          <a class="nav-link" routerLink="/app/transportistas" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/transportistas" routerLinkActive="active" (click)="closeMenu()">
             🚚 Transportistas
           </a>
         </li>
 
-        <!-- Informes: SOLO ADMIN -->
         <li class="nav-item" *ngIf="canInformes()">
-          <a class="nav-link" routerLink="/app/informes" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/informes" routerLinkActive="active" (click)="closeMenu()">
             📊 Informes
           </a>
         </li>
 
       </ul>
 
-      <!-- Usuario -->
-      <span class="navbar-text me-3">
-        {{ usuario?.email }}
-      </span>
+      <div class="navbar-actions d-flex flex-column flex-xl-row align-items-stretch align-items-xl-center">
+        <span class="navbar-text user-email me-xl-3 mb-2 mb-xl-0">
+          {{ usuario?.email }}
+        </span>
 
-      <!-- Cambiar empresa -->
-      <button class="btn btn-outline-warning btn-sm me-2" (click)="cambiarEmpresa()">
-        Cambiar empresa
-      </button>
+        <button
+          class="btn btn-outline-warning btn-sm me-xl-2 mb-2 mb-xl-0"
+          (click)="cambiarEmpresa(); closeMenu()"
+        >
+          Cambiar empresa
+        </button>
 
-      <!-- Logout -->
-      <button class="btn btn-outline-danger btn-sm" (click)="logout()">
-        Cerrar sesión
-      </button>
+        <button
+          class="btn btn-outline-danger btn-sm"
+          (click)="logout(); closeMenu()"
+        >
+          Cerrar sesión
+        </button>
+      </div>
     </div>
   </div>
 </nav>

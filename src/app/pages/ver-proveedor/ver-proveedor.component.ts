@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProveedorService } from '../../services/proveedor.service';
 import { FacturasProveedoresService } from '../../services/facturas-proveedores.service';
+import { ProductoServiceService } from '../../services/producto-service.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IProducto } from '../../interfaces/iproducto';
@@ -43,6 +44,7 @@ export class VerProveedorComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private proveedorService: ProveedorService,
+    private productoService: ProductoServiceService,
     private facturasProveedoresService: FacturasProveedoresService,
     private router: Router,
   ) {}
@@ -77,6 +79,10 @@ export class VerProveedorComponent implements OnInit {
   private normalizarNumero(valor: any): number {
     const numero = Number(valor);
     return isNaN(numero) ? 0 : numero;
+  }
+
+  private trim(valor: any): string {
+    return typeof valor === 'string' ? valor.trim() : '';
   }
 
   cargarProveedor(): void {
@@ -189,9 +195,9 @@ export class VerProveedorComponent implements OnInit {
       return;
     }
 
-    const codigo = this.nuevoProducto.codigo?.trim();
-    const nombre = this.nuevoProducto.nombre?.trim();
-    const modelo = this.nuevoProducto.modelo?.trim() || '';
+    const codigo = this.trim(this.nuevoProducto.codigo);
+    const nombre = this.trim(this.nuevoProducto.nombre);
+    const modelo = this.trim(this.nuevoProducto.modelo);
 
     if (!codigo || !nombre) {
       alert('Código y nombre del producto son obligatorios');
@@ -201,7 +207,7 @@ export class VerProveedorComponent implements OnInit {
     this.asegurarProductos();
 
     const existeCodigo = this.proveedor.productos.some(
-      (p: IProducto) => p.codigo?.trim().toLowerCase() === codigo.toLowerCase(),
+      (p: IProducto) => this.trim(p.codigo).toLowerCase() === codigo.toLowerCase(),
     );
 
     if (existeCodigo) {
@@ -209,27 +215,24 @@ export class VerProveedorComponent implements OnInit {
       return;
     }
 
-    const productoAInsertar: IProducto = {
+    const payload: IProducto = {
       codigo,
       nombre,
       modelo,
       stock: this.normalizarNumero(this.nuevoProducto.stock),
       precioSinIva: this.normalizarNumero(this.nuevoProducto.precioSinIva),
       empresa: '',
+      proveedor: { id: this.proveedor.id } as any,
     };
 
-    this.proveedor.productos = [...this.proveedor.productos, productoAInsertar];
     this.guardandoProducto = true;
 
-    this.proveedorService.actualizarProveedor(this.proveedor.id, this.proveedor).subscribe({
-      next: (proveedorActualizado) => {
-        this.proveedor = proveedorActualizado;
-        this.asegurarProductos();
-
+    this.productoService.crearProducto(payload).subscribe({
+      next: () => {
         this.nuevoProducto = this.getNuevoProductoVacio();
         this.guardandoProducto = false;
-        this.calcularTotales();
 
+        this.cargarProveedor();
         alert('Producto añadido correctamente');
       },
       error: (err) => {
@@ -238,7 +241,6 @@ export class VerProveedorComponent implements OnInit {
         alert(
           err?.error?.message || err?.error || 'Error al añadir el producto',
         );
-        this.cargarProveedor();
       },
     });
   }
@@ -256,21 +258,7 @@ export class VerProveedorComponent implements OnInit {
     );
     if (!confirmar) return;
 
-    this.proveedor.productos.splice(index, 1);
-    this.proveedor.productos = [...this.proveedor.productos];
-
-    this.proveedorService.actualizarProveedor(this.proveedor.id, this.proveedor).subscribe({
-      next: (proveedorActualizado) => {
-        this.proveedor = proveedorActualizado;
-        this.asegurarProductos();
-        this.calcularTotales();
-      },
-      error: (err) => {
-        console.error('Error al eliminar producto', err);
-        alert('No se pudo eliminar el producto');
-        this.cargarProveedor();
-      },
-    });
+    alert('La eliminación de productos debe hacerse con su endpoint específico.');
   }
 
   generarAlbaran(): void {
@@ -372,8 +360,11 @@ export class VerProveedorComponent implements OnInit {
     if (!albaran?.id) return;
 
     const confirmar = confirm(
-      `¿Seguro que deseas eliminar el albarán #${albaran.id}?`,
+      albaran.confirmado
+        ? `Este albarán está CONFIRMADO. ¿Seguro que deseas eliminar el albarán #${albaran.id}?`
+        : `¿Seguro que deseas eliminar el albarán #${albaran.id}?`
     );
+
     if (!confirmar) return;
 
     this.proveedorService.eliminarAlbaranProveedor(albaran.id).subscribe({
@@ -382,7 +373,11 @@ export class VerProveedorComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al eliminar albarán', err);
-        alert('No se pudo eliminar el albarán');
+        alert(
+          err?.error?.message ||
+          err?.error ||
+          'No se pudo eliminar el albarán'
+        );
       },
     });
   }

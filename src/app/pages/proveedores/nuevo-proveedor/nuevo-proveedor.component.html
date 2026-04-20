@@ -1,24 +1,28 @@
-<div class="container mt-4">
+<div class="proveedor-form-page container-fluid mt-4">
   <h2>Nuevo Proveedor</h2>
 
-  <form (ngSubmit)="guardar()" #formProveedor="ngForm">
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Nombre</label>
-        <input type="text" class="form-control" [(ngModel)]="proveedor.nombre" name="nombre" required />
+  <form (ngSubmit)="guardar(formProveedor)" #formProveedor="ngForm">
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <label class="form-label">Nombre y apellidos o empresa *</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.nombre" name="nombre" #nombre="ngModel"
+          required />
+        <div class="text-danger mt-1" *ngIf="nombre.invalid && nombre.touched">
+          El nombre es obligatorio.
+        </div>
       </div>
 
-      <div class="col-md-6 mb-3">
+      <div class="col-12 col-md-6">
         <label class="form-label">CIF</label>
         <input type="text" class="form-control" [(ngModel)]="proveedor.cif" name="cif" />
       </div>
 
-      <div class="col-md-6 mb-3">
+      <div class="col-12 col-md-6">
         <label class="form-label">Fecha alta proveedor</label>
         <input type="date" class="form-control" [(ngModel)]="proveedor.fechaAltaProveedor" name="fechaAltaProveedor" />
       </div>
 
-      <div class="col-md-6 mb-3">
+      <div class="col-12 col-md-6">
         <label class="form-label">Oficio</label>
         <select class="form-control" [(ngModel)]="proveedor.oficio" name="oficio">
           <option value="">Seleccione un oficio...</option>
@@ -26,110 +30,80 @@
         </select>
       </div>
 
-      <div class="col-md-12 mb-3">
+      <div class="col-12">
         <label class="form-label">Dirección</label>
         <input type="text" class="form-control" [(ngModel)]="proveedor.direccion" name="direccion" />
       </div>
 
-      <div class="col-md-4 mb-3">
+      <div class="col-12 col-md-4">
         <label class="form-label">Localidad</label>
         <input type="text" class="form-control" [(ngModel)]="proveedor.localidad" name="localidad" />
       </div>
 
-      <div class="col-md-4 mb-3">
+      <div class="col-12 col-md-4">
         <label class="form-label">Código postal</label>
         <input type="text" class="form-control" [(ngModel)]="proveedor.codigoPostal" name="codigoPostal" />
       </div>
 
-      <div class="col-md-4 mb-3">
+      <div class="col-12 col-md-4">
         <label class="form-label">Provincia</label>
         <input type="text" class="form-control" [(ngModel)]="proveedor.provincia" name="provincia" />
       </div>
 
-      <div class="col-md-6 mb-3">
+      <div class="col-12 col-md-6">
         <label class="form-label">País</label>
         <input type="text" class="form-control" [(ngModel)]="proveedor.pais" name="pais" />
       </div>
 
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Teléfono</label>
-        <input type="text" class="form-control" [(ngModel)]="proveedor.telefono" name="telefono" required />
+      <div class="col-12 col-md-6">
+        <label class="form-label">Teléfono *</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.telefono" name="telefono" #telefono="ngModel"
+          required />
+        <div class="text-danger mt-1" *ngIf="telefono.invalid && telefono.touched">
+          El teléfono es obligatorio.
+        </div>
       </div>
 
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Email</label>
-        <input type="email" class="form-control" [(ngModel)]="proveedor.email" name="email" required />
+      <div class="col-12 col-md-6">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-control" [(ngModel)]="proveedor.email" name="email" #email="ngModel" required
+          email />
+        <div class="text-danger mt-1" *ngIf="email.invalid && email.touched">
+          Introduce un email válido.
+        </div>
       </div>
 
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Contacto</label>
+      <div class="col-12 col-md-6">
+        <label class="form-label">Persona de contacto</label>
         <input type="text" class="form-control" [(ngModel)]="proveedor.contacto" name="contacto" />
       </div>
 
-      <div class="col-md-12 mb-3">
-        <label class="form-label">Datos bancarios</label>
-        <textarea class="form-control" rows="3" [(ngModel)]="proveedor.datosBancarios" name="datosBancarios"></textarea>
+      <div class="col-12">
+        <label class="form-label">IBAN *</label>
+        <input type="text" class="form-control" [(ngModel)]="proveedor.datosBancarios" name="datosBancarios"
+          #datosBancarios="ngModel" required pattern="^ES[0-9]{22}$" placeholder="Ej: ES9121000418450200051339" />
+
+        <div class="text-danger mt-1" *ngIf="datosBancarios.touched && datosBancarios.errors?.['required']">
+          El IBAN es obligatorio.
+        </div>
+
+        <div class="text-danger mt-1" *ngIf="datosBancarios.touched && datosBancarios.errors?.['pattern']">
+          Debe empezar por ES y tener 22 números.
+        </div>
       </div>
 
-      <div class="col-md-12 mb-3">
+      <div class="col-12">
         <label class="form-label">Notas</label>
         <textarea class="form-control" rows="3" [(ngModel)]="proveedor.notas" name="notas"></textarea>
       </div>
-
-      <div class="col-md-12 mb-3">
-        <label class="form-label">Contactos</label>
-        <textarea class="form-control" rows="3" [(ngModel)]="proveedor.contactos" name="contactos"></textarea>
-      </div>
     </div>
 
-    <hr class="my-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4 class="mb-0">Productos del proveedor</h4>
-      <button type="button" class="btn btn-outline-primary" (click)="agregarProducto()">
-        Añadir producto
+    <hr class="my-4" />
+
+    <div class="text-center mt-4 form-actions">
+      <button type="submit" class="btn btn-primary px-5 guardar-btn" [disabled]="formProveedor.invalid">
+        Guardar
       </button>
-    </div>
-
-    <div *ngIf="!proveedor.productos?.length" class="alert alert-light border">
-      No hay productos añadidos todavía.
-    </div>
-
-    <div *ngFor="let producto of proveedor.productos; let i = index" class="border rounded p-3 mb-3">
-      <div class="row">
-        <div class="col-md-2 mb-3">
-          <label class="form-label">Código</label>
-          <input class="form-control" [(ngModel)]="producto.codigo" name="codigoProducto{{i}}">
-        </div>
-
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Nombre</label>
-          <input class="form-control" [(ngModel)]="producto.nombre" name="nombreProducto{{i}}">
-        </div>
-
-        <div class="col-md-2 mb-3">
-          <label class="form-label">Modelo</label>
-          <input class="form-control" [(ngModel)]="producto.modelo" name="modeloProducto{{i}}">
-        </div>
-
-        <div class="col-md-2 mb-3">
-          <label class="form-label">Stock</label>
-          <input type="number" class="form-control" [(ngModel)]="producto.stock" name="stockProducto{{i}}">
-        </div>
-
-        <div class="col-md-2 mb-3">
-          <label class="form-label">Precio sin IVA</label>
-          <input type="number" step="0.01" class="form-control" [(ngModel)]="producto.precioSinIva"
-            name="precioProducto{{i}}">
-        </div>
-
-        <div class="col-md-1 d-flex align-items-end mb-3">
-          <button type="button" class="btn btn-danger w-100" (click)="eliminarProducto(i)">X</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="text-center mt-4">
-      <button type="submit" class="btn btn-primary px-5">Guardar</button>
     </div>
   </form>
 </div>

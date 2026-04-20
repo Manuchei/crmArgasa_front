@@ -1,96 +1,93 @@
-<div class="container mt-4">
+<div class="dashboard container-fluid px-0 px-md-2 px-lg-3 mt-4">
 
   <!-- KPIs -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-3" *ngFor="let card of kpis">
-      <div class="card text-white shadow cursor-pointer" [ngClass]="card.color" (click)="go(card.route)">
+  <div class="row g-3 g-md-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3" *ngFor="let card of kpis">
+      <div class="card text-white shadow cursor-pointer h-100" [ngClass]="card.color" (click)="go(card.route)">
         <div class="card-body text-center">
-          <h6>{{ card.title }}</h6>
-          <h2>{{ card.value }}</h2>
+          <h6 class="mb-2">{{ card.title }}</h6>
+          <h2 class="mb-0">{{ card.value }}</h2>
         </div>
       </div>
     </div>
   </div>
 
   <!-- HOY -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-4" *ngFor="let item of today">
-      <div class="card shadow-sm">
+  <div class="row g-3 g-md-4 mb-4">
+    <div class="col-12 col-md-6 col-xl-4" *ngFor="let item of today">
+      <div class="card shadow-sm h-100">
         <div class="card-body text-center">
-          <h5>{{ item.icon }} {{ item.title }}</h5>
-          <p class="fs-4 fw-bold">{{ item.value }}</p>
+          <h5 class="mb-2">{{ item.icon }} {{ item.title }}</h5>
+          <p class="fs-4 fw-bold mb-0">{{ item.value }}</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- PRÓXIMAS LLAMADAS (SOLO ADMIN) -->
+  <!-- PRÓXIMAS LLAMADAS -->
   <div class="card shadow-sm mb-4" *ngIf="isAdmin()">
     <div class="card-header fw-bold">
       📞 Próximas llamadas
     </div>
 
-    <table class="table mb-0">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Motivo</th>
-          <th>Observaciones</th>
-          <th>Hora</th>
-          <th>Estado</th>
-        </tr>
-      </thead>
+    <div class="table-responsive">
+      <table class="table table-dashboard mb-0">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Motivo</th>
+            <th>Observaciones</th>
+            <th>Hora</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
 
-      <tbody>
-        <tr *ngFor="let call of calls">
-          <td>{{ call.fecha | date:'dd/MM/yyyy' }}</td>
-          <td>{{ call.motivo }}</td>
-          <td>{{ call.observaciones }}</td>
-          <td>{{ call.fecha | date:'HH:mm' }}</td>
-          <td>
-            <span class="estado-pill" [ngClass]="{
-              'estado-pendiente': (call.estado || '').toLowerCase() === 'pendiente',
-              'estado-realizada': (call.estado || '').toLowerCase() === 'realizada',
-              'estado-cancelada': (call.estado || '').toLowerCase() === 'cancelada'
-            }">
-              {{ call.estado || 'pendiente' }}
-            </span>
-          </td>
-        </tr>
+        <tbody>
+          <tr *ngFor="let call of calls">
+            <td>{{ call.fecha | date:'dd/MM/yyyy' }}</td>
+            <td>{{ call.motivo }}</td>
+            <td class="cell-observaciones">{{ call.observaciones }}</td>
+            <td>{{ call.fecha | date:'HH:mm' }}</td>
+            <td>
+              <span class="estado-pill" [ngClass]="{
+                'estado-pendiente': (call.estado || '').toLowerCase() === 'pendiente',
+                'estado-realizada': (call.estado || '').toLowerCase() === 'realizada',
+                'estado-cancelada': (call.estado || '').toLowerCase() === 'cancelada'
+              }">
+                {{ call.estado || 'pendiente' }}
+              </span>
+            </td>
+          </tr>
 
-        <tr *ngIf="calls.length === 0">
-          <td colspan="5" class="text-center text-muted">
-            No hay llamadas próximas
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          <tr *ngIf="calls.length === 0">
+            <td colspan="5" class="text-center text-muted py-3">
+              No hay llamadas próximas
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- ACCIONES -->
   <div class="row g-3">
-
-    <!-- ADMIN + USER -->
-    <div class="col-md-4" *ngIf="isAdmin() || isUser()">
+    <div class="col-12 col-md-6 col-xl-4" *ngIf="isAdmin() || isUser()">
       <button class="btn btn-primary w-100" routerLink="/app/clientes/nuevo">
         ➕ Nuevo cliente
       </button>
     </div>
 
-    <!-- ADMIN (y si algún día quieres permitir transportista desde dashboard, añade isTransportista()) -->
-    <div class="col-md-4" *ngIf="isAdmin()">
+    <div class="col-12 col-md-6 col-xl-4" *ngIf="isAdmin()">
       <button class="btn btn-success w-100" routerLink="/app/rutas/nueva">
         ➕ Nueva ruta
       </button>
     </div>
 
-    <!-- SOLO ADMIN -->
-    <div class="col-md-4" *ngIf="isAdmin()">
+    <div class="col-12 col-md-6 col-xl-4" *ngIf="isAdmin()">
       <button class="btn btn-warning w-100" routerLink="/app/calendario">
         ➕ Nueva llamada
       </button>
     </div>
-
   </div>
 
 </div>

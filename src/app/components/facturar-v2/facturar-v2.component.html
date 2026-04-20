@@ -1,12 +1,12 @@
-<div class="card mt-3">
+<div class="card mt-3 facturas-card">
 
   <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2 no-print">
     <strong>Facturas</strong>
 
-    <div class="d-flex align-items-center gap-2">
+    <div class="facturas-toolbar d-flex align-items-center gap-2 flex-wrap">
       <label class="mb-0 small text-muted">Serie</label>
-      <select class="form-select form-select-sm" style="width: 90px;" [(ngModel)]="serie"
-        (ngModelChange)="onSerieChange()">
+
+      <select class="form-select form-select-sm serie-select" [(ngModel)]="serie" (ngModelChange)="onSerieChange()">
         <option value="A">A</option>
         <option value="B">B</option>
       </select>
@@ -24,7 +24,7 @@
     <div class="text-muted no-print" *ngIf="loading">Cargando…</div>
 
     <div class="card mb-3 no-print" *ngIf="pendientes as p">
-      <div class="card-header d-flex justify-content-between align-items-center">
+      <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <strong>Pendientes de facturar</strong>
 
         <button type="button" class="btn btn-sm btn-primary" (click)="crearBorrador()"
@@ -45,7 +45,7 @@
           <div class="form-check" *ngFor="let s of serviciosPendientes">
             <input class="form-check-input" type="checkbox" [checked]="selectedServicios.has(s.id)"
               (change)="onServicioChange(s.id, $event)" />
-            <label class="form-check-label">
+            <label class="form-check-label text-break">
               {{ s.descripcion || s.nombre || ('Servicio #' + s.id) }}
               <span class="text-muted" *ngIf="s.importe">
                 — {{ s.importe | number:'1.2-2' }} €
@@ -60,7 +60,7 @@
           <div class="form-check" *ngFor="let l of lineasPendientes">
             <input class="form-check-input" type="checkbox" [checked]="selectedLineas.has(l.id)"
               (change)="onLineaChange(l.id, $event)" />
-            <label class="form-check-label">
+            <label class="form-check-label text-break">
               {{ l.descripcion || l.concepto || ('Línea #' + l.id) }}
               <span class="text-muted" *ngIf="l.baseLinea || l.totalLinea">
                 — {{ (l.totalLinea || l.baseLinea) | number:'1.2-2' }} €
@@ -82,11 +82,11 @@
       </div>
     </div>
 
-    <div class="card mb-4 shadow-sm" *ngIf="factura">
-      <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card mb-4 shadow-sm" *ngIf="factura" id="factura-print">
+      <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <strong>Factura {{ factura.serie }}-{{ factura.numero }}</strong>
 
-        <div class="d-flex gap-2 no-print">
+        <div class="d-flex gap-2 flex-wrap no-print">
           <button type="button" class="btn btn-sm btn-outline-dark" (click)="imprimir($event)">
             🖨 Imprimir
           </button>
@@ -99,23 +99,19 @@
 
       <div class="card-body">
 
-        <div class="row mb-3">
-          <div class="col-md-6">
+        <div class="row mb-3 g-3 factura-meta">
+          <div class="col-12 col-md-6">
             <div class="fw-bold">Empresa</div>
-            <div>{{ factura.empresa }}</div>
+            <div class="text-break">{{ factura.empresa }}</div>
           </div>
 
-          <div class="col-md-6 text-end">
+          <div class="col-12 col-md-6 factura-meta-right">
             <div *ngIf="!modoEdicion"><b>Fecha:</b> {{ factura.fechaEmision }}</div>
 
-            <div *ngIf="modoEdicion" class="d-flex justify-content-end align-items-center gap-2">
+            <div *ngIf="modoEdicion" class="d-flex justify-content-md-end align-items-center gap-2 flex-wrap">
               <label class="fw-bold mb-0">Fecha:</label>
-              <input
-                type="date"
-                class="form-control form-control-sm"
-                style="max-width: 170px;"
-                [(ngModel)]="facturaEdit.fechaEmision"
-              />
+              <input type="date" class="form-control form-control-sm factura-date-input"
+                [(ngModel)]="facturaEdit.fechaEmision" />
             </div>
 
             <div class="mt-2">
@@ -134,103 +130,76 @@
 
         <hr />
 
-        <table class="table table-bordered table-sm">
-          <thead class="table-light">
-            <tr>
-              <th>Concepto</th>
-              <th class="text-end">Cant.</th>
-              <th class="text-end">Precio</th>
-              <th class="text-end">Dto %</th>
-              <th class="text-end">Subtotal</th>
-              <th class="text-end">IVA</th>
-              <th class="text-end">Total</th>
-            </tr>
-          </thead>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm factura-lineas-table">
+            <thead class="table-light">
+              <tr>
+                <th>Concepto</th>
+                <th class="text-end">Cant.</th>
+                <th class="text-end">Precio</th>
+                <th class="text-end">Dto %</th>
+                <th class="text-end">Subtotal</th>
+                <th class="text-end">IVA</th>
+                <th class="text-end">Total</th>
+              </tr>
+            </thead>
 
-          <tbody *ngIf="!modoEdicion">
-            <tr *ngFor="let l of factura.lineas">
-              <td>
-                {{ l.descripcion }}
-                <div class="text-muted small ref-origen no-print">
-                  {{ l.tipoOrigen }} #{{ l.origenId }}
-                </div>
-              </td>
-              <td class="text-end">{{ l.cantidad }}</td>
-              <td class="text-end">{{ l.precioUnitario | number:'1.2-2' }} €</td>
-              <td class="text-end">{{ (l.descuentoPct || 0) | number:'1.2-2' }}%</td>
-              <td class="text-end">{{ l.subtotal | number:'1.2-2' }} €</td>
-              <td class="text-end">{{ l.ivaPct }}%</td>
-              <td class="text-end">{{ l.totalLinea | number:'1.2-2' }} €</td>
-            </tr>
-          </tbody>
+            <tbody *ngIf="!modoEdicion">
+              <tr *ngFor="let l of factura.lineas">
+                <td class="col-concepto">
+                  {{ l.descripcion }}
+                  <div class="text-muted small ref-origen no-print">
+                    {{ l.tipoOrigen }} #{{ l.origenId }}
+                  </div>
+                </td>
+                <td class="text-end">{{ l.cantidad }}</td>
+                <td class="text-end">{{ l.precioUnitario | number:'1.2-2' }} €</td>
+                <td class="text-end">{{ (l.descuentoPct || 0) | number:'1.2-2' }}%</td>
+                <td class="text-end">{{ l.subtotal | number:'1.2-2' }} €</td>
+                <td class="text-end">{{ l.ivaPct }}%</td>
+                <td class="text-end">{{ l.totalLinea | number:'1.2-2' }} €</td>
+              </tr>
+            </tbody>
 
-          <tbody *ngIf="modoEdicion">
-            <tr *ngFor="let l of facturaEdit.lineas; let i = index">
-              <td>
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  [(ngModel)]="l.descripcion"
-                />
-                <div class="text-muted small ref-origen no-print mt-1">
-                  {{ l.tipoOrigen }} #{{ l.origenId }}
-                </div>
-              </td>
+            <tbody *ngIf="modoEdicion">
+              <tr *ngFor="let l of facturaEdit.lineas; let i = index">
+                <td class="col-concepto">
+                  <input type="text" class="form-control form-control-sm" [(ngModel)]="l.descripcion" />
+                  <div class="text-muted small ref-origen no-print mt-1">
+                    {{ l.tipoOrigen }} #{{ l.origenId }}
+                  </div>
+                </td>
 
-              <td class="text-end" style="width: 110px;">
-                <input
-                  type="number"
-                  class="form-control form-control-sm text-end"
-                  [(ngModel)]="l.cantidad"
-                  (ngModelChange)="onLineaEditChange()"
-                  min="0.01"
-                  step="0.01"
-                />
-              </td>
+                <td class="text-end col-edit-mini">
+                  <input type="number" class="form-control form-control-sm text-end" [(ngModel)]="l.cantidad"
+                    (ngModelChange)="onLineaEditChange()" min="0.01" step="0.01" />
+                </td>
 
-              <td class="text-end" style="width: 140px;">
-                <input
-                  type="number"
-                  class="form-control form-control-sm text-end"
-                  [(ngModel)]="l.precioUnitario"
-                  (ngModelChange)="onLineaEditChange()"
-                  min="0"
-                  step="0.01"
-                />
-              </td>
+                <td class="text-end col-edit-price">
+                  <input type="number" class="form-control form-control-sm text-end" [(ngModel)]="l.precioUnitario"
+                    (ngModelChange)="onLineaEditChange()" min="0" step="0.01" />
+                </td>
 
-              <td class="text-end" style="width: 110px;">
-                <input
-                  type="number"
-                  class="form-control form-control-sm text-end"
-                  [(ngModel)]="l.descuentoPct"
-                  (ngModelChange)="onLineaEditChange()"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                />
-              </td>
+                <td class="text-end col-edit-mini">
+                  <input type="number" class="form-control form-control-sm text-end" [(ngModel)]="l.descuentoPct"
+                    (ngModelChange)="onLineaEditChange()" min="0" max="100" step="0.01" />
+                </td>
 
-              <td class="text-end">{{ l.subtotal | number:'1.2-2' }} €</td>
+                <td class="text-end">{{ l.subtotal | number:'1.2-2' }} €</td>
 
-              <td class="text-end" style="width: 110px;">
-                <input
-                  type="number"
-                  class="form-control form-control-sm text-end"
-                  [(ngModel)]="l.ivaPct"
-                  (ngModelChange)="onLineaEditChange()"
-                  min="0"
-                  step="0.01"
-                />
-              </td>
+                <td class="text-end col-edit-mini">
+                  <input type="number" class="form-control form-control-sm text-end" [(ngModel)]="l.ivaPct"
+                    (ngModelChange)="onLineaEditChange()" min="0" step="0.01" />
+                </td>
 
-              <td class="text-end">{{ l.totalLinea | number:'1.2-2' }} €</td>
-            </tr>
-          </tbody>
-        </table>
+                <td class="text-end">{{ l.totalLinea | number:'1.2-2' }} €</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-        <div class="d-flex justify-content-end mt-3">
-          <table class="table table-sm" style="width: 300px;">
+        <div class="totales-wrapper d-flex justify-content-end mt-3">
+          <table class="table table-sm factura-totales-table">
             <tr>
               <td>Base imponible</td>
               <td class="text-end">
@@ -254,7 +223,7 @@
 
       </div>
 
-      <div class="d-flex gap-2 mt-3 no-print" *ngIf="factura.estado === 'BORRADOR' && !modoEdicion">
+      <div class="d-flex gap-2 mt-3 flex-wrap no-print" *ngIf="factura.estado === 'BORRADOR' && !modoEdicion">
         <button type="button" class="btn btn-primary" (click)="iniciarEdicion()" [disabled]="loading">
           ✏️ Editar
         </button>
@@ -268,7 +237,7 @@
         </button>
       </div>
 
-      <div class="d-flex gap-2 mt-3 no-print" *ngIf="factura.estado === 'BORRADOR' && modoEdicion">
+      <div class="d-flex gap-2 mt-3 flex-wrap no-print" *ngIf="factura.estado === 'BORRADOR' && modoEdicion">
         <button type="button" class="btn btn-success" (click)="guardarEdicion()" [disabled]="loading">
           💾 Guardar cambios
         </button>
@@ -286,61 +255,58 @@
       </div>
 
       <div class="card-body p-0" *ngIf="facturasCliente?.length; else sinFacturas">
-        <table class="table table-sm mb-0">
-          <thead>
-            <tr>
-              <th>Serie-Nº</th>
-              <th>Fecha</th>
-              <th>Estado</th>
-              <th class="text-end">Total</th>
-              <th class="text-end">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let f of facturasCliente">
-              <td>{{ f.serie }}-{{ f.numero }}</td>
-              <td>{{ f.fechaEmision }}</td>
-              <td>
-                <span class="badge" [ngClass]="{
-                    'bg-warning text-dark': f.estado === 'BORRADOR',
-                    'bg-success': f.estado === 'EMITIDA',
-                    'bg-secondary': f.estado === 'PAGADA',
-                    'bg-danger': f.estado === 'ANULADA'
-                  }">
-                  {{ f.estado }}
-                </span>
-              </td>
-              <td class="text-end">{{ f.total | number:'1.2-2' }} €</td>
-              <td class="text-end">
-                <div class="acciones-factura">
-                  <button type="button" class="btn btn-sm btn-outline-primary" (click)="verFactura(f)">
-                    Ver
-                  </button>
+        <div class="table-responsive">
+          <table class="table table-sm mb-0 listado-facturas-table">
+            <thead>
+              <tr>
+                <th>Serie-Nº</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th class="text-end">Total</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let f of facturasCliente">
+                <td>{{ f.serie }}-{{ f.numero }}</td>
+                <td>{{ f.fechaEmision }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                      'bg-warning text-dark': f.estado === 'BORRADOR',
+                      'bg-success': f.estado === 'EMITIDA',
+                      'bg-secondary': f.estado === 'PAGADA',
+                      'bg-danger': f.estado === 'ANULADA'
+                    }">
+                    {{ f.estado }}
+                  </span>
+                </td>
+                <td class="text-end">{{ f.total | number:'1.2-2' }} €</td>
+                <td class="text-end">
+                  <div class="acciones-factura">
+                    <button type="button" class="btn btn-sm btn-outline-primary" (click)="verFactura(f)">
+                      Ver
+                    </button>
 
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary"
-                    *ngIf="f.estado === 'BORRADOR'"
-                    (click)="verFactura(f); iniciarEdicion()"
-                    [disabled]="loading"
-                  >
-                    Editar
-                  </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" *ngIf="f.estado === 'BORRADOR'"
+                      (click)="verFactura(f); iniciarEdicion()" [disabled]="loading">
+                      Editar
+                    </button>
 
-                  <button type="button" class="btn btn-sm btn-success" *ngIf="f.estado === 'BORRADOR'"
-                    (click)="emitirDesdeListado(f)" [disabled]="loading">
-                    Emitir
-                  </button>
+                    <button type="button" class="btn btn-sm btn-success" *ngIf="f.estado === 'BORRADOR'"
+                      (click)="emitirDesdeListado(f)" [disabled]="loading">
+                      Emitir
+                    </button>
 
-                  <button type="button" class="btn btn-sm btn-danger" *ngIf="f.estado === 'BORRADOR'"
-                    (click)="eliminarFactura(f)" [disabled]="loading" title="Eliminar factura">
-                    Eliminar
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                    <button type="button" class="btn btn-sm btn-danger" *ngIf="f.estado === 'BORRADOR'"
+                      (click)="eliminarFactura(f)" [disabled]="loading" title="Eliminar factura">
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <ng-template #sinFacturas>

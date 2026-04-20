@@ -3,7 +3,6 @@ import { IProducto } from './iproducto';
 export interface Proveedor {
   id?: number;
   nombre: string;
-  apellido?: string;
   oficio?: string;
   telefono: string;
   email: string;
@@ -22,14 +21,13 @@ export interface Proveedor {
   contacto?: string;
   datosBancarios?: string;
   notas?: string;
-  contactos?: string;
 
   // backend actual
   importeTotal?: number;
   importePagado?: number;
   importePendiente?: number;
 
-  // aliases semánticos futuros si luego quieres migrar naming
+  // opcional (puedes quitarlos si no los usas)
   totalCompras?: number;
   pendientePago?: number;
 

@@ -1,6 +1,42 @@
+.dashboard {
+  width: 100%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.dashboard .card {
+  border-radius: 0.75rem;
+}
+
+.dashboard .card-body h6,
+.dashboard .card-body h5,
+.dashboard .card-body h2,
+.dashboard .card-body p {
+  word-break: break-word;
+}
+
+.table-dashboard {
+  min-width: 720px;
+}
+
+.table-dashboard th,
+.table-dashboard td {
+  vertical-align: middle;
+}
+
+.cell-observaciones {
+  white-space: normal;
+  word-break: break-word;
+  min-width: 180px;
+  max-width: 280px;
+}
+
 .estado-pill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 12px;
@@ -16,7 +52,7 @@
 
 .estado-realizada {
   color: #155724;
-  background: rgba(40, 167, 69, 0.20);
+  background: rgba(40, 167, 69, 0.2);
   border: 1px solid rgba(40, 167, 69, 0.55);
 }
 
@@ -24,4 +60,35 @@
   color: #721c24;
   background: rgba(220, 53, 69, 0.18);
   border: 1px solid rgba(220, 53, 69, 0.55);
+}
+
+/* TABLET */
+@media (max-width: 991.98px) {
+  .dashboard {
+    margin-top: 1rem !important;
+  }
+}
+
+/* MÓVIL */
+@media (max-width: 575.98px) {
+  .dashboard .card-body {
+    padding: 1rem 0.85rem;
+  }
+
+  .dashboard .card-body h2 {
+    font-size: 1.7rem;
+  }
+
+  .dashboard .card-body h5 {
+    font-size: 1rem;
+  }
+
+  .dashboard .card-body h6 {
+    font-size: 0.95rem;
+  }
+
+  .estado-pill {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
 }

@@ -1,3 +1,22 @@
+.proveedor-detalle-page {
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.detalle-header {
+  row-gap: 1rem;
+}
+
+.header-info {
+  min-width: 0;
+  flex: 1 1 520px;
+}
+
+.header-actions {
+  flex: 0 1 auto;
+}
+
 .titulo-proveedor {
   font-size: 2rem;
   font-weight: 700;
@@ -51,10 +70,15 @@
 
 .card-detalle p {
   margin-bottom: 10px;
+  word-break: break-word;
 }
 
 .input-albaran {
   max-width: 350px;
+}
+
+.detalle-proveedor-table {
+  min-width: 760px;
 }
 
 .celda-numero-factura {
@@ -65,7 +89,58 @@
   min-width: 280px;
 }
 
+.acciones-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: center;
+  align-items: center;
+}
+
 .table td,
 .table th {
   vertical-align: middle;
+}
+
+/* TABLET */
+@media (max-width: 991.98px) {
+  .detalle-proveedor-table {
+    min-width: 720px;
+  }
+}
+
+/* MÓVIL */
+@media (max-width: 767.98px) {
+  .tab-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .titulo-proveedor {
+    font-size: 1.6rem;
+  }
+
+  .subtitulo-proveedor {
+    font-size: 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+  }
+
+  .input-albaran {
+    max-width: 100%;
+  }
+
+  .albaran-toolbar .btn {
+    width: 100%;
+  }
+
+  .card-detalle {
+    padding: 16px;
+  }
 }

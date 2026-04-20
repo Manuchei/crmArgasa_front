@@ -1,0 +1,46 @@
+.albaran-proveedor-page {
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.detalle-header {
+  row-gap: 1rem;
+}
+
+.header-info {
+  min-width: 0;
+  flex: 1 1 560px;
+}
+
+.header-actions {
+  flex: 0 1 auto;
+}
+
+.numeros-albaran {
+  word-break: break-word;
+}
+
+.albaran-proveedor-table {
+  min-width: 1100px;
+}
+
+.nueva-linea-proveedor-table {
+  min-width: 900px;
+}
+
+.col-descripcion {
+  min-width: 240px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+@media (max-width: 767.98px) {
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+  }
+}

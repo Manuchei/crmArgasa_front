@@ -6,4 +6,5 @@ export interface IProducto {
   stock: number;
   empresa: string;
   precioSinIva: number;
+  proveedor?: { id: number };
 }

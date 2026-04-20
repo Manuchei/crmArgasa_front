@@ -8,6 +8,7 @@ export interface ServicioPendienteDTO {
 export interface LineaAlbaranPendienteDTO {
   id: number;
   albaranId: number | null;
+  codigo?: string | null;
   descripcion: string;
   unidades: number;
   precio: number;

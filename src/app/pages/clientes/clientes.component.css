@@ -1,12 +1,18 @@
-/* CONTENEDOR */
-.container {
-  max-width: 1000px;
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
+/* CONTENEDOR GENERAL */
+.clientes-page {
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* FILTROS SUPERIORES */
+.filtros-row {
+  row-gap: 0.5rem;
 }
 
 /* INPUTS */
-form input {
+form input,
+input.form-control {
   font-size: 14px;
 }
 
@@ -27,25 +33,33 @@ form input {
 }
 
 /* TABLA */
-.table {
+.clientes-table {
   border-collapse: collapse !important;
   margin-bottom: 0 !important;
+  min-width: 1100px;
+  background: #fff;
 }
 
-/* CELDAS */
-.table th,
-.table td {
+.clientes-table th,
+.clientes-table td {
   vertical-align: middle !important;
   padding: 12px 10px;
 }
 
-/* FILAS (mejora visual ligera) */
-.table tbody tr {
+.clientes-table tbody tr {
   transition: background 0.2s ease;
 }
 
-.table tbody tr:hover {
+.clientes-table tbody tr:hover {
   background-color: #f5f7fa;
+}
+
+/* COLUMNAS CON TEXTO LARGO */
+.col-nombre,
+.col-email {
+  white-space: normal;
+  word-break: break-word;
+  min-width: 180px;
 }
 
 /* BOTONES */
@@ -59,29 +73,43 @@ form input {
   font-size: 0.8rem;
 }
 
-/* 🔥 COLUMNA ACCIONES (FIX REAL DEL PROBLEMA) */
-td:last-child {
-  vertical-align: middle !important;
-}
-
-/* td:last-child .btn {
-  display: block;
-  margin: 4px auto;
-} */
-
-/* OPCIONAL: ancho fijo para acciones (queda más pro) */
-td:last-child {
-  min-width: 140px;
-}
-
+/* ACCIONES */
 .acciones-col {
   vertical-align: middle !important;
   text-align: center;
-  white-space: nowrap;
+  min-width: 220px;
 }
 
-.acciones-col .btn {
-  margin: 0 2px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
+.acciones-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.acciones-wrap .btn {
+  margin: 0;
+}
+
+/* TABLET */
+@media (max-width: 991.98px) {
+  .clientes-table {
+    min-width: 1000px;
+  }
+}
+
+/* MÓVIL */
+@media (max-width: 575.98px) {
+  .clientes-page h2 {
+    font-size: 1.4rem;
+  }
+
+  .btn-sm {
+    font-size: 0.76rem;
+    padding: 4px 8px;
+  }
+
+  .acciones-col {
+    min-width: 200px;
+  }
 }

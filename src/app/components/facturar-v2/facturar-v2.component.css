@@ -14,57 +14,55 @@
   margin-top: 4px;
 }
 
-/* ===============================
-   IMPRESIÓN FACTURA
-   =============================== */
-@media print {
-  /* Oculta todo lo marcado como no imprimible */
-  .no-print,
-  .ref-origen {
-    display: none !important;
-  }
+.facturas-card {
+  width: 100%;
+}
 
-  /* Si el layout global se cuela, lo matas aquí también */
-  header,
-  nav,
-  .navbar,
-  .topbar,
-  app-header,
-  app-navbar,
-  app-topbar {
-    display: none !important;
-  }
+.facturas-toolbar {
+  min-width: 0;
+}
 
-  /* A4 */
-  @page {
-    size: A4;
-    margin: 12mm;
-  }
+.serie-select {
+  width: 90px;
+}
 
-  body {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: #fff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
+.factura-meta-right {
+  text-align: right;
+}
 
-  /* Imprime solo la factura y sin “card look” */
-  #factura-print {
-    display: block !important;
-  }
+.factura-date-input {
+  max-width: 170px;
+}
 
-  .card,
-  .card-body,
-  .card-header {
-    box-shadow: none !important;
-  }
+.factura-lineas-table {
+  min-width: 820px;
+}
 
-  /* Evita que Bootstrap meta fondos raros */
-  .table-light,
-  .table thead {
-    background: #fff !important;
-  }
+.listado-facturas-table {
+  min-width: 640px;
+}
+
+.col-concepto {
+  min-width: 220px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.col-edit-mini {
+  min-width: 110px;
+}
+
+.col-edit-price {
+  min-width: 140px;
+}
+
+.totales-wrapper {
+  width: 100%;
+}
+
+.factura-totales-table {
+  width: 300px;
+  margin-bottom: 0;
 }
 
 .acciones-factura {
@@ -83,4 +81,107 @@
   justify-content: center;
   line-height: 1;
   padding: 0 12px;
+}
+
+/* TABLET */
+@media (max-width: 991.98px) {
+  .factura-meta-right {
+    text-align: left;
+  }
+
+  .factura-date-input {
+    max-width: 100%;
+  }
+}
+
+/* MÓVIL */
+@media (max-width: 575.98px) {
+  .facturas-toolbar {
+    width: 100%;
+    align-items: stretch !important;
+  }
+
+  .facturas-toolbar label {
+    width: 100%;
+  }
+
+  .serie-select {
+    width: 100%;
+  }
+
+  .facturas-card .card-header .btn {
+    width: 100%;
+  }
+
+  .factura-totales-table {
+    width: 100%;
+  }
+
+  .acciones-factura {
+    justify-content: center;
+  }
+
+  .acciones-factura .btn {
+    flex: 1 1 100%;
+    min-width: 100%;
+    height: auto;
+    padding: 0.45rem 0.75rem;
+  }
+}
+
+/* ===============================
+   IMPRESIÓN FACTURA
+   =============================== */
+@media print {
+  .no-print,
+  .ref-origen {
+    display: none !important;
+  }
+
+  header,
+  nav,
+  .navbar,
+  .topbar,
+  app-header,
+  app-navbar,
+  app-topbar {
+    display: none !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  #factura-print {
+    display: block !important;
+  }
+
+  .card,
+  .card-body,
+  .card-header {
+    box-shadow: none !important;
+  }
+
+  .table-light,
+  .table thead {
+    background: #fff !important;
+  }
+
+  .factura-lineas-table,
+  .listado-facturas-table {
+    min-width: 0 !important;
+  }
+
+  .factura-totales-table {
+    width: 300px !important;
+  }
 }

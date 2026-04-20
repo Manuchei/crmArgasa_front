@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Proveedor } from '../../../interfaces/iproveedor';
-import { IProducto } from '../../../interfaces/iproducto';
+import { ProveedorSaveDto } from '../../../interfaces/iproveedor-save';
 
 @Component({
   selector: 'app-nuevo-proveedor',
@@ -15,7 +15,6 @@ import { IProducto } from '../../../interfaces/iproducto';
 export class NuevoProveedorComponent {
   proveedor: Proveedor = {
     nombre: '',
-    apellido: '',
     oficio: '',
     telefono: '',
     email: '',
@@ -32,7 +31,6 @@ export class NuevoProveedorComponent {
     contacto: '',
     datosBancarios: '',
     notas: '',
-    contactos: '',
     importeTotal: 0,
     importePagado: 0,
     productos: [],
@@ -54,43 +52,54 @@ export class NuevoProveedorComponent {
     private router: Router,
   ) {}
 
-  agregarProducto() {
-    if (!this.proveedor.productos) {
-      this.proveedor.productos = [];
-    }
+  esIbanEspanolValido(iban: string): boolean {
+    const limpio = (iban || '').replace(/\s+/g, '').toUpperCase();
+    return /^ES\d{22}$/.test(limpio);
+  }
 
-    const nuevoProducto: IProducto = {
-      codigo: '',
-      nombre: '',
-      modelo: '',
-      stock: 0,
-      empresa: '',
-      precioSinIva: 0,
+  private trim(value: any): string {
+    return typeof value === 'string' ? value.trim() : '';
+  }
+
+  private buildProveedorSaveDto(): ProveedorSaveDto {
+    return {
+      nombre: this.trim(this.proveedor.nombre),
+      oficio: this.trim(this.proveedor.oficio),
+      empresa: this.trim(this.proveedor.empresa),
+      telefono: this.trim(this.proveedor.telefono),
+      email: this.trim(this.proveedor.email),
+      trabajaEnArgasa: !!this.proveedor.trabajaEnArgasa,
+      trabajaEnLuga: !!this.proveedor.trabajaEnLuga,
+      trabajoRealizado: this.trim(this.proveedor.trabajoRealizado),
+      direccion: this.trim(this.proveedor.direccion),
+      cif: this.trim(this.proveedor.cif),
+      fechaAltaProveedor: this.proveedor.fechaAltaProveedor || null,
+      localidad: this.trim(this.proveedor.localidad),
+      codigoPostal: this.trim(this.proveedor.codigoPostal),
+      provincia: this.trim(this.proveedor.provincia),
+      pais: this.trim(this.proveedor.pais),
+      contacto: this.trim(this.proveedor.contacto),
+      datosBancarios: this.trim(this.proveedor.datosBancarios)
+        .replace(/\s+/g, '')
+        .toUpperCase(),
+      notas: this.trim(this.proveedor.notas),
     };
-
-    this.proveedor.productos.push(nuevoProducto);
   }
 
-  eliminarProducto(index: number) {
-    this.proveedor.productos?.splice(index, 1);
-  }
-
-  guardar() {
-    if (this.proveedor.productos) {
-      this.proveedor.productos = this.proveedor.productos
-        .filter((p) => p.codigo?.trim() || p.nombre?.trim())
-        .map((p) => ({
-          ...p,
-          codigo: p.codigo?.trim() || '',
-          nombre: p.nombre?.trim() || '',
-          modelo: p.modelo?.trim() || '',
-          stock: Number(p.stock) || 0,
-          precioSinIva: Number(p.precioSinIva) || 0,
-          empresa: '',
-        }));
+  guardar(formProveedor: any) {
+    if (formProveedor.invalid) {
+      formProveedor.form.markAllAsTouched();
+      return;
     }
 
-    this.proveedorService.crearProveedor(this.proveedor).subscribe({
+    const payload = this.buildProveedorSaveDto();
+
+    if (!this.esIbanEspanolValido(payload.datosBancarios)) {
+      alert('El IBAN no es válido. Debe empezar por ES y tener 22 números.');
+      return;
+    }
+
+    this.proveedorService.crearProveedor(payload).subscribe({
       next: () => {
         alert('Proveedor guardado correctamente');
         this.router.navigate(['/app/proveedores']);

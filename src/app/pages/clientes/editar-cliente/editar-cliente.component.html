@@ -1,21 +1,15 @@
-<div class="container mt-4" *ngIf="cliente">
+<div class="cliente-form-page container-fluid mt-4" *ngIf="cliente">
   <h3 class="text-center mb-4">Editar cliente</h3>
 
   <form (ngSubmit)="guardarCambios()" #formCliente="ngForm">
     <div class="row g-3">
 
-      <div class="col-md-6">
+      <div class="col-12 col-lg-6">
         <label class="form-label">Nombre y apellidos *</label>
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="cliente.nombreApellidos"
-          name="nombreApellidos"
-          required
-        />
+        <input type="text" class="form-control" [(ngModel)]="cliente.nombreApellidos" name="nombreApellidos" required />
       </div>
 
-      <div class="mb-3">
+      <div class="col-12 col-lg-6">
         <label class="form-label">Empresa</label>
         <input class="form-control" [value]="cliente?.empresa ?? ''" disabled />
       </div>
@@ -24,22 +18,22 @@
         <h5 class="mt-3">Dirección de facturación</h5>
       </div>
 
-      <div class="col-md-8">
+      <div class="col-12 col-lg-8">
         <label class="form-label">Dirección</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.direccion" name="direccion" />
       </div>
 
-      <div class="col-md-4">
+      <div class="col-12 col-md-6 col-lg-4">
         <label class="form-label">Código Postal</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.codigoPostal" name="codigoPostal" />
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-md-6 col-lg-6">
         <label class="form-label">Población</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.poblacion" name="poblacion" />
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-md-6 col-lg-6">
         <label class="form-label">Provincia</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.provincia" name="provincia" />
       </div>
@@ -48,55 +42,54 @@
         <h5 class="mt-3">Dirección de entrega</h5>
       </div>
 
-      <div class="col-md-8">
+      <div class="col-12 col-lg-8">
         <label class="form-label">Dirección de entrega</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.direccionEntrega" name="direccionEntrega" />
       </div>
 
-      <div class="col-md-4">
+      <div class="col-12 col-md-6 col-lg-4">
         <label class="form-label">Código Postal entrega</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.codigoPostalEntrega" name="codigoPostalEntrega" />
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-md-6 col-lg-6">
         <label class="form-label">Población entrega</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.poblacionEntrega" name="poblacionEntrega" />
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-md-6 col-lg-6">
         <label class="form-label">Provincia entrega</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.provinciaEntrega" name="provinciaEntrega" />
       </div>
 
-      <div class="col-md-12">
+      <div class="col-12">
         <label class="form-label">Número de cuenta</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.numeroCuenta" name="numeroCuenta" />
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-md-6">
         <label class="form-label">Teléfono</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.telefono" name="telefono" />
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-md-6">
         <label class="form-label">Móvil</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.movil" name="movil" />
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-md-6">
         <label class="form-label">CIF / DNI</label>
         <input type="text" class="form-control" [(ngModel)]="cliente.cifDni" name="cifDni" />
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-md-6">
         <label class="form-label">Email</label>
         <input type="email" class="form-control" [(ngModel)]="cliente.email" name="email" />
       </div>
-
     </div>
 
-    <div class="text-end mt-4">
-      <button type="button" class="btn btn-secondary me-2" (click)="cancelar()">
+    <div class="form-actions text-end mt-4 d-flex justify-content-end gap-2 flex-wrap">
+      <button type="button" class="btn btn-secondary" (click)="cancelar()">
         Cancelar
       </button>
 

@@ -88,4 +88,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.empresaService.clearEmpresa();
     this.router.navigate(['/login']);
   }
+
+  menuOpen = false;
+
+toggleMenu(): void {
+  this.menuOpen = !this.menuOpen;
+}
+
+closeMenu(): void {
+  this.menuOpen = false;
+}
 }

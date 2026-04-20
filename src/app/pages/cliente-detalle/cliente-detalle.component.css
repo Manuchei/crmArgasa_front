@@ -1,3 +1,26 @@
+.cliente-detalle-page {
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.detalle-header {
+  row-gap: 1rem;
+}
+
+.header-info {
+  min-width: 0;
+  flex: 1 1 500px;
+}
+
+.header-actions {
+  flex: 0 1 auto;
+}
+
+.header-meta {
+  word-break: break-word;
+}
+
 .cliente-card {
   border-radius: 14px;
   background: #f5f7fa;
@@ -5,7 +28,7 @@
 }
 
 .cliente-card .card-body {
-  padding: 1.25rem 1.25rem;
+  padding: 1.25rem;
 }
 
 .dato-linea {
@@ -13,6 +36,7 @@
   gap: 8px;
   margin-bottom: 10px;
   line-height: 1.45;
+  flex-wrap: wrap;
 }
 
 .dato-label {
@@ -69,30 +93,6 @@
   margin-top: 10px;
 }
 
-.cliente-card {
-  border-radius: 14px;
-}
-
-.cliente-titulo {
-  font-weight: 700;
-}
-
-.dato-linea {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.dato-label {
-  font-weight: 600;
-  min-width: 120px;
-}
-
-.iban-text {
-  word-break: break-word;
-}
-
 .acciones-albaran {
   display: flex;
   justify-content: center;
@@ -103,10 +103,57 @@
 
 .acciones-albaran .btn {
   min-width: 90px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 12px;
-  line-height: 1;
+}
+
+.detalle-table {
+  min-width: 780px;
+}
+
+.col-observaciones {
+  min-width: 220px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.col-input-mini {
+  min-width: 110px;
+}
+
+.col-input-pagado {
+  min-width: 130px;
+}
+
+.totales-box p {
+  margin-bottom: 0.35rem;
+}
+
+@media (max-width: 767.98px) {
+  .tab-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .dato-label {
+    min-width: 100%;
+  }
+
+  .cliente-card .card-body {
+    padding: 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+  }
+
+  .detalle-table {
+    min-width: 720px;
+  }
+
+  .totales-box {
+    text-align: left !important;
+  }
 }

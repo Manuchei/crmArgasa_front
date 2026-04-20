@@ -117,7 +117,7 @@ export class ProveedoresComponent implements OnInit {
   }
 
   getNombreCompleto(p: Proveedor): string {
-    return `${p.nombre || ''} ${p.apellido || ''}`.trim();
+    return `${p.nombre || ''}`.trim();
   }
 
   verProveedor(id: number): void {

@@ -1,5 +1,21 @@
+.proveedor-form-page {
+  width: 100%;
+  max-width: 1100px;
+}
+
+.guardar-btn {
+  min-width: 220px;
+}
+
 .deuda {
-  background-color: #ffdddd !important;  /* rojo suave */
-  color: #b30000 !important;             /* texto rojo oscuro */
+  background-color: #ffdddd !important;
+  color: #b30000 !important;
   font-weight: bold;
+}
+
+@media (max-width: 575.98px) {
+  .guardar-btn {
+    width: 100%;
+    min-width: 100%;
+  }
 }

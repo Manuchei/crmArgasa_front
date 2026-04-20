@@ -1,0 +1,27 @@
+.cliente-form-page {
+  width: 100%;
+  max-width: 1100px;
+}
+
+.compras-table {
+  min-width: 850px;
+}
+
+.resumen-totales p {
+  margin-bottom: 0.35rem;
+}
+
+.form-actions .btn {
+  min-width: 180px;
+}
+
+@media (max-width: 575.98px) {
+  .resumen-totales {
+    text-align: left !important;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    min-width: 100%;
+  }
+}

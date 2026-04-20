@@ -1,0 +1,15 @@
+.proveedor-form-page {
+  width: 100%;
+  max-width: 1100px;
+}
+
+.form-actions .btn {
+  min-width: 170px;
+}
+
+@media (max-width: 575.98px) {
+  .form-actions .btn {
+    width: 100%;
+    min-width: 100%;
+  }
+}

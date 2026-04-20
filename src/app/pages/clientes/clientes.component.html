@@ -1,81 +1,74 @@
-<div class="container mt-4">
+<div class="clientes-page container-fluid mt-4">
   <h2 class="text-center mb-4">Listado de Clientes</h2>
 
-  <div class="row mb-4 justify-content-center align-items-center text-center">
-    <div class="col-md-2 col-sm-12 mb-2 mb-md-0">
+  <div class="row mb-4 justify-content-center align-items-stretch filtros-row">
+    <div class="col-12 col-md-4 col-lg-3 mb-2 mb-md-0">
       <a class="btn btn-success w-100" [routerLink]="['/app/clientes/nuevo']">
         <i class="bi bi-person-plus"></i> Añadir cliente
       </a>
     </div>
 
-    <div class="col-md-6 col-sm-12 mb-2 mb-md-0">
+    <div class="col-12 col-md-8 col-lg-6">
       <input type="text" class="form-control text-center" placeholder="Buscar por nombre, CIF/DNI, email o teléfono"
         [(ngModel)]="textoBusqueda" (input)="buscar()" />
     </div>
   </div>
 
-  <table class="table table-striped table-hover align-middle text-center shadow-sm mb-0">
-    <thead class="table-dark">
-      <tr>
-        <th>Nombre y apellidos</th>
-        <th>Teléfono</th>
-        <th>Móvil</th>
-        <th>CIF/DNI</th>
-        <th>Email</th>
-        <th>Precio (€)</th>
-        <th>Pagado (€)</th>
-        <th>Diferencia (€)</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
+  <div class="table-responsive shadow-sm rounded">
+    <table class="table table-striped table-hover align-middle text-center mb-0 clientes-table">
+      <thead class="table-dark">
+        <tr>
+          <th>Nombre y apellidos</th>
+          <th>Teléfono</th>
+          <th>Móvil</th>
+          <th>CIF/DNI</th>
+          <th>Email</th>
+          <th>Precio (€)</th>
+          <th>Pagado (€)</th>
+          <th>Diferencia (€)</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
 
-    <tbody>
-      <tr *ngFor="let c of clientesFiltrados">
-        <td>{{ c.nombreApellidos }}</td>
-        <td>{{ c.telefono }}</td>
-        <td>{{ c.movil }}</td>
-        <td>{{ c.cifDni }}</td>
-        <td>{{ c.email }}</td>
+      <tbody>
+        <tr *ngFor="let c of clientesFiltrados">
+          <td class="col-nombre">{{ c.nombreApellidos }}</td>
+          <td>{{ c.telefono }}</td>
+          <td>{{ c.movil }}</td>
+          <td>{{ c.cifDni }}</td>
+          <td class="col-email">{{ c.email }}</td>
 
-        <td>{{ (c.totalImporte || 0) | number: '1.2-2' }}</td>
-        <td class="pagado">{{ (c.totalPagado || 0) | number: '1.2-2' }}</td>
+          <td>{{ (c.totalImporte || 0) | number: '1.2-2' }}</td>
+          <td class="pagado">{{ (c.totalPagado || 0) | number: '1.2-2' }}</td>
 
-        <td [ngClass]="{
-            'text-success': (c.totalPagado || 0) - (c.totalImporte || 0) >= 0,
-            'text-danger': (c.totalPagado || 0) - (c.totalImporte || 0) < 0
-          }">
-          {{ (c.totalPagado || 0) - (c.totalImporte || 0) | number: '1.2-2' }}
-        </td>
+          <td [ngClass]="{
+              'text-success': (c.totalPagado || 0) - (c.totalImporte || 0) >= 0,
+              'text-danger': (c.totalPagado || 0) - (c.totalImporte || 0) < 0
+            }">
+            {{ (c.totalPagado || 0) - (c.totalImporte || 0) | number: '1.2-2' }}
+          </td>
 
-        <td class="acciones-col">
-          <button class="btn btn-sm btn-primary" [routerLink]="['/app/clientes', c.id]">
-            <i class="bi bi-eye"></i> Ver
-          </button>
+          <td class="acciones-col">
+            <div class="acciones-wrap">
+              <button class="btn btn-sm btn-primary" [routerLink]="['/app/clientes', c.id]">
+                <i class="bi bi-eye"></i> Ver
+              </button>
 
-          <button class="btn btn-sm btn-warning" (click)="editarCliente(c.id!)">
-            <i class="bi bi-pencil-square"></i> Modificar
-          </button>
+              <button class="btn btn-sm btn-warning" (click)="editarCliente(c.id!)">
+                <i class="bi bi-pencil-square"></i> Modificar
+              </button>
 
-          <button class="btn btn-sm btn-danger" (click)="eliminarCliente(c.id!)">
-            <i class="bi bi-trash"></i> Eliminar
-          </button>
-        </td>
+              <button class="btn btn-sm btn-danger" (click)="eliminarCliente(c.id!)">
+                <i class="bi bi-trash"></i> Eliminar
+              </button>
+            </div>
+          </td>
+        </tr>
 
-
-
-        <!-- <button
-            class="btn btn-sm btn-dark"
-            (click)="c?.id && generarFactura(c)"
-            [disabled]="!c?.id || generandoFacturaId === c.id || (c.pendiente ?? 0) <= 0"
-          >
-            <span *ngIf="generandoFacturaId !== c.id">🧾 Facturar</span>
-            <span *ngIf="generandoFacturaId === c.id">Generando...</span>
-          </button> -->
-      </tr>
-
-      <tr *ngIf="clientesFiltrados.length === 0">
-        <td colspan="9" class="text-muted">No hay clientes disponibles.</td>
-      </tr>
-    </tbody>
-  </table>
+        <tr *ngIf="clientesFiltrados.length === 0">
+          <td colspan="9" class="text-muted py-4">No hay clientes disponibles.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

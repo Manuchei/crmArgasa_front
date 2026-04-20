@@ -3,6 +3,97 @@
   text-decoration: underline;
 }
 
+.badge-empresa {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-email {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navbar-actions {
+  min-width: 0;
+  gap: 0.5rem;
+}
+
 body {
-  padding-top: 70px; /* para que el contenido no quede debajo del navbar fijo */
+  padding-top: 70px;
+}
+
+/* DESKTOP GRANDE */
+@media (min-width: 1200px) {
+  .navbar-collapse {
+    display: flex !important;
+    flex-basis: auto;
+  }
+}
+
+/* TABLET Y MÓVIL */
+@media (max-width: 1199.98px) {
+  .navbar-collapse.collapse {
+    display: none;
+  }
+
+  .navbar-collapse.show {
+    display: block;
+    width: 100%;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .navbar-nav {
+    margin-bottom: 1rem;
+  }
+
+  .navbar .nav-item {
+    width: 100%;
+  }
+
+  .navbar .nav-link {
+    display: block;
+    width: 100%;
+    padding: 0.65rem 0;
+  }
+
+  .navbar-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .navbar-actions .navbar-text,
+  .navbar-actions .btn {
+    width: 100%;
+    margin-right: 0 !important;
+  }
+
+  .user-email {
+    max-width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .badge-empresa {
+    max-width: 95px;
+    font-size: 0.75rem;
+  }
+
+  .navbar-toggler {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .navbar .btn-sm {
+    font-size: 0.82rem;
+  }
 }
