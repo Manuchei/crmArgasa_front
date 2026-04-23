@@ -300,6 +300,7 @@ export class RutasDiaComponent implements OnInit {
 
     const payload: RutaDiaRequestDTO = {
       fecha: this.fecha,
+      transportistaId: this.transportistaId,
       nombreTransportista: this.transportista,
       emailTransportista: this.emailTransportista,
       estado: this.estado,
@@ -316,12 +317,15 @@ export class RutasDiaComponent implements OnInit {
         })),
     };
 
-    if (!payload.fecha || !payload.nombreTransportista) return;
+    if (!payload.fecha || !payload.transportistaId) return;
 
     this.rutaService.crearRutasDia(payload).subscribe({
       next: () => {
         alert('Rutas guardadas correctamente');
         this.rutas = [this.nuevaFila()];
+        this.transportistaId = null;
+        this.transportista = '';
+        this.emailTransportista = '';
         this.router.navigate(['/app/rutas']);
       },
       error: (err: any) => {

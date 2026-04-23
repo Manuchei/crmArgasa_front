@@ -1,21 +1,23 @@
-<div class="container mt-4">
+<div class="container mt-4 calendario-page">
   <div class="row g-4">
 
     <!-- COLUMNA IZQUIERDA: CALENDARIO -->
-    <div class="col-lg-5">
-      <mat-card>
+    <div class="col-12 col-lg-5">
+      <mat-card class="calendar-card">
         <mat-card-title>📅 Calendario</mat-card-title>
 
-        <mat-calendar
-          [selected]="selectedDate"
-          [dateClass]="dateClass"
-          (selectedChange)="onSelectDate($event)">
-        </mat-calendar>
+        <div class="calendar-wrapper">
+          <mat-calendar
+            [selected]="selectedDate"
+            [dateClass]="dateClass"
+            (selectedChange)="onSelectDate($event)">
+          </mat-calendar>
+        </div>
       </mat-card>
     </div>
 
     <!-- COLUMNA DERECHA -->
-    <div class="col-lg-7">
+    <div class="col-12 col-lg-7">
 
       <!-- LISTADO DE LLAMADAS -->
       <mat-card class="panel panel-list mb-4">
@@ -40,35 +42,75 @@
 
         <div class="panel-body">
           <ng-container *ngIf="llamadasDelDia.length > 0; else sinLlamadas">
-            <mat-list class="llamadas-list">
-              <mat-list-item *ngFor="let l of llamadasDelDia; trackBy: trackByLlamadaId">
-                <div class="item-row">
-                  <div class="item-main">
-                    <div class="item-title">{{ l.motivo }}</div>
-                    <div class="item-meta">
-                      <span class="meta-pill">🕒 {{ l.fecha | date:'HH:mm' }}</span>
 
-                      <span class="estado-pill" [ngClass]="{
-                        'estado-pendiente': (l.estado || '').toLowerCase() === 'pendiente',
-                        'estado-realizada': (l.estado || '').toLowerCase() === 'realizada',
-                        'estado-cancelada': (l.estado || '').toLowerCase() === 'cancelada'
-                      }">
-                        {{ l.estado }}
-                      </span>
+            <!-- LISTA DESKTOP -->
+            <div class="llamadas-desktop">
+              <mat-list class="llamadas-list">
+                <mat-list-item *ngFor="let l of llamadasDelDia; trackBy: trackByLlamadaId">
+                  <div class="item-row">
+                    <div class="item-main">
+                      <div class="item-title">{{ l.motivo }}</div>
+
+                      <div class="item-meta">
+                        <span class="meta-pill">🕒 {{ l.fecha | date:'HH:mm' }}</span>
+
+                        <span class="estado-pill" [ngClass]="{
+                          'estado-pendiente': (l.estado || '').toLowerCase() === 'pendiente',
+                          'estado-realizada': (l.estado || '').toLowerCase() === 'realizada',
+                          'estado-cancelada': (l.estado || '').toLowerCase() === 'cancelada'
+                        }">
+                          {{ l.estado }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="item-actions">
+                      <button
+                        type="button"
+                        mat-stroked-button
+                        color="primary"
+                        class="btn-compact"
+                        (click)="editar(l)">
+                        Editar
+                      </button>
                     </div>
                   </div>
+                </mat-list-item>
+              </mat-list>
+            </div>
 
+            <!-- TARJETAS MOBILE -->
+            <div class="llamadas-mobile">
+              <div class="llamada-card" *ngFor="let l of llamadasDelDia; trackBy: trackByLlamadaId">
+                <div class="llamada-card-top">
+                  <div class="llamada-card-title">{{ l.motivo }}</div>
+                </div>
+
+                <div class="llamada-card-meta">
+                  <span class="meta-pill">🕒 {{ l.fecha | date:'HH:mm' }}</span>
+
+                  <span class="estado-pill" [ngClass]="{
+                    'estado-pendiente': (l.estado || '').toLowerCase() === 'pendiente',
+                    'estado-realizada': (l.estado || '').toLowerCase() === 'realizada',
+                    'estado-cancelada': (l.estado || '').toLowerCase() === 'cancelada'
+                  }">
+                    {{ l.estado }}
+                  </span>
+                </div>
+
+                <div class="llamada-card-actions">
                   <button
                     type="button"
                     mat-stroked-button
                     color="primary"
-                    class="btn-compact"
+                    class="btn-mobile-edit"
                     (click)="editar(l)">
                     Editar
                   </button>
                 </div>
-              </mat-list-item>
-            </mat-list>
+              </div>
+            </div>
+
           </ng-container>
 
           <ng-template #sinLlamadas>
@@ -101,8 +143,8 @@
               <input matInput [(ngModel)]="nuevaLlamada.motivo" name="motivo" />
             </mat-form-field>
 
-            <div class="row g-2">
-              <div class="col-md-7">
+            <div class="row g-2 fecha-hora-row">
+              <div class="col-12 col-md-7">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Fecha</mat-label>
 
@@ -120,7 +162,7 @@
                 </mat-form-field>
               </div>
 
-              <div class="col-md-5">
+              <div class="col-12 col-md-5">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Hora</mat-label>
 
@@ -162,6 +204,7 @@
                 type="submit"
                 mat-raised-button
                 color="primary"
+                class="btn-save"
                 [disabled]="!selectedDate">
                 Guardar llamada
               </button>

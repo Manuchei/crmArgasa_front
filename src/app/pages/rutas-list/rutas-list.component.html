@@ -1,8 +1,8 @@
-<div class="container my-4">
-  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h2 class="fw-bold mb-0">Gestión de Rutas</h2>
+<div class="container my-4 rutas-page">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 top-bar-rutas">
+    <h2 class="fw-bold mb-0">{{ getTituloPantalla() }}</h2>
 
-    <div>
+    <div *ngIf="puedeGestionarTodo()" class="top-actions-rutas">
       <button class="btn btn-primary me-2" (click)="nuevaRuta()">
         ➕ Nueva Ruta
       </button>
@@ -13,34 +13,57 @@
     </div>
   </div>
 
-  <div class="card mb-4">
+  <div class="card mb-4 filtros-card">
     <div class="card-body">
       <h5 class="card-title mb-3">Filtros</h5>
 
       <div class="row g-3 align-items-end">
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
           <label class="form-label" for="filtroEstado">Estado</label>
           <select id="filtroEstado" class="form-select" [(ngModel)]="filtroEstado" (change)="filtrarEstado()">
-            <option value="">Todos</option>
+            <option value="">Todas</option>
             <option value="pendiente">Pendiente</option>
             <option value="en_curso">En curso</option>
             <option value="cerrada">Cerrada</option>
           </select>
         </div>
 
-        <div class="col-md-3">
-          <label class="form-label" for="filtroNombre">Transportista</label>
-          <input id="filtroNombre" type="text" class="form-control" [(ngModel)]="filtroNombre" placeholder="Buscar..."
-            (input)="filtrarNombre()" />
+        <div class="col-12 col-md-3" *ngIf="puedeGestionarTodo()">
+          <label class="form-label" for="filtroNombre">Transportista / búsqueda</label>
+          <input
+            id="filtroNombre"
+            type="text"
+            class="form-control"
+            [(ngModel)]="filtroNombre"
+            placeholder="Buscar..."
+            (input)="filtrarNombre()"
+          />
         </div>
 
-        <div class="col-md-3">
+        <div class="col-12 col-md-3" *ngIf="!puedeGestionarTodo()">
+          <label class="form-label" for="filtroNombreUsuario">Buscar</label>
+          <input
+            id="filtroNombreUsuario"
+            type="text"
+            class="form-control"
+            [(ngModel)]="filtroNombre"
+            placeholder="Cliente, destino, tarea..."
+            (input)="filtrarNombre()"
+          />
+        </div>
+
+        <div class="col-12 col-md-3">
           <label class="form-label" for="filtroFecha">Fecha</label>
-          <input id="filtroFecha" type="date" class="form-control" [(ngModel)]="filtroFecha"
-            (change)="filtrarFecha()" />
+          <input
+            id="filtroFecha"
+            type="date"
+            class="form-control"
+            [(ngModel)]="filtroFecha"
+            (change)="filtrarFecha()"
+          />
         </div>
 
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
           <button class="btn btn-secondary w-100" (click)="limpiarFiltros()">
             Limpiar filtros
           </button>
@@ -57,23 +80,15 @@
     {{ error }}
   </div>
 
-  <div *ngIf="!cargando && (grouped?.length ?? 0) > 0" class="accordion">
+  <div *ngIf="!cargando && (grouped?.length ?? 0) > 0" class="accordion rutas-accordion">
     <div class="accordion-item" *ngFor="let g of grouped; let i = index">
       <h2 class="accordion-header">
         <button class="accordion-button" [class.collapsed]="openIndex !== i" type="button" (click)="toggle(i)">
-          <div class="d-flex w-100 justify-content-between align-items-center">
+          <div class="d-flex w-100 justify-content-between align-items-center flex-wrap gap-2">
             <div>
               <strong class="me-2">
-                🚚
-                <span *ngIf="g.transportistas.length === 1; else variosTransportistas">
-                  {{ g.transportistas[0].nombre }}
-                </span>
-                <ng-template #variosTransportistas>
-                  Varios transportistas
-                </ng-template>
+                📅 {{ g.fechaLabel }}
               </strong>
-
-              <strong>📅 {{ g.fechaLabel }}</strong>
 
               <span class="ms-2 text-muted">
                 ({{ g.transportistas.length }} transportistas · {{ g.total }} rutas)
@@ -85,7 +100,7 @@
 
       <div class="accordion-collapse" [class.collapse]="openIndex !== i" [class.show]="openIndex === i">
         <div class="accordion-body">
-          <div class="card mb-3" *ngFor="let t of g.transportistas">
+          <div class="card mb-3 transportista-card" *ngFor="let t of g.transportistas">
             <div class="card-header transportista-header">
               <div class="left">
                 <div class="name">
@@ -99,13 +114,14 @@
               </div>
             </div>
 
-            <div class="table-responsive">
+            <!-- TABLA DESKTOP -->
+            <div class="table-responsive desktop-table">
               <table class="table table-striped table-hover align-middle mb-0">
                 <thead class="table-dark">
                   <tr>
                     <th>ID</th>
                     <th>Cliente</th>
-                    <th>Transportista</th>
+                    <th *ngIf="puedeGestionarTodo()">Transportista</th>
                     <th>Fecha</th>
                     <th>Estado</th>
                     <th>Destino</th>
@@ -126,7 +142,7 @@
                       </span>
                     </td>
 
-                    <td>{{ ruta.nombreTransportista || '—' }}</td>
+                    <td *ngIf="puedeGestionarTodo()">{{ ruta.nombreTransportista || '—' }}</td>
                     <td>{{ ruta.fecha || '—' }}</td>
 
                     <td>
@@ -139,8 +155,10 @@
                       <span class="badge bg-success" *ngIf="ruta.estado === 'cerrada'">
                         Cerrada
                       </span>
-                      <span class="badge bg-secondary"
-                        *ngIf="ruta.estado !== 'pendiente' && ruta.estado !== 'en_curso' && ruta.estado !== 'cerrada'">
+                      <span
+                        class="badge bg-secondary"
+                        *ngIf="ruta.estado !== 'pendiente' && ruta.estado !== 'en_curso' && ruta.estado !== 'cerrada'"
+                      >
                         {{ ruta.estado || '—' }}
                       </span>
                     </td>
@@ -162,28 +180,142 @@
                     <td>{{ ruta.observaciones || '—' }}</td>
 
                     <td class="text-center">
+                      <button
+                        class="btn btn-sm btn-success me-1 mb-1"
+                        [disabled]="ruta.estado === 'cerrada'"
+                        (click)="cerrarRuta(ruta)"
+                      >
+                        ✔ Cerrar
+                      </button>
+
+                      <button
+                        type="button"
+                        class="btn btn-info btn-sm mb-1 me-1"
+                        *ngIf="ruta.id != null"
+                        (click)="verRuta(ruta.id!)"
+                      >
+                        👁 Ver
+                      </button>
+
                       <button class="btn btn-sm btn-primary me-1 mb-1" (click)="editarRuta(ruta)">
                         ✏️ Editar
                       </button>
 
-                      <button class="btn btn-sm btn-danger me-1 mb-1" (click)="eliminarRuta(ruta)">
+                      <button
+                        *ngIf="puedeGestionarTodo()"
+                        class="btn btn-sm btn-danger me-1 mb-1"
+                        (click)="eliminarRuta(ruta)"
+                      >
                         🗑 Eliminar
-                      </button>
-
-                      <button class="btn btn-sm btn-success me-1 mb-1" [disabled]="ruta.estado === 'cerrada'"
-                        (click)="cerrarRuta(ruta)">
-                        ✔ Cerrar
-                      </button>
-
-                      <button type="button" class="btn btn-info btn-sm mb-1" *ngIf="ruta.id != null"
-                        (click)="verRuta(ruta.id!)">
-                        👁 Ver
                       </button>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
+
+            <!-- TARJETAS MOBILE -->
+            <div class="mobile-rutas">
+              <div class="ruta-mobile-card" *ngFor="let ruta of t.rutas">
+                <div class="ruta-mobile-top">
+                  <div>
+                    <div class="ruta-mobile-id">Ruta #{{ ruta.id || '—' }}</div>
+                    <div class="ruta-mobile-fecha">📅 {{ ruta.fecha || '—' }}</div>
+                  </div>
+
+                  <div>
+                    <span class="badge bg-warning text-dark" *ngIf="ruta.estado === 'pendiente'">
+                      Pendiente
+                    </span>
+                    <span class="badge bg-info text-dark" *ngIf="ruta.estado === 'en_curso'">
+                      En curso
+                    </span>
+                    <span class="badge bg-success" *ngIf="ruta.estado === 'cerrada'">
+                      Cerrada
+                    </span>
+                    <span
+                      class="badge bg-secondary"
+                      *ngIf="ruta.estado !== 'pendiente' && ruta.estado !== 'en_curso' && ruta.estado !== 'cerrada'"
+                    >
+                      {{ ruta.estado || '—' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="ruta-mobile-body">
+                  <div class="ruta-line">
+                    <span class="label">Cliente:</span>
+                    <span>
+                      {{ ruta.cliente?.nombreApellidos || '—' }}
+                      <span *ngIf="ruta.cliente?.nombreComercial" class="text-muted">
+                        ({{ ruta.cliente?.nombreComercial }})
+                      </span>
+                    </span>
+                  </div>
+
+                  <div class="ruta-line" *ngIf="puedeGestionarTodo()">
+                    <span class="label">Transportista:</span>
+                    <span>{{ ruta.nombreTransportista || '—' }}</span>
+                  </div>
+
+                  <div class="ruta-line">
+                    <span class="label">Destino:</span>
+                    <span>{{ ruta.destino || '—' }}</span>
+                  </div>
+
+                  <div class="ruta-line">
+                    <span class="label">Tarea:</span>
+                    <div class="tarea-cell">
+                      <div class="tarea-main">
+                        {{ getResumenPrincipal(ruta) }}
+                      </div>
+
+                      <div class="tarea-sub text-muted" *ngIf="getResumenSecundario(ruta)">
+                        {{ getResumenSecundario(ruta) }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="ruta-line" *ngIf="ruta.observaciones">
+                    <span class="label">Observaciones:</span>
+                    <span>{{ ruta.observaciones }}</span>
+                  </div>
+                </div>
+
+                <div class="ruta-mobile-actions">
+                  <button
+                    class="btn btn-success"
+                    [disabled]="ruta.estado === 'cerrada'"
+                    (click)="cerrarRuta(ruta)"
+                  >
+                    ✔ Cerrar
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-info"
+                    *ngIf="ruta.id != null"
+                    (click)="verRuta(ruta.id!)"
+                  >
+                    👁 Ver
+                  </button>
+
+                  <button class="btn btn-primary" (click)="editarRuta(ruta)">
+                    ✏️ Editar
+                  </button>
+
+                  <button
+                    *ngIf="puedeGestionarTodo()"
+                    class="btn btn-danger"
+                    (click)="eliminarRuta(ruta)"
+                  >
+                    🗑 Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- FIN MOBILE -->
+
           </div>
         </div>
       </div>

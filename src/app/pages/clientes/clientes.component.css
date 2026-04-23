@@ -1,16 +1,44 @@
-/* CONTENEDOR GENERAL */
 .clientes-page {
   width: 100%;
-  padding-left: 0;
-  padding-right: 0;
+  padding: 28px 16px 36px;
 }
 
-/* FILTROS SUPERIORES */
+.clientes-shell {
+  width: 100%;
+  max-width: 1450px;
+  margin: 0 auto;
+}
+
+.page-title {
+  margin-bottom: 26px;
+  font-weight: 700;
+}
+
+.toolbar-card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
 .filtros-row {
-  row-gap: 0.5rem;
+  row-gap: 0.75rem;
 }
 
-/* INPUTS */
+.btn-toolbar {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.buscador-input {
+  min-height: 44px;
+  text-align: center;
+}
+
 form input,
 input.form-control {
   font-size: 14px;
@@ -32,7 +60,15 @@ input.form-control {
   font-weight: 600;
 }
 
-/* TABLA */
+/* CARD TABLA */
+.table-card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
 .clientes-table {
   border-collapse: collapse !important;
   margin-bottom: 0 !important;
@@ -54,7 +90,6 @@ input.form-control {
   background-color: #f5f7fa;
 }
 
-/* COLUMNAS CON TEXTO LARGO */
 .col-nombre,
 .col-email {
   white-space: normal;
@@ -62,7 +97,6 @@ input.form-control {
   min-width: 180px;
 }
 
-/* BOTONES */
 .btn {
   white-space: nowrap;
   line-height: 1.2;
@@ -73,7 +107,6 @@ input.form-control {
   font-size: 0.8rem;
 }
 
-/* ACCIONES */
 .acciones-col {
   vertical-align: middle !important;
   text-align: center;
@@ -93,8 +126,20 @@ input.form-control {
 
 /* TABLET */
 @media (max-width: 991.98px) {
+  .clientes-page {
+    padding: 22px 12px 30px;
+  }
+
+  .clientes-shell {
+    max-width: 100%;
+  }
+
   .clientes-table {
     min-width: 1000px;
+  }
+
+  .toolbar-card {
+    padding: 16px;
   }
 }
 
@@ -102,6 +147,15 @@ input.form-control {
 @media (max-width: 575.98px) {
   .clientes-page h2 {
     font-size: 1.4rem;
+  }
+
+  .toolbar-card {
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  .buscador-input {
+    text-align: left;
   }
 
   .btn-sm {

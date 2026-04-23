@@ -12,10 +12,7 @@ import { RutaService } from '../../services/ruta.service';
 import { TransportistaService } from '../../services/transportista.service';
 import { Itrasnportista } from '../../interfaces/itrasnportista';
 import { HttpClient } from '@angular/common/http';
-
-// ✅ usamos el servicio que trae líneas del cliente (compras / trabajos)
 import { ClientesService } from '../../services/cliente.service';
-
 import { environment } from '../../../environments/environment';
 
 interface IRutaLineaDto {
@@ -23,12 +20,11 @@ interface IRutaLineaDto {
   cantidad: number;
 }
 
-// UI para productos pendientes
 interface IProductoPendienteUI {
   productoId: number;
   codigo?: string;
   nombre: string;
-  pendiente: number; // unidades pendientes reales (>=0)
+  pendiente: number;
 }
 
 @Component({
@@ -49,16 +45,11 @@ export class RutasFormComponent implements OnInit {
   enviado = false;
 
   transportistas: Itrasnportista[] = [];
-
-  // ✅ clientes
   clientes: any[] = [];
   private apiUrl = environment.apiUrl;
 
-  // ✅ productos PENDIENTES del cliente (solo pendientes)
   clienteProductos: IProductoPendienteUI[] = [];
   lineas: IRutaLineaDto[] = [];
-
-  // ✅ producto seleccionado
   productoSeleccionado: IProductoPendienteUI | null = null;
 
   constructor(
@@ -306,6 +297,7 @@ export class RutasFormComponent implements OnInit {
         },
       });
   }
+
   onProductoChange(): void {
     const productoId = +this.lineaForm.value.productoId;
     this.productoSeleccionado =
@@ -404,10 +396,12 @@ export class RutasFormComponent implements OnInit {
       next: (ruta: any) => {
         const fecha = ruta.fecha ? ruta.fecha.toString().substring(0, 10) : '';
         const clienteId = ruta?.cliente?.id ?? ruta?.clienteId ?? null;
+        const transportistaId =
+          ruta?.transportista?.id ?? ruta?.transportistaId ?? null;
 
         this.rutaForm.patchValue({
           clienteId,
-          transportistaId: null,
+          transportistaId,
           nombreTransportista: ruta.nombreTransportista,
           emailTransportista: ruta.emailTransportista,
           fecha,
@@ -454,6 +448,7 @@ export class RutasFormComponent implements OnInit {
 
     const payload = {
       clienteId: formValue.clienteId,
+      transportistaId: formValue.transportistaId,
       nombreTransportista: formValue.nombreTransportista,
       emailTransportista: formValue.emailTransportista,
       fecha: formValue.fecha,

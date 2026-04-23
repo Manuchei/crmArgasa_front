@@ -1,19 +1,40 @@
 .proveedores-page {
   width: 100%;
-  padding-left: 0;
-  padding-right: 0;
+  padding: 28px 16px 36px;
+}
+
+.proveedores-shell {
+  width: 100%;
+  max-width: 1450px;
+  margin: 0 auto;
+}
+
+.page-title {
+  margin-bottom: 20px;
+  font-weight: 700;
 }
 
 .filtros-card {
-  border-radius: 0.75rem;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .filtros-actions .btn {
   min-width: 140px;
 }
 
+.top-actions-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
 .nuevo-proveedor-btn {
   white-space: nowrap;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .resumen-alerta {
@@ -21,6 +42,16 @@
   flex-wrap: wrap;
   gap: 0.75rem 1.5rem;
   align-items: center;
+  border-radius: 14px;
+  margin-bottom: 18px;
+}
+
+.table-card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .proveedores-table {
@@ -66,6 +97,14 @@
 
 /* TABLET */
 @media (max-width: 991.98px) {
+  .proveedores-page {
+    padding: 22px 12px 30px;
+  }
+
+  .proveedores-shell {
+    max-width: 100%;
+  }
+
   .proveedores-table {
     min-width: 980px;
   }
@@ -87,6 +126,7 @@
 
   .nuevo-proveedor-btn {
     width: 100%;
+    justify-content: center;
     text-align: center;
   }
 

@@ -13,10 +13,12 @@
     display: flex;
     align-items: center;
     line-height: 1.1;
+    flex-wrap: wrap;
   }
 
   .mail {
     font-size: 0.85rem;
+    word-break: break-word;
   }
 }
 
@@ -33,7 +35,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 280px; // ajusta si quieres
+  max-width: 280px;
 }
 
 .tarea-sub {
@@ -42,4 +44,543 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 280px;
+}
+
+.rutas-page {
+  padding-bottom: 2rem;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.top-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filtros-card {
+  border-radius: 14px;
+}
+
+.rutas-accordion .accordion-item {
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  border: 1px solid #dee2e6;
+}
+
+.accordion-head-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-right: 0.75rem;
+}
+
+.accordion-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.transportista-dia,
+.fecha-dia {
+  font-size: 1rem;
+}
+
+.resumen-dia {
+  color: #6c757d;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.transportista-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.transportista-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.transportista-header-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.transportista-email {
+  font-size: 0.95rem;
+}
+
+.desktop-table {
+  display: block;
+}
+
+.mobile-rutas {
+  display: none;
+}
+
+.ruta-mobile-card {
+  border: 1px solid #dee2e6;
+  border-radius: 14px;
+  padding: 1rem;
+  margin: 1rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.ruta-mobile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.ruta-mobile-id {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.ruta-mobile-fecha {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.ruta-mobile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.ruta-line {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.98rem;
+}
+
+.ruta-line .label {
+  font-weight: 700;
+  color: #495057;
+}
+
+.ruta-mobile-actions {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+}
+
+.ruta-mobile-actions .btn {
+  width: 100%;
+  min-height: 44px;
+  font-weight: 600;
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .accordion-head-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .resumen-dia {
+    white-space: normal;
+  }
+}
+
+/* Móvil */
+@media (max-width: 768px) {
+  .rutas-page {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+
+  .top-bar {
+    align-items: stretch;
+  }
+
+  .top-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .top-actions .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .desktop-table {
+    display: none;
+  }
+
+  .mobile-rutas {
+    display: block;
+  }
+
+  .transportista-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .accordion-button {
+    padding: 1rem;
+  }
+
+  .transportista-dia,
+  .fecha-dia {
+    font-size: 0.98rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .form-control,
+  .form-select,
+  .btn {
+    min-height: 44px;
+  }
+}
+
+.rutas-page {
+  padding-bottom: 2rem;
+}
+
+.top-bar-rutas {
+  gap: 0.75rem;
+}
+
+.top-actions-rutas {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filtros-card,
+.transportista-card {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.transportista-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.transportista-header .left .name {
+  font-size: 1rem;
+}
+
+.transportista-header .mail {
+  font-size: 0.95rem;
+}
+
+.tarea-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.tarea-main {
+  font-weight: 600;
+}
+
+.tarea-sub {
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.desktop-table {
+  display: block;
+}
+
+.mobile-rutas {
+  display: none;
+}
+
+.ruta-mobile-card {
+  border: 1px solid #dee2e6;
+  border-radius: 14px;
+  padding: 1rem;
+  margin: 1rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.ruta-mobile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ruta-mobile-id {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.ruta-mobile-fecha {
+  color: #6c757d;
+  font-size: 0.92rem;
+}
+
+.ruta-mobile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ruta-line {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ruta-line .label {
+  font-weight: 700;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.ruta-mobile-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.ruta-mobile-actions .btn {
+  min-height: 44px;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .rutas-page {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+
+  .top-bar-rutas {
+    align-items: stretch !important;
+  }
+
+  .top-actions-rutas {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .top-actions-rutas .btn {
+    width: 100%;
+    margin-right: 0 !important;
+  }
+
+  .desktop-table {
+    display: none;
+  }
+
+  .mobile-rutas {
+    display: block;
+  }
+
+  .accordion-button {
+    padding: 1rem;
+  }
+
+  .transportista-header {
+    align-items: flex-start;
+  }
+
+  .form-control,
+  .form-select,
+  .btn {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ruta-mobile-actions {
+    grid-template-columns: 1fr;
+  }
+}.rutas-page {
+  padding-bottom: 2rem;
+}
+
+.top-bar-rutas {
+  gap: 0.75rem;
+}
+
+.top-actions-rutas {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filtros-card,
+.transportista-card {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.transportista-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.transportista-header .left .name {
+  font-size: 1rem;
+}
+
+.transportista-header .mail {
+  font-size: 0.95rem;
+}
+
+.tarea-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.tarea-main {
+  font-weight: 600;
+}
+
+.tarea-sub {
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.desktop-table {
+  display: block;
+}
+
+.mobile-rutas {
+  display: none;
+}
+
+.ruta-mobile-card {
+  border: 1px solid #dee2e6;
+  border-radius: 14px;
+  padding: 1rem;
+  margin: 1rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.ruta-mobile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ruta-mobile-id {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.ruta-mobile-fecha {
+  color: #6c757d;
+  font-size: 0.92rem;
+}
+
+.ruta-mobile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ruta-line {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ruta-line .label {
+  font-weight: 700;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.ruta-mobile-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.ruta-mobile-actions .btn {
+  min-height: 44px;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .rutas-page {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+
+  .top-bar-rutas {
+    align-items: stretch !important;
+  }
+
+  .top-actions-rutas {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .top-actions-rutas .btn {
+    width: 100%;
+    margin-right: 0 !important;
+  }
+
+  .desktop-table {
+    display: none;
+  }
+
+  .mobile-rutas {
+    display: block;
+  }
+
+  .accordion-button {
+    padding: 1rem;
+  }
+
+  .transportista-header {
+    align-items: flex-start;
+  }
+
+  .form-control,
+  .form-select,
+  .btn {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ruta-mobile-actions {
+    grid-template-columns: 1fr;
+  }
 }

@@ -1,3 +1,11 @@
+:host {
+  display: block;
+}
+
+.calendario-page {
+  padding-bottom: 2rem;
+}
+
 :host ::ng-deep .dia-con-evento .mat-calendar-body-cell-content {
   border: 2px solid currentColor;
   border-radius: 999px;
@@ -8,33 +16,51 @@ mat-card {
   border-radius: 12px;
 }
 
-mat-list-item {
-  padding: 12px 0;
-}
-
 button {
   white-space: nowrap;
 }
 
-/* Panels */
+/* Cards */
+.calendar-card,
 .panel {
   border-radius: 14px;
   overflow: hidden;
 }
 
+/* Calendar */
+.calendar-card mat-card-title {
+  display: block;
+  padding: 16px 16px 0 16px;
+  font-weight: 700;
+}
+
+.calendar-wrapper {
+  padding: 8px 8px 12px 8px;
+  overflow-x: auto;
+}
+
+:host ::ng-deep .mat-calendar {
+  width: 100%;
+  min-width: 280px;
+  max-width: 100%;
+}
+
+/* Panels */
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  background: rgba(0,0,0,0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .panel-title {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .panel-icon {
@@ -44,7 +70,8 @@ button {
   display: grid;
   place-items: center;
   border-radius: 10px;
-  background: rgba(0,0,0,0.06);
+  background: rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
 }
 
 .title {
@@ -54,8 +81,9 @@ button {
 
 .subtitle {
   font-size: 12px;
-  color: rgba(0,0,0,0.6);
+  color: rgba(0, 0, 0, 0.6);
   margin-top: 3px;
+  line-height: 1.35;
 }
 
 .panel-body {
@@ -67,10 +95,20 @@ button {
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(0,0,0,0.06);
+  background: rgba(0, 0, 0, 0.06);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-/* List */
+/* List / desktop */
+.llamadas-desktop {
+  display: block;
+}
+
+.llamadas-mobile {
+  display: none;
+}
+
 .llamadas-list mat-list-item {
   padding: 10px 0;
 }
@@ -85,25 +123,101 @@ button {
 
 .item-main {
   min-width: 0;
+  flex: 1;
 }
 
 .item-title {
   font-weight: 600;
   margin-bottom: 4px;
+  word-break: break-word;
 }
 
 .item-meta {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.item-actions {
+  flex-shrink: 0;
+}
+
+/* Mobile cards */
+.llamada-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.llamada-card:last-child {
+  margin-bottom: 0;
+}
+
+.llamada-card-top {
+  margin-bottom: 10px;
+}
+
+.llamada-card-title {
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.llamada-card-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.llamada-card-actions {
+  display: flex;
+}
+
+.btn-mobile-edit {
+  width: 100%;
+  min-height: 44px;
+}
+
+/* Pills */
+.meta-pill,
+.estado-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .meta-pill {
-  font-size: 12px;
-  color: rgba(0,0,0,0.65);
-  background: rgba(0,0,0,0.05);
-  padding: 4px 8px;
-  border-radius: 999px;
+  color: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Estado */
+.estado-pendiente {
+  color: #856404;
+  background: rgba(255, 193, 7, 0.22);
+  border: 1px solid rgba(255, 193, 7, 0.55);
+}
+
+.estado-realizada {
+  color: #155724;
+  background: rgba(40, 167, 69, 0.2);
+  border: 1px solid rgba(40, 167, 69, 0.55);
+}
+
+.estado-cancelada {
+  color: #721c24;
+  background: rgba(220, 53, 69, 0.18);
+  border: 1px solid rgba(220, 53, 69, 0.55);
 }
 
 /* Empty state */
@@ -124,7 +238,7 @@ button {
 
 .empty-subtitle {
   font-size: 12px;
-  color: rgba(0,0,0,0.6);
+  color: rgba(0, 0, 0, 0.6);
 }
 
 /* Form */
@@ -147,7 +261,7 @@ button {
   white-space: nowrap;
 }
 
-/* ✅ Evita el recorte típico de mat-list-item (alto fijo interno) */
+/* Material fixes */
 :host ::ng-deep .mat-mdc-list-item {
   height: auto !important;
   min-height: 56px;
@@ -155,40 +269,99 @@ button {
   padding-bottom: 6px;
 }
 
-/* ✅ Pills (hora + estado) */
-.item-meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
+:host ::ng-deep .mat-mdc-form-field {
+  width: 100%;
 }
 
-.meta-pill,
-.estado-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  line-height: 1.2;
-  white-space: nowrap;
+/* TABLET */
+@media (max-width: 991.98px) {
+  .calendar-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+
+  :host ::ng-deep .mat-calendar {
+    max-width: 420px;
+  }
 }
 
-/* ✅ Estado con color (sin tocar colores del tema, solo el chip) */
-.estado-pendiente {
-  color: #856404;
-  background: rgba(255, 193, 7, 0.22);
-  border: 1px solid rgba(255, 193, 7, 0.55);
+/* MOBILE */
+@media (max-width: 767.98px) {
+  .calendario-page {
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .badge-soft {
+    align-self: flex-start;
+  }
+
+  .panel-body {
+    padding: 12px;
+  }
+
+  .calendar-card mat-card-title {
+    padding: 14px 14px 0 14px;
+    font-size: 1rem;
+  }
+
+  .calendar-wrapper {
+    padding: 8px 4px 10px 4px;
+  }
+
+  :host ::ng-deep .mat-calendar {
+    min-width: 260px;
+  }
+
+  .llamadas-desktop {
+    display: none;
+  }
+
+  .llamadas-mobile {
+    display: block;
+  }
+
+  .form-actions {
+    justify-content: stretch;
+  }
+
+  .form-actions .btn-save {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+  }
 }
 
-.estado-realizada {
-  color: #155724;
-  background: rgba(40, 167, 69, 0.20);
-  border: 1px solid rgba(40, 167, 69, 0.55);
-}
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+  .title {
+    font-size: 0.98rem;
+  }
 
-.estado-cancelada {
-  color: #721c24;
-  background: rgba(220, 53, 69, 0.18);
-  border: 1px solid rgba(220, 53, 69, 0.55);
+  .subtitle {
+    font-size: 11px;
+  }
+
+  .panel-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .meta-pill,
+  .estado-pill {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  :host ::ng-deep .mat-calendar-body-cell-content {
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+  }
 }

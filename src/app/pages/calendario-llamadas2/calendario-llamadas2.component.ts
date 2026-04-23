@@ -38,7 +38,6 @@ import { IEventoCalendario } from '../../interfaces/ievento-calendario';
   styleUrls: ['./calendario-llamadas2.component.css'],
 })
 export class CalendarioLlamadas2Component implements AfterViewInit {
-
   selectedDate: Date | null = null;
   fechaSeleccionadaStr: string | null = null; // yyyy-MM-dd
   llamadasDelDia: ILlamada[] = [];
@@ -53,7 +52,7 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
   constructor(
     private llamadasService: LlamadasService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
   ) {}
 
   // =========================
@@ -96,7 +95,9 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     const horas: string[] = [];
     for (let h = 8; h <= 22; h++) {
       for (let m = 0; m < 60; m += 5) {
-        horas.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+        horas.push(
+          `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
+        );
       }
     }
     this.horasDisponibles = horas;
@@ -195,6 +196,7 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
   editar(llamada: ILlamada): void {
     const dialogRef = this.dialog.open(DialogEditarLlamadaComponent, {
       width: '520px',
+      maxWidth: '95vw',
       data: llamada,
     });
 

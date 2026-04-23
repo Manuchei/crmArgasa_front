@@ -1,5 +1,5 @@
 export interface ProductoCantidadDTO {
-  producto: number; // ✅ ID del producto (Long en backend)
+  producto: number;
   cantidad: number;
 }
 
@@ -11,19 +11,18 @@ export interface RutaDiaItemDTO {
   empresa?: string;
   productos: ProductoCantidadDTO[];
 
-  // helpers UI (no hace falta enviarlos)
-
-  // solo frontend
   productoSel?: number | null;
   cantidadSel?: number;
-
   productosCliente?: any[];
 }
 
 export interface RutaDiaRequestDTO {
-  fecha: string; // ✅ string (backend lo parsea)
+  fecha: string;
+  transportistaId: number | null;
+
   nombreTransportista: string;
   emailTransportista: string;
+
   estado: string;
   empresa: string;
   rutas: RutaDiaItemDTO[];

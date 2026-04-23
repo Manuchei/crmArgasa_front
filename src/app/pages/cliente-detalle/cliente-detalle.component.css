@@ -1,11 +1,17 @@
 .cliente-detalle-page {
   width: 100%;
-  padding-left: 0;
-  padding-right: 0;
+  padding: 28px 16px 36px;
+}
+
+.cliente-detalle-shell {
+  width: 100%;
+  max-width: 1450px;
+  margin: 0 auto;
 }
 
 .detalle-header {
   row-gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .header-info {
@@ -19,6 +25,14 @@
 
 .header-meta {
   word-break: break-word;
+}
+
+.content-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .cliente-card {
@@ -127,6 +141,20 @@
   margin-bottom: 0.35rem;
 }
 
+@media (max-width: 991.98px) {
+  .cliente-detalle-page {
+    padding: 22px 12px 30px;
+  }
+
+  .cliente-detalle-shell {
+    max-width: 100%;
+  }
+
+  .content-card {
+    padding: 16px;
+  }
+}
+
 @media (max-width: 767.98px) {
   .tab-btn {
     width: 100%;
@@ -155,5 +183,9 @@
 
   .totales-box {
     text-align: left !important;
+  }
+
+  .content-card {
+    padding: 14px;
   }
 }

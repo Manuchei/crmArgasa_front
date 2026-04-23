@@ -4,6 +4,7 @@ import { RutaService } from '../../services/ruta.service';
 import { Ruta } from '../../interfaces/iruta';
 import { FormsModule } from '@angular/forms';
 import { NgIf, NgFor } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
 
 interface GrupoTransportista {
   nombre: string;
@@ -27,9 +28,10 @@ interface GrupoFecha {
 })
 export class RutasListComponent implements OnInit {
   rutas: Ruta[] = [];
+  rutasBase: Ruta[] = [];
   grouped: GrupoFecha[] = [];
 
-  filtroEstado: string = '';
+  filtroEstado: string = 'pendiente';
   filtroNombre: string = '';
   filtroFecha: string = '';
 
@@ -37,12 +39,20 @@ export class RutasListComponent implements OnInit {
   error = '';
   openIndex: number | null = null;
 
+  emailUsuario: string = '';
+  rolUsuario: string = '';
+  esAdminODebug: boolean = false;
+  esTransportista: boolean = false;
+
   constructor(
     private rutaService: RutaService,
     private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.inicializarUsuario();
+    this.inicializarFiltrosPorDefecto();
     this.cargarRutas();
   }
 
@@ -50,7 +60,44 @@ export class RutasListComponent implements OnInit {
     this.openIndex = this.openIndex === i ? null : i;
   }
 
-  private setRutas(rutas: Ruta[] | null | undefined): void {
+  private inicializarUsuario(): void {
+    const usuario = this.authService.getUsuario?.();
+    const rol = this.authService.getRol?.();
+
+    this.emailUsuario = (usuario?.email || '').trim().toLowerCase();
+    this.rolUsuario = (rol || '').trim().toUpperCase();
+
+    this.esAdminODebug =
+      this.rolUsuario.includes('ADMIN') ||
+      this.rolUsuario.includes('DEVELOPER');
+
+    this.esTransportista = !this.esAdminODebug;
+  }
+
+  private inicializarFiltrosPorDefecto(): void {
+    const hoy = new Date();
+    this.filtroFecha = this.toInputDate(hoy);
+
+    if (this.esTransportista) {
+      this.filtroEstado = 'pendiente';
+    } else {
+      this.filtroEstado = '';
+    }
+  }
+
+  private toInputDate(fecha: Date): string {
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private setRutasBase(rutas: Ruta[] | null | undefined): void {
+    this.rutasBase = Array.isArray(rutas) ? rutas : [];
+    this.aplicarFiltrosLocales();
+  }
+
+  private setRutasFiltradas(rutas: Ruta[]): void {
     this.rutas = Array.isArray(rutas) ? rutas : [];
     this.grouped = this.agruparRutas(this.rutas);
 
@@ -93,99 +140,91 @@ export class RutasListComponent implements OnInit {
 
     this.rutaService.getRutas().subscribe({
       next: (data) => {
-        this.setRutas(data);
+        this.setRutasBase(data);
         this.cargando = false;
       },
       error: (err) => {
         this.error = this.getErrorMessage(err, 'Error al cargar las rutas');
-        this.setRutas([]);
+        this.setRutasBase([]);
         this.cargando = false;
       },
     });
+  }
+
+  aplicarFiltrosLocales(): void {
+    let rutasFiltradas = [...this.rutasBase];
+
+    // 1. Si NO es admin/developer, solo ve sus rutas
+    if (this.esTransportista) {
+      rutasFiltradas = rutasFiltradas.filter((r: any) => {
+        const emailRuta = (r?.emailTransportista || '').toString().trim().toLowerCase();
+        return emailRuta === this.emailUsuario;
+      });
+    }
+
+    // 2. Filtro por fecha
+    if (this.filtroFecha) {
+      rutasFiltradas = rutasFiltradas.filter((r) => {
+        const fechaRuta = this.getFechaKey(r);
+        return fechaRuta === this.filtroFecha;
+      });
+    }
+
+    // 3. Filtro por estado
+    if (this.filtroEstado) {
+      rutasFiltradas = rutasFiltradas.filter((r) => r.estado === this.filtroEstado);
+    }
+
+    // 4. Filtro por nombre/transportista/búsqueda
+    if (this.filtroNombre && this.filtroNombre.trim() !== '') {
+      const texto = this.filtroNombre.trim().toLowerCase();
+
+      rutasFiltradas = rutasFiltradas.filter((r: any) => {
+        const cliente = `${r?.cliente?.nombreApellidos || ''} ${r?.cliente?.nombreComercial || ''}`.toLowerCase();
+        const transportista = (r?.nombreTransportista || '').toLowerCase();
+        const emailTransportista = (r?.emailTransportista || '').toLowerCase();
+        const destino = (r?.destino || '').toLowerCase();
+        const observaciones = (r?.observaciones || '').toLowerCase();
+        const tarea = (r?.tarea || '').toLowerCase();
+
+        return (
+          cliente.includes(texto) ||
+          transportista.includes(texto) ||
+          emailTransportista.includes(texto) ||
+          destino.includes(texto) ||
+          observaciones.includes(texto) ||
+          tarea.includes(texto)
+        );
+      });
+    }
+
+    this.setRutasFiltradas(rutasFiltradas);
   }
 
   filtrarNombre(): void {
-    this.error = '';
-
-    if (!this.filtroNombre || this.filtroNombre.trim() === '') {
-      this.cargarRutas();
-      return;
-    }
-
-    this.cargando = true;
-    this.openIndex = null;
-
-    this.rutaService
-      .filtrarPorTransportista(this.filtroNombre.trim())
-      .subscribe({
-        next: (rutas) => {
-          this.setRutas(rutas);
-          this.cargando = false;
-        },
-        error: (err) => {
-          this.error = this.getErrorMessage(
-            err,
-            'Error al filtrar por transportista',
-          );
-          this.setRutas([]);
-          this.cargando = false;
-        },
-      });
+    this.aplicarFiltrosLocales();
   }
 
   filtrarEstado(): void {
-    this.error = '';
-
-    if (!this.filtroEstado) {
-      this.cargarRutas();
-      return;
-    }
-
-    this.cargando = true;
-    this.openIndex = null;
-
-    this.rutaService.filtrarPorEstado(this.filtroEstado).subscribe({
-      next: (rutas) => {
-        this.setRutas(rutas);
-        this.cargando = false;
-      },
-      error: (err) => {
-        this.error = this.getErrorMessage(err, 'Error al filtrar por estado');
-        this.setRutas([]);
-        this.cargando = false;
-      },
-    });
+    this.aplicarFiltrosLocales();
   }
 
   filtrarFecha(): void {
-    this.error = '';
-
-    if (!this.filtroFecha) {
-      this.cargarRutas();
-      return;
-    }
-
-    this.cargando = true;
-    this.openIndex = null;
-
-    this.rutaService.filtrarPorFecha(this.filtroFecha).subscribe({
-      next: (rutas) => {
-        this.setRutas(rutas);
-        this.cargando = false;
-      },
-      error: (err) => {
-        this.error = this.getErrorMessage(err, 'Error al filtrar por fecha');
-        this.setRutas([]);
-        this.cargando = false;
-      },
-    });
+    this.aplicarFiltrosLocales();
   }
 
   limpiarFiltros(): void {
-    this.filtroEstado = '';
     this.filtroNombre = '';
-    this.filtroFecha = '';
-    this.cargarRutas();
+
+    if (this.esTransportista) {
+      this.filtroEstado = 'pendiente';
+      this.filtroFecha = this.toInputDate(new Date());
+    } else {
+      this.filtroEstado = '';
+      this.filtroFecha = '';
+    }
+
+    this.aplicarFiltrosLocales();
   }
 
   nuevaRuta(): void {
@@ -230,6 +269,14 @@ export class RutasListComponent implements OnInit {
         },
       });
     }
+  }
+
+  puedeGestionarTodo(): boolean {
+    return this.esAdminODebug;
+  }
+
+  getTituloPantalla(): string {
+    return this.esAdminODebug ? 'Gestión de Rutas' : 'Mis Rutas';
   }
 
   private formatFechaLabel(fechaKey: string): string {

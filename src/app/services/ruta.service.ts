@@ -5,7 +5,6 @@ import { Ruta } from '../interfaces/iruta';
 import { RutaDiaRequestDTO } from '../interfaces/iruta-dia';
 import { environment } from '../../environments/environment';
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -53,14 +52,14 @@ export class RutaService {
     });
   }
 
-  crearRuta(ruta: Ruta): Observable<Ruta> {
+  crearRuta(ruta: Partial<Ruta>): Observable<Ruta> {
     const body = { ...ruta, empresa: this.getEmpresaActual() };
     return this.http.post<Ruta>(this.apiUrl, body, {
       headers: this.headersEmpresa(),
     });
   }
 
-  actualizarRuta(id: number, ruta: Ruta): Observable<Ruta> {
+  actualizarRuta(id: number, ruta: Partial<Ruta>): Observable<Ruta> {
     const body = { ...ruta, empresa: this.getEmpresaActual() };
     return this.http.put<Ruta>(`${this.apiUrl}/${id}`, body, {
       headers: this.headersEmpresa(),
