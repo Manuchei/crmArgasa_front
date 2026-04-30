@@ -1,31 +1,17 @@
-<nav class="navbar navbar-expand-xl navbar-dark bg-dark no-print">
-  <div class="container-fluid">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark no-print">
+  <div class="container-fluid navbar-inner">
 
-    <!-- EMPRESA ACTIVA -->
-    <span class="badge badge-empresa me-2 me-xl-3">
+    <span class="badge badge-empresa me-2">
       {{ empresa }}
     </span>
 
-    <!-- BOTÓN HAMBURGUESA -->
-    <button
-      class="navbar-toggler"
-      type="button"
-      (click)="toggleMenu()"
-      aria-controls="navbarNav"
-      [attr.aria-expanded]="menuOpen"
-      aria-label="Toggle navigation"
-    >
+    <button class="navbar-toggler" type="button" (click)="toggleMenu()" aria-controls="navbarNav"
+      [attr.aria-expanded]="menuOpen" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- MENÚ -->
-    <div
-      id="navbarNav"
-      class="navbar-collapse"
-      [class.collapse]="!menuOpen"
-      [class.show]="menuOpen"
-    >
-      <ul class="navbar-nav me-auto">
+    <div id="navbarNav" class="navbar-collapse" [class.collapse]="!menuOpen" [class.show]="menuOpen">
+      <ul class="navbar-nav me-auto navbar-menu">
 
         <li class="nav-item" *ngIf="canInicio()">
           <a class="nav-link" routerLink="/app/dashboard" routerLinkActive="active" (click)="closeMenu()">
@@ -77,22 +63,16 @@
 
       </ul>
 
-      <div class="navbar-actions d-flex flex-column flex-xl-row align-items-stretch align-items-xl-center">
-        <span class="navbar-text user-email me-xl-3 mb-2 mb-xl-0">
+      <div class="navbar-actions d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center">
+        <span class="navbar-text user-email me-lg-2 mb-2 mb-lg-0">
           {{ usuario?.email }}
         </span>
 
-        <button
-          class="btn btn-outline-warning btn-sm me-xl-2 mb-2 mb-xl-0"
-          (click)="cambiarEmpresa(); closeMenu()"
-        >
+        <button class="btn btn-outline-warning btn-sm me-lg-2 mb-2 mb-lg-0" (click)="cambiarEmpresa(); closeMenu()">
           Cambiar empresa
         </button>
 
-        <button
-          class="btn btn-outline-danger btn-sm"
-          (click)="logout(); closeMenu()"
-        >
+        <button class="btn btn-outline-danger btn-sm" (click)="logout(); closeMenu()">
           Cerrar sesión
         </button>
       </div>

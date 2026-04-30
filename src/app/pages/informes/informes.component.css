@@ -1,5 +1,38 @@
-.informes-container {
+.informes-page {
+  width: 100%;
+  padding: 28px 16px 36px;
+}
+
+.informes-shell {
+  width: 100%;
   max-width: 1200px;
+  margin: 0 auto;
+}
+
+.informes-container h2 {
+  font-weight: 700;
+}
+
+.informes-container .card {
+  border-radius: 14px;
+}
+
+.informe-actions {
+  align-items: end;
+}
+
+.print-actions .btn {
+  min-width: 140px;
+}
+
+.resumen-informe {
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.4;
+}
+
+.tabla-t-contable {
+  min-width: 760px;
 }
 
 .tabla-t-contable th,
@@ -21,13 +54,51 @@
   margin-bottom: 30px;
 }
 
+.table {
+  min-width: 760px;
+}
+
+@media (max-width: 767.98px) {
+  .informes-page {
+    padding: 22px 12px 30px;
+  }
+
+  .informe-actions {
+    align-items: stretch;
+  }
+
+  .informe-actions .btn,
+  .print-actions .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .print-actions {
+    justify-content: stretch !important;
+  }
+
+  .text-md-end,
+  .resultado-t {
+    text-align: left !important;
+  }
+
+  .table,
+  .tabla-t-contable {
+    min-width: 720px;
+  }
+}
+
 @media print {
   .no-print {
     display: none !important;
-    .resumen-informe {
-  font-size: 12px;
-  margin-bottom: 10px;
-}
+  }
+
+  .informes-page {
+    padding: 0;
+  }
+
+  .informes-shell {
+    max-width: 100%;
   }
 
   body {
@@ -54,8 +125,7 @@
   }
 
   .resumen-informe {
-  font-size: 0.95rem;
-  color: #444;
-  line-height: 1.4;
-}
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
 }

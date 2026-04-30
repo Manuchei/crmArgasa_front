@@ -1,5 +1,52 @@
-.informe-saldos-container {
+.informe-page {
+  width: 100%;
+  padding: 28px 16px 36px;
+}
+
+.informe-shell {
+  width: 100%;
   max-width: 1200px;
+  margin: 0 auto;
+}
+
+.informe-saldos-container h2 {
+  font-weight: 700;
+}
+
+.informe-saldos-container .card {
+  border-radius: 14px;
+}
+
+.informe-actions {
+  align-items: end;
+}
+
+.table {
+  min-width: 760px;
+}
+
+@media (max-width: 767.98px) {
+  .informe-page {
+    padding: 22px 12px 30px;
+  }
+
+  .informe-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .informe-actions .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .text-md-end {
+    text-align: left !important;
+  }
+
+  .table {
+    min-width: 720px;
+  }
 }
 
 @media print {
@@ -7,17 +54,21 @@
     display: none !important;
   }
 
+  .informe-page {
+    padding: 0;
+  }
+
+  .informe-shell {
+    max-width: 100%;
+  }
+
   body {
-    background: white !important;
+    background: #fff !important;
   }
 
   .card {
     border: 1px solid #ccc !important;
     box-shadow: none !important;
-  }
-
-  .print-area {
-    margin-top: 0;
   }
 
   .table {
