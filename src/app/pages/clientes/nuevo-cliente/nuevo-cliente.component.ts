@@ -58,6 +58,21 @@ export class NuevoClienteComponent {
     private router: Router,
   ) {}
 
+  esIbanEspanolValido(iban: string): boolean {
+    const limpio = (iban || '').replace(/\s+/g, '').toUpperCase();
+    return /^ES\d{22}$/.test(limpio);
+  }
+
+  formatearIBAN(): void {
+    let value = this.cliente.numeroCuenta || '';
+
+    value = value.replace(/\s+/g, '').toUpperCase();
+
+    value = value.replace(/(.{4})/g, '$1 ').trim();
+
+    this.cliente.numeroCuenta = value;
+  }
+
   private toNumber(v: any): number {
     const n = Number(v);
     return isNaN(n) ? 0 : n;
@@ -65,6 +80,10 @@ export class NuevoClienteComponent {
 
   private round2(n: number): number {
     return Math.round((n + Number.EPSILON) * 100) / 100;
+  }
+
+  private trim(value: any): string {
+    return typeof value === 'string' ? value.trim() : '';
   }
 
   private getErrorMessage(err: any, fallback: string): string {
@@ -163,21 +182,41 @@ export class NuevoClienteComponent {
     );
   }
 
-  guardarCliente(): void {
-    if (!this.cliente.nombreApellidos?.trim()) {
-      alert(
-        'Por favor, completa el campo obligatorio (Nombre y apellidos o Empresa).',
-      );
+  private buildClientePayload(): ICliente {
+    return {
+      ...this.cliente,
+      nombreApellidos: this.trim(this.cliente.nombreApellidos),
+      direccion: this.trim(this.cliente.direccion),
+      codigoPostal: this.trim(this.cliente.codigoPostal),
+      poblacion: this.trim(this.cliente.poblacion),
+      provincia: this.trim(this.cliente.provincia),
+      direccionEntrega: this.trim(this.cliente.direccionEntrega),
+      codigoPostalEntrega: this.trim(this.cliente.codigoPostalEntrega),
+      poblacionEntrega: this.trim(this.cliente.poblacionEntrega),
+      provinciaEntrega: this.trim(this.cliente.provinciaEntrega),
+      telefono: this.trim(this.cliente.telefono),
+      movil: this.trim(this.cliente.movil),
+      cifDni: this.trim(this.cliente.cifDni),
+      email: this.trim(this.cliente.email),
+      numeroCuenta: this.trim(this.cliente.numeroCuenta)
+        .replace(/\s+/g, '')
+        .toUpperCase(),
+      empresa: undefined,
+    };
+  }
+
+  guardarCliente(formCliente: any): void {
+    if (formCliente.invalid) {
+      formCliente.form.markAllAsTouched();
       return;
     }
 
-    const payload: ICliente = {
-      ...this.cliente,
-      numeroCuenta:
-        this.cliente.numeroCuenta?.replace(/\s+/g, '').toUpperCase().trim() ||
-        '',
-      empresa: undefined,
-    };
+    const payload = this.buildClientePayload();
+
+    if (!this.esIbanEspanolValido(payload.numeroCuenta || '')) {
+      alert('El IBAN no es válido. Debe empezar por ES y tener 22 números.');
+      return;
+    }
 
     this.clienteService.crearCliente(payload).subscribe({
       next: () => {

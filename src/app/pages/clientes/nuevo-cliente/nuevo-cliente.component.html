@@ -1,7 +1,7 @@
 <div class="cliente-form-page container-fluid mt-4">
   <h3 class="text-center mb-4">Nuevo Cliente</h3>
 
-  <form (ngSubmit)="guardarCliente()" #formCliente="ngForm">
+  <form (ngSubmit)="guardarCliente(formCliente)" #formCliente="ngForm">
     <div class="row mb-3">
       <div class="col-12">
         <label>Nombre y apellidos o Empresa *</label>
@@ -10,11 +10,13 @@
     </div>
 
     <h5 class="mt-3">Dirección de facturación</h5>
+
     <div class="row mb-3 g-3">
       <div class="col-12 col-lg-8">
         <label>Dirección</label>
         <input [(ngModel)]="cliente.direccion" name="direccion" class="form-control" />
       </div>
+
       <div class="col-12 col-md-6 col-lg-4">
         <label>Código Postal</label>
         <input [(ngModel)]="cliente.codigoPostal" name="codigoPostal" class="form-control" />
@@ -26,6 +28,7 @@
         <label>Población</label>
         <input [(ngModel)]="cliente.poblacion" name="poblacion" class="form-control" />
       </div>
+
       <div class="col-12 col-md-6">
         <label>Provincia</label>
         <input [(ngModel)]="cliente.provincia" name="provincia" class="form-control" />
@@ -33,11 +36,13 @@
     </div>
 
     <h5 class="mt-3">Dirección de entrega</h5>
+
     <div class="row mb-3 g-3">
       <div class="col-12 col-lg-8">
         <label>Dirección de entrega</label>
         <input [(ngModel)]="cliente.direccionEntrega" name="direccionEntrega" class="form-control" />
       </div>
+
       <div class="col-12 col-md-6 col-lg-4">
         <label>Código Postal entrega</label>
         <input [(ngModel)]="cliente.codigoPostalEntrega" name="codigoPostalEntrega" class="form-control" />
@@ -49,6 +54,7 @@
         <label>Población entrega</label>
         <input [(ngModel)]="cliente.poblacionEntrega" name="poblacionEntrega" class="form-control" />
       </div>
+
       <div class="col-12 col-md-6">
         <label>Provincia entrega</label>
         <input [(ngModel)]="cliente.provinciaEntrega" name="provinciaEntrega" class="form-control" />
@@ -57,8 +63,19 @@
 
     <div class="row mb-3">
       <div class="col-12">
-        <label class="form-label">Número de cuenta</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.numeroCuenta" name="numeroCuenta">
+        <label class="form-label">IBAN *</label>
+        <input type="text" class="form-control" [(ngModel)]="cliente.numeroCuenta" name="numeroCuenta"
+          #numeroCuenta="ngModel" required pattern="^ES\s?\d{2}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$"
+          placeholder="Ej: ES9121000418450200051339" autocomplete="on" inputmode="text" maxlength="29"
+          (input)="formatearIBAN()" />
+
+        <div class="text-danger mt-1" *ngIf="numeroCuenta.touched && numeroCuenta.errors?.['required']">
+          El IBAN es obligatorio.
+        </div>
+
+        <div class="text-danger mt-1" *ngIf="numeroCuenta.touched && numeroCuenta.errors?.['pattern']">
+          Debe empezar por ES y tener 24 caracteres en total.
+        </div>
       </div>
     </div>
 
@@ -101,6 +118,7 @@
             <th class="text-center">Acción</th>
           </tr>
         </thead>
+
         <tbody>
           <tr>
             <td>
@@ -125,8 +143,7 @@
             </td>
 
             <td>
-              <input class="form-control text-end fw-bold" [value]="(getNetoNuevoTrabajo() | number:'1.2-2')"
-                disabled />
+              <input class="form-control text-end fw-bold" [value]="getNetoNuevoTrabajo() | number:'1.2-2'" disabled />
             </td>
 
             <td>
@@ -161,16 +178,16 @@
           <tr *ngFor="let t of cliente.trabajos; let i = index">
             <td>{{ t.descripcion }}</td>
             <td class="text-end">{{ t.unidades ?? 1 }}</td>
-            <td class="text-end">{{ (t.precioUnitario ?? 0) | number:'1.2-2' }}</td>
-            <td class="text-end">{{ (t.descuento ?? 0) | number:'1.0-2' }}</td>
-            <td class="text-end">{{ (t.importe ?? 0) | number:'1.2-2' }}</td>
-            <td class="text-end">{{ (t.importePagado ?? 0) | number:'1.2-2' }}</td>
-            <td class="text-end" [ngClass]="{'text-danger': (t.importePagado ?? 0) < (t.importe ?? 0)}">
-              {{ ((t.importe ?? 0) - (t.importePagado ?? 0)) | number:'1.2-2' }}
+            <td class="text-end">{{ t.precioUnitario ?? 0 | number:'1.2-2' }}</td>
+            <td class="text-end">{{ t.descuento ?? 0 | number:'1.0-2' }}</td>
+            <td class="text-end">{{ t.importe ?? 0 | number:'1.2-2' }}</td>
+            <td class="text-end">{{ t.importePagado ?? 0 | number:'1.2-2' }}</td>
+            <td class="text-end" [ngClass]="{ 'text-danger': (t.importePagado ?? 0) < (t.importe ?? 0) }">
+              {{ (t.importe ?? 0) - (t.importePagado ?? 0) | number:'1.2-2' }}
             </td>
             <td>
               <button type="button" class="btn btn-danger btn-sm"
-                (click)="cliente.trabajos.splice(i,1); recalcularTotales()">
+                (click)="cliente.trabajos.splice(i, 1); recalcularTotales()">
                 x
               </button>
             </td>
@@ -182,11 +199,13 @@
     <div class="text-end mt-3 resumen-totales">
       <p><b>Total debe:</b> {{ cliente.totalImporte | currency:'EUR' }}</p>
       <p><b>Total pagado:</b> {{ cliente.totalPagado | currency:'EUR' }}</p>
-      <p><b>Diferencia total:</b> {{ (cliente.totalImporte - cliente.totalPagado) | currency:'EUR' }}</p>
+      <p><b>Diferencia total:</b> {{ cliente.totalImporte - cliente.totalPagado | currency:'EUR' }}</p>
     </div>
 
     <div class="text-end mt-3 form-actions">
-      <button class="btn btn-success" type="submit">Guardar cliente</button>
+      <button class="btn btn-success" type="submit" [disabled]="formCliente.invalid">
+        Guardar cliente
+      </button>
     </div>
   </form>
 </div>

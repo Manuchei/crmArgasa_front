@@ -81,7 +81,9 @@
       <div class="col-12">
         <label class="form-label">IBAN *</label>
         <input type="text" class="form-control" [(ngModel)]="proveedor.datosBancarios" name="datosBancarios"
-          #datosBancarios="ngModel" required pattern="^ES[0-9]{22}$" placeholder="Ej: ES9121000418450200051339" />
+          #datosBancarios="ngModel" required pattern="^ES\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{2}$"
+          placeholder="Ej: ES9121000418450200051339" autocomplete="on" inputmode="text" maxlength="29"
+          (input)="formatearIBAN()" />
 
         <div class="text-danger mt-1" *ngIf="datosBancarios.touched && datosBancarios.errors?.['required']">
           El IBAN es obligatorio.

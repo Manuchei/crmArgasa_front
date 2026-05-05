@@ -110,4 +110,14 @@ export class NuevoProveedorComponent {
       },
     });
   }
+
+  formatearIBAN(): void {
+    let value = this.proveedor.datosBancarios || '';
+
+    value = value.replace(/\s+/g, '').toUpperCase();
+
+    value = value.replace(/(.{4})/g, '$1 ').trim();
+
+    this.proveedor.datosBancarios = value;
+  }
 }
