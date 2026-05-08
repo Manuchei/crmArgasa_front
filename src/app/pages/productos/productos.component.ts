@@ -21,14 +21,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
   empresaActiva: Empresa | null = null;
 
-  form: IProducto = {
-    codigo: '',
-    nombre: '',
-    modelo: '',
-    stock: 5,
-    empresa: 'ARGASA',
-    precioSinIva: 0,
-  };
+  form: IProducto = this.getFormVacio();
 
   ajusteMap: Record<number, number> = {};
   loading = false;
@@ -49,7 +42,9 @@ export class ProductosComponent implements OnInit, OnDestroy {
     this.empresaSub = this.empresaService.empresa$.subscribe(
       (empresa: Empresa | null) => {
         this.empresaActiva = empresa;
+
         if (empresa) {
+          this.form.empresa = empresa;
           this.cargar();
           this.cerrarMovimientos();
         }
@@ -57,12 +52,27 @@ export class ProductosComponent implements OnInit, OnDestroy {
     );
 
     if (this.empresaActiva) {
+      this.form.empresa = this.empresaActiva;
       this.cargar();
     }
   }
 
   ngOnDestroy(): void {
     this.empresaSub?.unsubscribe();
+  }
+
+  private getFormVacio(): IProducto {
+    return {
+      fechaAlta: '',
+      referencia: '',
+      marca: '',
+      modelo: '',
+      familia: '',
+      subfamilia: '',
+      descripcion: '',
+      unidades: 0,
+      empresa: this.empresaActiva || 'ARGASA',
+    };
   }
 
   cargar(): void {
@@ -72,11 +82,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
-        alert(
-          err.error?.message ||
-            err.error ||
-            'No se pudieron cargar los productos',
-        );
+        alert(err.error?.message || err.error || 'No se pudieron cargar los productos');
       },
     });
   }
@@ -87,45 +93,47 @@ export class ProductosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.form.codigo?.trim() || !this.form.nombre?.trim()) {
-      alert('Código y nombre son obligatorios');
+    if (
+      !this.form.referencia?.trim() ||
+      !this.form.marca?.trim() ||
+      !this.form.modelo?.trim() ||
+      !this.form.familia?.trim() ||
+      !this.form.subfamilia?.trim() ||
+      !this.form.descripcion?.trim()
+    ) {
+      alert('Referencia, marca, modelo, familia, subfamilia y descripción son obligatorios');
       return;
     }
 
-    if (this.form.precioSinIva < 0) {
-      alert('El precio no puede ser negativo');
+    if ((this.form.unidades || 0) < 0) {
+      alert('Las unidades no pueden ser negativas');
       return;
     }
 
     this.loading = true;
 
     const payload: IProducto = {
-      codigo: this.form.codigo.trim(),
-      nombre: this.form.nombre.trim(),
-      modelo: this.form.modelo?.trim() || '',
-      stock: this.form.stock,
+      fechaAlta: this.form.fechaAlta || undefined,
+      referencia: this.form.referencia.trim(),
+      marca: this.form.marca.trim(),
+      modelo: this.form.modelo.trim(),
+      familia: this.form.familia.trim(),
+      subfamilia: this.form.subfamilia.trim(),
+      descripcion: this.form.descripcion.trim(),
+      unidades: this.form.unidades || 0,
       empresa: this.empresaActiva,
-      precioSinIva: this.form.precioSinIva,
     };
 
     this.productosService.create(payload).subscribe({
       next: (nuevo: IProducto) => {
         this.productos.unshift(nuevo);
-        this.form = {
-          codigo: '',
-          nombre: '',
-          modelo: '',
-          stock: 5,
-          empresa: this.empresaActiva!,
-          precioSinIva: 0,
-        };
+        this.form = this.getFormVacio();
+        this.form.empresa = this.empresaActiva!;
         this.loading = false;
       },
       error: (err: HttpErrorResponse) => {
         this.loading = false;
-        alert(
-          err.error?.message || err.error || 'No se pudo crear el producto',
-        );
+        alert(err.error?.message || err.error || 'No se pudo crear el producto');
       },
     });
   }
@@ -147,16 +155,16 @@ export class ProductosComponent implements OnInit, OnDestroy {
     this.ajusteMap[id] = v;
   }
 
-  subirStock(p: IProducto): void {
+  subirUnidades(p: IProducto): void {
     const id = Number(p?.id);
     if (!id) return;
 
     const cant = this.getAjuste(id);
-    const motivo = prompt('Motivo de la subida de stock (opcional):') || '';
+    const motivo = prompt('Motivo de la subida de unidades (opcional):') || '';
 
     this.productosService.ajustarStock(id, cant, motivo).subscribe({
       next: (prodActualizado: IProducto) => {
-        p.stock = prodActualizado.stock;
+        p.unidades = prodActualizado.unidades;
         this.ajusteMap[id] = 1;
 
         if (this.productoSeleccionado?.id === id) {
@@ -165,21 +173,21 @@ export class ProductosComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
-        alert(err.error?.message || err.error || 'No se pudo subir el stock');
+        alert(err.error?.message || err.error || 'No se pudieron subir las unidades');
       },
     });
   }
 
-  bajarStock(p: IProducto): void {
+  bajarUnidades(p: IProducto): void {
     const id = Number(p?.id);
     if (!id) return;
 
     const cant = this.getAjuste(id);
-    const motivo = prompt('Motivo de la bajada de stock (opcional):') || '';
+    const motivo = prompt('Motivo de la bajada de unidades (opcional):') || '';
 
     this.productosService.ajustarStock(id, -cant, motivo).subscribe({
       next: (prodActualizado: IProducto) => {
-        p.stock = prodActualizado.stock;
+        p.unidades = prodActualizado.unidades;
         this.ajusteMap[id] = 1;
 
         if (this.productoSeleccionado?.id === id) {
@@ -188,7 +196,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
-        alert(err.error?.message || err.error || 'No se pudo bajar el stock');
+        alert(err.error?.message || err.error || 'No se pudieron bajar las unidades');
       },
     });
   }
@@ -207,11 +215,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
-        alert(
-          err.error?.message ||
-            err.error ||
-            'No se pudieron cargar los movimientos',
-        );
+        alert(err.error?.message || err.error || 'No se pudieron cargar los movimientos');
       },
     });
   }
@@ -226,10 +230,12 @@ export class ProductosComponent implements OnInit, OnDestroy {
   get movimientosFiltrados(): IProductoMovimiento[] {
     const filtro = this.filtroCodigo.trim().toLowerCase();
 
-    if (!filtro) return this.movimientosProducto;
+    if (!filtro) {
+      return this.movimientosProducto;
+    }
 
     return this.movimientosProducto.filter((m) =>
-      (m.producto?.codigo || '').toLowerCase().includes(filtro),
+      (m.producto?.referencia || '').toLowerCase().includes(filtro),
     );
   }
 
@@ -242,9 +248,12 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
     return this.productos.filter(
       (p) =>
-        (p.codigo || '').toLowerCase().includes(filtro) ||
-        (p.nombre || '').toLowerCase().includes(filtro) ||
-        (p.modelo || '').toLowerCase().includes(filtro),
+        (p.referencia || '').toLowerCase().includes(filtro) ||
+        (p.marca || '').toLowerCase().includes(filtro) ||
+        (p.modelo || '').toLowerCase().includes(filtro) ||
+        (p.familia || '').toLowerCase().includes(filtro) ||
+        (p.subfamilia || '').toLowerCase().includes(filtro) ||
+        (p.descripcion || '').toLowerCase().includes(filtro),
     );
   }
 }

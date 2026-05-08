@@ -59,12 +59,15 @@ export class VerProveedorComponent implements OnInit {
 
   private getNuevoProductoVacio(): IProducto {
     return {
-      codigo: '',
-      nombre: '',
+      fechaAlta: '',
+      referencia: '',
+      marca: '',
       modelo: '',
-      stock: 0,
+      familia: '',
+      subfamilia: '',
+      descripcion: '',
+      unidades: 0,
       empresa: '',
-      precioSinIva: 0,
     };
   }
 
@@ -97,7 +100,6 @@ export class VerProveedorComponent implements OnInit {
       next: (data) => {
         this.proveedor = data;
         this.asegurarProductos();
-
         this.calcularTotales();
         this.cargarTrabajos();
         this.cargarAlbaranes();
@@ -127,14 +129,16 @@ export class VerProveedorComponent implements OnInit {
   cargarAlbaranes(): void {
     if (!this.proveedor?.id) return;
 
-    this.proveedorService.listarAlbaranesProveedor(this.proveedor.id).subscribe({
-      next: (data) => {
-        this.albaranes = data || [];
-      },
-      error: (err) => {
-        console.error('Error cargando albaranes', err);
-      },
-    });
+    this.proveedorService
+      .listarAlbaranesProveedor(this.proveedor.id)
+      .subscribe({
+        next: (data) => {
+          this.albaranes = data || [];
+        },
+        error: (err) => {
+          console.error('Error cargando albaranes', err);
+        },
+      });
   }
 
   guardarTrabajo(): void {
@@ -156,25 +160,27 @@ export class VerProveedorComponent implements OnInit {
 
     this.guardandoTrabajo = true;
 
-    this.proveedorService.crearTrabajoProveedor(this.proveedor.id, payload).subscribe({
-      next: () => {
-        this.nuevoTrabajo = {
-          descripcion: '',
-          importe: 0,
-          importePagado: 0,
-        };
+    this.proveedorService
+      .crearTrabajoProveedor(this.proveedor.id, payload)
+      .subscribe({
+        next: () => {
+          this.nuevoTrabajo = {
+            descripcion: '',
+            importe: 0,
+            importePagado: 0,
+          };
 
-        this.guardandoTrabajo = false;
-        this.cargarTrabajos();
-      },
-      error: (err) => {
-        console.error('Error al guardar trabajo', err);
-        this.guardandoTrabajo = false;
-        alert(
-          err?.error?.message || err?.error || 'Error al guardar el trabajo',
-        );
-      },
-    });
+          this.guardandoTrabajo = false;
+          this.cargarTrabajos();
+        },
+        error: (err) => {
+          console.error('Error al guardar trabajo', err);
+          this.guardandoTrabajo = false;
+          alert(
+            err?.error?.message || err?.error || 'Error al guardar el trabajo',
+          );
+        },
+      });
   }
 
   eliminarTrabajo(id: number): void {
@@ -195,34 +201,41 @@ export class VerProveedorComponent implements OnInit {
       return;
     }
 
-    const codigo = this.trim(this.nuevoProducto.codigo);
-    const nombre = this.trim(this.nuevoProducto.nombre);
+    const referencia = this.trim(this.nuevoProducto.referencia);
+    const marca = this.trim(this.nuevoProducto.marca);
     const modelo = this.trim(this.nuevoProducto.modelo);
+    const familia = this.trim(this.nuevoProducto.familia);
+    const subfamilia = this.trim(this.nuevoProducto.subfamilia);
+    const descripcion = this.trim(this.nuevoProducto.descripcion);
 
-    if (!codigo || !nombre) {
-      alert('Código y nombre del producto son obligatorios');
+    if (!referencia || !marca || !modelo || !familia || !subfamilia || !descripcion) {
+      alert('Referencia, marca, modelo, familia, subfamilia y descripción son obligatorios');
       return;
     }
 
     this.asegurarProductos();
 
-    const existeCodigo = this.proveedor.productos.some(
-      (p: IProducto) => this.trim(p.codigo).toLowerCase() === codigo.toLowerCase(),
+    const existeReferencia = this.proveedor.productos.some(
+      (p: IProducto) =>
+        this.trim(p.referencia).toLowerCase() === referencia.toLowerCase(),
     );
 
-    if (existeCodigo) {
-      alert('Ya existe un producto con ese código en este proveedor');
+    if (existeReferencia) {
+      alert('Ya existe un producto con esa referencia en este proveedor');
       return;
     }
 
     const payload: IProducto = {
-      codigo,
-      nombre,
+      fechaAlta: this.nuevoProducto.fechaAlta || undefined,
+      referencia,
+      marca,
       modelo,
-      stock: this.normalizarNumero(this.nuevoProducto.stock),
-      precioSinIva: this.normalizarNumero(this.nuevoProducto.precioSinIva),
+      familia,
+      subfamilia,
+      descripcion,
+      unidades: this.normalizarNumero(this.nuevoProducto.unidades),
       empresa: '',
-      proveedor: { id: this.proveedor.id } as any,
+      proveedor: { id: this.proveedor.id },
     };
 
     this.guardandoProducto = true;
@@ -231,7 +244,6 @@ export class VerProveedorComponent implements OnInit {
       next: () => {
         this.nuevoProducto = this.getNuevoProductoVacio();
         this.guardandoProducto = false;
-
         this.cargarProveedor();
         alert('Producto añadido correctamente');
       },
@@ -254,8 +266,9 @@ export class VerProveedorComponent implements OnInit {
     if (!producto) return;
 
     const confirmar = confirm(
-      `¿Seguro que deseas eliminar el producto "${producto.nombre}"?`,
+      `¿Seguro que deseas eliminar el producto "${producto.descripcion}"?`,
     );
+
     if (!confirmar) return;
 
     alert('La eliminación de productos debe hacerse con su endpoint específico.');
@@ -279,26 +292,28 @@ export class VerProveedorComponent implements OnInit {
       fechaEmision: new Date().toISOString().slice(0, 10),
     };
 
-    this.proveedorService.crearAlbaranProveedor(this.proveedor.id, payload).subscribe({
-      next: (albaran) => {
-        this.creandoAlbaran = false;
-        this.numeroAlbaranProveedor = '';
+    this.proveedorService
+      .crearAlbaranProveedor(this.proveedor.id, payload)
+      .subscribe({
+        next: (albaran) => {
+          this.creandoAlbaran = false;
+          this.numeroAlbaranProveedor = '';
 
-        alert('Albarán generado correctamente');
-        this.cargarAlbaranes();
+          alert('Albarán generado correctamente');
+          this.cargarAlbaranes();
 
-        if (albaran?.id) {
-          this.verAlbaran(albaran);
-        }
-      },
-      error: (err) => {
-        console.error('Error al generar albarán', err);
-        this.creandoAlbaran = false;
-        alert(
-          err?.error?.message || err?.error || 'Error al generar el albarán',
-        );
-      },
-    });
+          if (albaran?.id) {
+            this.verAlbaran(albaran);
+          }
+        },
+        error: (err) => {
+          console.error('Error al generar albarán', err);
+          this.creandoAlbaran = false;
+          alert(
+            err?.error?.message || err?.error || 'Error al generar el albarán',
+          );
+        },
+      });
   }
 
   generarFacturaDesdeAlbaran(albaran: any): void {
@@ -362,7 +377,7 @@ export class VerProveedorComponent implements OnInit {
     const confirmar = confirm(
       albaran.confirmado
         ? `Este albarán está CONFIRMADO. ¿Seguro que deseas eliminar el albarán #${albaran.id}?`
-        : `¿Seguro que deseas eliminar el albarán #${albaran.id}?`
+        : `¿Seguro que deseas eliminar el albarán #${albaran.id}?`,
     );
 
     if (!confirmar) return;
@@ -374,9 +389,7 @@ export class VerProveedorComponent implements OnInit {
       error: (err) => {
         console.error('Error al eliminar albarán', err);
         alert(
-          err?.error?.message ||
-          err?.error ||
-          'No se pudo eliminar el albarán'
+          err?.error?.message || err?.error || 'No se pudo eliminar el albarán',
         );
       },
     });
@@ -389,12 +402,6 @@ export class VerProveedorComponent implements OnInit {
     this.trabajos.forEach((t) => {
       this.totalImporte += this.normalizarNumero(t.importe);
       this.totalPagado += this.normalizarNumero(t.importePagado);
-    });
-
-    (this.proveedor?.productos || []).forEach((p: IProducto) => {
-      const precio = this.normalizarNumero(p.precioSinIva);
-      const stock = this.normalizarNumero(p.stock);
-      this.totalImporte += precio * stock;
     });
 
     this.totalPendiente = this.totalImporte - this.totalPagado;

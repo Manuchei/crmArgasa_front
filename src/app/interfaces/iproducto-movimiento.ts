@@ -1,16 +1,16 @@
 export interface IProductoMovimiento {
   id?: number;
   empresa: string;
-  tipo: string; // ENTRADA / SALIDA
+  tipo: string;
   cantidad: number;
-  stockAnterior: number;
-  stockNuevo: number;
+  unidadesAnteriores: number;
+  unidadesNuevas: number;
   motivo?: string;
   fecha: string;
   producto?: {
     id?: number;
-    codigo?: string;
-    nombre?: string;
+    referencia?: string;
+    descripcion?: string;
     modelo?: string;
   };
 }

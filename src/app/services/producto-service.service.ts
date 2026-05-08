@@ -71,7 +71,7 @@ export class ProductoServiceService {
     motivo?: string,
   ): Observable<IProducto> {
     return this.http.patch<IProducto>(
-      `${this.apiUrl}/${id}/stock`,
+      `${this.apiUrl}/${id}/unidades`,
       {
         delta,
         motivo: motivo?.trim() || null,

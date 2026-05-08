@@ -1,11 +1,7 @@
 import { ProductoServiceService } from './../../services/producto-service.service';
 import { ClienteProductoService } from '../../services/cliente-producto.service';
 import { Component, OnInit } from '@angular/core';
-import {
-  ActivatedRoute,
-  Router,
-  RouterModule,
-} from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   HttpClient,
   HttpErrorResponse,
@@ -25,11 +21,13 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./cliente-detalle.component.css'],
 })
 export class ClienteDetalleComponent implements OnInit {
-  cliente: any;
+  cliente: any = null;
   trabajos: any[] = [];
   albaranes: any[] = [];
   pagos: any[] = [];
   productos: IProducto[] = [];
+  clienteProductos: any[] = [];
+
   clienteId!: number;
 
   pestanaActiva:
@@ -38,8 +36,6 @@ export class ClienteDetalleComponent implements OnInit {
     | 'facturacion'
     | 'pagos'
     | 'productos-trabajos' = 'datos';
-
-  clienteProductos: any[] = [];
 
   qtyMap: Record<number, number> = {};
   dtoMap: Record<number, number> = {};
@@ -64,7 +60,8 @@ export class ClienteDetalleComponent implements OnInit {
   creandoPago = false;
   creandoAlbaran = false;
 
-private apiUrl = environment.apiUrl;
+  private apiUrl = environment.apiUrl;
+
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
@@ -72,6 +69,26 @@ private apiUrl = environment.apiUrl;
     private cpService: ClienteProductoService,
     private productosService: ProductoServiceService,
   ) {}
+
+  ngOnInit(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+
+    if (isNaN(id) || id <= 0) {
+      alert('ID inválido');
+      this.router.navigate(['/app/clientes']);
+      return;
+    }
+
+    this.clienteId = id;
+
+    this.activarPestanaDesdeNavegacion();
+
+    this.cargarCliente(id);
+    this.cargarTrabajos(id);
+    this.cargarAlbaranes(id);
+    this.cargarPagos(id);
+    this.cargarClienteProductos(id);
+  }
 
   cambiarPestana(
     pestana:
@@ -93,10 +110,24 @@ private apiUrl = environment.apiUrl;
     }
 
     const saved = localStorage.getItem('clienteDetallePestana');
+
     if (saved === 'albaranes') {
       this.pestanaActiva = 'albaranes';
       localStorage.removeItem('clienteDetallePestana');
     }
+  }
+
+  private static hoyISO(): string {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  private hoyISO(): string {
+    return ClienteDetalleComponent.hoyISO();
   }
 
   private static toNumber(v: any): number {
@@ -116,30 +147,24 @@ private apiUrl = environment.apiUrl;
     return /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
   }
 
-  private static hoyISO(): string {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-  }
-
-  private hoyISO(): string {
-    return ClienteDetalleComponent.hoyISO();
-  }
-
   private clamp(n: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, n));
   }
 
   private getEmpresaActual(): string {
-    const fromCliente = ClienteDetalleComponent.safeTrim(this.cliente?.empresa);
-    if (fromCliente) return fromCliente;
+    const empresaCliente = ClienteDetalleComponent.safeTrim(
+      this.cliente?.empresa,
+    );
 
-    const fromLS = ClienteDetalleComponent.safeTrim(
+    if (empresaCliente) {
+      return empresaCliente;
+    }
+
+    const empresaLS = ClienteDetalleComponent.safeTrim(
       localStorage.getItem('empresa_activa'),
     );
-    return fromLS || 'ARGASA';
+
+    return empresaLS || 'ARGASA';
   }
 
   private getEmpresaHeaders(): HttpHeaders {
@@ -161,68 +186,77 @@ private apiUrl = environment.apiUrl;
   }
 
   getQty(productoId: number): number {
-    if (!productoId) return 1;
+    if (!productoId) {
+      return 1;
+    }
+
     const v = Number(this.qtyMap[productoId] ?? 1);
+
     return isNaN(v) || v <= 0 ? 1 : Math.floor(v);
   }
 
-  setQty(productoId: number, value: any, stock: any): void {
-    if (!productoId) return;
+  setQty(productoId: number, value: any, unidades: any): void {
+    if (!productoId) {
+      return;
+    }
 
-    const s = Number(stock ?? 0);
-    const v = Number(value);
+    const maxUnidades = Number(unidades ?? 0);
+    const valueNumber = Number(value);
+    const qty = isNaN(valueNumber) ? 1 : Math.floor(valueNumber);
 
-    const qty = isNaN(v) ? 1 : Math.floor(v);
-    this.qtyMap[productoId] = this.clamp(qty, 1, Math.max(1, s || 1));
+    this.qtyMap[productoId] = this.clamp(qty, 1, Math.max(1, maxUnidades || 1));
   }
 
   getDto(productoId: number): number {
-    if (!productoId) return 0;
+    if (!productoId) {
+      return 0;
+    }
+
     const v = Number(this.dtoMap[productoId] ?? 0);
-    if (isNaN(v)) return 0;
+
+    if (isNaN(v)) {
+      return 0;
+    }
+
     return this.clamp(v, 0, 100);
   }
 
   setDto(productoId: number, value: any): void {
-    if (!productoId) return;
+    if (!productoId) {
+      return;
+    }
+
     const v = Number(value);
+
     this.dtoMap[productoId] = isNaN(v) ? 0 : this.clamp(v, 0, 100);
   }
 
   getPagado(productoId: number): number {
-    if (!productoId) return 0;
+    if (!productoId) {
+      return 0;
+    }
+
     const v = Number(this.pagadoMap[productoId] ?? 0);
-    if (isNaN(v)) return 0;
+
+    if (isNaN(v)) {
+      return 0;
+    }
+
     return Math.max(0, v);
   }
 
   setPagado(productoId: number, value: any): void {
-    if (!productoId) return;
+    if (!productoId) {
+      return;
+    }
+
     const v = Number(value);
+
     this.pagadoMap[productoId] = isNaN(v) ? 0 : Math.max(0, v);
   }
 
   volverAClientes(): void {
     this.router.navigate(['/app/clientes']);
-  }
-
-  ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (isNaN(id) || id <= 0) {
-      alert('ID inválido');
-      this.router.navigate(['/app/clientes']);
-      return;
-    }
-
-    this.clienteId = id;
-
-    this.activarPestanaDesdeNavegacion();
-
-    this.cargarCliente(id);
-    this.cargarTrabajos(id);
-    this.cargarAlbaranes(id);
-    this.cargarPagos(id);
-    this.cargarClienteProductos(id);
   }
 
   cargarCliente(id: number): void {
@@ -268,7 +302,10 @@ private apiUrl = environment.apiUrl;
     }
 
     const productoId = Number(cp.productoId);
-    if (!productoId) return;
+
+    if (!productoId) {
+      return;
+    }
 
     if (!confirm('¿Seguro que deseas eliminar este producto del cliente?')) {
       return;
@@ -299,12 +336,57 @@ private apiUrl = environment.apiUrl;
     return cp?.fechaEntrega || cp?.fecha_entrega || cp?.fechaEntregaReal || '-';
   }
 
+  cargarProductos(): void {
+    this.productosService.list().subscribe({
+      next: (res: IProducto[]) => {
+        this.productos = res ?? [];
+
+        for (const prod of this.productos) {
+          const id = Number(prod.id);
+
+          if (!isNaN(id) && id > 0) {
+            if (this.qtyMap[id] == null) {
+              this.qtyMap[id] = 1;
+            }
+
+            if (this.dtoMap[id] == null) {
+              this.dtoMap[id] = 0;
+            }
+
+            if (this.pagadoMap[id] == null) {
+              this.pagadoMap[id] = 0;
+            }
+          }
+        }
+      },
+      error: (err) => {
+        this.logHttpError('cargar productos', err);
+        this.productos = [];
+      },
+    });
+  }
+
+  cargarTrabajos(clienteId: number): void {
+    this.http
+      .get<any[]>(`${this.apiUrl}/trabajos/cliente/${clienteId}`, {
+        headers: this.getEmpresaHeaders(),
+      })
+      .subscribe({
+        next: (data) => {
+          this.trabajos = data ?? [];
+          this.normalizarTrabajos();
+          this.calcularTotales();
+        },
+        error: (err) => this.logHttpError('cargar trabajos', err),
+      });
+  }
+
   private normalizarTrabajos(): void {
     this.trabajos = (this.trabajos ?? []).map((t) => {
       const descripcion =
         t?.descripcion != null && String(t.descripcion).trim().length > 0
           ? t.descripcion
-          : t?.nombre ?? '';
+          : (t?.nombre ?? '');
 
       const unidadesRaw = t?.unidades != null ? t.unidades : t?.cantidad;
       const unidades =
@@ -324,8 +406,8 @@ private apiUrl = environment.apiUrl;
         t?.importePagado != null
           ? ClienteDetalleComponent.toNumber(t.importePagado)
           : t?.pagado != null
-          ? ClienteDetalleComponent.toNumber(t.pagado)
-          : 0;
+            ? ClienteDetalleComponent.toNumber(t.pagado)
+            : 0;
 
       const entregado = t?.entregado === true;
       const fechaEntrega = t?.fechaEntrega ?? t?.fecha_entrega ?? null;
@@ -343,31 +425,18 @@ private apiUrl = environment.apiUrl;
     });
   }
 
-  cargarTrabajos(clienteId: number): void {
-    this.http
-      .get<any[]>(`${this.apiUrl}/trabajos/cliente/${clienteId}`, {
-        headers: this.getEmpresaHeaders(),
-      })
-      .subscribe({
-        next: (data) => {
-          this.trabajos = data ?? [];
-          this.normalizarTrabajos();
-          this.calcularTotales();
-        },
-        error: (err) => this.logHttpError('cargar trabajos', err),
-      });
-  }
-
   getBrutoTrabajo(t: any): number {
-    const u = ClienteDetalleComponent.toNumber(t?.unidades);
-    const p = ClienteDetalleComponent.toNumber(t?.precioUnitario);
-    return Math.max(0, u) * Math.max(0, p);
+    const unidades = ClienteDetalleComponent.toNumber(t?.unidades);
+    const precio = ClienteDetalleComponent.toNumber(t?.precioUnitario);
+
+    return Math.max(0, unidades) * Math.max(0, precio);
   }
 
   getNetoTrabajo(t: any): number {
     const bruto = this.getBrutoTrabajo(t);
-    const dto = ClienteDetalleComponent.toNumber(t?.descuento);
-    const factor = 1 - dto / 100;
+    const descuento = ClienteDetalleComponent.toNumber(t?.descuento);
+    const factor = 1 - descuento / 100;
+
     return Math.max(0, bruto * (isFinite(factor) ? factor : 1));
   }
 
@@ -376,14 +445,15 @@ private apiUrl = environment.apiUrl;
       0,
       ClienteDetalleComponent.toNumber(this.nuevoTrabajo.unidades),
     );
+
     const precioUnitario = Math.max(
       0,
       ClienteDetalleComponent.toNumber(this.nuevoTrabajo.precioUnitario),
     );
+
     const descuento = ClienteDetalleComponent.toNumber(
       this.nuevoTrabajo.descuento,
     );
-
     const dto = Math.min(100, Math.max(0, descuento));
     const bruto = unidades * precioUnitario;
     const neto = bruto * (1 - dto / 100);
@@ -396,11 +466,14 @@ private apiUrl = environment.apiUrl;
   }
 
   agregarTrabajo(): void {
-    if (!this.cliente?.id) return;
+    if (!this.cliente?.id) {
+      return;
+    }
 
-    const desc = ClienteDetalleComponent.safeTrim(
+    const descripcion = ClienteDetalleComponent.safeTrim(
       this.nuevoTrabajo.descripcion,
     );
+
     const unidades = ClienteDetalleComponent.toNumber(
       this.nuevoTrabajo.unidades,
     );
@@ -410,11 +483,11 @@ private apiUrl = environment.apiUrl;
     const descuento = ClienteDetalleComponent.toNumber(
       this.nuevoTrabajo.descuento,
     );
-    const pagadoInicial = ClienteDetalleComponent.toNumber(
+    const importePagado = ClienteDetalleComponent.toNumber(
       this.nuevoTrabajo.importePagado,
     );
 
-    if (!desc || unidades <= 0 || precioUnitario <= 0) {
+    if (!descripcion || unidades <= 0 || precioUnitario <= 0) {
       alert(
         'Debes introducir descripción, unidades (>0) y precio unitario (>0).',
       );
@@ -426,37 +499,28 @@ private apiUrl = environment.apiUrl;
       return;
     }
 
-    const neto = this.getNetoNuevoTrabajo();
-
     const trabajoAEnviar: any = {
-      descripcion: desc,
-      importe: neto,
+      descripcion,
+      importe: this.getNetoNuevoTrabajo(),
       unidades,
       precioUnitario,
       descuento,
-      importePagado: pagadoInicial,
+      importePagado,
       pagado: false,
       entregado: false,
       fechaEntrega: null,
     };
-
-    const empresa = this.getEmpresaActual();
 
     this.http
       .post(
         `${this.apiUrl}/trabajos/cliente/${this.cliente.id}`,
         trabajoAEnviar,
         {
-          headers: { 'X-Empresa': empresa },
+          headers: this.getEmpresaHeaders(),
         },
       )
       .subscribe({
         next: () => {
-          this.cargarTrabajos(this.cliente.id);
-          this.cargarClienteProductos(this.cliente.id);
-          this.cargarProductos();
-          this.cargarCliente(this.cliente.id);
-
           this.nuevoTrabajo = {
             descripcion: '',
             unidades: 1,
@@ -466,31 +530,41 @@ private apiUrl = environment.apiUrl;
             pagado: false,
           };
 
-          this.calcularTotales();
+          this.cargarTrabajos(this.clienteId);
+          this.cargarClienteProductos(this.clienteId);
+          this.cargarProductos();
+          this.cargarCliente(this.clienteId);
         },
         error: (err) => {
           this.logHttpError('agregar trabajo', err);
-          alert('No se pudo añadir el trabajo (revisa empresa / backend).');
+          alert('No se pudo añadir el trabajo.');
         },
       });
   }
 
   eliminarTrabajo(t: any): void {
-    if (!this.cliente?.id) return;
+    if (!this.cliente?.id) {
+      return;
+    }
 
     if (t?.entregado === true) {
       alert('No se puede eliminar: este trabajo ya está entregado.');
       return;
     }
 
-    if (!confirm('¿Seguro que deseas eliminar este trabajo?')) return;
+    if (!confirm('¿Seguro que deseas eliminar este trabajo?')) {
+      return;
+    }
 
     const id = Number(t?.id);
-    if (!id) return;
+
+    if (!id) {
+      return;
+    }
 
     this.http.delete(`${this.apiUrl}/trabajos/${id}`).subscribe({
       next: () => {
-        this.cargarTrabajos(this.cliente.id);
+        this.cargarTrabajos(this.clienteId);
         this.cargarClienteProductos(this.clienteId);
         this.cargarProductos();
         this.cargarCliente(this.clienteId);
@@ -508,22 +582,22 @@ private apiUrl = environment.apiUrl;
     }
 
     const productoId = Number(t?.productoId);
+
     if (!productoId) {
       alert('Este trabajo no está vinculado a un producto.');
       return;
     }
 
-    const producto = this.productos.find(
-      (p: any) => Number(p?.id) === productoId,
-    );
-    const stock = Number((producto as any)?.stock ?? 0);
+    const producto = this.productos.find((p) => Number(p.id) === productoId);
+    const unidadesDisponibles = Number(producto?.unidades ?? 0);
 
-    if (stock <= 0) {
-      alert('No hay stock disponible para añadir una unidad más.');
+    if (unidadesDisponibles <= 0) {
+      alert('No hay unidades disponibles para añadir una unidad más.');
       return;
     }
 
     const nuevaCantidad = Math.max(1, Number(t?.unidades ?? 1) + 1);
+
     this.actualizarCantidadTrabajo(t, nuevaCantidad);
   }
 
@@ -533,6 +607,7 @@ private apiUrl = environment.apiUrl;
     }
 
     const productoId = Number(t?.productoId);
+
     if (!productoId) {
       alert('Este trabajo no está vinculado a un producto.');
       return;
@@ -556,16 +631,17 @@ private apiUrl = environment.apiUrl;
 
   private actualizarCantidadTrabajo(t: any, nuevaCantidad: number): void {
     const productoId = Number(t?.productoId);
-    if (!productoId) return;
 
-    const empresa = this.getEmpresaActual();
+    if (!productoId) {
+      return;
+    }
 
     this.http
       .put(
         `${this.apiUrl}/clientes/${this.clienteId}/productos/${productoId}/cantidad?cantidad=${nuevaCantidad}`,
         {},
         {
-          headers: { 'X-Empresa': empresa },
+          headers: this.getEmpresaHeaders(),
         },
       )
       .subscribe({
@@ -589,8 +665,75 @@ private apiUrl = environment.apiUrl;
       });
   }
 
+  addProducto(p: IProducto): void {
+    if (!this.clienteId) {
+      return;
+    }
+
+    const productoId = Number(p.id);
+
+    if (!productoId) {
+      return;
+    }
+
+    const unidadesDisponibles = Number(p.unidades ?? 0);
+
+    if (unidadesDisponibles <= 0) {
+      alert('No hay unidades disponibles.');
+      return;
+    }
+
+    const cantidad = this.getQty(productoId);
+
+    if (cantidad > unidadesDisponibles) {
+      alert('No hay unidades suficientes para esa cantidad.');
+      return;
+    }
+
+    const descuento = this.getDto(productoId);
+    const importePagado = this.getPagado(productoId);
+    const empresa = this.getEmpresaActual();
+
+    this.cpService
+      .addProducto(
+        this.clienteId,
+        productoId,
+        cantidad,
+        descuento,
+        importePagado,
+        empresa,
+      )
+      .subscribe({
+        next: () => {
+          p.unidades = unidadesDisponibles - cantidad;
+
+          this.qtyMap[productoId] = 1;
+          this.dtoMap[productoId] = 0;
+          this.pagadoMap[productoId] = 0;
+
+          this.cargarTrabajos(this.clienteId);
+          this.cargarClienteProductos(this.clienteId);
+          this.cargarProductos();
+          this.cargarCliente(this.clienteId);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.logHttpError('addProducto', err);
+
+          const msg =
+            typeof err?.error === 'string'
+              ? err.error
+              : err?.error?.message || 'No se pudo añadir el producto';
+
+          alert(msg);
+          this.cargarProductos();
+        },
+      });
+  }
+
   verAlbaran(a: any): void {
-    if (!a?.id) return;
+    if (!a?.id) {
+      return;
+    }
 
     if (this.cliente?.id) {
       localStorage.setItem('clienteIdFromAlbaran', String(this.cliente.id));
@@ -604,13 +747,19 @@ private apiUrl = environment.apiUrl;
   }
 
   imprimirAlbaran(a: any): void {
-    if (!a?.id) return;
+    if (!a?.id) {
+      return;
+    }
+
     const url = `${window.location.origin}/imprimir/albaran/${a.id}`;
     window.open(url, '_blank');
   }
 
   imprimirComprobantePago(pago: any): void {
-    if (!pago?.id) return;
+    if (!pago?.id) {
+      return;
+    }
+
     const url = `${window.location.origin}/imprimir/pago/${pago.id}`;
     window.open(url, '_blank');
   }
@@ -622,19 +771,29 @@ private apiUrl = environment.apiUrl;
         headers: this.getEmpresaHeaders(),
       })
       .subscribe({
-        next: (data) => (this.albaranes = data ?? []),
+        next: (data) => {
+          this.albaranes = data ?? [];
+        },
         error: (err) => this.logHttpError('cargar albaranes', err),
       });
   }
 
   crearAlbaran(): void {
-    if (!this.cliente?.id) return;
+    if (!this.cliente?.id) {
+      return;
+    }
 
     this.creandoAlbaran = true;
     localStorage.setItem('clienteDetallePestana', 'albaranes');
 
     this.http
-      .post<any>(`${this.apiUrl}/albaranes/clientes/${this.cliente.id}`, {})
+      .post<any>(
+        `${this.apiUrl}/albaranes/clientes/${this.cliente.id}`,
+        {},
+        {
+          headers: this.getEmpresaHeaders(),
+        },
+      )
       .subscribe({
         next: (albaran) => {
           this.creandoAlbaran = false;
@@ -644,7 +803,8 @@ private apiUrl = environment.apiUrl;
             return;
           }
 
-          this.cargarAlbaranes(this.cliente.id);
+          this.cargarAlbaranes(this.clienteId);
+
           this.router.navigate(['/app/albaranes', albaran.id], {
             queryParams: { clienteId: this.cliente?.id },
             state: { clienteId: this.cliente?.id, volverA: 'albaranes' },
@@ -659,23 +819,32 @@ private apiUrl = environment.apiUrl;
   }
 
   eliminarAlbaran(a: any): void {
-    if (!a?.id) return;
+    if (!a?.id) {
+      return;
+    }
 
     const confirmado = confirm(
       `¿Seguro que deseas eliminar el albarán #${a.id}?`,
     );
-    if (!confirmado) return;
 
-    this.http.delete(`${this.apiUrl}/albaranes/${a.id}`).subscribe({
-      next: () => {
-        this.albaranes = this.albaranes.filter((alb) => alb.id !== a.id);
-        alert('Albarán eliminado correctamente.');
-      },
-      error: (err) => {
-        this.logHttpError('eliminar albarán', err);
-        alert('No se pudo eliminar el albarán.');
-      },
-    });
+    if (!confirmado) {
+      return;
+    }
+
+    this.http
+      .delete(`${this.apiUrl}/albaranes/${a.id}`, {
+        headers: this.getEmpresaHeaders(),
+      })
+      .subscribe({
+        next: () => {
+          this.albaranes = this.albaranes.filter((alb) => alb.id !== a.id);
+          alert('Albarán eliminado correctamente.');
+        },
+        error: (err) => {
+          this.logHttpError('eliminar albarán', err);
+          alert('No se pudo eliminar el albarán.');
+        },
+      });
   }
 
   cargarPagos(clienteId: number): void {
@@ -693,7 +862,9 @@ private apiUrl = environment.apiUrl;
   }
 
   agregarPago(): void {
-    if (!this.cliente?.id) return;
+    if (!this.cliente?.id) {
+      return;
+    }
 
     const fecha = ClienteDetalleComponent.safeTrim(this.nuevoPago.fecha);
     const importe = ClienteDetalleComponent.toNumber(this.nuevoPago.importe);
@@ -718,10 +889,18 @@ private apiUrl = environment.apiUrl;
     }
 
     this.creandoPago = true;
-    const payload = { fecha, importe, metodo, observaciones };
+
+    const payload = {
+      fecha,
+      importe,
+      metodo,
+      observaciones,
+    };
 
     this.http
-      .post<any>(`${this.apiUrl}/pagos/cliente/${this.cliente.id}`, payload)
+      .post<any>(`${this.apiUrl}/pagos/cliente/${this.cliente.id}`, payload, {
+        headers: this.getEmpresaHeaders(),
+      })
       .subscribe({
         next: (pagoCreado) => {
           this.creandoPago = false;
@@ -730,8 +909,10 @@ private apiUrl = environment.apiUrl;
             this.pagos = [...(this.pagos ?? []), pagoCreado].sort((a, b) => {
               const fa = String(a?.fecha ?? '');
               const fb = String(b?.fecha ?? '');
+
               if (fa < fb) return -1;
               if (fa > fb) return 1;
+
               return (
                 ClienteDetalleComponent.toNumber(a?.id) -
                 ClienteDetalleComponent.toNumber(b?.id)
@@ -761,22 +942,31 @@ private apiUrl = environment.apiUrl;
   }
 
   eliminarPago(pagoId: number): void {
-    if (!this.cliente?.id) return;
+    if (!this.cliente?.id) {
+      return;
+    }
 
-    if (!confirm('¿Seguro que deseas eliminar este pago?')) return;
+    if (!confirm('¿Seguro que deseas eliminar este pago?')) {
+      return;
+    }
 
-    this.http.delete(`${this.apiUrl}/pagos/${pagoId}`).subscribe({
-      next: () => {
-        this.pagos = (this.pagos ?? []).filter(
-          (p) => ClienteDetalleComponent.toNumber(p?.id) !== pagoId,
-        );
-        this.calcularTotales();
-      },
-      error: (err) => {
-        this.logHttpError('eliminar pago', err);
-        alert('No se pudo eliminar el pago.');
-      },
-    });
+    this.http
+      .delete(`${this.apiUrl}/pagos/${pagoId}`, {
+        headers: this.getEmpresaHeaders(),
+      })
+      .subscribe({
+        next: () => {
+          this.pagos = (this.pagos ?? []).filter(
+            (p) => ClienteDetalleComponent.toNumber(p?.id) !== pagoId,
+          );
+
+          this.calcularTotales();
+        },
+        error: (err) => {
+          this.logHttpError('eliminar pago', err);
+          alert('No se pudo eliminar el pago.');
+        },
+      });
   }
 
   calcularTotales(): void {
@@ -785,23 +975,33 @@ private apiUrl = environment.apiUrl;
       0,
     );
 
-    const desc = ClienteDetalleComponent.safeTrim(
+    const descripcionBorrador = ClienteDetalleComponent.safeTrim(
       this.nuevoTrabajo.descripcion,
     );
-    const u = ClienteDetalleComponent.toNumber(this.nuevoTrabajo.unidades);
-    const p = ClienteDetalleComponent.toNumber(
+
+    const unidadesBorrador = ClienteDetalleComponent.toNumber(
+      this.nuevoTrabajo.unidades,
+    );
+
+    const precioBorrador = ClienteDetalleComponent.toNumber(
       this.nuevoTrabajo.precioUnitario,
     );
 
-    const incluirBorrador = desc.length > 0 && u > 0 && p > 0;
+    const incluirBorrador =
+      descripcionBorrador.length > 0 &&
+      unidadesBorrador > 0 &&
+      precioBorrador > 0;
+
     const netoBorrador = incluirBorrador ? this.getNetoNuevoTrabajo() : 0;
 
     const pagadoHistorial = (this.pagos ?? []).reduce(
-      (acc, pg) => acc + ClienteDetalleComponent.toNumber(pg?.importe),
+      (acc, pago) => acc + ClienteDetalleComponent.toNumber(pago?.importe),
       0,
     );
+
     const pagadoInicialTrabajos = (this.trabajos ?? []).reduce(
-      (acc, t) => acc + ClienteDetalleComponent.toNumber(t?.importePagado),
+      (acc, trabajo) =>
+        acc + ClienteDetalleComponent.toNumber(trabajo?.importePagado),
       0,
     );
 
@@ -817,87 +1017,10 @@ private apiUrl = environment.apiUrl;
       pagadoHistorial + pagadoInicialTrabajos + pagadoBorrador;
 
     this.cliente = {
-      ...this.cliente,
+      ...(this.cliente ?? {}),
       totalImporte,
       totalPagado,
       saldoPendiente: totalImporte - totalPagado,
     };
-  }
-
-  cargarProductos(): void {
-    this.productosService.list().subscribe({
-      next: (res) => {
-        this.productos = res ?? [];
-
-        for (const prod of this.productos) {
-          const id = Number((prod as any)?.id);
-          if (!isNaN(id) && id > 0) {
-            if (this.qtyMap[id] == null) this.qtyMap[id] = 1;
-            if (this.dtoMap[id] == null) this.dtoMap[id] = 0;
-            if (this.pagadoMap[id] == null) this.pagadoMap[id] = 0;
-          }
-        }
-      },
-      error: (err) => {
-        this.logHttpError('cargar productos', err);
-        this.productos = [];
-      },
-    });
-  }
-
-  addProducto(p: IProducto): void {
-    if (!this.clienteId) return;
-
-    const productoId = Number((p as any)?.id);
-    if (!productoId) return;
-
-    const stock = Number((p as any)?.stock ?? 0);
-    if (stock <= 0) return;
-
-    const cantidad = this.getQty(productoId);
-    if (cantidad > stock) {
-      alert('No hay stock suficiente para esa cantidad.');
-      return;
-    }
-
-    const descuento = this.getDto(productoId);
-    const importePagado = this.getPagado(productoId);
-    const empresa = this.getEmpresaActual();
-
-    this.cpService
-      .addProducto(
-        this.clienteId,
-        productoId,
-        cantidad,
-        descuento,
-        importePagado,
-        empresa,
-      )
-      .subscribe({
-        next: () => {
-          (p as any).stock = stock - cantidad;
-
-          this.qtyMap[productoId] = 1;
-          this.dtoMap[productoId] = 0;
-          this.pagadoMap[productoId] = 0;
-
-          this.cargarTrabajos(this.clienteId);
-          this.cargarClienteProductos(this.clienteId);
-          this.cargarProductos();
-          this.cargarCliente(this.clienteId);
-        },
-        error: (err: HttpErrorResponse) => {
-          this.logHttpError('addProducto', err);
-
-          const msg =
-            typeof (err as any)?.error === 'string'
-              ? (err as any).error
-              : ((err as any)?.error?.message ??
-                'No se pudo añadir el producto');
-
-          alert(msg);
-          this.cargarProductos();
-        },
-      });
   }
 }

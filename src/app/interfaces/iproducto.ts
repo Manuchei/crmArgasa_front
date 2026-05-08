@@ -1,10 +1,14 @@
 export interface IProducto {
   id?: number;
-  codigo: string;
-  nombre: string;
-  modelo?: string;
-  stock: number;
-  empresa: string;
-  precioSinIva: number;
+  fechaAlta?: string;
   proveedor?: { id: number };
+  unidades: number;
+  referencia: string;
+  marca: string;
+  modelo: string;
+  familia: string;
+  subfamilia: string;
+  descripcion: string;
+  gama?: string;
+  empresa: string;
 }
