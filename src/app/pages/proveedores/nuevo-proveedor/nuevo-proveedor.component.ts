@@ -57,6 +57,23 @@ export class NuevoProveedorComponent {
     return /^ES\d{22}$/.test(limpio);
   }
 
+  formatearIBAN(value: string): void {
+    let limpio = (value || '').replace(/\s+/g, '').toUpperCase();
+
+    limpio = limpio.replace(/[^A-Z0-9]/g, '');
+
+    if (limpio.length > 24) {
+      limpio = limpio.substring(0, 24);
+    }
+
+    this.proveedor.datosBancarios =
+      limpio.match(/.{1,4}/g)?.join(' ') || limpio;
+  }
+
+  private limpiarIBAN(iban: string): string {
+    return (iban || '').replace(/\s+/g, '').toUpperCase();
+  }
+
   private trim(value: any): string {
     return typeof value === 'string' ? value.trim() : '';
   }
@@ -79,25 +96,23 @@ export class NuevoProveedorComponent {
       provincia: this.trim(this.proveedor.provincia),
       pais: this.trim(this.proveedor.pais),
       contacto: this.trim(this.proveedor.contacto),
-      datosBancarios: this.trim(this.proveedor.datosBancarios)
-        .replace(/\s+/g, '')
-        .toUpperCase(),
+      datosBancarios: this.limpiarIBAN(this.proveedor.datosBancarios || ''),
       notas: this.trim(this.proveedor.notas),
     };
   }
 
-  guardar(formProveedor: any) {
+  guardar(formProveedor: any): void {
     if (formProveedor.invalid) {
       formProveedor.form.markAllAsTouched();
       return;
     }
 
-    const payload = this.buildProveedorSaveDto();
-
-    if (!this.esIbanEspanolValido(payload.datosBancarios)) {
+    if (!this.esIbanEspanolValido(this.proveedor.datosBancarios||'')) {
       alert('El IBAN no es válido. Debe empezar por ES y tener 22 números.');
       return;
     }
+
+    const payload = this.buildProveedorSaveDto();
 
     this.proveedorService.crearProveedor(payload).subscribe({
       next: () => {
@@ -109,15 +124,5 @@ export class NuevoProveedorComponent {
         alert('Error al guardar el proveedor');
       },
     });
-  }
-
-  formatearIBAN(): void {
-    let value = this.proveedor.datosBancarios || '';
-
-    value = value.replace(/\s+/g, '').toUpperCase();
-
-    value = value.replace(/(.{4})/g, '$1 ').trim();
-
-    this.proveedor.datosBancarios = value;
   }
 }

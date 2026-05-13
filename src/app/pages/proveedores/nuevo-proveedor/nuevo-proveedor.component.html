@@ -81,15 +81,16 @@
       <div class="col-12">
         <label class="form-label">IBAN *</label>
         <input type="text" class="form-control" [(ngModel)]="proveedor.datosBancarios" name="datosBancarios"
-          #datosBancarios="ngModel" required pattern="^ES\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{2}$"
-          placeholder="Ej: ES9121000418450200051339" autocomplete="on" inputmode="text" maxlength="29"
-          (input)="formatearIBAN()" />
+          #datosBancarios="ngModel" required placeholder="Ej: ES91 2100 0418 4502 0005 1339" autocomplete="on"
+          inputmode="text" maxlength="29" (ngModelChange)="formatearIBAN($event)"
+          [class.is-invalid]="datosBancarios.touched && !esIbanEspanolValido(proveedor.datosBancarios || '')" />
 
-        <div class="text-danger mt-1" *ngIf="datosBancarios.touched && datosBancarios.errors?.['required']">
+        <div class="text-danger mt-1" *ngIf="datosBancarios.touched && !proveedor.datosBancarios">
           El IBAN es obligatorio.
         </div>
 
-        <div class="text-danger mt-1" *ngIf="datosBancarios.touched && datosBancarios.errors?.['pattern']">
+        <div class="text-danger mt-1"
+          *ngIf="datosBancarios.touched && proveedor.datosBancarios && !esIbanEspanolValido(proveedor.datosBancarios)">
           Debe empezar por ES y tener 22 números.
         </div>
       </div>
@@ -103,7 +104,8 @@
     <hr class="my-4" />
 
     <div class="text-center mt-4 form-actions">
-      <button type="submit" class="btn btn-primary px-5 guardar-btn" [disabled]="formProveedor.invalid">
+      <button type="submit" class="btn btn-primary px-5 guardar-btn"
+        [disabled]="formProveedor.invalid || !esIbanEspanolValido(proveedor.datosBancarios || '')">
         Guardar
       </button>
     </div>
