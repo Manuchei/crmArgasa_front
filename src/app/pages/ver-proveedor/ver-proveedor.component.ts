@@ -61,12 +61,14 @@ export class VerProveedorComponent implements OnInit {
     return {
       fechaAlta: '',
       referencia: '',
+      gama: '',
       marca: '',
       modelo: '',
       familia: '',
       subfamilia: '',
       descripcion: '',
       unidades: 0,
+      precioSinIva: 0,
       empresa: '',
     };
   }
@@ -202,14 +204,37 @@ export class VerProveedorComponent implements OnInit {
     }
 
     const referencia = this.trim(this.nuevoProducto.referencia);
+    const gama = this.trim(this.nuevoProducto.gama);
     const marca = this.trim(this.nuevoProducto.marca);
     const modelo = this.trim(this.nuevoProducto.modelo);
     const familia = this.trim(this.nuevoProducto.familia);
     const subfamilia = this.trim(this.nuevoProducto.subfamilia);
     const descripcion = this.trim(this.nuevoProducto.descripcion);
+    const precioSinIva = this.normalizarNumero(this.nuevoProducto.precioSinIva);
+    const unidades = this.normalizarNumero(this.nuevoProducto.unidades);
 
-    if (!referencia || !marca || !modelo || !familia || !subfamilia || !descripcion) {
-      alert('Referencia, marca, modelo, familia, subfamilia y descripción son obligatorios');
+    if (
+      !referencia ||
+      !gama ||
+      !marca ||
+      !modelo ||
+      !familia ||
+      !subfamilia ||
+      !descripcion
+    ) {
+      alert(
+        'Referencia, gama, marca, modelo, familia, subfamilia y descripción son obligatorios',
+      );
+      return;
+    }
+
+    if (precioSinIva < 0) {
+      alert('El precio no puede ser negativo');
+      return;
+    }
+
+    if (unidades < 0) {
+      alert('Las unidades no pueden ser negativas');
       return;
     }
 
@@ -228,12 +253,14 @@ export class VerProveedorComponent implements OnInit {
     const payload: IProducto = {
       fechaAlta: this.nuevoProducto.fechaAlta || undefined,
       referencia,
+      gama,
       marca,
       modelo,
       familia,
       subfamilia,
       descripcion,
-      unidades: this.normalizarNumero(this.nuevoProducto.unidades),
+      unidades,
+      precioSinIva,
       empresa: '',
       proveedor: { id: this.proveedor.id },
     };
@@ -271,7 +298,9 @@ export class VerProveedorComponent implements OnInit {
 
     if (!confirmar) return;
 
-    alert('La eliminación de productos debe hacerse con su endpoint específico.');
+    alert(
+      'La eliminación de productos debe hacerse con su endpoint específico.',
+    );
   }
 
   generarAlbaran(): void {

@@ -38,12 +38,18 @@
           <input class="form-control" [(ngModel)]="form.subfamilia" name="subfamilia" required />
         </div>
 
-        <div class="col-md-8">
+        <div class="col-md-7">
           <label class="form-label">Descripción</label>
           <input class="form-control" [(ngModel)]="form.descripcion" name="descripcion" required />
         </div>
 
         <div class="col-md-2">
+          <label class="form-label">Precio sin IVA</label>
+          <input type="number" class="form-control" [(ngModel)]="form.precioSinIva" name="precioSinIva" min="0"
+            step="0.01" />
+        </div>
+
+        <div class="col-md-1">
           <label class="form-label">Unidades</label>
           <input type="number" class="form-control" [(ngModel)]="form.unidades" name="unidades" min="0" />
         </div>
@@ -64,12 +70,8 @@
       <div class="row mb-3">
         <div class="col-md-5">
           <label class="form-label">Buscar producto</label>
-          <input
-            type="text"
-            class="form-control"
-            [(ngModel)]="filtroProducto"
-            placeholder="Buscar por referencia, gama, marca, modelo o descripción"
-          />
+          <input type="text" class="form-control" [(ngModel)]="filtroProducto"
+            placeholder="Buscar por referencia, gama, marca, modelo o descripción" />
         </div>
       </div>
 
@@ -84,6 +86,7 @@
               <th>Familia</th>
               <th>Subfamilia</th>
               <th>Descripción</th>
+              <th class="text-end">Precio sin IVA</th>
               <th class="text-center">Unidades</th>
               <th class="text-center">Ajuste</th>
               <th class="text-end">Unidades (+/-)</th>
@@ -100,25 +103,17 @@
               <td>{{ p.familia || '-' }}</td>
               <td>{{ p.subfamilia || '-' }}</td>
               <td>{{ p.descripcion || '-' }}</td>
+              <td class="text-end">{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
 
               <td class="text-center">
-                <span
-                  class="badge"
-                  [class.bg-success]="(p.unidades || 0) > 0"
-                  [class.bg-danger]="(p.unidades || 0) <= 0"
-                >
-                  {{ (p.unidades || 0) <= 0 ? 'Sin unidades (' + p.unidades + ')' : p.unidades }}
-                </span>
+                <span class="badge" [class.bg-success]="(p.unidades || 0) > 0"
+                  [class.bg-danger]="(p.unidades || 0) <= 0">
+                  {{ (p.unidades || 0) <= 0 ? 'Sin unidades (' + p.unidades + ')' : p.unidades }} </span>
               </td>
 
               <td class="text-center" style="max-width: 140px;">
-                <input
-                  type="number"
-                  class="form-control form-control-sm text-center"
-                  [ngModel]="getAjuste(p.id ?? 0)"
-                  (ngModelChange)="setAjuste(p.id ?? 0, $event)"
-                  min="1"
-                />
+                <input type="number" class="form-control form-control-sm text-center" [ngModel]="getAjuste(p.id ?? 0)"
+                  (ngModelChange)="setAjuste(p.id ?? 0, $event)" min="1" />
               </td>
 
               <td class="text-end">
@@ -139,7 +134,7 @@
             </tr>
 
             <tr *ngIf="productosFiltrados.length === 0">
-              <td colspan="11" class="text-center py-3">
+              <td colspan="12" class="text-center py-3">
                 No hay productos que coincidan con la búsqueda.
               </td>
             </tr>
@@ -150,12 +145,8 @@
   </div>
 </div>
 
-<div
-  class="modal fade show"
-  tabindex="-1"
-  style="display: block; background: rgba(0,0,0,0.5);"
-  *ngIf="mostrarModalMovimientos"
->
+<div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.5);"
+  *ngIf="mostrarModalMovimientos">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -174,12 +165,7 @@
         <div class="row mb-3">
           <div class="col-md-4">
             <label class="form-label">Filtrar por referencia</label>
-            <input
-              type="text"
-              class="form-control"
-              [(ngModel)]="filtroCodigo"
-              placeholder="Buscar referencia"
-            />
+            <input type="text" class="form-control" [(ngModel)]="filtroCodigo" placeholder="Buscar referencia" />
           </div>
         </div>
 
@@ -210,11 +196,7 @@
                 </td>
 
                 <td>
-                  <span
-                    class="badge"
-                    [class.bg-success]="m.tipo === 'ENTRADA'"
-                    [class.bg-danger]="m.tipo === 'SALIDA'"
-                  >
+                  <span class="badge" [class.bg-success]="m.tipo === 'ENTRADA'" [class.bg-danger]="m.tipo === 'SALIDA'">
                     {{ m.tipo }}
                   </span>
                 </td>

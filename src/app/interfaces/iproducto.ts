@@ -11,4 +11,5 @@ export interface IProducto {
   descripcion: string;
   gama?: string;
   empresa: string;
+  precioSinIva: number;
 }

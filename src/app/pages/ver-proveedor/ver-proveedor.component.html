@@ -12,11 +12,7 @@
       </div>
 
       <div class="header-actions">
-        <button
-          class="btn btn-dark w-100 w-sm-auto"
-          (click)="generarAlbaran()"
-          [disabled]="creandoAlbaran"
-        >
+        <button class="btn btn-dark w-100 w-sm-auto" (click)="generarAlbaran()" [disabled]="creandoAlbaran">
           <i class="bi bi-file-earmark-text"></i>
           {{ creandoAlbaran ? 'Creando...' : 'Crear albarán' }}
         </button>
@@ -24,39 +20,22 @@
     </div>
 
     <div class="tabs-detalle mb-3">
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'datos'"
-        (click)="setActiveTab('datos')"
-      >
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'datos'" (click)="setActiveTab('datos')">
         Datos
       </button>
 
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'albaranes'"
-        (click)="setActiveTab('albaranes')"
-      >
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'albaranes'"
+        (click)="setActiveTab('albaranes')">
         Albaranes
       </button>
 
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'facturacion'"
-        (click)="setActiveTab('facturacion')"
-      >
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'facturacion'"
+        (click)="setActiveTab('facturacion')">
         Facturas
       </button>
 
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'productos'"
-        (click)="setActiveTab('productos')"
-      >
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'productos'"
+        (click)="setActiveTab('productos')">
         Productos / Trabajos
       </button>
     </div>
@@ -110,11 +89,7 @@
 
     <div *ngIf="activeTab === 'albaranes'" class="content-card">
       <div class="mb-3 d-flex gap-2 align-items-center flex-wrap albaran-toolbar">
-        <input
-          class="form-control input-albaran"
-          [(ngModel)]="numeroAlbaranProveedor"
-          placeholder="Número proveedor"
-        />
+        <input class="form-control input-albaran" [(ngModel)]="numeroAlbaranProveedor" placeholder="Número proveedor" />
 
         <button class="btn btn-dark" (click)="generarAlbaran()" [disabled]="creandoAlbaran">
           Crear
@@ -149,11 +124,8 @@
                 <div class="acciones-wrap">
                   <button class="btn btn-sm btn-secondary" (click)="verAlbaran(a)">Ver</button>
                   <button class="btn btn-sm btn-outline-secondary" (click)="editarAlbaran(a)">Editar</button>
-                  <button
-                    class="btn btn-sm btn-primary"
-                    (click)="generarFacturaDesdeAlbaran(a)"
-                    [disabled]="!a.confirmado || albaranGenerandoFacturaId === a.id"
-                  >
+                  <button class="btn btn-sm btn-primary" (click)="generarFacturaDesdeAlbaran(a)"
+                    [disabled]="!a.confirmado || albaranGenerandoFacturaId === a.id">
                     <span *ngIf="albaranGenerandoFacturaId !== a.id">Facturar</span>
                     <span *ngIf="albaranGenerandoFacturaId === a.id">Generando...</span>
                   </button>
@@ -182,49 +154,57 @@
 
             <div class="mb-2">
               <label class="form-label">Fecha alta</label>
-              <input type="date" class="form-control" [(ngModel)]="nuevoProducto.fechaAlta" />
+              <input type="date" class="form-control" [(ngModel)]="nuevoProducto.fechaAlta" name="fechaAltaProducto" />
             </div>
 
             <div class="mb-2">
               <label class="form-label">Referencia</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.referencia" />
+              <input class="form-control" [(ngModel)]="nuevoProducto.referencia" name="referenciaProducto" />
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label">Gama</label>
+              <input class="form-control" [(ngModel)]="nuevoProducto.gama" name="gamaProducto" />
             </div>
 
             <div class="mb-2">
               <label class="form-label">Marca</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.marca" />
+              <input class="form-control" [(ngModel)]="nuevoProducto.marca" name="marcaProducto" />
             </div>
 
             <div class="mb-2">
               <label class="form-label">Modelo</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.modelo" />
+              <input class="form-control" [(ngModel)]="nuevoProducto.modelo" name="modeloProducto" />
             </div>
 
             <div class="mb-2">
               <label class="form-label">Familia</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.familia" />
+              <input class="form-control" [(ngModel)]="nuevoProducto.familia" name="familiaProducto" />
             </div>
 
             <div class="mb-2">
               <label class="form-label">Subfamilia</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.subfamilia" />
+              <input class="form-control" [(ngModel)]="nuevoProducto.subfamilia" name="subfamiliaProducto" />
             </div>
 
             <div class="mb-2">
               <label class="form-label">Descripción</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.descripcion" />
+              <input class="form-control" [(ngModel)]="nuevoProducto.descripcion" name="descripcionProducto" />
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label">Precio sin IVA</label>
+              <input type="number" class="form-control" [(ngModel)]="nuevoProducto.precioSinIva"
+                name="precioSinIvaProducto" min="0" step="0.01" />
             </div>
 
             <div class="mb-3">
               <label class="form-label">Unidades</label>
-              <input type="number" class="form-control" [(ngModel)]="nuevoProducto.unidades" />
+              <input type="number" class="form-control" [(ngModel)]="nuevoProducto.unidades" name="unidadesProducto"
+                min="0" />
             </div>
 
-            <button
-              class="btn btn-dark w-100 w-md-auto"
-              (click)="guardarProducto()"
-              [disabled]="guardandoProducto"
-            >
+            <button class="btn btn-dark w-100 w-md-auto" (click)="guardarProducto()" [disabled]="guardandoProducto">
               {{ guardandoProducto ? 'Guardando...' : 'Guardar' }}
             </button>
           </div>
@@ -249,11 +229,7 @@
               <input type="number" class="form-control" [(ngModel)]="nuevoTrabajo.importePagado" />
             </div>
 
-            <button
-              class="btn btn-dark w-100 w-md-auto"
-              (click)="guardarTrabajo()"
-              [disabled]="guardandoTrabajo"
-            >
+            <button class="btn btn-dark w-100 w-md-auto" (click)="guardarTrabajo()" [disabled]="guardandoTrabajo">
               {{ guardandoTrabajo ? 'Guardando...' : 'Guardar' }}
             </button>
           </div>
@@ -267,12 +243,15 @@
               <table class="table table-striped table-hover align-middle text-center mb-0 detalle-proveedor-table">
                 <thead class="table-dark">
                   <tr>
+                    <th>Fecha alta</th>
                     <th>Referencia</th>
+                    <th>Gama</th>
                     <th>Marca</th>
                     <th>Modelo</th>
                     <th>Familia</th>
                     <th>Subfamilia</th>
                     <th>Descripción</th>
+                    <th>Precio sin IVA</th>
                     <th>Unidades</th>
                     <th>Acciones</th>
                   </tr>
@@ -280,12 +259,15 @@
 
                 <tbody>
                   <tr *ngFor="let p of proveedor.productos; let i = index">
+                    <td>{{ p.fechaAlta || '-' }}</td>
                     <td>{{ p.referencia || '-' }}</td>
+                    <td>{{ p.gama || '-' }}</td>
                     <td>{{ p.marca || '-' }}</td>
                     <td>{{ p.modelo || '-' }}</td>
                     <td>{{ p.familia || '-' }}</td>
                     <td>{{ p.subfamilia || '-' }}</td>
                     <td class="text-break">{{ p.descripcion || '-' }}</td>
+                    <td>{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
                     <td>{{ p.unidades || 0 }}</td>
                     <td>
                       <button class="btn btn-sm btn-danger" (click)="eliminarProducto(i)">

@@ -72,6 +72,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       descripcion: '',
       unidades: 0,
       empresa: this.empresaActiva || 'ARGASA',
+      precioSinIva: 0,
     };
   }
 
@@ -82,7 +83,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
-        alert(err.error?.message || err.error || 'No se pudieron cargar los productos');
+        alert(
+          err.error?.message ||
+            err.error ||
+            'No se pudieron cargar los productos',
+        );
       },
     });
   }
@@ -101,7 +106,9 @@ export class ProductosComponent implements OnInit, OnDestroy {
       !this.form.subfamilia?.trim() ||
       !this.form.descripcion?.trim()
     ) {
-      alert('Referencia, marca, modelo, familia, subfamilia y descripción son obligatorios');
+      alert(
+        'Referencia, marca, modelo, familia, subfamilia y descripción son obligatorios',
+      );
       return;
     }
 
@@ -122,6 +129,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       descripcion: this.form.descripcion.trim(),
       unidades: this.form.unidades || 0,
       empresa: this.empresaActiva,
+      precioSinIva: 0,
     };
 
     this.productosService.create(payload).subscribe({
@@ -133,7 +141,9 @@ export class ProductosComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         this.loading = false;
-        alert(err.error?.message || err.error || 'No se pudo crear el producto');
+        alert(
+          err.error?.message || err.error || 'No se pudo crear el producto',
+        );
       },
     });
   }
@@ -173,7 +183,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
-        alert(err.error?.message || err.error || 'No se pudieron subir las unidades');
+        alert(
+          err.error?.message ||
+            err.error ||
+            'No se pudieron subir las unidades',
+        );
       },
     });
   }
@@ -196,7 +210,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
-        alert(err.error?.message || err.error || 'No se pudieron bajar las unidades');
+        alert(
+          err.error?.message ||
+            err.error ||
+            'No se pudieron bajar las unidades',
+        );
       },
     });
   }
@@ -215,7 +233,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
-        alert(err.error?.message || err.error || 'No se pudieron cargar los movimientos');
+        alert(
+          err.error?.message ||
+            err.error ||
+            'No se pudieron cargar los movimientos',
+        );
       },
     });
   }
