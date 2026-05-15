@@ -39,7 +39,15 @@
         <div class="doc-lateral">
             <div class="doc-box">
                 <h2>ALBARÁN</h2>
-                <div><b>Nº:</b> {{ albaran.numeroGenerado || albaran.numeroInterno || ('#' + albaran.id) }}</div>
+                <div>
+    <b>Nº Albarán:</b>
+    {{ albaran.numeroInterno }}
+</div>
+
+<div *ngIf="albaran.numeroProveedor">
+    <b>Nº Alb. Proveedor:</b>
+    {{ albaran.numeroProveedor }}
+</div>
                 <div><b>Fecha:</b> {{ albaran.fechaEmision }}</div>
                 <div><b>Empresa:</b> {{ albaran.empresa }}</div>
             </div>

@@ -65,14 +65,15 @@ export class ProductosComponent implements OnInit, OnDestroy {
     return {
       fechaAlta: '',
       referencia: '',
+      gama: '',
       marca: '',
       modelo: '',
       familia: '',
       subfamilia: '',
       descripcion: '',
       unidades: 0,
-      empresa: this.empresaActiva || 'ARGASA',
       precioSinIva: 0,
+      empresa: this.empresaActiva || 'ARGASA',
     };
   }
 
@@ -99,7 +100,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
     }
 
     if (
-      !this.form.referencia?.trim() ||
+      !this.form.gama?.trim() ||
       !this.form.marca?.trim() ||
       !this.form.modelo?.trim() ||
       !this.form.familia?.trim() ||
@@ -107,7 +108,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       !this.form.descripcion?.trim()
     ) {
       alert(
-        'Referencia, marca, modelo, familia, subfamilia y descripción son obligatorios',
+        'Gama, marca, modelo, familia, subfamilia y descripción son obligatorios',
       );
       return;
     }
@@ -117,19 +118,25 @@ export class ProductosComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if ((this.form.precioSinIva || 0) < 0) {
+      alert('El precio sin IVA no puede ser negativo');
+      return;
+    }
+
     this.loading = true;
 
     const payload: IProducto = {
       fechaAlta: this.form.fechaAlta || undefined,
-      referencia: this.form.referencia.trim(),
+      gama: this.form.gama.trim(),
       marca: this.form.marca.trim(),
       modelo: this.form.modelo.trim(),
       familia: this.form.familia.trim(),
       subfamilia: this.form.subfamilia.trim(),
       descripcion: this.form.descripcion.trim(),
       unidades: this.form.unidades || 0,
+      precioSinIva: this.form.precioSinIva || 0,
       empresa: this.empresaActiva,
-      precioSinIva: 0,
+      referencia: ''
     };
 
     this.productosService.create(payload).subscribe({
@@ -271,6 +278,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
     return this.productos.filter(
       (p) =>
         (p.referencia || '').toLowerCase().includes(filtro) ||
+        (p.gama || '').toLowerCase().includes(filtro) ||
         (p.marca || '').toLowerCase().includes(filtro) ||
         (p.modelo || '').toLowerCase().includes(filtro) ||
         (p.familia || '').toLowerCase().includes(filtro) ||

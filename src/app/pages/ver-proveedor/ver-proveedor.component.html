@@ -152,61 +152,62 @@
           <div class="card-detalle">
             <h5>Nuevo producto</h5>
 
-            <div class="mb-2">
-              <label class="form-label">Fecha alta</label>
-              <input type="date" class="form-control" [(ngModel)]="nuevoProducto.fechaAlta" name="fechaAltaProducto" />
-            </div>
+            <div class="row g-2">
+              <div class="col-md-4">
+                <label class="form-label">Fecha alta</label>
+                <input type="date" class="form-control" [(ngModel)]="nuevoProducto.fechaAlta"
+                  name="fechaAltaProducto" />
+              </div>
 
-            <div class="mb-2">
-              <label class="form-label">Referencia</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.referencia" name="referenciaProducto" />
-            </div>
+              <div class="col-md-4">
+                <label class="form-label">Gama</label>
+                <input class="form-control" [(ngModel)]="nuevoProducto.gama" name="gamaProducto" required />
+              </div>
 
-            <div class="mb-2">
-              <label class="form-label">Gama</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.gama" name="gamaProducto" />
-            </div>
+              <div class="col-md-4">
+                <label class="form-label">Marca</label>
+                <input class="form-control" [(ngModel)]="nuevoProducto.marca" name="marcaProducto" required />
+              </div>
 
-            <div class="mb-2">
-              <label class="form-label">Marca</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.marca" name="marcaProducto" />
-            </div>
+              <div class="col-md-4">
+                <label class="form-label">Modelo</label>
+                <input class="form-control" [(ngModel)]="nuevoProducto.modelo" name="modeloProducto" required />
+              </div>
 
-            <div class="mb-2">
-              <label class="form-label">Modelo</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.modelo" name="modeloProducto" />
-            </div>
+              <div class="col-md-4">
+                <label class="form-label">Familia</label>
+                <input class="form-control" [(ngModel)]="nuevoProducto.familia" name="familiaProducto" required />
+              </div>
 
-            <div class="mb-2">
-              <label class="form-label">Familia</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.familia" name="familiaProducto" />
-            </div>
+              <div class="col-md-4">
+                <label class="form-label">Subfamilia</label>
+                <input class="form-control" [(ngModel)]="nuevoProducto.subfamilia" name="subfamiliaProducto" required />
+              </div>
 
-            <div class="mb-2">
-              <label class="form-label">Subfamilia</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.subfamilia" name="subfamiliaProducto" />
-            </div>
+              <div class="col-md-6">
+                <label class="form-label">Descripción</label>
+                <input class="form-control" [(ngModel)]="nuevoProducto.descripcion" name="descripcionProducto"
+                  required />
+              </div>
 
-            <div class="mb-2">
-              <label class="form-label">Descripción</label>
-              <input class="form-control" [(ngModel)]="nuevoProducto.descripcion" name="descripcionProducto" />
-            </div>
+              <div class="col-md-3">
+                <label class="form-label">Precio sin IVA</label>
+                <input type="number" class="form-control" [(ngModel)]="nuevoProducto.precioSinIva"
+                  name="precioSinIvaProducto" min="0" step="0.01" />
+              </div>
 
-            <div class="mb-2">
-              <label class="form-label">Precio sin IVA</label>
-              <input type="number" class="form-control" [(ngModel)]="nuevoProducto.precioSinIva"
-                name="precioSinIvaProducto" min="0" step="0.01" />
-            </div>
+              <div class="col-md-3">
+                <label class="form-label">Unidades</label>
+                <input type="number" class="form-control" [(ngModel)]="nuevoProducto.unidades" name="unidadesProducto"
+                  min="0" />
+              </div>
 
-            <div class="mb-3">
-              <label class="form-label">Unidades</label>
-              <input type="number" class="form-control" [(ngModel)]="nuevoProducto.unidades" name="unidadesProducto"
-                min="0" />
+              <div class="col-12">
+                <button class="btn btn-dark w-100" (click)="guardarProducto()" [disabled]="guardandoProducto">
+                  {{ guardandoProducto ? 'Guardando...' : 'Guardar' }}
+                </button>
+              </div>
             </div>
-
-            <button class="btn btn-dark w-100 w-md-auto" (click)="guardarProducto()" [disabled]="guardandoProducto">
-              {{ guardandoProducto ? 'Guardando...' : 'Guardar' }}
-            </button>
           </div>
         </div>
 

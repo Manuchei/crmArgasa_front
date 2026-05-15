@@ -57,16 +57,7 @@
                                 [(ngModel)]="facturaEdit.fechaVencimiento" />
                         </div>
 
-                        <div *ngIf="!modoEdicion" class="mt-2">
-                            <b>Nº factura proveedor:</b> {{ factura.numeroFacturaProveedor || '-' }}
-                        </div>
-
-                        <div *ngIf="modoEdicion"
-                            class="d-flex justify-content-md-end align-items-center gap-2 mt-2 flex-wrap">
-                            <label class="fw-bold mb-0">Nº factura proveedor:</label>
-                            <input type="text" class="form-control form-control-sm factura-date-input"
-                                [(ngModel)]="facturaEdit.numeroFacturaProveedor" />
-                        </div>
+                      
 
                         <div class="mt-2">
                             <b>Estado:</b>

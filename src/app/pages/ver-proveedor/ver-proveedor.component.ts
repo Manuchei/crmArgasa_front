@@ -203,7 +203,6 @@ export class VerProveedorComponent implements OnInit {
       return;
     }
 
-    const referencia = this.trim(this.nuevoProducto.referencia);
     const gama = this.trim(this.nuevoProducto.gama);
     const marca = this.trim(this.nuevoProducto.marca);
     const modelo = this.trim(this.nuevoProducto.modelo);
@@ -213,17 +212,9 @@ export class VerProveedorComponent implements OnInit {
     const precioSinIva = this.normalizarNumero(this.nuevoProducto.precioSinIva);
     const unidades = this.normalizarNumero(this.nuevoProducto.unidades);
 
-    if (
-      !referencia ||
-      !gama ||
-      !marca ||
-      !modelo ||
-      !familia ||
-      !subfamilia ||
-      !descripcion
-    ) {
+    if (!gama || !marca || !modelo || !familia || !subfamilia || !descripcion) {
       alert(
-        'Referencia, gama, marca, modelo, familia, subfamilia y descripción son obligatorios',
+        'Gama, marca, modelo, familia, subfamilia y descripción son obligatorios',
       );
       return;
     }
@@ -238,21 +229,8 @@ export class VerProveedorComponent implements OnInit {
       return;
     }
 
-    this.asegurarProductos();
-
-    const existeReferencia = this.proveedor.productos.some(
-      (p: IProducto) =>
-        this.trim(p.referencia).toLowerCase() === referencia.toLowerCase(),
-    );
-
-    if (existeReferencia) {
-      alert('Ya existe un producto con esa referencia en este proveedor');
-      return;
-    }
-
     const payload: IProducto = {
       fechaAlta: this.nuevoProducto.fechaAlta || undefined,
-      referencia,
       gama,
       marca,
       modelo,
@@ -263,6 +241,7 @@ export class VerProveedorComponent implements OnInit {
       precioSinIva,
       empresa: '',
       proveedor: { id: this.proveedor.id },
+      referencia: ''
     };
 
     this.guardandoProducto = true;
