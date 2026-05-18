@@ -34,7 +34,6 @@
       </div>
 
       <div class="card-body">
-
         <div class="text-muted" *ngIf="!serviciosPendientes.length && !lineasPendientes.length">
           No hay servicios ni líneas de albarán pendientes de facturar para este cliente.
         </div>
@@ -78,13 +77,12 @@
             Limpiar selección
           </button>
         </div>
-
       </div>
     </div>
 
     <div class="card mb-4 shadow-sm" *ngIf="factura" id="factura-print">
       <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <strong>Factura {{ factura.serie }}-{{ factura.numero }}</strong>
+        <strong>Factura {{ getNumeroFacturaCliente(factura) }}</strong>
 
         <div class="d-flex gap-2 flex-wrap no-print">
           <button type="button" class="btn btn-sm btn-outline-dark" (click)="imprimir($event)">
@@ -103,10 +101,17 @@
           <div class="col-12 col-md-6">
             <div class="fw-bold">Empresa</div>
             <div class="text-break">{{ factura.empresa }}</div>
+
+            <div class="mt-2">
+              <b>Nº interno:</b>
+              {{ getNumeroFacturaCliente(factura) }}
+            </div>
           </div>
 
           <div class="col-12 col-md-6 factura-meta-right">
-            <div *ngIf="!modoEdicion"><b>Fecha:</b> {{ factura.fechaEmision }}</div>
+            <div *ngIf="!modoEdicion">
+              <b>Fecha:</b> {{ factura.fechaEmision }}
+            </div>
 
             <div *ngIf="modoEdicion" class="d-flex justify-content-md-end align-items-center gap-2 flex-wrap">
               <label class="fw-bold mb-0">Fecha:</label>
@@ -117,11 +122,11 @@
             <div class="mt-2">
               <b>Estado:</b>
               <span class="badge" [ngClass]="{
-                  'bg-warning text-dark': factura.estado === 'BORRADOR',
-                  'bg-success': factura.estado === 'EMITIDA',
-                  'bg-secondary': factura.estado === 'PAGADA',
-                  'bg-danger': factura.estado === 'ANULADA'
-                }">
+                'bg-warning text-dark': factura.estado === 'BORRADOR',
+                'bg-success': factura.estado === 'EMITIDA',
+                'bg-secondary': factura.estado === 'PAGADA',
+                'bg-danger': factura.estado === 'ANULADA'
+              }">
                 {{ factura.estado }}
               </span>
             </div>
@@ -268,15 +273,15 @@
             </thead>
             <tbody>
               <tr *ngFor="let f of facturasCliente">
-                <td>{{ f.serie }}-{{ f.numero }}</td>
+                <td>{{ getNumeroFacturaCliente(f) }}</td>
                 <td>{{ f.fechaEmision }}</td>
                 <td>
                   <span class="badge" [ngClass]="{
-                      'bg-warning text-dark': f.estado === 'BORRADOR',
-                      'bg-success': f.estado === 'EMITIDA',
-                      'bg-secondary': f.estado === 'PAGADA',
-                      'bg-danger': f.estado === 'ANULADA'
-                    }">
+                    'bg-warning text-dark': f.estado === 'BORRADOR',
+                    'bg-success': f.estado === 'EMITIDA',
+                    'bg-secondary': f.estado === 'PAGADA',
+                    'bg-danger': f.estado === 'ANULADA'
+                  }">
                     {{ f.estado }}
                   </span>
                 </td>

@@ -506,4 +506,20 @@ export class FacturarV2Component implements OnInit, OnChanges {
     if (!value) return '';
     return String(value).slice(0, 10);
   }
+  getNumeroFacturaCliente(factura: any): string {
+  if (!factura) {
+    return '';
+  }
+
+  const numero = factura.numero ?? factura.id;
+
+  const fecha = factura.fechaEmision
+    ? new Date(factura.fechaEmision)
+    : new Date();
+
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const anio = fecha.getFullYear();
+
+  return `FC-${numero}-${mes}-${anio}`;
+}
 }

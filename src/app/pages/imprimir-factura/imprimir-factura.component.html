@@ -1,19 +1,32 @@
+<!-- factura-imprimir.component.html -->
+
 <div class="container mt-3">
+
   <div class="no-print mb-3">
-    <button type="button" class="btn btn-dark" (click)="imprimirManual()">
+    <button
+      type="button"
+      class="btn btn-dark"
+      (click)="imprimirManual()">
       Imprimir
     </button>
   </div>
 
-  <div *ngIf="loading" class="text-muted">Cargando…</div>
+  <div *ngIf="loading" class="text-muted">
+    Cargando…
+  </div>
 
   <div *ngIf="error" class="alert alert-danger">
     {{ error }}
   </div>
 
   <div *ngIf="factura && !loading" class="factura">
+
     <div class="cabecera-top">
-      <div class="empresa-box" *ngIf="getEmisorVisualFactura() as emisor">
+
+      <div
+        class="empresa-box"
+        *ngIf="getEmisorVisualFactura() as emisor">
+
         <img
           *ngIf="emisor.logoUrl"
           [src]="emisor.logoUrl"
@@ -22,7 +35,10 @@
         />
 
         <div class="empresa-datos">
-          <div class="empresa-nombre">{{ emisor.nombre || factura.empresa }}</div>
+
+          <div class="empresa-nombre">
+            {{ emisor.nombre || factura.empresa }}
+          </div>
 
           <div *ngIf="emisor.direccion">
             {{ emisor.direccion }}
@@ -31,6 +47,7 @@
           <div>
             {{ emisor.codigoPostal || '' }}
             {{ emisor.poblacion || '' }}
+
             <span *ngIf="emisor.provincia">
               ({{ emisor.provincia }})
             </span>
@@ -47,48 +64,72 @@
           <div *ngIf="emisor.cif">
             CIF: {{ emisor.cif }}
           </div>
+
         </div>
       </div>
 
       <div class="doc-box">
+
         <h2>FACTURA</h2>
-        <div><b>Nº:</b> {{ getNumeroDocumento() }}</div>
-        <div><b>Fecha:</b> {{ getFechaDocumento() }}</div>
-        <div><b>Estado:</b> {{ getEstadoDocumento() }}</div>
+
+        <div><b>Nº Factura:</b> {{ getNumeroDocumento() }}</div>
+
+        <div>
+          <b>Fecha:</b>
+          {{ getFechaDocumento() }}
+        </div>
+
+        <div>
+          <b>Estado:</b>
+          {{ getEstadoDocumento() }}
+        </div>
+
       </div>
+
     </div>
 
     <hr />
 
     <div class="bloque-datos mb-3">
-      <h5 class="mb-2">{{ getTituloReceptor() }}</h5>
+
+      <h5 class="mb-2">
+        {{ getTituloReceptor() }}
+      </h5>
 
       <div>
-        <b>Nombre:</b> {{ getNombreReceptor() }}
+        <b>Nombre:</b>
+        {{ getNombreReceptor() }}
       </div>
 
       <div *ngIf="getCifDniReceptor()">
-        <b>CIF/DNI:</b> {{ getCifDniReceptor() }}
+        <b>CIF/DNI:</b>
+        {{ getCifDniReceptor() }}
       </div>
 
       <div *ngIf="getDireccionReceptor()">
-        <b>Dirección:</b> {{ getDireccionReceptor() }}
+        <b>Dirección:</b>
+        {{ getDireccionReceptor() }}
       </div>
 
       <div *ngIf="getLocalidadReceptor()">
-        <b>Localidad:</b> {{ getLocalidadReceptor() }}
+        <b>Localidad:</b>
+        {{ getLocalidadReceptor() }}
       </div>
 
       <div *ngIf="getTelefonoReceptor()">
-        <b>Teléfono:</b> {{ getTelefonoReceptor() }}
+        <b>Teléfono:</b>
+        {{ getTelefonoReceptor() }}
       </div>
 
       <div *ngIf="getEmailReceptor()">
-        <b>Email:</b> {{ getEmailReceptor() }}
+        <b>Email:</b>
+        {{ getEmailReceptor() }}
       </div>
+
     </div>
 
     <table class="table table-sm table-bordered tabla-lineas">
+
       <thead>
         <tr>
           <th>Concepto</th>
@@ -101,46 +142,85 @@
       </thead>
 
       <tbody>
+
         <tr *ngFor="let l of getLineasDocumento()">
-          <td>{{ l.descripcion }}</td>
-          <td class="text-end">{{ getCantidadLinea(l) }}</td>
-          <td class="text-end">
-            <span class="money">{{ getPrecioLinea(l) | number:'1.2-2' }} €</span>
+
+          <td>
+            {{ l.descripcion }}
           </td>
+
           <td class="text-end">
-            <span class="money">{{ getSubtotalLinea(l) | number:'1.2-2' }} €</span>
+            {{ getCantidadLinea(l) }}
           </td>
+
           <td class="text-end">
-            <span class="nowrap">{{ getIvaLinea(l) }}</span>
+            <span class="money">
+              {{ getPrecioLinea(l) | number:'1.2-2' }} €
+            </span>
           </td>
+
           <td class="text-end">
-            <span class="money">{{ getTotalLinea(l) | number:'1.2-2' }} €</span>
+            <span class="money">
+              {{ getSubtotalLinea(l) | number:'1.2-2' }} €
+            </span>
           </td>
+
+          <td class="text-end">
+            <span class="nowrap">
+              {{ getIvaLinea(l) }}
+            </span>
+          </td>
+
+          <td class="text-end">
+            <span class="money">
+              {{ getTotalLinea(l) | number:'1.2-2' }} €
+            </span>
+          </td>
+
         </tr>
+
       </tbody>
+
     </table>
 
     <div class="d-flex justify-content-end mt-3">
+
       <table class="table table-sm tabla-totales">
+
         <tr>
           <td>Base imponible</td>
+
           <td class="text-end">
-            <span class="money">{{ getBaseImponible() | number:'1.2-2' }} €</span>
+            <span class="money">
+              {{ getBaseImponible() | number:'1.2-2' }} €
+            </span>
           </td>
         </tr>
+
         <tr>
           <td>IVA</td>
+
           <td class="text-end">
-            <span class="money">{{ getIvaTotal() | number:'1.2-2' }} €</span>
+            <span class="money">
+              {{ getIvaTotal() | number:'1.2-2' }} €
+            </span>
           </td>
         </tr>
+
         <tr class="fw-bold">
           <td>TOTAL</td>
+
           <td class="text-end">
-            <span class="money">{{ getTotalDocumento() | number:'1.2-2' }} €</span>
+            <span class="money">
+              {{ getTotalDocumento() | number:'1.2-2' }} €
+            </span>
           </td>
         </tr>
+
       </table>
+
     </div>
+
   </div>
+
 </div>

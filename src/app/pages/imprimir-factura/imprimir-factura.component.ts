@@ -149,15 +149,22 @@ export class ImprimirFacturaComponent implements OnInit {
     return this.factura?.emisor || null;
   }
 
-  getNumeroDocumento(): string {
-    if (this.esFacturaProveedor()) {
-      return this.factura?.numeroInterno || '-';
-    }
-
-    const serie = this.factura?.serie || '';
-    const numero = this.factura?.numero || '';
-    return serie && numero ? `${serie}-${numero}` : numero || '-';
+ getNumeroDocumento(): string {
+  if (!this.factura) {
+    return '';
   }
+
+  const numero = this.factura.numero ?? this.factura.id;
+
+  const fecha = this.factura.fechaEmision
+    ? new Date(this.factura.fechaEmision)
+    : new Date();
+
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const anio = fecha.getFullYear();
+
+  return `FC-${numero}-${mes}-${anio}`;
+}
 
   getFechaDocumento(): string {
     return this.factura?.fechaEmision || '-';
