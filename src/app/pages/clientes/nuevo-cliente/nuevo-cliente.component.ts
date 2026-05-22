@@ -38,6 +38,7 @@ export class NuevoClienteComponent {
     cifDni: '',
     email: '',
     numeroCuenta: '',
+    iban: '',
     totalImporte: 0,
     totalPagado: 0,
     trabajos: [],
@@ -58,19 +59,47 @@ export class NuevoClienteComponent {
     private router: Router,
   ) {}
 
-  esIbanEspanolValido(iban: string): boolean {
-    const limpio = (iban || '').replace(/\s+/g, '').toUpperCase();
-    return /^ES\d{22}$/.test(limpio);
+  formatearNumeroCuenta(value: string): void {
+    let limpio = (value || '').replace(/\D/g, '');
+
+    if (limpio.length > 20) {
+      limpio = limpio.substring(0, 20);
+    }
+
+    this.cliente.numeroCuenta = limpio;
+
+    this.cliente.iban =
+      limpio.length === 20 ? this.generarIbanEspanol(limpio) : '';
   }
 
-  formatearIBAN(): void {
-    let value = this.cliente.numeroCuenta || '';
+  generarIbanEspanol(numeroCuenta: string): string {
+    const cuenta = (numeroCuenta || '').replace(/\D/g, '');
 
-    value = value.replace(/\s+/g, '').toUpperCase();
+    if (!/^\d{20}$/.test(cuenta)) {
+      return '';
+    }
 
-    value = value.replace(/(.{4})/g, '$1 ').trim();
+    const rearranged = cuenta + '142800';
 
-    this.cliente.numeroCuenta = value;
+    const resto = this.mod97(rearranged);
+
+    const dc = 98 - resto;
+
+    return `ES${dc.toString().padStart(2, '0')}${cuenta}`;
+  }
+
+  private mod97(numero: string): number {
+    let resto = 0;
+
+    for (const char of numero) {
+      resto = (resto * 10 + Number(char)) % 97;
+    }
+
+    return resto;
+  }
+
+  formatearIbanVisual(iban?: string): string {
+    return (iban || '').match(/.{1,4}/g)?.join(' ') || '';
   }
 
   private toNumber(v: any): number {
@@ -198,9 +227,9 @@ export class NuevoClienteComponent {
       movil: this.trim(this.cliente.movil),
       cifDni: this.trim(this.cliente.cifDni),
       email: this.trim(this.cliente.email),
-      numeroCuenta: this.trim(this.cliente.numeroCuenta)
-        .replace(/\s+/g, '')
-        .toUpperCase(),
+      numeroCuenta: this.trim(this.cliente.numeroCuenta).replace(/\D/g, ''),
+
+      iban: this.cliente.iban || '',
       empresa: undefined,
     };
   }
@@ -213,10 +242,10 @@ export class NuevoClienteComponent {
 
     const payload = this.buildClientePayload();
 
-    if (!this.esIbanEspanolValido(payload.numeroCuenta || '')) {
-      alert('El IBAN no es válido. Debe empezar por ES y tener 22 números.');
-      return;
-    }
+    if (!payload.numeroCuenta || !/^\d{20}$/.test(payload.numeroCuenta)) {
+  alert('El número de cuenta debe tener 20 dígitos.');
+  return;
+}
 
     this.clienteService.crearCliente(payload).subscribe({
       next: () => {

@@ -30,6 +30,16 @@
           </div>
 
           <div class="col-md-6">
+            <div class="fw-bold">Acompañante 1</div>
+            <div>{{ ruta?.acompanante1 || '—' }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="fw-bold">Acompañante 2</div>
+            <div>{{ ruta?.acompanante2 || '—' }}</div>
+          </div>
+
+          <div class="col-md-6">
             <div class="fw-bold">Destino</div>
             <div>{{ ruta?.destino || '—' }}</div>
           </div>
@@ -60,7 +70,7 @@
             <tbody>
               <tr *ngFor="let l of ruta.lineas">
                 <td>{{ getNombreProducto(l) }}</td>
-                <td>{{ l?.cantidad ?? 0 }}</td>
+                <td>{{ l?.cantidad || 0 }}</td>
               </tr>
             </tbody>
           </table>

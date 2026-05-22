@@ -16,6 +16,9 @@ export interface Ruta {
   destino: string;
   origen?: string;
 
+  acompanante1?: string;
+  acompanante2?: string;
+
   lineas?: IRutaLineaDto[];
 
   cliente?: {

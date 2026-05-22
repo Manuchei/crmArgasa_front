@@ -28,6 +28,8 @@ export class EditarProveedorComponent implements OnInit {
     pais: '',
     contacto: '',
     datosBancarios: '',
+    numeroCuenta: '',
+    iban: '',
     notas: '',
     trabajaEnArgasa: false,
     trabajaEnLuga: false,
@@ -96,9 +98,9 @@ export class EditarProveedorComponent implements OnInit {
       provincia: this.trim(this.proveedor.provincia),
       pais: this.trim(this.proveedor.pais),
       contacto: this.trim(this.proveedor.contacto),
-      datosBancarios: this.trim(this.proveedor.datosBancarios)
-        .replace(/\s+/g, '')
-        .toUpperCase(),
+      datosBancarios: this.trim(this.proveedor.datosBancarios),
+      numeroCuenta: (this.proveedor.numeroCuenta || '').replace(/\D/g, ''),
+      iban: this.proveedor.iban || '',
       notas: this.trim(this.proveedor.notas),
     };
   }
@@ -110,6 +112,14 @@ export class EditarProveedorComponent implements OnInit {
     }
 
     const payload = this.buildProveedorSaveDto();
+
+    if (
+      this.proveedor.numeroCuenta &&
+      !/^\d{20}$/.test(this.proveedor.numeroCuenta)
+    ) {
+      alert('El número de cuenta debe tener 20 dígitos.');
+      return;
+    }
 
     this.proveedorService
       .actualizarProveedor(this.proveedor.id, payload)
@@ -127,5 +137,46 @@ export class EditarProveedorComponent implements OnInit {
 
   cancelar() {
     this.router.navigate(['/app/proveedores']);
+  }
+
+  formatearNumeroCuenta(value: string): void {
+    let limpio = (value || '').replace(/\D/g, '');
+
+    if (limpio.length > 20) {
+      limpio = limpio.substring(0, 20);
+    }
+
+    this.proveedor.numeroCuenta = limpio;
+
+    this.proveedor.iban =
+      limpio.length === 20 ? this.generarIbanEspanol(limpio) : '';
+  }
+
+  generarIbanEspanol(numeroCuenta: string): string {
+    const cuenta = (numeroCuenta || '').replace(/\D/g, '');
+
+    if (!/^\d{20}$/.test(cuenta)) {
+      return '';
+    }
+
+    const rearranged = cuenta + '142800';
+    const resto = this.mod97(rearranged);
+    const dc = 98 - resto;
+
+    return `ES${dc.toString().padStart(2, '0')}${cuenta}`;
+  }
+
+  private mod97(numero: string): number {
+    let resto = 0;
+
+    for (const char of numero) {
+      resto = (resto * 10 + Number(char)) % 97;
+    }
+
+    return resto;
+  }
+
+  formatearIbanVisual(iban?: string): string {
+    return (iban || '').match(/.{1,4}/g)?.join(' ') || '';
   }
 }

@@ -30,6 +30,8 @@ export class NuevoProveedorComponent {
     pais: '',
     contacto: '',
     datosBancarios: '',
+    numeroCuenta: '',
+    iban: '',
     notas: '',
     importeTotal: 0,
     importePagado: 0,
@@ -52,28 +54,45 @@ export class NuevoProveedorComponent {
     private router: Router,
   ) {}
 
-  esIbanEspanolValido(iban: string): boolean {
-    const limpio = (iban || '').replace(/\s+/g, '').toUpperCase();
-    return /^ES\d{22}$/.test(limpio);
-  }
+  formatearNumeroCuenta(value: string): void {
+    let limpio = (value || '').replace(/\D/g, '');
 
-  formatearIBAN(value: string): void {
-    let limpio = (value || '').replace(/\s+/g, '').toUpperCase();
-
-    limpio = limpio.replace(/[^A-Z0-9]/g, '');
-
-    if (limpio.length > 24) {
-      limpio = limpio.substring(0, 24);
+    if (limpio.length > 20) {
+      limpio = limpio.substring(0, 20);
     }
 
-    this.proveedor.datosBancarios =
-      limpio.match(/.{1,4}/g)?.join(' ') || limpio;
+    this.proveedor.numeroCuenta = limpio;
+    this.proveedor.iban =
+      limpio.length === 20 ? this.generarIbanEspanol(limpio) : '';
   }
 
-  private limpiarIBAN(iban: string): string {
-    return (iban || '').replace(/\s+/g, '').toUpperCase();
+  generarIbanEspanol(numeroCuenta: string): string {
+    const cuenta = (numeroCuenta || '').replace(/\D/g, '');
+
+    if (!/^\d{20}$/.test(cuenta)) {
+      return '';
+    }
+
+    const rearranged = cuenta + '142800';
+    const resto = this.mod97(rearranged);
+    const dc = 98 - resto;
+
+    return `ES${dc.toString().padStart(2, '0')}${cuenta}`;
   }
 
+  private mod97(numero: string): number {
+    let resto = 0;
+
+    for (const char of numero) {
+      resto = (resto * 10 + Number(char)) % 97;
+    }
+
+    return resto;
+  }
+
+  formatearIbanVisual(iban?: string): string {
+    return (iban || '').match(/.{1,4}/g)?.join(' ') || '';
+  }
   private trim(value: any): string {
     return typeof value === 'string' ? value.trim() : '';
   }
@@ -96,7 +115,9 @@ export class NuevoProveedorComponent {
       provincia: this.trim(this.proveedor.provincia),
       pais: this.trim(this.proveedor.pais),
       contacto: this.trim(this.proveedor.contacto),
-      datosBancarios: this.limpiarIBAN(this.proveedor.datosBancarios || ''),
+      datosBancarios: this.trim(this.proveedor.datosBancarios),
+      numeroCuenta: this.proveedor.numeroCuenta || '',
+      iban: this.proveedor.iban || '',
       notas: this.trim(this.proveedor.notas),
     };
   }
@@ -107,8 +128,11 @@ export class NuevoProveedorComponent {
       return;
     }
 
-    if (!this.esIbanEspanolValido(this.proveedor.datosBancarios||'')) {
-      alert('El IBAN no es válido. Debe empezar por ES y tener 22 números.');
+    if (
+      !this.proveedor.numeroCuenta ||
+      !/^\d{20}$/.test(this.proveedor.numeroCuenta)
+    ) {
+      alert('El número de cuenta debe tener 20 dígitos.');
       return;
     }
 

@@ -62,4 +62,11 @@ export class FacturacionV2Service {
   getFacturaById(id: number): Observable<FacturaV2Response> {
     return this.http.get<FacturaV2Response>(`${this.baseUrl}/facturas/${id}`);
   }
+
+  marcarComoPagada(id: number) {
+    return this.http.post<FacturaV2Response>(
+      `${this.baseUrl}/facturas/${id}/marcar-pagada`,
+      {},
+    );
+  }
 }

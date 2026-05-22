@@ -77,25 +77,28 @@
         <h5>Detalle del pago</h5>
 
         <table class="tabla">
-            <thead>
-                <tr>
-                    <th>Concepto</th>
-                    <th>Fecha</th>
-                    <th>Método</th>
-                    <th class="num">Importe</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Pago recibido de cliente</td>
-                    <td>{{ comprobante.fecha || '-' }}</td>
-                    <td>{{ comprobante.metodo || '-' }}</td>
-                    <td class="num">
-                        <b>{{ (comprobante.importe || 0) | number: '1.2-2' }} €</b>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+  <thead>
+    <tr>
+      <th>Concepto</th>
+      <th>Fecha</th>
+      <th>Método</th>
+      <th>Nº talonario</th>
+      <th class="num">Importe</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>Pago recibido de cliente</td>
+      <td>{{ comprobante.fecha || '-' }}</td>
+      <td>{{ comprobante.metodo || '-' }}</td>
+      <td>{{ comprobante.numeroTalonario || '-' }}</td>
+      <td class="num">
+        <b>{{ (comprobante.importe || 0) | number: '1.2-2' }} €</b>
+      </td>
+    </tr>
+  </tbody>
+</table>
     </div>
 
     <div class="bloque" *ngIf="comprobante.observaciones">

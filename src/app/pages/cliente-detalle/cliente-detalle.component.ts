@@ -51,9 +51,10 @@ export class ClienteDetalleComponent implements OnInit {
   };
 
   nuevoPago = {
-    fecha: ClienteDetalleComponent.hoyISO(),
+    fecha: '',
     importe: 0,
     metodo: '',
+    numeroTalonario: '',
     observaciones: '',
   };
 
@@ -71,293 +72,109 @@ export class ClienteDetalleComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.clienteId = Number(this.route.snapshot.paramMap.get('id'));
 
-    if (isNaN(id) || id <= 0) {
-      alert('ID inválido');
-      this.router.navigate(['/app/clientes']);
-      return;
-    }
+    this.nuevoPago.fecha = this.hoyISO();
 
-    this.clienteId = id;
-
-    this.activarPestanaDesdeNavegacion();
-
-    this.cargarCliente(id);
-    this.cargarTrabajos(id);
-    this.cargarAlbaranes(id);
-    this.cargarPagos(id);
-    this.cargarClienteProductos(id);
+    this.cargarCliente();
+    this.cargarProductos();
+    this.cargarTrabajos();
+    this.cargarPagos();
   }
 
-  cambiarPestana(
-    pestana:
-      | 'datos'
-      | 'albaranes'
-      | 'facturacion'
-      | 'pagos'
-      | 'productos-trabajos',
-  ): void {
-    this.pestanaActiva = pestana;
+  private static safeTrim(value: any): string {
+    return String(value ?? '').trim();
   }
 
-  private activarPestanaDesdeNavegacion(): void {
-    const state = history.state;
-
-    if (state?.volverA === 'albaranes') {
-      this.pestanaActiva = 'albaranes';
-      return;
-    }
-
-    const saved = localStorage.getItem('clienteDetallePestana');
-
-    if (saved === 'albaranes') {
-      this.pestanaActiva = 'albaranes';
-      localStorage.removeItem('clienteDetallePestana');
-    }
+  private static toNumber(value: any): number {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
   }
 
-  private static hoyISO(): string {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-
-    return `${yyyy}-${mm}-${dd}`;
+  private static isValidISODate(value: string): boolean {
+    return /^\d{4}-\d{2}-\d{2}$/.test(value);
   }
 
   private hoyISO(): string {
-    return ClienteDetalleComponent.hoyISO();
+    return new Date().toISOString().substring(0, 10);
   }
 
-  private static toNumber(v: any): number {
-    const n = Number(v);
-    return isNaN(n) ? 0 : n;
-  }
-
-  private static safeText(v: any): string {
-    return v == null ? '' : String(v);
-  }
-
-  private static safeTrim(v: any): string {
-    return ClienteDetalleComponent.safeText(v).trim();
-  }
-
-  private static isValidISODate(dateStr: string): boolean {
-    return /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
-  }
-
-  private clamp(n: number, min: number, max: number): number {
-    return Math.min(max, Math.max(min, n));
-  }
-
-  private getEmpresaActual(): string {
-    const empresaCliente = ClienteDetalleComponent.safeTrim(
-      this.cliente?.empresa,
-    );
-
-    if (empresaCliente) {
-      return empresaCliente;
-    }
-
-    const empresaLS = ClienteDetalleComponent.safeTrim(
-      localStorage.getItem('empresa_activa'),
-    );
-
-    return empresaLS || 'ARGASA';
+  private getEmpresa(): string {
+    return localStorage.getItem('empresa') || 'ARGASA';
   }
 
   private getEmpresaHeaders(): HttpHeaders {
     return new HttpHeaders({
-      'X-Empresa': this.getEmpresaActual(),
+      'X-Empresa': this.getEmpresa(),
     });
   }
 
-  private logHttpError(contexto: string, err: any): void {
-    console.error(`Error en ${contexto}:`, err);
-
+  private logHttpError(contexto: string, err: unknown): void {
     if (err instanceof HttpErrorResponse) {
-      console.error(`[${contexto}] status:`, err.status);
-      console.error(`[${contexto}] statusText:`, err.statusText);
-      console.error(`[${contexto}] message:`, err.message);
-      console.error(`[${contexto}] error:`, err.error);
-      console.error(`[${contexto}] url:`, err.url);
-    }
-  }
-
-  getQty(productoId: number): number {
-    if (!productoId) {
-      return 1;
-    }
-
-    const v = Number(this.qtyMap[productoId] ?? 1);
-
-    return isNaN(v) || v <= 0 ? 1 : Math.floor(v);
-  }
-
-  setQty(productoId: number, value: any, unidades: any): void {
-    if (!productoId) {
+      console.error(`Error al ${contexto}:`, {
+        status: err.status,
+        statusText: err.statusText,
+        message: err.message,
+        error: err.error,
+        url: err.url,
+      });
       return;
     }
 
-    const maxUnidades = Number(unidades ?? 0);
-    const valueNumber = Number(value);
-    const qty = isNaN(valueNumber) ? 1 : Math.floor(valueNumber);
-
-    this.qtyMap[productoId] = this.clamp(qty, 1, Math.max(1, maxUnidades || 1));
+    console.error(`Error al ${contexto}:`, err);
   }
 
-  getDto(productoId: number): number {
-    if (!productoId) {
-      return 0;
+  cambiarPestana(pestana: typeof this.pestanaActiva): void {
+    this.pestanaActiva = pestana;
+
+    if (pestana === 'productos-trabajos') {
+      this.cargarProductos();
     }
-
-    const v = Number(this.dtoMap[productoId] ?? 0);
-
-    if (isNaN(v)) {
-      return 0;
-    }
-
-    return this.clamp(v, 0, 100);
   }
 
-  setDto(productoId: number, value: any): void {
-    if (!productoId) {
-      return;
-    }
+  cargarCliente(): void {
+    if (!this.clienteId) return;
 
-    const v = Number(value);
-
-    this.dtoMap[productoId] = isNaN(v) ? 0 : this.clamp(v, 0, 100);
-  }
-
-  getPagado(productoId: number): number {
-    if (!productoId) {
-      return 0;
-    }
-
-    const v = Number(this.pagadoMap[productoId] ?? 0);
-
-    if (isNaN(v)) {
-      return 0;
-    }
-
-    return Math.max(0, v);
-  }
-
-  setPagado(productoId: number, value: any): void {
-    if (!productoId) {
-      return;
-    }
-
-    const v = Number(value);
-
-    this.pagadoMap[productoId] = isNaN(v) ? 0 : Math.max(0, v);
-  }
-
-  volverAClientes(): void {
-    this.router.navigate(['/app/clientes']);
-  }
-
-  cargarCliente(id: number): void {
     this.http
-      .get(`${this.apiUrl}/clientes/${id}`, {
+      .get<any>(`${this.apiUrl}/clientes/${this.clienteId}`, {
         headers: this.getEmpresaHeaders(),
       })
       .subscribe({
-        next: (data: any) => {
+        next: (data) => {
           this.cliente = data;
           this.calcularTotales();
-          this.cargarProductos();
         },
-        error: (err) => this.logHttpError('cargar cliente', err),
+        error: (err: any) => {
+          this.logHttpError('cargar cliente', err);
+          alert('No se pudo cargar el cliente.');
+        },
       });
   }
 
-  cargarClienteProductos(clienteId: number): void {
-    const empresa = this.getEmpresaActual();
+  cargarPagos(): void {
+    if (!this.clienteId) return;
 
-    this.cpService.getProductosCliente(clienteId, empresa).subscribe({
-      next: (data: any[]) => {
-        this.clienteProductos = (data ?? []).map((x) => ({
-          ...x,
-          entregado: x?.entregado === true,
-        }));
-      },
-      error: (err) => {
-        this.logHttpError('cargar productos del cliente', err);
-        this.clienteProductos = [];
-      },
-    });
-  }
-
-  isEntregado(cp: any): boolean {
-    return cp?.entregado === true;
-  }
-
-  eliminarProductoCliente(cp: any): void {
-    if (!cp || this.isEntregado(cp)) {
-      alert('No se puede eliminar: el producto ya está entregado.');
-      return;
-    }
-
-    const productoId = Number(cp.productoId);
-
-    if (!productoId) {
-      return;
-    }
-
-    if (!confirm('¿Seguro que deseas eliminar este producto del cliente?')) {
-      return;
-    }
-
-    this.cpService
-      .deleteProductoCliente(
-        this.clienteId,
-        productoId,
-        this.getEmpresaActual(),
-      )
+    this.http
+      .get<any[]>(`${this.apiUrl}/pagos/cliente/${this.clienteId}`, {
+        headers: this.getEmpresaHeaders(),
+      })
       .subscribe({
-        next: () => {
-          this.cargarClienteProductos(this.clienteId);
-          this.cargarTrabajos(this.clienteId);
-          this.cargarProductos();
-          this.cargarCliente(this.clienteId);
+        next: (data: any[]) => {
+          this.pagos = Array.isArray(data) ? data : [];
+          this.calcularTotales();
         },
-        error: (err) => {
-          this.logHttpError('eliminar producto del cliente', err);
-          alert('No se pudo eliminar el producto del cliente.');
-          this.cargarProductos();
+        error: (err: any) => {
+          this.logHttpError('cargar pagos', err);
+          this.pagos = [];
+          this.calcularTotales();
         },
       });
-  }
-
-  getFechaEntrega(cp: any): string {
-    return cp?.fechaEntrega || cp?.fecha_entrega || cp?.fechaEntregaReal || '-';
   }
 
   cargarProductos(): void {
-    this.productosService.list().subscribe({
-      next: (res: IProducto[]) => {
-        this.productos = res ?? [];
-
-        for (const prod of this.productos) {
-          const id = Number(prod.id);
-
-          if (!isNaN(id) && id > 0) {
-            if (this.qtyMap[id] == null) {
-              this.qtyMap[id] = 1;
-            }
-
-            if (this.dtoMap[id] == null) {
-              this.dtoMap[id] = 0;
-            }
-
-            if (this.pagadoMap[id] == null) {
-              this.pagadoMap[id] = 0;
-            }
-          }
-        }
+    this.productosService.getProductos().subscribe({
+      next: (data) => {
+        this.productos = Array.isArray(data) ? data : [];
       },
       error: (err) => {
         this.logHttpError('cargar productos', err);
@@ -366,109 +183,153 @@ export class ClienteDetalleComponent implements OnInit {
     });
   }
 
-  cargarTrabajos(clienteId: number): void {
-    this.http
-      .get<any[]>(`${this.apiUrl}/trabajos/cliente/${clienteId}`, {
-        headers: this.getEmpresaHeaders(),
-      })
-      .subscribe({
-        next: (data) => {
-          this.trabajos = data ?? [];
-          this.normalizarTrabajos();
-          this.calcularTotales();
-        },
-        error: (err) => this.logHttpError('cargar trabajos', err),
-      });
+  calcularTotales(): void {
+    if (!this.cliente) return;
+
+    const totalTrabajos = this.trabajos.reduce(
+      (acc, t) => acc + this.getNetoTrabajo(t),
+      0,
+    );
+
+    const totalPagadoTrabajos = this.trabajos.reduce(
+      (acc, t) => acc + ClienteDetalleComponent.toNumber(t?.importePagado),
+      0,
+    );
+
+    const totalPagos = this.pagos.reduce(
+      (acc, p) => acc + ClienteDetalleComponent.toNumber(p?.importe),
+      0,
+    );
+
+    const totalPagado = totalPagadoTrabajos + totalPagos;
+
+    this.cliente.totalImporte = totalTrabajos;
+    this.cliente.totalPagado = totalPagado;
+    this.cliente.saldoPendiente = Math.max(totalTrabajos - totalPagado, 0);
   }
 
-  private normalizarTrabajos(): void {
-    this.trabajos = (this.trabajos ?? []).map((t) => {
-      const descripcion =
-        t?.descripcion != null && String(t.descripcion).trim().length > 0
-          ? t.descripcion
-          : (t?.nombre ?? '');
-
-      const unidadesRaw = t?.unidades != null ? t.unidades : t?.cantidad;
-      const unidades =
-        unidadesRaw != null ? ClienteDetalleComponent.toNumber(unidadesRaw) : 1;
-
-      const precioUnitario =
-        t?.precioUnitario != null
-          ? ClienteDetalleComponent.toNumber(t.precioUnitario)
-          : 0;
-
-      const descuento =
-        t?.descuento != null
-          ? ClienteDetalleComponent.toNumber(t.descuento)
-          : 0;
-
-      const importePagado =
-        t?.importePagado != null
-          ? ClienteDetalleComponent.toNumber(t.importePagado)
-          : t?.pagado != null
-            ? ClienteDetalleComponent.toNumber(t.pagado)
-            : 0;
-
-      const entregado = t?.entregado === true;
-      const fechaEntrega = t?.fechaEntrega ?? t?.fecha_entrega ?? null;
-
-      return {
-        ...t,
-        descripcion,
-        unidades: unidades <= 0 ? 1 : unidades,
-        precioUnitario: precioUnitario < 0 ? 0 : precioUnitario,
-        descuento: descuento < 0 ? 0 : descuento,
-        importePagado: importePagado < 0 ? 0 : importePagado,
-        entregado,
-        fechaEntrega,
-      };
-    });
+  getQty(id: number): number {
+    return this.qtyMap[id] ?? 1;
   }
 
-  getBrutoTrabajo(t: any): number {
-    const unidades = ClienteDetalleComponent.toNumber(t?.unidades);
-    const precio = ClienteDetalleComponent.toNumber(t?.precioUnitario);
+  setQty(id: number, value: any, max?: number): void {
+    let n = ClienteDetalleComponent.toNumber(value);
 
-    return Math.max(0, unidades) * Math.max(0, precio);
+    if (n < 1) n = 1;
+
+    if (max !== undefined && max !== null && n > max) {
+      n = max;
+    }
+
+    this.qtyMap[id] = n;
+  }
+
+  getDto(id: number): number {
+    return this.dtoMap[id] ?? 0;
+  }
+
+  setDto(id: number, value: any): void {
+    let n = ClienteDetalleComponent.toNumber(value);
+
+    if (n < 0) n = 0;
+    if (n > 100) n = 100;
+
+    this.dtoMap[id] = n;
+  }
+
+  getPagado(id: number): number {
+    return this.pagadoMap[id] ?? 0;
+  }
+
+  setPagado(id: number, value: any): void {
+    let n = ClienteDetalleComponent.toNumber(value);
+
+    if (n < 0) n = 0;
+
+    this.pagadoMap[id] = n;
   }
 
   getNetoTrabajo(t: any): number {
-    const bruto = this.getBrutoTrabajo(t);
-    const descuento = ClienteDetalleComponent.toNumber(t?.descuento);
-    const factor = 1 - descuento / 100;
+    const unidades = ClienteDetalleComponent.toNumber(t?.unidades || 1);
+    const precio = ClienteDetalleComponent.toNumber(t?.precioUnitario);
+    const dto = ClienteDetalleComponent.toNumber(t?.descuento);
 
-    return Math.max(0, bruto * (isFinite(factor) ? factor : 1));
+    const bruto = unidades * precio;
+    return bruto - bruto * (dto / 100);
   }
 
   getNetoNuevoTrabajo(): number {
-    const unidades = Math.max(
-      0,
-      ClienteDetalleComponent.toNumber(this.nuevoTrabajo.unidades),
-    );
-
-    const precioUnitario = Math.max(
-      0,
-      ClienteDetalleComponent.toNumber(this.nuevoTrabajo.precioUnitario),
-    );
-
-    const descuento = ClienteDetalleComponent.toNumber(
-      this.nuevoTrabajo.descuento,
-    );
-    const dto = Math.min(100, Math.max(0, descuento));
-    const bruto = unidades * precioUnitario;
-    const neto = bruto * (1 - dto / 100);
-
-    return Math.round((Math.max(0, neto) + Number.EPSILON) * 100) / 100;
+    return this.getNetoTrabajo(this.nuevoTrabajo);
   }
 
   onNuevoTrabajoChange(): void {
-    this.calcularTotales();
+    const neto = this.getNetoNuevoTrabajo();
+
+    if (this.nuevoTrabajo.importePagado > neto) {
+      this.nuevoTrabajo.importePagado = neto;
+    }
   }
 
-  agregarTrabajo(): void {
-    if (!this.cliente?.id) {
+  addProducto(p: IProducto): void {
+    if (!this.cliente?.id || !p?.id) return;
+
+    const cantidad = this.getQty(p.id);
+    const descuento = this.getDto(p.id);
+    const importePagado = this.getPagado(p.id);
+
+    if (cantidad <= 0) {
+      alert('La cantidad debe ser mayor que 0.');
       return;
     }
+
+    if ((p.unidades || 0) <= 0) {
+      alert('No hay unidades disponibles.');
+      return;
+    }
+
+    if (cantidad > (p.unidades || 0)) {
+      alert('No puedes añadir más unidades de las disponibles.');
+      return;
+    }
+
+    this.cpService
+      .addProducto(
+        this.cliente.id,
+        p.id!,
+        cantidad,
+        descuento,
+        importePagado,
+        this.getEmpresa(),
+      )
+      .subscribe({
+        next: (trabajoCreado: any) => {
+          this.qtyMap[p.id!] = 1;
+          this.dtoMap[p.id!] = 0;
+          this.pagadoMap[p.id!] = 0;
+
+          this.trabajos.push({
+            id: trabajoCreado.id,
+            productoId: trabajoCreado.productoId,
+            descripcion: trabajoCreado.descripcion || p.descripcion,
+            unidades: trabajoCreado.unidades || cantidad,
+            precioUnitario: trabajoCreado.precioUnitario || p.precioSinIva || 0,
+            descuento: trabajoCreado.descuento || descuento,
+            importe: trabajoCreado.importe || 0,
+            importePagado: trabajoCreado.importePagado || importePagado,
+            entregado: trabajoCreado.entregado || false,
+          });
+
+          this.cargarProductos();
+          this.calcularTotales();
+        },
+        error: (err: any) => {
+          this.logHttpError('añadir producto al cliente', err);
+          alert('No se pudo añadir el producto.');
+        },
+      });
+  }
+  agregarTrabajo(): void {
+    if (!this.cliente?.id) return;
 
     const descripcion = ClienteDetalleComponent.safeTrim(
       this.nuevoTrabajo.descripcion,
@@ -477,44 +338,47 @@ export class ClienteDetalleComponent implements OnInit {
     const unidades = ClienteDetalleComponent.toNumber(
       this.nuevoTrabajo.unidades,
     );
+
     const precioUnitario = ClienteDetalleComponent.toNumber(
       this.nuevoTrabajo.precioUnitario,
     );
+
     const descuento = ClienteDetalleComponent.toNumber(
       this.nuevoTrabajo.descuento,
     );
+
     const importePagado = ClienteDetalleComponent.toNumber(
       this.nuevoTrabajo.importePagado,
     );
 
-    if (!descripcion || unidades <= 0 || precioUnitario <= 0) {
-      alert(
-        'Debes introducir descripción, unidades (>0) y precio unitario (>0).',
-      );
+    if (!descripcion) {
+      alert('Debes indicar una descripción.');
       return;
     }
 
-    if (descuento < 0 || descuento > 100) {
-      alert('El descuento debe estar entre 0 y 100.');
+    if (unidades <= 0) {
+      alert('Las unidades deben ser mayores que 0.');
       return;
     }
 
-    const trabajoAEnviar: any = {
+    if (precioUnitario < 0) {
+      alert('El precio no puede ser negativo.');
+      return;
+    }
+
+    const payload = {
       descripcion,
-      importe: this.getNetoNuevoTrabajo(),
       unidades,
       precioUnitario,
       descuento,
       importePagado,
-      pagado: false,
-      entregado: false,
-      fechaEntrega: null,
+      pagado: importePagado >= this.getNetoNuevoTrabajo(),
     };
 
     this.http
-      .post(
+      .post<any>(
         `${this.apiUrl}/trabajos/cliente/${this.cliente.id}`,
-        trabajoAEnviar,
+        payload,
         {
           headers: this.getEmpresaHeaders(),
         },
@@ -530,334 +394,12 @@ export class ClienteDetalleComponent implements OnInit {
             pagado: false,
           };
 
-          this.cargarTrabajos(this.clienteId);
-          this.cargarClienteProductos(this.clienteId);
-          this.cargarProductos();
-          this.cargarCliente(this.clienteId);
+          this.cargarCliente();
         },
         error: (err) => {
-          this.logHttpError('agregar trabajo', err);
+          this.logHttpError('añadir trabajo', err);
           alert('No se pudo añadir el trabajo.');
         },
-      });
-  }
-
-  eliminarTrabajo(t: any): void {
-    if (!this.cliente?.id) {
-      return;
-    }
-
-    if (t?.entregado === true) {
-      alert('No se puede eliminar: este trabajo ya está entregado.');
-      return;
-    }
-
-    if (!confirm('¿Seguro que deseas eliminar este trabajo?')) {
-      return;
-    }
-
-    const id = Number(t?.id);
-
-    if (!id) {
-      return;
-    }
-
-    this.http.delete(`${this.apiUrl}/trabajos/${id}`).subscribe({
-      next: () => {
-        this.cargarTrabajos(this.clienteId);
-        this.cargarClienteProductos(this.clienteId);
-        this.cargarProductos();
-        this.cargarCliente(this.clienteId);
-      },
-      error: (err) => {
-        this.logHttpError('eliminar trabajo', err);
-        alert('No se pudo eliminar el trabajo.');
-      },
-    });
-  }
-
-  sumarUnidadTrabajo(t: any): void {
-    if (!t || t.entregado === true) {
-      return;
-    }
-
-    const productoId = Number(t?.productoId);
-
-    if (!productoId) {
-      alert('Este trabajo no está vinculado a un producto.');
-      return;
-    }
-
-    const producto = this.productos.find((p) => Number(p.id) === productoId);
-    const unidadesDisponibles = Number(producto?.unidades ?? 0);
-
-    if (unidadesDisponibles <= 0) {
-      alert('No hay unidades disponibles para añadir una unidad más.');
-      return;
-    }
-
-    const nuevaCantidad = Math.max(1, Number(t?.unidades ?? 1) + 1);
-
-    this.actualizarCantidadTrabajo(t, nuevaCantidad);
-  }
-
-  restarUnidadTrabajo(t: any): void {
-    if (!t || t.entregado === true) {
-      return;
-    }
-
-    const productoId = Number(t?.productoId);
-
-    if (!productoId) {
-      alert('Este trabajo no está vinculado a un producto.');
-      return;
-    }
-
-    const actual = Math.max(1, Number(t?.unidades ?? 1));
-    const nuevaCantidad = actual - 1;
-
-    if (nuevaCantidad <= 0) {
-      if (
-        !confirm(
-          'La cantidad quedará en 0. ¿Quieres eliminar esta línea completa?',
-        )
-      ) {
-        return;
-      }
-    }
-
-    this.actualizarCantidadTrabajo(t, nuevaCantidad);
-  }
-
-  private actualizarCantidadTrabajo(t: any, nuevaCantidad: number): void {
-    const productoId = Number(t?.productoId);
-
-    if (!productoId) {
-      return;
-    }
-
-    this.http
-      .put(
-        `${this.apiUrl}/clientes/${this.clienteId}/productos/${productoId}/cantidad?cantidad=${nuevaCantidad}`,
-        {},
-        {
-          headers: this.getEmpresaHeaders(),
-        },
-      )
-      .subscribe({
-        next: () => {
-          this.cargarTrabajos(this.clienteId);
-          this.cargarClienteProductos(this.clienteId);
-          this.cargarProductos();
-          this.cargarCliente(this.clienteId);
-        },
-        error: (err: any) => {
-          this.logHttpError('actualizar cantidad de trabajo', err);
-
-          const msg =
-            typeof err?.error === 'string'
-              ? err.error
-              : err?.error?.message || 'Error al actualizar cantidad';
-
-          alert(msg);
-          this.cargarProductos();
-        },
-      });
-  }
-
-  addProducto(p: IProducto): void {
-    if (!this.clienteId) {
-      return;
-    }
-
-    const productoId = Number(p.id);
-
-    if (!productoId) {
-      return;
-    }
-
-    const unidadesDisponibles = Number(p.unidades ?? 0);
-
-    if (unidadesDisponibles <= 0) {
-      alert('No hay unidades disponibles.');
-      return;
-    }
-
-    const cantidad = this.getQty(productoId);
-
-    if (cantidad > unidadesDisponibles) {
-      alert('No hay unidades suficientes para esa cantidad.');
-      return;
-    }
-
-    const descuento = this.getDto(productoId);
-    const importePagado = this.getPagado(productoId);
-    const empresa = this.getEmpresaActual();
-
-    this.cpService
-      .addProducto(
-        this.clienteId,
-        productoId,
-        cantidad,
-        descuento,
-        importePagado,
-        empresa,
-      )
-      .subscribe({
-        next: () => {
-          p.unidades = unidadesDisponibles - cantidad;
-
-          this.qtyMap[productoId] = 1;
-          this.dtoMap[productoId] = 0;
-          this.pagadoMap[productoId] = 0;
-
-          this.cargarTrabajos(this.clienteId);
-          this.cargarClienteProductos(this.clienteId);
-          this.cargarProductos();
-          this.cargarCliente(this.clienteId);
-        },
-        error: (err: HttpErrorResponse) => {
-          this.logHttpError('addProducto', err);
-
-          const msg =
-            typeof err?.error === 'string'
-              ? err.error
-              : err?.error?.message || 'No se pudo añadir el producto';
-
-          alert(msg);
-          this.cargarProductos();
-        },
-      });
-  }
-
-  verAlbaran(a: any): void {
-    if (!a?.id) {
-      return;
-    }
-
-    if (this.cliente?.id) {
-      localStorage.setItem('clienteIdFromAlbaran', String(this.cliente.id));
-      localStorage.setItem('clienteDetallePestana', 'albaranes');
-    }
-
-    this.router.navigate(['/app/albaranes', a.id], {
-      queryParams: { clienteId: this.cliente?.id },
-      state: { clienteId: this.cliente?.id, volverA: 'albaranes' },
-    });
-  }
-
-  imprimirAlbaran(a: any): void {
-    if (!a?.id) {
-      return;
-    }
-
-    const url = `${window.location.origin}/imprimir/albaran/${a.id}`;
-    window.open(url, '_blank');
-  }
-
-  imprimirComprobantePago(pago: any): void {
-    if (!pago?.id) {
-      return;
-    }
-
-    const url = `${window.location.origin}/imprimir/pago/${pago.id}`;
-    window.open(url, '_blank');
-  }
-
-  cargarAlbaranes(clienteId: number): void {
-    this.http
-      .get<any[]>(`${this.apiUrl}/albaranes`, {
-        params: { clienteId } as any,
-        headers: this.getEmpresaHeaders(),
-      })
-      .subscribe({
-        next: (data) => {
-          this.albaranes = data ?? [];
-        },
-        error: (err) => this.logHttpError('cargar albaranes', err),
-      });
-  }
-
-  crearAlbaran(): void {
-    if (!this.cliente?.id) {
-      return;
-    }
-
-    this.creandoAlbaran = true;
-    localStorage.setItem('clienteDetallePestana', 'albaranes');
-
-    this.http
-      .post<any>(
-        `${this.apiUrl}/albaranes/clientes/${this.cliente.id}`,
-        {},
-        {
-          headers: this.getEmpresaHeaders(),
-        },
-      )
-      .subscribe({
-        next: (albaran) => {
-          this.creandoAlbaran = false;
-
-          if (!albaran?.id) {
-            alert('No se pudo crear el albarán.');
-            return;
-          }
-
-          this.cargarAlbaranes(this.clienteId);
-
-          this.router.navigate(['/app/albaranes', albaran.id], {
-            queryParams: { clienteId: this.cliente?.id },
-            state: { clienteId: this.cliente?.id, volverA: 'albaranes' },
-          });
-        },
-        error: (err) => {
-          this.creandoAlbaran = false;
-          this.logHttpError('crear albarán', err);
-          alert('No se pudo crear el albarán.');
-        },
-      });
-  }
-
-  eliminarAlbaran(a: any): void {
-    if (!a?.id) {
-      return;
-    }
-
-    const confirmado = confirm(
-      `¿Seguro que deseas eliminar el albarán #${a.id}?`,
-    );
-
-    if (!confirmado) {
-      return;
-    }
-
-    this.http
-      .delete(`${this.apiUrl}/albaranes/${a.id}`, {
-        headers: this.getEmpresaHeaders(),
-      })
-      .subscribe({
-        next: () => {
-          this.albaranes = this.albaranes.filter((alb) => alb.id !== a.id);
-          alert('Albarán eliminado correctamente.');
-        },
-        error: (err) => {
-          this.logHttpError('eliminar albarán', err);
-          alert('No se pudo eliminar el albarán.');
-        },
-      });
-  }
-
-  cargarPagos(clienteId: number): void {
-    this.http
-      .get<any[]>(`${this.apiUrl}/pagos/cliente/${clienteId}`, {
-        headers: this.getEmpresaHeaders(),
-      })
-      .subscribe({
-        next: (data) => {
-          this.pagos = data ?? [];
-          this.calcularTotales();
-        },
-        error: (err) => this.logHttpError('cargar pagos', err),
       });
   }
 
@@ -869,6 +411,12 @@ export class ClienteDetalleComponent implements OnInit {
     const fecha = ClienteDetalleComponent.safeTrim(this.nuevoPago.fecha);
     const importe = ClienteDetalleComponent.toNumber(this.nuevoPago.importe);
     const metodo = ClienteDetalleComponent.safeTrim(this.nuevoPago.metodo);
+
+    const numeroTalonario =
+      metodo === 'GIRO'
+        ? ClienteDetalleComponent.safeTrim(this.nuevoPago.numeroTalonario)
+        : '';
+
     const observaciones = ClienteDetalleComponent.safeTrim(
       this.nuevoPago.observaciones,
     );
@@ -894,6 +442,7 @@ export class ClienteDetalleComponent implements OnInit {
       fecha,
       importe,
       metodo,
+      numeroTalonario,
       observaciones,
     };
 
@@ -926,6 +475,7 @@ export class ClienteDetalleComponent implements OnInit {
             fecha: this.hoyISO(),
             importe: 0,
             metodo: '',
+            numeroTalonario: '',
             observaciones: '',
           };
 
@@ -941,25 +491,18 @@ export class ClienteDetalleComponent implements OnInit {
       });
   }
 
-  eliminarPago(pagoId: number): void {
-    if (!this.cliente?.id) {
-      return;
-    }
+  eliminarPago(id: number): void {
+    if (!id) return;
 
-    if (!confirm('¿Seguro que deseas eliminar este pago?')) {
-      return;
-    }
+    if (!confirm('¿Eliminar este pago?')) return;
 
     this.http
-      .delete(`${this.apiUrl}/pagos/${pagoId}`, {
+      .delete<void>(`${this.apiUrl}/pagos/${id}`, {
         headers: this.getEmpresaHeaders(),
       })
       .subscribe({
         next: () => {
-          this.pagos = (this.pagos ?? []).filter(
-            (p) => ClienteDetalleComponent.toNumber(p?.id) !== pagoId,
-          );
-
+          this.pagos = this.pagos.filter((p) => p.id !== id);
           this.calcularTotales();
         },
         error: (err) => {
@@ -969,58 +512,205 @@ export class ClienteDetalleComponent implements OnInit {
       });
   }
 
-  calcularTotales(): void {
-    const totalTrabajos = (this.trabajos ?? []).reduce(
-      (acc, t) => acc + this.getNetoTrabajo(t),
-      0,
-    );
+  imprimirComprobantePago(pago: any): void {
+    if (!pago?.id) return;
 
-    const descripcionBorrador = ClienteDetalleComponent.safeTrim(
-      this.nuevoTrabajo.descripcion,
-    );
+    window.open(`/imprimir/pago/${pago.id}`, '_blank');
+  }
 
-    const unidadesBorrador = ClienteDetalleComponent.toNumber(
-      this.nuevoTrabajo.unidades,
-    );
+  restarUnidadTrabajo(t: any): void {
+    if (!t?.id || t.entregado) return;
 
-    const precioBorrador = ClienteDetalleComponent.toNumber(
-      this.nuevoTrabajo.precioUnitario,
-    );
+    if ((t.unidades || 1) <= 1) return;
 
-    const incluirBorrador =
-      descripcionBorrador.length > 0 &&
-      unidadesBorrador > 0 &&
-      precioBorrador > 0;
+    this.actualizarUnidadesTrabajo(t, (t.unidades || 1) - 1);
+  }
 
-    const netoBorrador = incluirBorrador ? this.getNetoNuevoTrabajo() : 0;
+  sumarUnidadTrabajo(t: any): void {
+    if (!t?.id || t.entregado) return;
 
-    const pagadoHistorial = (this.pagos ?? []).reduce(
-      (acc, pago) => acc + ClienteDetalleComponent.toNumber(pago?.importe),
-      0,
-    );
+    this.actualizarUnidadesTrabajo(t, (t.unidades || 1) + 1);
+  }
 
-    const pagadoInicialTrabajos = (this.trabajos ?? []).reduce(
-      (acc, trabajo) =>
-        acc + ClienteDetalleComponent.toNumber(trabajo?.importePagado),
-      0,
-    );
+  private actualizarUnidadesTrabajo(t: any, unidades: number): void {
+    if (!this.cliente?.id || !t?.productoId) {
+      alert('No se pudieron actualizar las unidades.');
+      return;
+    }
 
-    const pagadoBorrador = incluirBorrador
-      ? Math.max(
-          0,
-          ClienteDetalleComponent.toNumber(this.nuevoTrabajo.importePagado),
-        )
-      : 0;
+    this.http
+      .put<any>(
+        `${this.apiUrl}/clientes/${this.cliente.id}/productos/${t.productoId}/cantidad?cantidad=${unidades}`,
+        {},
+        {
+          headers: this.getEmpresaHeaders(),
+        },
+      )
+      .subscribe({
+        next: (trabajoActualizado: any) => {
+          t.unidades = trabajoActualizado.unidades || unidades;
 
-    const totalImporte = totalTrabajos + netoBorrador;
-    const totalPagado =
-      pagadoHistorial + pagadoInicialTrabajos + pagadoBorrador;
+          t.precioUnitario =
+            trabajoActualizado.precioUnitario || t.precioUnitario || 0;
 
-    this.cliente = {
-      ...(this.cliente ?? {}),
-      totalImporte,
-      totalPagado,
-      saldoPendiente: totalImporte - totalPagado,
-    };
+          t.descuento = trabajoActualizado.descuento || t.descuento || 0;
+
+          t.importe = trabajoActualizado.importe || t.importe || 0;
+
+          t.importePagado =
+            trabajoActualizado.importePagado || t.importePagado || 0;
+
+          t.entregado = trabajoActualizado.entregado || false;
+
+          this.cargarProductos();
+          this.calcularTotales();
+        },
+
+        error: (err: any) => {
+          this.logHttpError('actualizar unidades del trabajo', err);
+
+          alert('No se pudieron actualizar las unidades.');
+        },
+      });
+  }
+
+  eliminarTrabajo(t: any): void {
+    if (!t?.id || t.entregado) return;
+
+    if (!confirm('¿Eliminar este trabajo/producto?')) return;
+
+    this.http
+      .delete<void>(`${this.apiUrl}/trabajos/${t.id}`, {
+        headers: this.getEmpresaHeaders(),
+      })
+      .subscribe({
+        next: () => {
+          this.trabajos = this.trabajos.filter((x) => x.id !== t.id);
+          this.calcularTotales();
+          this.cargarProductos();
+        },
+        error: (err) => {
+          this.logHttpError('eliminar trabajo', err);
+          alert('No se pudo eliminar el trabajo.');
+        },
+      });
+  }
+
+  crearAlbaran(): void {
+    if (!this.cliente?.id) return;
+
+    this.creandoAlbaran = true;
+
+    this.http
+      .post<any>(
+        `${this.apiUrl}/albaranes/cliente/${this.cliente.id}`,
+        {},
+        {
+          headers: this.getEmpresaHeaders(),
+        },
+      )
+      .subscribe({
+        next: (albaran) => {
+          this.creandoAlbaran = false;
+
+          if (albaran) {
+            this.albaranes = [...this.albaranes, albaran];
+          }
+
+          this.cambiarPestana('albaranes');
+        },
+        error: (err) => {
+          this.creandoAlbaran = false;
+          this.logHttpError('crear albarán', err);
+          alert('No se pudo crear el albarán.');
+        },
+      });
+  }
+
+  verAlbaran(a: any): void {
+    if (!a?.id) return;
+
+    this.router.navigate(['/albaranes', a.id]);
+  }
+
+  imprimirAlbaran(a: any): void {
+    if (!a?.id) return;
+
+    const url = `${this.apiUrl}/albaranes/${a.id}/pdf`;
+
+    this.http
+      .get(url, {
+        headers: this.getEmpresaHeaders(),
+        responseType: 'blob',
+      })
+      .subscribe({
+        next: (blob) => {
+          const fileURL = URL.createObjectURL(blob);
+          window.open(fileURL, '_blank');
+        },
+        error: (err) => {
+          this.logHttpError('imprimir albarán', err);
+          alert('No se pudo imprimir el albarán.');
+        },
+      });
+  }
+
+  eliminarAlbaran(a: any): void {
+    if (!a?.id) return;
+
+    if (!confirm('¿Eliminar este albarán?')) return;
+
+    this.http
+      .delete<void>(`${this.apiUrl}/albaranes/${a.id}`, {
+        headers: this.getEmpresaHeaders(),
+      })
+      .subscribe({
+        next: () => {
+          this.albaranes = this.albaranes.filter((x) => x.id !== a.id);
+        },
+        error: (err) => {
+          this.logHttpError('eliminar albarán', err);
+          alert('No se pudo eliminar el albarán.');
+        },
+      });
+  }
+
+  volverAClientes(): void {
+    this.router.navigate(['/clientes']);
+  }
+
+  cargarTrabajos(): void {
+    if (!this.clienteId) return;
+
+    this.http
+      .get<any[]>(`${this.apiUrl}/trabajos/cliente/${this.clienteId}`, {
+        headers: this.getEmpresaHeaders(),
+      })
+      .subscribe({
+        next: (data: any[]) => {
+          this.trabajos = (data || []).map((t: any) => ({
+            id: t.id,
+            productoId: t.productoId,
+            descripcion: t.nombre || t.descripcion || '-',
+            unidades: t.cantidad || t.unidades || 1,
+            precioUnitario: t.precioUnitario || 0,
+            descuento: t.descuento || 0,
+            importe: t.importe || 0,
+            importePagado: t.pagado || t.importePagado || 0,
+            entregado: t.entregado || false,
+          }));
+
+          this.calcularTotales();
+        },
+        error: (err: any) => {
+          this.logHttpError('cargar trabajos del cliente', err);
+          this.trabajos = [];
+          this.calcularTotales();
+        },
+      });
+  }
+
+  formatearIbanVisual(iban?: string): string {
+    return (iban || '').match(/.{1,4}/g)?.join(' ') || '';
   }
 }

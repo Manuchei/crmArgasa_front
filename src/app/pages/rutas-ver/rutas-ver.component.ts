@@ -19,7 +19,7 @@ export class RutasVerComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private rutaService: RutaService
+    private rutaService: RutaService,
   ) {}
 
   ngOnInit(): void {
@@ -53,11 +53,22 @@ export class RutasVerComponent implements OnInit {
   }
 
   getNombreProducto(linea: any): string {
-    // soporta: linea.producto (obj) o linea.productoId
-    if (linea?.producto?.codigo && linea?.producto?.nombre) {
-      return `${linea.producto.codigo} - ${linea.producto.nombre}`;
+    if (linea?.producto?.referencia && linea?.producto?.descripcion) {
+      return `${linea.producto.referencia} - ${linea.producto.descripcion}`;
     }
-    if (linea?.productoId) return `Producto ${linea.productoId}`;
+
+    if (linea?.producto?.descripcion) {
+      return linea.producto.descripcion;
+    }
+
+    if (linea?.producto?.referencia) {
+      return linea.producto.referencia;
+    }
+
+    if (linea?.productoId) {
+      return `Producto ${linea.productoId}`;
+    }
+
     return 'Producto';
   }
 }

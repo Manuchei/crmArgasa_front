@@ -61,22 +61,31 @@
       </div>
     </div>
 
-    <div class="row mb-3">
-      <div class="col-12">
-        <label class="form-label">IBAN *</label>
+    <div class="row mb-3 g-3">
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Número de cuenta *</label>
+
         <input type="text" class="form-control" [(ngModel)]="cliente.numeroCuenta" name="numeroCuenta"
-          #numeroCuenta="ngModel" required pattern="^ES\s?\d{2}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$"
-          placeholder="Ej: ES9121000418450200051339" autocomplete="on" inputmode="text" maxlength="29"
-          (input)="formatearIBAN()" />
+          #numeroCuenta="ngModel" required pattern="^\d{20}$" placeholder="Ej: 21000418450200051339" inputmode="numeric"
+          maxlength="20" (ngModelChange)="formatearNumeroCuenta($event)" />
 
         <div class="text-danger mt-1" *ngIf="numeroCuenta.touched && numeroCuenta.errors?.['required']">
-          El IBAN es obligatorio.
+          El número de cuenta es obligatorio.
         </div>
 
         <div class="text-danger mt-1" *ngIf="numeroCuenta.touched && numeroCuenta.errors?.['pattern']">
-          Debe empezar por ES y tener 24 caracteres en total.
+          Debe tener exactamente 20 dígitos.
         </div>
       </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">IBAN generado</label>
+
+        <input type="text" class="form-control" [value]="formatearIbanVisual(cliente.iban)" readonly
+          placeholder="Se genera automáticamente" />
+      </div>
+
     </div>
 
     <div class="row mb-3 g-3">

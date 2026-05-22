@@ -49,8 +49,19 @@ export class EditarClienteComponent implements OnInit {
     if (!this.cliente || !this.cliente.id) return;
 
     this.cliente.numeroCuenta =
-      this.cliente.numeroCuenta?.replace(/\s+/g, '').toUpperCase().trim() || '';
+      this.cliente.numeroCuenta?.replace(/\D/g, '').trim() || '';
 
+    if (
+      this.cliente.numeroCuenta &&
+      !/^\d{20}$/.test(this.cliente.numeroCuenta)
+    ) {
+      alert('El número de cuenta debe tener 20 dígitos.');
+      return;
+    }
+
+    this.cliente.iban = this.cliente.numeroCuenta
+      ? this.generarIbanEspanol(this.cliente.numeroCuenta)
+      : '';
     this.clienteService
       .actualizarCliente(this.cliente.id, this.cliente)
       .subscribe({
@@ -96,5 +107,48 @@ export class EditarClienteComponent implements OnInit {
     }
 
     return fallback;
+  }
+
+  formatearNumeroCuenta(value: string): void {
+    if (!this.cliente) return;
+
+    let limpio = (value || '').replace(/\D/g, '');
+
+    if (limpio.length > 20) {
+      limpio = limpio.substring(0, 20);
+    }
+
+    this.cliente.numeroCuenta = limpio;
+
+    this.cliente.iban =
+      limpio.length === 20 ? this.generarIbanEspanol(limpio) : '';
+  }
+
+  generarIbanEspanol(numeroCuenta: string): string {
+    const cuenta = (numeroCuenta || '').replace(/\D/g, '');
+
+    if (!/^\d{20}$/.test(cuenta)) {
+      return '';
+    }
+
+    const rearranged = cuenta + '142800';
+    const resto = this.mod97(rearranged);
+    const dc = 98 - resto;
+
+    return `ES${dc.toString().padStart(2, '0')}${cuenta}`;
+  }
+
+  private mod97(numero: string): number {
+    let resto = 0;
+
+    for (const char of numero) {
+      resto = (resto * 10 + Number(char)) % 97;
+    }
+
+    return resto;
+  }
+
+  formatearIbanVisual(iban?: string): string {
+    return (iban || '').match(/.{1,4}/g)?.join(' ') || '';
   }
 }

@@ -67,9 +67,40 @@
       </div>
 
       <div class="col-12">
-        <label class="form-label">Datos bancarios</label>
-        <textarea class="form-control" rows="3" [(ngModel)]="proveedor.datosBancarios" name="datosBancarios"></textarea>
-      </div>
+  <label class="form-label">Datos bancarios</label>
+  <textarea
+    class="form-control"
+    rows="3"
+    [(ngModel)]="proveedor.datosBancarios"
+    name="datosBancarios">
+  </textarea>
+</div>
+
+<div class="col-12 col-md-6">
+  <label class="form-label">Número de cuenta</label>
+  <input
+    type="text"
+    class="form-control"
+    [(ngModel)]="proveedor.numeroCuenta"
+    name="numeroCuenta"
+    pattern="^\d{20}$"
+    placeholder="Ej: 21000418450200051339"
+    inputmode="numeric"
+    maxlength="20"
+    (ngModelChange)="formatearNumeroCuenta($event)"
+  />
+</div>
+
+<div class="col-12 col-md-6">
+  <label class="form-label">IBAN generado</label>
+  <input
+    type="text"
+    class="form-control"
+    [value]="formatearIbanVisual(proveedor.iban)"
+    readonly
+    placeholder="Se genera automáticamente"
+  />
+</div>
 
       <div class="col-12">
         <label class="form-label">Notas</label>

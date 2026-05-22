@@ -21,7 +21,15 @@
       <label class="form-label">Email transportista</label>
       <input class="form-control" type="email" [(ngModel)]="emailTransportista" placeholder="email@..." readonly />
     </div>
+    <div class="col-md-3">
+      <label class="form-label">Acompañante 1</label>
+      <input class="form-control" type="text" [(ngModel)]="acompanante1" placeholder="Opcional" />
+    </div>
 
+    <div class="col-md-3">
+      <label class="form-label">Acompañante 2</label>
+      <input class="form-control" type="text" [(ngModel)]="acompanante2" placeholder="Opcional" />
+    </div>
     <div class="col-md-3">
       <label class="form-label">Estado</label>
       <select class="form-select" [(ngModel)]="estado">

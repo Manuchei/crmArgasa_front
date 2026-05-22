@@ -242,6 +242,12 @@
         </button>
       </div>
 
+      <div class="d-flex gap-2 mt-3 flex-wrap no-print" *ngIf="factura.estado === 'EMITIDA' && !modoEdicion">
+        <button type="button" class="btn btn-success" (click)="marcarComoPagada()" [disabled]="loading">
+          💶 Marcar como pagada
+        </button>
+      </div>
+
       <div class="d-flex gap-2 mt-3 flex-wrap no-print" *ngIf="factura.estado === 'BORRADOR' && modoEdicion">
         <button type="button" class="btn btn-success" (click)="guardarEdicion()" [disabled]="loading">
           💾 Guardar cambios

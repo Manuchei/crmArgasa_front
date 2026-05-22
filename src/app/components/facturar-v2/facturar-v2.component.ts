@@ -522,4 +522,23 @@ export class FacturarV2Component implements OnInit, OnChanges {
 
   return `FC-${numero}-${mes}-${anio}`;
 }
+
+marcarComoPagada(): void {
+  if (!this.factura?.id) return;
+
+  this.loading = true;
+  this.error = null;
+
+  this.factService.marcarComoPagada(this.factura.id).subscribe({
+    next: (factPagada) => {
+      this.factura = factPagada;
+      this.loading = false;
+      this.cargarFacturasCliente();
+    },
+    error: (err) => {
+      this.loading = false;
+      this.error = err?.error?.message ?? 'Error marcando factura como pagada';
+    },
+  });
+}
 }

@@ -80,7 +80,15 @@
         <div class="col-12 col-lg-6">
           <div class="card-detalle">
             <h5>Datos bancarios y observaciones</h5>
-            <p class="text-break"><strong>IBAN:</strong> {{ proveedor.datosBancarios || '-' }}</p>
+            <p class="text-break">
+              <strong>Número de cuenta:</strong>
+              {{ proveedor.numeroCuenta || '-' }}
+            </p>
+
+            <p class="text-break">
+              <strong>IBAN:</strong>
+              {{ formatearIbanVisual(proveedor.iban) || '-' }}
+            </p>
             <p class="text-break"><strong>Notas:</strong> {{ proveedor.notas || '-' }}</p>
           </div>
         </div>

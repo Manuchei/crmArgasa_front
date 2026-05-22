@@ -10,14 +10,22 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 import { MatDialog } from '@angular/material/dialog';
 import { DialogEditarLlamadaComponent } from '../../components/dialog-editar-llamada/dialog-editar-llamada.component';
 
 import { LlamadasService } from '../../services/llamadas.service';
+import { TareasService } from '../../services/tareas.service';
+import { VisitasService } from '../../services/visitas.service';
+
 import { ILlamada } from '../../interfaces/illamda';
 import { ILlamadaRequest } from '../../interfaces/illamada-request';
+import { ITarea } from '../../interfaces/itarea';
+import { IVisita } from '../../interfaces/ivisita';
 import { IEventoCalendario } from '../../interfaces/ievento-calendario';
+
+type TipoCalendario = 'llamadas' | 'tareas' | 'visitas';
 
 @Component({
   selector: 'app-calendario-llamadas2',
@@ -33,36 +41,42 @@ import { IEventoCalendario } from '../../interfaces/ievento-calendario';
     MatButtonModule,
     MatListModule,
     MatDialogModule,
+    MatButtonToggleModule,
   ],
   templateUrl: './calendario-llamadas2.component.html',
   styleUrls: ['./calendario-llamadas2.component.css'],
 })
 export class CalendarioLlamadas2Component implements AfterViewInit {
   selectedDate: Date | null = null;
-  fechaSeleccionadaStr: string | null = null; // yyyy-MM-dd
+  fechaSeleccionadaStr: string | null = null;
+
+  tipoCalendario: TipoCalendario = 'llamadas';
+
   llamadasDelDia: ILlamada[] = [];
+  tareasDelDia: ITarea[] = [];
+  visitasDelDia: IVisita[] = [];
 
   fechaNueva: Date | null = null;
   horasDisponibles: string[] = [];
-  horaNueva: string = '12:00';
+  horaNueva = '12:00';
 
-  nuevaLlamada: ILlamadaRequest = this.crearRequestVacio();
+  nuevaLlamada: ILlamadaRequest = this.crearRequestLlamadaVacio();
 
-  private fechasConEventos = new Set<string>(); // yyyy-MM-dd
+  nuevoTitulo = '';
+  nuevaObservacion = '';
+
+  private fechasConEventos = new Set<string>();
 
   constructor(
     private llamadasService: LlamadasService,
+    private tareasService: TareasService,
+    private visitasService: VisitasService,
     private dialog: MatDialog,
   ) {}
 
-  // =========================
-  // INIT
-  // =========================
   ngAfterViewInit(): void {
     this.generarHoras();
     this.cargarFechasConEventos();
-
-    // ✅ Iniciar automáticamente en el día actual
     this.seleccionarHoy();
   }
 
@@ -72,10 +86,12 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     this.onSelectDate(hoy);
   }
 
-  // =========================
-  // UTILS
-  // =========================
-  private crearRequestVacio(): ILlamadaRequest {
+  cambiarTipo(tipo: TipoCalendario): void {
+    this.tipoCalendario = tipo;
+    this.cargarDatosDia();
+  }
+
+  private crearRequestLlamadaVacio(): ILlamadaRequest {
     return {
       empresa: 'ARGASA',
       motivo: '',
@@ -93,6 +109,7 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
   private generarHoras(): void {
     const horas: string[] = [];
+
     for (let h = 8; h <= 22; h++) {
       for (let m = 0; m < 60; m += 5) {
         horas.push(
@@ -100,6 +117,7 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
         );
       }
     }
+
     this.horasDisponibles = horas;
   }
 
@@ -110,13 +128,17 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     }
 
     const ymd = this.toYmd(this.fechaNueva);
-
     const time =
       this.horaNueva && /^\d{2}:\d{2}$/.test(this.horaNueva)
         ? this.horaNueva
         : '12:00';
 
     this.nuevaLlamada.fecha = `${ymd}T${time}`;
+  }
+
+  private obtenerFechaHora(): string {
+    this.syncFechaHora();
+    return this.nuevaLlamada.fecha.substring(0, 16);
   }
 
   private preCargarHoraDefault(ymd: string): void {
@@ -126,15 +148,36 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
   }
 
   private cargarFechasConEventos(): void {
+    this.fechasConEventos.clear();
+
     this.llamadasService.getEventosCalendario().subscribe({
       next: (eventos: IEventoCalendario[]) => {
-        this.fechasConEventos.clear();
         for (const e of eventos) {
           const ymd = e.start?.substring(0, 10);
           if (ymd) this.fechasConEventos.add(ymd);
         }
       },
-      error: (err) => console.error('Error cargando eventos', err),
+      error: (err) => console.error('Error cargando eventos de llamadas', err),
+    });
+
+    this.tareasService.getAll().subscribe({
+      next: (tareas) => {
+        tareas.forEach((t) => {
+          const ymd = t.fecha?.substring(0, 10);
+          if (ymd) this.fechasConEventos.add(ymd);
+        });
+      },
+      error: (err) => console.error('Error cargando eventos de tareas', err),
+    });
+
+    this.visitasService.getAll().subscribe({
+      next: (visitas) => {
+        visitas.forEach((v) => {
+          const ymd = v.fecha?.substring(0, 10);
+          if (ymd) this.fechasConEventos.add(ymd);
+        });
+      },
+      error: (err) => console.error('Error cargando eventos de visitas', err),
     });
   }
 
@@ -143,9 +186,6 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     return this.fechasConEventos.has(ymd) ? 'dia-con-evento' : '';
   };
 
-  // =========================
-  // SELECCIÓN DE DÍA
-  // =========================
   onSelectDate(date: Date | null): void {
     if (!date) return;
 
@@ -155,19 +195,77 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     this.fechaSeleccionadaStr = ymd;
 
     this.preCargarHoraDefault(ymd);
-    this.cargarLlamadasDelDia(ymd);
+    this.cargarDatosDia();
   }
 
-  private cargarLlamadasDelDia(ymd: string): void {
-    this.llamadasService.getLlamadasDia(ymd).subscribe({
-      next: (llamadas) => (this.llamadasDelDia = llamadas),
-      error: (err) => console.error('Error llamadas del día', err),
-    });
+  cargarDatosDia(): void {
+    if (!this.fechaSeleccionadaStr) return;
+
+    if (this.tipoCalendario === 'llamadas') {
+      this.llamadasService.getLlamadasDia(this.fechaSeleccionadaStr).subscribe({
+        next: (llamadas) => (this.llamadasDelDia = llamadas),
+        error: (err) => console.error('Error llamadas del día', err),
+      });
+    }
+
+    if (this.tipoCalendario === 'tareas') {
+      this.tareasService.getTareasDia(this.fechaSeleccionadaStr).subscribe({
+        next: (tareas) => (this.tareasDelDia = tareas),
+        error: (err) => console.error('Error tareas del día', err),
+      });
+    }
+
+    if (this.tipoCalendario === 'visitas') {
+      this.visitasService.getVisitasDia(this.fechaSeleccionadaStr).subscribe({
+        next: (visitas) => (this.visitasDelDia = visitas),
+        error: (err) => console.error('Error visitas del día', err),
+      });
+    }
   }
 
-  // =========================
-  // GUARDAR
-  // =========================
+  guardarElementoCalendario(): void {
+    if (!this.fechaSeleccionadaStr) return;
+
+    if (this.tipoCalendario === 'llamadas') {
+      this.guardarLlamada();
+      return;
+    }
+
+    if (!this.nuevoTitulo.trim()) return;
+
+    const fecha = this.obtenerFechaHora();
+
+    if (this.tipoCalendario === 'tareas') {
+      this.tareasService
+        .crearTarea({
+          empresa: 'ARGASA',
+          titulo: this.nuevoTitulo,
+          fecha,
+          estado: 'pendiente',
+          observaciones: this.nuevaObservacion || '',
+        })
+        .subscribe({
+          next: () => this.resetFormulario(),
+          error: (err) => console.error('Error guardando tarea', err),
+        });
+    }
+
+    if (this.tipoCalendario === 'visitas') {
+      this.visitasService
+        .crearVisita({
+          empresa: 'ARGASA',
+          titulo: this.nuevoTitulo,
+          fecha,
+          estado: 'pendiente',
+          observaciones: this.nuevaObservacion || '',
+        })
+        .subscribe({
+          next: () => this.resetFormulario(),
+          error: (err) => console.error('Error guardando visita', err),
+        });
+    }
+  }
+
   guardarLlamada(): void {
     if (!this.fechaSeleccionadaStr) return;
     if (!this.nuevaLlamada.motivo?.trim()) return;
@@ -178,21 +276,24 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     this.nuevaLlamada.fecha = this.nuevaLlamada.fecha.substring(0, 16);
 
     this.llamadasService.crearLlamada(this.nuevaLlamada).subscribe({
-      next: () => {
-        this.cargarLlamadasDelDia(this.fechaSeleccionadaStr!);
-        this.cargarFechasConEventos();
-
-        const ymd = this.fechaSeleccionadaStr!;
-        this.nuevaLlamada = this.crearRequestVacio();
-        this.preCargarHoraDefault(ymd);
-      },
+      next: () => this.resetFormulario(),
       error: (err) => console.error('Error guardando llamada', err),
     });
   }
 
-  // =========================
-  // EDITAR
-  // =========================
+  private resetFormulario(): void {
+    this.cargarDatosDia();
+    this.cargarFechasConEventos();
+
+    const ymd = this.fechaSeleccionadaStr!;
+
+    this.nuevaLlamada = this.crearRequestLlamadaVacio();
+    this.nuevoTitulo = '';
+    this.nuevaObservacion = '';
+
+    this.preCargarHoraDefault(ymd);
+  }
+
   editar(llamada: ILlamada): void {
     const dialogRef = this.dialog.open(DialogEditarLlamadaComponent, {
       width: '520px',
@@ -205,9 +306,7 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
       this.llamadasService.actualizarLlamada(result.id, result).subscribe({
         next: () => {
-          if (this.fechaSeleccionadaStr) {
-            this.cargarLlamadasDelDia(this.fechaSeleccionadaStr);
-          }
+          this.cargarDatosDia();
           this.cargarFechasConEventos();
         },
         error: (err) => console.error('Error actualizando llamada', err),
@@ -216,6 +315,14 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
   }
 
   trackByLlamadaId(_: number, item: ILlamada) {
+    return item.id;
+  }
+
+  trackByTareaId(_: number, item: ITarea) {
+    return item.id;
+  }
+
+  trackByVisitaId(_: number, item: IVisita) {
     return item.id;
   }
 }

@@ -25,6 +25,8 @@ export class RutasDiaComponent implements OnInit {
   fecha = '';
   transportista = '';
   emailTransportista = '';
+  acompanante1 = '';
+  acompanante2 = '';
   estado = 'pendiente';
 
   clientes: any[] = [];
@@ -304,6 +306,8 @@ export class RutasDiaComponent implements OnInit {
       nombreTransportista: this.transportista,
       emailTransportista: this.emailTransportista,
       estado: this.estado,
+      acompanante1: this.acompanante1,
+      acompanante2: this.acompanante2,
       empresa,
       rutas: this.rutas
         .filter((r: any) => !!r.clienteId)

@@ -7,96 +7,192 @@
 
 .factura {
   width: 900px;
+  min-height: 1270px;
   margin: 20px auto;
   background: #fff;
-  color: #111;
-  padding: 28px;
+  color: #222;
+  padding: 30px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   font-family: Arial, sans-serif;
   font-size: 13px;
 }
 
-.cabecera-top {
+.cabecera-mi-electro {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 30px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
 }
 
-.empresa-box {
-  flex: 1;
+.cabecera-izquierda {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.logos-factura {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mielectro {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
 }
 
 .logo-empresa {
-  max-width: 260px;
-  max-height: 120px;
+  width: 170px;
+  max-height: 95px;
   object-fit: contain;
-  display: block;
-  margin-bottom: 12px;
 }
 
 .empresa-datos {
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #333;
 }
 
 .empresa-nombre {
-  font-size: 18px;
   font-weight: 700;
-  margin-bottom: 6px;
+  text-transform: uppercase;
 }
 
-.doc-box {
-  min-width: 260px;
+.lema {
+  color: #c60000;
+  font-weight: 700;
+  font-size: 15px;
   text-align: right;
-  border: 2px solid #111;
-  border-radius: 8px;
-  padding: 14px 18px;
 }
 
-.bloque-datos {
-  border: 1px solid #ddd;
-  padding: 12px;
-  border-radius: 8px;
+.linea-separadora {
+  border-top: 1px solid #ddd;
+  margin: 18px 0 34px;
 }
 
-.money,
-.nowrap {
-  white-space: nowrap;
+.datos-superiores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  margin-bottom: 28px;
+  line-height: 1.45;
+}
+
+.datos-cliente {
+  color: #555;
+}
+
+.titulo-documento {
+  color: #c60000;
+  font-size: 26px;
+  font-weight: 700;
+  margin: 20px 0;
+}
+
+.info-documento {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 30px;
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+
+.estado-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.badge-estado {
   display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 11px;
+  color: white;
 }
 
-.money {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
+.estado-ok {
+  background-color: #198754;
 }
 
-.tabla-lineas td,
+.estado-error {
+  background-color: #dc3545;
+}
+
+.tabla-lineas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
 .tabla-lineas th {
+  border-bottom: 1px solid #bbb;
+  padding: 7px 6px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.tabla-lineas td {
+  padding: 7px 6px;
   vertical-align: middle;
+}
+
+.tabla-lineas tbody tr:nth-child(odd) {
+  background: #f1f1f1;
+}
+
+.text-end {
+  text-align: right;
 }
 
 .col-cant {
-  width: 70px;
+  width: 75px;
 }
 
 .col-iva {
-  width: 60px;
+  width: 95px;
 }
 
 .col-eur {
-  width: 120px;
+  width: 115px;
+}
+
+.bloque-totales {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 
 .tabla-totales {
-  width: 320px;
+  width: 330px;
+  border-collapse: collapse;
+  font-size: 13px;
 }
 
 .tabla-totales td {
-  vertical-align: middle;
+  padding: 7px 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.total-final td {
+  font-weight: 700;
+  border-top: 1px solid #999;
+}
+
+.referencia-pago {
+  margin-top: 26px;
+  font-size: 12px;
+}
+
+.pie-factura {
+  margin-top: 170px;
+  border-top: 1px solid #444;
+  padding-top: 10px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 12px;
 }
 
 .no-print {
@@ -121,7 +217,7 @@
 
   @page {
     size: A4;
-    margin: 12mm;
+    margin: 10mm;
   }
 
   :host {
@@ -143,17 +239,26 @@
 
   .factura {
     width: auto !important;
+    min-height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     box-shadow: none;
   }
 
-  .bloque-datos {
-    border-color: #999;
+  .logo-mielectro {
+    width: 110px;
   }
 
   .logo-empresa {
-    max-width: 220px;
-    max-height: 100px;
+    width: 155px;
+    max-height: 85px;
+  }
+
+  .titulo-documento {
+    font-size: 24px;
+  }
+
+  .pie-factura {
+    margin-top: 150px;
   }
 }

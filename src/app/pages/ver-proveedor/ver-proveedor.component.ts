@@ -241,7 +241,7 @@ export class VerProveedorComponent implements OnInit {
       precioSinIva,
       empresa: '',
       proveedor: { id: this.proveedor.id },
-      referencia: ''
+      referencia: '',
     };
 
     this.guardandoProducto = true;
@@ -404,19 +404,40 @@ export class VerProveedorComponent implements OnInit {
   }
 
   calcularTotales(): void {
-    this.totalImporte = 0;
-    this.totalPagado = 0;
+    let totalProductos = 0;
+    let totalTrabajos = 0;
+    let totalPagadoTrabajos = 0;
 
-    this.trabajos.forEach((t) => {
-      this.totalImporte += this.normalizarNumero(t.importe);
-      this.totalPagado += this.normalizarNumero(t.importePagado);
+    const productos = Array.isArray(this.proveedor?.productos)
+      ? this.proveedor.productos
+      : [];
+
+    productos.forEach((p: any) => {
+      const precio = this.normalizarNumero(p.precioSinIva);
+      const unidades = this.normalizarNumero(p.unidades);
+
+      totalProductos += precio * unidades;
     });
 
-    this.totalPendiente = this.totalImporte - this.totalPagado;
+    this.trabajos.forEach((t) => {
+      const importe = this.normalizarNumero(t.importe);
+      const pagado = this.normalizarNumero(t.importePagado);
+
+      totalTrabajos += importe;
+      totalPagadoTrabajos += pagado;
+    });
+
+    this.totalImporte = this.redondear2(totalProductos + totalTrabajos);
+    this.totalPagado = this.redondear2(totalPagadoTrabajos);
+    this.totalPendiente = this.redondear2(this.totalImporte - this.totalPagado);
 
     if (this.totalPendiente < 0) {
       this.totalPendiente = 0;
     }
+  }
+
+  private redondear2(valor: number): number {
+    return Math.round((valor + Number.EPSILON) * 100) / 100;
   }
 
   volver(): void {
@@ -426,5 +447,9 @@ export class VerProveedorComponent implements OnInit {
   irEditar(): void {
     if (!this.proveedor?.id) return;
     this.router.navigate(['/app/proveedores/editar', this.proveedor.id]);
+  }
+
+  formatearIbanVisual(iban?: string): string {
+    return (iban || '').match(/.{1,4}/g)?.join(' ') || '';
   }
 }

@@ -23,6 +23,9 @@ export interface RutaDiaRequestDTO {
   nombreTransportista: string;
   emailTransportista: string;
 
+  acompanante1?: string;
+  acompanante2?: string;
+
   estado: string;
   empresa: string;
   rutas: RutaDiaItemDTO[];

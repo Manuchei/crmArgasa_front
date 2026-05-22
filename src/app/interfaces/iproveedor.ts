@@ -20,6 +20,8 @@ export interface Proveedor {
   pais?: string;
   contacto?: string;
   datosBancarios?: string;
+  numeroCuenta?: string;
+  iban?: string;
   notas?: string;
 
   // backend actual

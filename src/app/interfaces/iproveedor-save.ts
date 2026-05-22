@@ -17,5 +17,7 @@ export interface ProveedorSaveDto {
   pais: string;
   contacto: string;
   datosBancarios: string;
+  numeroCuenta?: string;
+  iban?: string;
   notas: string;
 }

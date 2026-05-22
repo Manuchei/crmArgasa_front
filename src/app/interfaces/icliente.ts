@@ -33,4 +33,5 @@ export interface ICliente {
   pendiente?: number;
 
   numeroCuenta?: string;
+  iban?: string;
 }

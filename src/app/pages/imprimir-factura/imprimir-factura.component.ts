@@ -37,7 +37,6 @@ export class ImprimirFacturaComponent implements OnInit {
   cargarFactura(id: number): void {
     this.loading = true;
     this.error = null;
-
     this.cargarFacturaCliente(id);
   }
 
@@ -58,7 +57,10 @@ export class ImprimirFacturaComponent implements OnInit {
 
             this.loading = false;
           } catch (e) {
-            console.error('Respuesta no válida al cargar factura cliente:', raw);
+            console.error(
+              'Respuesta no válida al cargar factura cliente:',
+              raw,
+            );
             this.cargarFacturaProveedor(id);
           }
         },
@@ -85,7 +87,10 @@ export class ImprimirFacturaComponent implements OnInit {
 
             this.loading = false;
           } catch (e) {
-            console.error('Respuesta no válida al cargar factura proveedor:', raw);
+            console.error(
+              'Respuesta no válida al cargar factura proveedor:',
+              raw,
+            );
             this.loading = false;
             this.error =
               'La respuesta de la factura no tiene un formato JSON válido.';
@@ -143,31 +148,42 @@ export class ImprimirFacturaComponent implements OnInit {
         telefono: '607472159',
         email: 'electrolugaslu@gmail.com',
         logoUrl: '/assets/logos/luga.png',
+        logoMiElectroUrl: '/assets/logos/mielectro.jpeg',
       };
     }
 
     return this.factura?.emisor || null;
   }
 
- getNumeroDocumento(): string {
-  if (!this.factura) {
-    return '';
+  getNumeroDocumento(): string {
+    if (!this.factura) return '';
+
+    if (this.esFacturaProveedor()) {
+      return this.factura?.numeroInterno || '-';
+    }
+
+    const numero = this.factura.numero ?? this.factura.id;
+
+    const fecha = this.factura.fechaEmision
+      ? new Date(this.factura.fechaEmision)
+      : new Date();
+
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const anio = fecha.getFullYear();
+
+    return `FC-${numero}-${mes}-${anio}`;
   }
-
-  const numero = this.factura.numero ?? this.factura.id;
-
-  const fecha = this.factura.fechaEmision
-    ? new Date(this.factura.fechaEmision)
-    : new Date();
-
-  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-  const anio = fecha.getFullYear();
-
-  return `FC-${numero}-${mes}-${anio}`;
-}
 
   getFechaDocumento(): string {
     return this.factura?.fechaEmision || '-';
+  }
+
+  getFechaVencimientoDocumento(): string {
+    if (this.esFacturaProveedor()) {
+      return this.factura?.fechaVencimiento || '-';
+    }
+
+    return '-';
   }
 
   getEstadoDocumento(): string {
@@ -175,7 +191,29 @@ export class ImprimirFacturaComponent implements OnInit {
       return this.factura?.pagada ? 'PAGADA' : 'PENDIENTE';
     }
 
-    return this.factura?.estado || '-';
+    const estado = String(this.factura?.estado || '').toUpperCase();
+
+    if (estado === 'PAGADA') {
+      return 'PAGADA';
+    }
+
+    if (estado === 'EMITIDA') {
+      return 'PENDIENTE';
+    }
+
+    if (estado === 'BORRADOR') {
+      return 'BORRADOR';
+    }
+
+    if (estado === 'ANULADA') {
+      return 'ANULADA';
+    }
+
+    return estado || '-';
+  }
+
+  documentoPagado(): boolean {
+    return this.getEstadoDocumento() === 'PAGADA';
   }
 
   getTituloReceptor(): string {
@@ -185,7 +223,9 @@ export class ImprimirFacturaComponent implements OnInit {
   getNombreReceptor(): string {
     if (this.esFacturaProveedor()) {
       const proveedor = this.factura?.proveedor || {};
-      return `${proveedor?.nombre || ''} ${proveedor?.apellido || ''}`.trim() || '—';
+      return (
+        `${proveedor?.nombre || ''} ${proveedor?.apellido || ''}`.trim() || '—'
+      );
     }
 
     return (
@@ -214,11 +254,7 @@ export class ImprimirFacturaComponent implements OnInit {
   getLocalidadReceptor(): string {
     if (this.esFacturaProveedor()) {
       const p = this.factura?.proveedor || {};
-      const cp = p?.codigoPostal || '';
-      const localidad = p?.localidad || '';
-      const provincia = p?.provincia || '';
-
-      return `${cp} ${localidad} ${provincia ? `(${provincia})` : ''}`.trim();
+      return `${p?.codigoPostal || ''} ${p?.localidad || ''} ${p?.provincia ? `(${p.provincia})` : ''}`.trim();
     }
 
     const c = this.factura?.cliente || {};
@@ -243,7 +279,9 @@ export class ImprimirFacturaComponent implements OnInit {
 
   getLineasDocumento(): any[] {
     if (this.esFacturaProveedor()) {
-      return this.factura?.albaranProveedor?.lineas || [];
+      return (
+        this.factura?.albaranProveedor?.lineas || this.factura?.lineas || []
+      );
     }
 
     return this.factura?.lineas || [];
@@ -251,7 +289,7 @@ export class ImprimirFacturaComponent implements OnInit {
 
   getCantidadLinea(linea: any): number {
     if (this.esFacturaProveedor()) {
-      return Number(linea?.unidades || 0);
+      return Number(linea?.unidades ?? linea?.cantidad ?? 0);
     }
 
     return Number(linea?.cantidad || 0);
@@ -259,7 +297,7 @@ export class ImprimirFacturaComponent implements OnInit {
 
   getPrecioLinea(linea: any): number {
     if (this.esFacturaProveedor()) {
-      return Number(linea?.precio || 0);
+      return Number(linea?.precio ?? linea?.precioUnitario ?? 0);
     }
 
     return Number(linea?.precioUnitario || 0);
@@ -267,7 +305,7 @@ export class ImprimirFacturaComponent implements OnInit {
 
   getSubtotalLinea(linea: any): number {
     if (this.esFacturaProveedor()) {
-      return Number(linea?.baseLinea || 0);
+      return Number(linea?.baseLinea ?? linea?.subtotal ?? 0);
     }
 
     return Number(linea?.subtotal || 0);
@@ -275,23 +313,24 @@ export class ImprimirFacturaComponent implements OnInit {
 
   getIvaLinea(linea: any): string {
     if (this.esFacturaProveedor()) {
-      return '-';
+      return `${linea?.ivaPct ?? 21}%`;
     }
 
     return `${linea?.ivaPct ?? 0}%`;
   }
 
   getTotalLinea(linea: any): number {
-    if (this.esFacturaProveedor()) {
-      return Number(linea?.totalLinea || 0);
-    }
-
     return Number(linea?.totalLinea || 0);
   }
 
   getBaseImponible(): number {
     if (this.esFacturaProveedor()) {
-      return Number(this.factura?.albaranProveedor?.subtotal || this.factura?.totalImporte || 0);
+      return Number(
+        this.factura?.baseImponible ??
+          this.factura?.albaranProveedor?.subtotal ??
+          this.factura?.totalImporte ??
+          0,
+      );
     }
 
     return Number(this.factura?.baseImponible || 0);
@@ -299,7 +338,7 @@ export class ImprimirFacturaComponent implements OnInit {
 
   getIvaTotal(): number {
     if (this.esFacturaProveedor()) {
-      return 0;
+      return Number(this.factura?.ivaTotal || 0);
     }
 
     return Number(this.factura?.ivaTotal || 0);
@@ -307,7 +346,7 @@ export class ImprimirFacturaComponent implements OnInit {
 
   getTotalDocumento(): number {
     if (this.esFacturaProveedor()) {
-      return Number(this.factura?.totalImporte || 0);
+      return Number(this.factura?.totalImporte || this.factura?.total || 0);
     }
 
     return Number(this.factura?.total || 0);

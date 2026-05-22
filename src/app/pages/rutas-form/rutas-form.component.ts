@@ -70,6 +70,8 @@ export class RutasFormComponent implements OnInit {
       emailTransportista: ['', [Validators.required, Validators.email]],
       fecha: ['', Validators.required],
       estado: ['pendiente', Validators.required],
+      acompanante1: [''],
+      acompanante2: [''],
       destino: [''],
       tarea: [''],
       observaciones: [''],
@@ -404,6 +406,9 @@ export class RutasFormComponent implements OnInit {
           transportistaId,
           nombreTransportista: ruta.nombreTransportista,
           emailTransportista: ruta.emailTransportista,
+
+          acompanante1: ruta.acompanante1 || '',
+          acompanante2: ruta.acompanante2 || '',
           fecha,
           estado: ruta.estado,
           observaciones: ruta.observaciones,
@@ -447,15 +452,19 @@ export class RutasFormComponent implements OnInit {
     const formValue = this.rutaForm.value;
 
     const payload = {
-      clienteId: formValue.clienteId,
-      transportistaId: formValue.transportistaId,
-      nombreTransportista: formValue.nombreTransportista,
-      emailTransportista: formValue.emailTransportista,
-      fecha: formValue.fecha,
-      estado: formValue.estado,
-      destino: formValue.destino,
-      tarea: (formValue.tarea || '').toString().trim(),
-      observaciones: formValue.observaciones,
+      clienteId: this.rutaForm.value.clienteId,
+      transportistaId: this.rutaForm.value.transportistaId,
+
+      emailTransportista: this.rutaForm.value.emailTransportista,
+
+      acompanante1: this.rutaForm.value.acompanante1,
+      acompanante2: this.rutaForm.value.acompanante2,
+
+      fecha: this.rutaForm.value.fecha,
+      estado: this.rutaForm.value.estado,
+      destino: this.rutaForm.value.destino,
+      tarea: this.rutaForm.value.tarea,
+      observaciones: this.rutaForm.value.observaciones,
       lineas: this.lineas ?? [],
     };
 
