@@ -6,6 +6,113 @@
   padding-bottom: 2rem;
 }
 
+/* HEADER MODERNO */
+.tipo-calendario-card {
+  border-radius: 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  padding: 20px;
+  margin-bottom: 1.5rem;
+}
+
+.tipo-header {
+  margin-bottom: 18px;
+}
+
+.tipo-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.tipo-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.tipo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.tipo-option {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 18px;
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+}
+
+.tipo-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+}
+
+.tipo-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+  flex-shrink: 0;
+}
+
+.tipo-option strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1.1;
+  color: #111827;
+}
+
+.tipo-option small {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.tipo-llamadas .tipo-icon {
+  background: rgba(236, 72, 153, 0.14);
+}
+
+.tipo-tareas .tipo-icon {
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.tipo-visitas .tipo-icon {
+  background: rgba(59, 130, 246, 0.14);
+}
+
+.tipo-option.active {
+  background: linear-gradient(135deg, #0d6efd 0%, #2563eb 100%);
+  border-color: #2563eb;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.28);
+}
+
+.tipo-option.active strong,
+.tipo-option.active small {
+  color: white;
+}
+
+.tipo-option.active .tipo-icon {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* CALENDARIO */
 :host ::ng-deep .dia-con-evento .mat-calendar-body-cell-content {
   border: 2px solid currentColor;
   border-radius: 999px;
@@ -20,22 +127,20 @@ button {
   white-space: nowrap;
 }
 
-/* Cards */
 .calendar-card,
 .panel {
-  border-radius: 14px;
+  border-radius: 18px;
   overflow: hidden;
 }
 
-/* Calendar */
 .calendar-card mat-card-title {
   display: block;
-  padding: 16px 16px 0 16px;
+  padding: 18px 18px 0 18px;
   font-weight: 700;
 }
 
 .calendar-wrapper {
-  padding: 8px 8px 12px 8px;
+  padding: 10px;
   overflow-x: auto;
 }
 
@@ -45,13 +150,13 @@ button {
   max-width: 100%;
 }
 
-/* Panels */
+/* PANELES */
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   background: rgba(0, 0, 0, 0.02);
 }
@@ -65,12 +170,12 @@ button {
 
 .panel-icon {
   font-size: 18px;
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   display: grid;
   place-items: center;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
 }
 
@@ -87,70 +192,38 @@ button {
 }
 
 .panel-body {
-  padding: 14px 16px;
+  padding: 16px 18px;
 }
 
-/* Badge */
-.badge-soft {
-  font-size: 12px;
-  padding: 6px 10px;
+/* SCROLL LISTADO */
+.panel-list .panel-body {
+  max-height: 430px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Scroll bonito */
+.panel-list .panel-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-list .panel-body::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.22);
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.06);
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
-/* List / desktop */
-.llamadas-desktop {
-  display: block;
+.panel-list .panel-body::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.llamadas-mobile {
-  display: none;
-}
-
-.llamadas-list mat-list-item {
-  padding: 10px 0;
-}
-
-.item-row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.item-main {
-  min-width: 0;
-  flex: 1;
-}
-
-.item-title {
-  font-weight: 600;
-  margin-bottom: 4px;
-  word-break: break-word;
-}
-
-.item-meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.item-actions {
-  flex-shrink: 0;
-}
-
-/* Mobile cards */
+/* TARJETAS */
 .llamada-card {
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 14px;
-  padding: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  padding: 15px;
   margin-bottom: 12px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
 }
 
 .llamada-card:last-child {
@@ -164,6 +237,7 @@ button {
 .llamada-card-title {
   font-weight: 700;
   line-height: 1.35;
+  color: #111827;
   word-break: break-word;
 }
 
@@ -177,14 +251,18 @@ button {
 
 .llamada-card-actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
-.btn-mobile-edit {
-  width: 100%;
-  min-height: 44px;
+.llamada-card-actions button {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
 }
 
-/* Pills */
+/* PILLS */
 .meta-pill,
 .estado-pill {
   display: inline-flex;
@@ -194,6 +272,7 @@ button {
   font-size: 12px;
   line-height: 1.2;
   white-space: nowrap;
+  border: 1px solid transparent;
 }
 
 .meta-pill {
@@ -201,26 +280,32 @@ button {
   background: rgba(0, 0, 0, 0.05);
 }
 
-/* Estado */
+/* ESTADOS */
 .estado-pendiente {
-  color: #856404;
-  background: rgba(255, 193, 7, 0.22);
-  border: 1px solid rgba(255, 193, 7, 0.55);
+  color: #1e3a5f;
+  background: rgba(59, 130, 246, 0.14);
+  border-color: rgba(59, 130, 246, 0.38);
+}
+
+.estado-progreso {
+  color: #7a4b00;
+  background: rgba(255, 193, 7, 0.3);
+  border-color: rgba(255, 193, 7, 0.75);
 }
 
 .estado-realizada {
   color: #155724;
   background: rgba(40, 167, 69, 0.2);
-  border: 1px solid rgba(40, 167, 69, 0.55);
+  border-color: rgba(40, 167, 69, 0.55);
 }
 
 .estado-cancelada {
   color: #721c24;
   background: rgba(220, 53, 69, 0.18);
-  border: 1px solid rgba(220, 53, 69, 0.55);
+  border-color: rgba(220, 53, 69, 0.55);
 }
 
-/* Empty state */
+/* EMPTY */
 .empty-state {
   text-align: center;
   padding: 18px 0;
@@ -241,7 +326,7 @@ button {
   color: rgba(0, 0, 0, 0.6);
 }
 
-/* Form */
+/* FORM */
 .form-grid {
   display: grid;
   gap: 12px;
@@ -257,11 +342,7 @@ button {
   min-width: 180px;
 }
 
-.btn-compact {
-  white-space: nowrap;
-}
-
-/* Material fixes */
+/* MATERIAL FIXES */
 :host ::ng-deep .mat-mdc-list-item {
   height: auto !important;
   min-height: 56px;
@@ -275,6 +356,14 @@ button {
 
 /* TABLET */
 @media (max-width: 991.98px) {
+  .tipo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tipo-option {
+    min-height: 74px;
+  }
+
   .calendar-wrapper {
     display: flex;
     justify-content: center;
@@ -292,13 +381,22 @@ button {
     padding-right: 0.35rem;
   }
 
+  .tipo-calendario-card {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .tipo-title {
+    font-size: 1.2rem;
+  }
+
+  .tipo-option {
+    padding: 15px;
+  }
+
   .panel-header {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .badge-soft {
-    align-self: flex-start;
   }
 
   .panel-body {
@@ -316,14 +414,6 @@ button {
 
   :host ::ng-deep .mat-calendar {
     min-width: 260px;
-  }
-
-  .llamadas-desktop {
-    display: none;
-  }
-
-  .llamadas-mobile {
-    display: block;
   }
 
   .form-actions {
@@ -364,4 +454,10 @@ button {
     height: 32px;
     line-height: 32px;
   }
+}
+.meta-pasada {
+  color: #991b1b;
+  background: rgba(220, 53, 69, 0.12);
+  border-color: rgba(220, 53, 69, 0.45);
+  font-weight: 700;
 }

@@ -1,4 +1,8 @@
-export type EstadoTarea = 'pendiente' | 'realizada' | 'cancelada';
+export type EstadoTarea =
+  | 'pendiente'
+  | 'en_progreso'
+  | 'realizada'
+  | 'cancelada';
 
 export interface ITarea {
   id: number;

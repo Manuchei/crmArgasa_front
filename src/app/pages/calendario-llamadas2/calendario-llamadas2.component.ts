@@ -24,6 +24,7 @@ import { ILlamadaRequest } from '../../interfaces/illamada-request';
 import { ITarea } from '../../interfaces/itarea';
 import { IVisita } from '../../interfaces/ivisita';
 import { IEventoCalendario } from '../../interfaces/ievento-calendario';
+import { DialogEditarCalendarioComponent } from '../../components/dialog-editar-calendario/dialog-editar-calendario.component';
 
 type TipoCalendario = 'llamadas' | 'tareas' | 'visitas';
 
@@ -203,21 +204,30 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
     if (this.tipoCalendario === 'llamadas') {
       this.llamadasService.getLlamadasDia(this.fechaSeleccionadaStr).subscribe({
-        next: (llamadas) => (this.llamadasDelDia = llamadas),
+        next: (llamadas) =>
+          (this.llamadasDelDia = llamadas.filter(
+            (l) => l.estado !== 'realizada' && l.estado !== 'cancelada',
+          )),
         error: (err) => console.error('Error llamadas del día', err),
       });
     }
 
     if (this.tipoCalendario === 'tareas') {
       this.tareasService.getTareasDia(this.fechaSeleccionadaStr).subscribe({
-        next: (tareas) => (this.tareasDelDia = tareas),
+        next: (tareas) =>
+          (this.tareasDelDia = tareas.filter(
+            (t) => t.estado !== 'realizada' && t.estado !== 'cancelada',
+          )),
         error: (err) => console.error('Error tareas del día', err),
       });
     }
 
     if (this.tipoCalendario === 'visitas') {
       this.visitasService.getVisitasDia(this.fechaSeleccionadaStr).subscribe({
-        next: (visitas) => (this.visitasDelDia = visitas),
+        next: (visitas) =>
+          (this.visitasDelDia = visitas.filter(
+            (v) => v.estado !== 'realizada' && v.estado !== 'cancelada',
+          )),
         error: (err) => console.error('Error visitas del día', err),
       });
     }
@@ -294,26 +304,6 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     this.preCargarHoraDefault(ymd);
   }
 
-  editar(llamada: ILlamada): void {
-    const dialogRef = this.dialog.open(DialogEditarLlamadaComponent, {
-      width: '520px',
-      maxWidth: '95vw',
-      data: llamada,
-    });
-
-    dialogRef.afterClosed().subscribe((result: ILlamada | null) => {
-      if (!result) return;
-
-      this.llamadasService.actualizarLlamada(result.id, result).subscribe({
-        next: () => {
-          this.cargarDatosDia();
-          this.cargarFechasConEventos();
-        },
-        error: (err) => console.error('Error actualizando llamada', err),
-      });
-    });
-  }
-
   trackByLlamadaId(_: number, item: ILlamada) {
     return item.id;
   }
@@ -324,5 +314,212 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
   trackByVisitaId(_: number, item: IVisita) {
     return item.id;
+  }
+
+  cambiarEstadoLlamada(
+    llamada: ILlamada,
+    estado: 'pendiente' | 'en_progreso' | 'realizada' | 'cancelada',
+  ): void {
+    const body = {
+      empresa: '',
+      motivo: llamada.motivo,
+      fecha: llamada.fecha.substring(0, 16),
+      estado,
+      observaciones: llamada.observaciones || '',
+      clienteId: llamada.clienteId ?? null,
+    };
+
+    this.llamadasService.actualizarLlamada(llamada.id, body).subscribe({
+      next: () => {
+        this.cargarDatosDia();
+        this.cargarFechasConEventos();
+      },
+      error: (err) => console.error('Error cambiando estado llamada', err),
+    });
+  }
+
+  cambiarEstadoTarea(
+    tarea: ITarea,
+    estado: 'pendiente' | 'en_progreso' | 'realizada' | 'cancelada',
+  ): void {
+    this.tareasService
+      .actualizarTarea(tarea.id, {
+        empresa: '',
+        titulo: tarea.titulo,
+        fecha: tarea.fecha.substring(0, 16),
+        estado,
+        observaciones: tarea.observaciones || '',
+      })
+      .subscribe({
+        next: () => {
+          this.cargarDatosDia();
+          this.cargarFechasConEventos();
+        },
+        error: (err) => console.error('Error cambiando estado tarea', err),
+      });
+  }
+
+  cambiarEstadoVisita(
+    visita: IVisita,
+    estado: 'pendiente' | 'en_progreso' | 'realizada' | 'cancelada',
+  ): void {
+    this.visitasService
+      .actualizarVisita(visita.id, {
+        empresa: '',
+        titulo: visita.titulo,
+        fecha: visita.fecha.substring(0, 16),
+        estado,
+        observaciones: visita.observaciones || '',
+      })
+      .subscribe({
+        next: () => {
+          this.cargarDatosDia();
+          this.cargarFechasConEventos();
+        },
+        error: (err) => console.error('Error cambiando estado visita', err),
+      });
+  }
+
+  editar(l: ILlamada): void {
+    const dialogRef = this.dialog.open(DialogEditarCalendarioComponent, {
+      width: '520px',
+      maxWidth: '95vw',
+      data: {
+        tipo: 'llamadas',
+        item: l,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result: any | null) => {
+      if (!result) return;
+
+      this.llamadasService
+        .actualizarLlamada(result.id, {
+          empresa: '',
+          motivo: result.motivo,
+          fecha: result.fecha.substring(0, 16),
+          estado: result.estado,
+          observaciones: result.observaciones || '',
+          clienteId: result.clienteId ?? null,
+        })
+        .subscribe({
+          next: () => {
+            this.cargarDatosDia();
+            this.cargarFechasConEventos();
+          },
+          error: (err) => console.error('Error actualizando llamada', err),
+        });
+    });
+  }
+
+  editarTarea(t: ITarea): void {
+    const dialogRef = this.dialog.open(DialogEditarCalendarioComponent, {
+      width: '520px',
+      maxWidth: '95vw',
+      data: {
+        tipo: 'tareas',
+        item: t,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result: any | null) => {
+      if (!result) return;
+
+      this.tareasService
+        .actualizarTarea(result.id, {
+          empresa: '',
+          titulo: result.titulo,
+          fecha: result.fecha.substring(0, 16),
+          estado: result.estado,
+          observaciones: result.observaciones || '',
+        })
+        .subscribe({
+          next: () => {
+            this.cargarDatosDia();
+            this.cargarFechasConEventos();
+          },
+          error: (err) => console.error('Error actualizando tarea', err),
+        });
+    });
+  }
+
+  editarVisita(v: IVisita): void {
+    const dialogRef = this.dialog.open(DialogEditarCalendarioComponent, {
+      width: '520px',
+      maxWidth: '95vw',
+      data: {
+        tipo: 'visitas',
+        item: v,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result: any | null) => {
+      if (!result) return;
+
+      this.visitasService
+        .actualizarVisita(result.id, {
+          empresa: '',
+          titulo: result.titulo,
+          fecha: result.fecha.substring(0, 16),
+          estado: result.estado,
+          observaciones: result.observaciones || '',
+        })
+        .subscribe({
+          next: () => {
+            this.cargarDatosDia();
+            this.cargarFechasConEventos();
+          },
+          error: (err) => console.error('Error actualizando visita', err),
+        });
+    });
+  }
+
+  toggleEstadoLlamada(l: ILlamada): void {
+    const nuevoEstado =
+      l.estado === 'pendiente'
+        ? 'en_progreso'
+        : l.estado === 'en_progreso'
+          ? 'realizada'
+          : l.estado;
+
+    if (nuevoEstado === l.estado) return;
+
+    this.cambiarEstadoLlamada(l, nuevoEstado);
+  }
+
+  toggleEstadoTarea(t: ITarea): void {
+    const nuevoEstado =
+      t.estado === 'pendiente'
+        ? 'en_progreso'
+        : t.estado === 'en_progreso'
+          ? 'realizada'
+          : t.estado;
+
+    if (nuevoEstado === t.estado) return;
+
+    this.cambiarEstadoTarea(t, nuevoEstado);
+  }
+
+  toggleEstadoVisita(v: IVisita): void {
+    const nuevoEstado =
+      v.estado === 'pendiente'
+        ? 'en_progreso'
+        : v.estado === 'en_progreso'
+          ? 'realizada'
+          : v.estado;
+
+    if (nuevoEstado === v.estado) return;
+
+    this.cambiarEstadoVisita(v, nuevoEstado);
+  }
+
+  esPasada(fecha: string): boolean {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const f = new Date(fecha);
+    f.setHours(0, 0, 0, 0);
+
+    return f < hoy;
   }
 }

@@ -1,446 +1,329 @@
 <div class="container mt-4 calendario-page">
+
+  <mat-card class="tipo-calendario-card">
+    <div class="tipo-header">
+      <div>
+        <div class="tipo-title">Calendario CRM</div>
+        <div class="tipo-subtitle">Organiza llamadas, tareas y visitas</div>
+      </div>
+    </div>
+
+    <div class="tipo-grid">
+
+      <button type="button" class="tipo-option tipo-llamadas" [class.active]="tipoCalendario === 'llamadas'"
+        (click)="cambiarTipo('llamadas')">
+        <span class="tipo-icon">📞</span>
+        <span>
+          <strong>Llamadas</strong>
+          <small>Seguimiento comercial</small>
+        </span>
+      </button>
+
+      <button type="button" class="tipo-option tipo-tareas" [class.active]="tipoCalendario === 'tareas'"
+        (click)="cambiarTipo('tareas')">
+        <span class="tipo-icon">✅</span>
+        <span>
+          <strong>Tareas</strong>
+          <small>Trabajo pendiente</small>
+        </span>
+      </button>
+
+      <button type="button" class="tipo-option tipo-visitas" [class.active]="tipoCalendario === 'visitas'"
+        (click)="cambiarTipo('visitas')">
+        <span class="tipo-icon">🚗</span>
+        <span>
+          <strong>Visitas</strong>
+          <small>Citas y desplazamientos</small>
+        </span>
+      </button>
+
+    </div>
+  </mat-card>
+
   <div class="row g-4">
 
-    <!-- COLUMNA IZQUIERDA -->
     <div class="col-12 col-lg-5">
       <mat-card class="calendar-card">
-
-        <mat-card-title>📅 Calendario CRM</mat-card-title>
-
-        <!-- TABS -->
-        <div class="px-3 pb-2 pt-2">
-          <mat-button-toggle-group
-            [value]="tipoCalendario"
-            (change)="cambiarTipo($event.value)"
-            appearance="legacy"
-            class="w-100">
-
-            <mat-button-toggle value="llamadas">
-              📞 Llamadas
-            </mat-button-toggle>
-
-            <mat-button-toggle value="tareas">
-              ✅ Tareas
-            </mat-button-toggle>
-
-            <mat-button-toggle value="visitas">
-              🚗 Visitas
-            </mat-button-toggle>
-
-          </mat-button-toggle-group>
-        </div>
+        <mat-card-title>📅 Calendario</mat-card-title>
 
         <div class="calendar-wrapper">
-          <mat-calendar
-            [selected]="selectedDate"
-            [dateClass]="dateClass"
-            (selectedChange)="onSelectDate($event)">
+          <mat-calendar [selected]="selectedDate" [dateClass]="dateClass" (selectedChange)="onSelectDate($event)">
           </mat-calendar>
         </div>
-
       </mat-card>
     </div>
 
-    <!-- COLUMNA DERECHA -->
     <div class="col-12 col-lg-7">
 
-      <!-- PANEL LISTADO -->
       <mat-card class="panel panel-list mb-4">
-
         <div class="panel-header">
-
           <div class="panel-title">
-
             <span class="panel-icon">
-
               <ng-container [ngSwitch]="tipoCalendario">
-
                 <span *ngSwitchCase="'llamadas'">📞</span>
                 <span *ngSwitchCase="'tareas'">✅</span>
                 <span *ngSwitchCase="'visitas'">🚗</span>
-
               </ng-container>
-
             </span>
 
             <div>
-
               <div class="title">
-
                 <ng-container [ngSwitch]="tipoCalendario">
-
-                  <span *ngSwitchCase="'llamadas'">
-                    Llamadas del día
-                  </span>
-
-                  <span *ngSwitchCase="'tareas'">
-                    Tareas del día
-                  </span>
-
-                  <span *ngSwitchCase="'visitas'">
-                    Visitas del día
-                  </span>
-
+                  <span *ngSwitchCase="'llamadas'">Llamadas del día</span>
+                  <span *ngSwitchCase="'tareas'">Tareas del día</span>
+                  <span *ngSwitchCase="'visitas'">Visitas del día</span>
                 </ng-container>
-
               </div>
 
               <div class="subtitle" *ngIf="selectedDate">
                 {{ selectedDate | date:'fullDate':'':'es-ES' }}
               </div>
-
             </div>
           </div>
         </div>
 
         <div class="panel-body">
 
-          <!-- ====================== -->
-          <!-- LLAMADAS -->
-          <!-- ====================== -->
-
           <ng-container *ngIf="tipoCalendario === 'llamadas'">
-
             <div *ngIf="llamadasDelDia.length > 0; else sinLlamadas">
 
-              <div
-                class="llamada-card"
-                *ngFor="let l of llamadasDelDia; trackBy: trackByLlamadaId">
-
+              <div class="llamada-card" *ngFor="let l of llamadasDelDia; trackBy: trackByLlamadaId">
                 <div class="llamada-card-top">
-                  <div class="llamada-card-title">
-                    {{ l.motivo }}
-                  </div>
+                  <div class="llamada-card-title">{{ l.motivo }}</div>
                 </div>
 
                 <div class="llamada-card-meta">
-
-                  <span class="meta-pill">
+                  <span class="meta-pill" [class.meta-pasada]="esPasada(l.fecha)">
+                    📅 {{ l.fecha | date:'dd/MM' }}
+                    ·
                     🕒 {{ l.fecha | date:'HH:mm' }}
+                    <span *ngIf="esPasada(l.fecha)"> · atrasada</span>
                   </span>
 
-                  <span
-                    class="estado-pill"
-                    [ngClass]="{
-                      'estado-pendiente': l.estado === 'pendiente',
-                      'estado-realizada': l.estado === 'realizada',
-                      'estado-cancelada': l.estado === 'cancelada'
-                    }">
-
-                    {{ l.estado }}
-
+                  <span class="estado-pill" [ngClass]="{
+                    'estado-pendiente': l.estado === 'pendiente',
+                    'estado-progreso': l.estado === 'en_progreso',
+                    'estado-realizada': l.estado === 'realizada',
+                    'estado-cancelada': l.estado === 'cancelada'
+                  }">
+                    {{ l.estado === 'en_progreso' ? 'en progreso' : l.estado }}
                   </span>
-
                 </div>
 
                 <div class="llamada-card-actions">
-
-                  <button
-                    mat-stroked-button
-                    color="primary"
-                    class="btn-mobile-edit"
-                    (click)="editar(l)">
-
-                    Editar
-
+                  <button mat-mini-fab color="primary" type="button" title="Iniciar / finalizar"
+                    [disabled]="l.estado === 'realizada' || l.estado === 'cancelada'" (click)="toggleEstadoLlamada(l)">
+                    ▶
                   </button>
 
-                </div>
+                  <button mat-mini-fab color="accent" type="button" title="Editar"
+                    (click)="editar(l); $event.stopPropagation()">
+                    ✏️
+                  </button>
 
+                  <button mat-mini-fab color="warn" type="button" title="Cancelar"
+                    (click)="cambiarEstadoLlamada(l, 'cancelada')">
+                    🗑️
+                  </button>
+                </div>
               </div>
 
             </div>
-
           </ng-container>
-
-          <!-- ====================== -->
-          <!-- TAREAS -->
-          <!-- ====================== -->
 
           <ng-container *ngIf="tipoCalendario === 'tareas'">
-
             <div *ngIf="tareasDelDia.length > 0; else sinTareas">
 
-              <div
-                class="llamada-card"
-                *ngFor="let t of tareasDelDia; trackBy: trackByTareaId">
-
+              <div class="llamada-card" *ngFor="let t of tareasDelDia; trackBy: trackByTareaId">
                 <div class="llamada-card-top">
-                  <div class="llamada-card-title">
-                    {{ t.titulo }}
-                  </div>
+                  <div class="llamada-card-title">{{ t.titulo }}</div>
                 </div>
 
                 <div class="llamada-card-meta">
-
-                  <span class="meta-pill">
+                  <span class="meta-pill" [class.meta-pasada]="esPasada(t.fecha)">
+                    📅 {{ t.fecha | date:'dd/MM' }}
+                    ·
                     🕒 {{ t.fecha | date:'HH:mm' }}
+                    <span *ngIf="esPasada(t.fecha)"> · atrasada</span>
                   </span>
 
-                  <span
-                    class="estado-pill"
-                    [ngClass]="{
-                      'estado-pendiente': t.estado === 'pendiente',
-                      'estado-realizada': t.estado === 'realizada',
-                      'estado-cancelada': t.estado === 'cancelada'
-                    }">
-
-                    {{ t.estado }}
-
+                  <span class="estado-pill" [ngClass]="{
+                    'estado-pendiente': t.estado === 'pendiente',
+                    'estado-progreso': t.estado === 'en_progreso',
+                    'estado-realizada': t.estado === 'realizada',
+                    'estado-cancelada': t.estado === 'cancelada'
+                  }">
+                    {{ t.estado === 'en_progreso' ? 'en progreso' : t.estado }}
                   </span>
-
                 </div>
 
+                <div class="llamada-card-actions">
+                  <button mat-mini-fab color="primary" type="button" title="Iniciar / finalizar"
+                    [disabled]="t.estado === 'realizada' || t.estado === 'cancelada'" (click)="toggleEstadoTarea(t)">
+                    ▶
+                  </button>
+
+                  <button mat-mini-fab color="accent" type="button" title="Editar"
+                    (click)="editarTarea(t); $event.stopPropagation()">
+                    ✏️
+                  </button>
+
+                  <button mat-mini-fab color="warn" type="button" title="Cancelar"
+                    (click)="cambiarEstadoTarea(t, 'cancelada')">
+                    🗑️
+                  </button>
+                </div>
               </div>
 
             </div>
-
           </ng-container>
-
-          <!-- ====================== -->
-          <!-- VISITAS -->
-          <!-- ====================== -->
 
           <ng-container *ngIf="tipoCalendario === 'visitas'">
-
             <div *ngIf="visitasDelDia.length > 0; else sinVisitas">
 
-              <div
-                class="llamada-card"
-                *ngFor="let v of visitasDelDia; trackBy: trackByVisitaId">
-
+              <div class="llamada-card" *ngFor="let v of visitasDelDia; trackBy: trackByVisitaId">
                 <div class="llamada-card-top">
-                  <div class="llamada-card-title">
-                    {{ v.titulo }}
-                  </div>
+                  <div class="llamada-card-title">{{ v.titulo }}</div>
                 </div>
 
                 <div class="llamada-card-meta">
-
-                  <span class="meta-pill">
+                  <span class="meta-pill" [class.meta-pasada]="esPasada(v.fecha)">
+                    📅 {{ v.fecha | date:'dd/MM' }}
+                    ·
                     🕒 {{ v.fecha | date:'HH:mm' }}
+                    <span *ngIf="esPasada(v.fecha)"> · atrasada</span>
                   </span>
 
-                  <span
-                    class="estado-pill"
-                    [ngClass]="{
-                      'estado-pendiente': v.estado === 'pendiente',
-                      'estado-realizada': v.estado === 'realizada',
-                      'estado-cancelada': v.estado === 'cancelada'
-                    }">
-
-                    {{ v.estado }}
-
+                  <span class="estado-pill" [ngClass]="{
+                    'estado-pendiente': v.estado === 'pendiente',
+                    'estado-progreso': v.estado === 'en_progreso',
+                    'estado-realizada': v.estado === 'realizada',
+                    'estado-cancelada': v.estado === 'cancelada'
+                  }">
+                    {{ v.estado === 'en_progreso' ? 'en progreso' : v.estado }}
                   </span>
-
                 </div>
 
+                <div class="llamada-card-actions">
+                  <button mat-mini-fab color="primary" type="button" title="Iniciar / finalizar"
+                    [disabled]="v.estado === 'realizada' || v.estado === 'cancelada'" (click)="toggleEstadoVisita(v)">
+                    ▶
+                  </button>
+
+                  <button mat-mini-fab color="accent" type="button" title="Editar"
+                    (click)="editarVisita(v); $event.stopPropagation()">
+                    ✏️
+                  </button>
+
+                  <button mat-mini-fab color="warn" type="button" title="Cancelar"
+                    (click)="cambiarEstadoVisita(v, 'cancelada')">
+                    🗑️
+                  </button>
+                </div>
               </div>
 
             </div>
-
           </ng-container>
-
-          <!-- EMPTYS -->
 
           <ng-template #sinLlamadas>
             <div class="empty-state">
               <div class="empty-emoji">📭</div>
-              <div class="empty-title">
-                No hay llamadas
-              </div>
+              <div class="empty-title">No hay llamadas</div>
             </div>
           </ng-template>
 
           <ng-template #sinTareas>
             <div class="empty-state">
               <div class="empty-emoji">📭</div>
-              <div class="empty-title">
-                No hay tareas
-              </div>
+              <div class="empty-title">No hay tareas</div>
             </div>
           </ng-template>
 
           <ng-template #sinVisitas>
             <div class="empty-state">
               <div class="empty-emoji">📭</div>
-              <div class="empty-title">
-                No hay visitas
-              </div>
+              <div class="empty-title">No hay visitas</div>
             </div>
           </ng-template>
 
         </div>
-
       </mat-card>
 
-      <!-- FORMULARIO -->
       <mat-card class="panel panel-form">
-
         <div class="panel-header">
-
           <div class="panel-title">
-
             <span class="panel-icon">➕</span>
 
             <div>
-
               <div class="title">
-
                 <ng-container [ngSwitch]="tipoCalendario">
-
-                  <span *ngSwitchCase="'llamadas'">
-                    Nueva llamada
-                  </span>
-
-                  <span *ngSwitchCase="'tareas'">
-                    Nueva tarea
-                  </span>
-
-                  <span *ngSwitchCase="'visitas'">
-                    Nueva visita
-                  </span>
-
+                  <span *ngSwitchCase="'llamadas'">Nueva llamada</span>
+                  <span *ngSwitchCase="'tareas'">Nueva tarea</span>
+                  <span *ngSwitchCase="'visitas'">Nueva visita</span>
                 </ng-container>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
 
         <div class="panel-body">
-
-          <form
-            class="form-grid"
-            (ngSubmit)="guardarElementoCalendario()">
-
-            <!-- LLAMADAS -->
+          <form class="form-grid" (ngSubmit)="guardarElementoCalendario()">
 
             <ng-container *ngIf="tipoCalendario === 'llamadas'">
-
               <mat-form-field appearance="outline" class="w-100">
-
                 <mat-label>Motivo</mat-label>
-
-                <input
-                  matInput
-                  [(ngModel)]="nuevaLlamada.motivo"
-                  name="motivo" />
-
+                <input matInput [(ngModel)]="nuevaLlamada.motivo" name="motivo" />
               </mat-form-field>
-
             </ng-container>
-
-            <!-- TAREAS Y VISITAS -->
 
             <ng-container *ngIf="tipoCalendario !== 'llamadas'">
-
               <mat-form-field appearance="outline" class="w-100">
-
                 <mat-label>Título</mat-label>
-
-                <input
-                  matInput
-                  [(ngModel)]="nuevoTitulo"
-                  name="nuevoTitulo" />
-
+                <input matInput [(ngModel)]="nuevoTitulo" name="nuevoTitulo" />
               </mat-form-field>
-
             </ng-container>
 
-            <!-- FECHA Y HORA -->
-
             <div class="row g-2 fecha-hora-row">
-
               <div class="col-12 col-md-7">
-
                 <mat-form-field appearance="outline" class="w-100">
-
                   <mat-label>Fecha</mat-label>
 
-                  <input
-                    matInput
-                    [matDatepicker]="picker"
-                    [(ngModel)]="fechaNueva"
-                    name="fechaNueva"
+                  <input matInput [matDatepicker]="picker" [(ngModel)]="fechaNueva" name="fechaNueva"
                     (dateChange)="syncFechaHora()" />
 
-                  <mat-datepicker-toggle
-                    matSuffix
-                    [for]="picker">
-                  </mat-datepicker-toggle>
-
+                  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                   <mat-datepicker #picker></mat-datepicker>
-
                 </mat-form-field>
-
               </div>
 
               <div class="col-12 col-md-5">
-
                 <mat-form-field appearance="outline" class="w-100">
-
                   <mat-label>Hora</mat-label>
 
-                  <mat-select
-                    [(ngModel)]="horaNueva"
-                    name="horaNueva"
-                    (selectionChange)="syncFechaHora()">
-
-                    <mat-option
-                      *ngFor="let h of horasDisponibles"
-                      [value]="h">
-
+                  <mat-select [(ngModel)]="horaNueva" name="horaNueva" (selectionChange)="syncFechaHora()">
+                    <mat-option *ngFor="let h of horasDisponibles" [value]="h">
                       {{ h }}
-
                     </mat-option>
-
                   </mat-select>
-
                 </mat-form-field>
-
               </div>
-
             </div>
 
-            <!-- OBS -->
-
             <mat-form-field appearance="outline" class="w-100">
-
               <mat-label>Observaciones</mat-label>
 
-              <textarea
-                matInput
-                rows="3"
-                [(ngModel)]="nuevaObservacion"
-                name="obs">
+              <textarea matInput rows="3" [(ngModel)]="nuevaObservacion" name="obs">
               </textarea>
-
             </mat-form-field>
 
-            <!-- BOTON -->
-
             <div class="form-actions">
-
-              <button
-                type="submit"
-                mat-raised-button
-                color="primary"
-                class="btn-save">
-
+              <button type="submit" mat-raised-button color="primary" class="btn-save">
                 Guardar
-
               </button>
-
             </div>
 
           </form>
-
         </div>
-
       </mat-card>
 
     </div>

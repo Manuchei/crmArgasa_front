@@ -1,4 +1,8 @@
-export type EstadoLlamada = 'pendiente' | 'realizada' | 'cancelada';
+export type EstadoLlamada =
+  | 'pendiente'
+  | 'en_progreso'
+  | 'realizada'
+  | 'cancelada';
 
 export interface ILlamadaRequest {
   empresa: string; // ✅ NUEVO

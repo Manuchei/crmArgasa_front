@@ -1,0 +1,84 @@
+<h2 mat-dialog-title>
+  Editar
+  <ng-container [ngSwitch]="tipo">
+    <span *ngSwitchCase="'llamadas'">llamada</span>
+    <span *ngSwitchCase="'tareas'">tarea</span>
+    <span *ngSwitchCase="'visitas'">visita</span>
+  </ng-container>
+</h2>
+
+<div mat-dialog-content class="dialog-body">
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>
+      <ng-container [ngSwitch]="tipo">
+        <span *ngSwitchCase="'llamadas'">Motivo</span>
+        <span *ngSwitchDefault>Título</span>
+      </ng-container>
+    </mat-label>
+
+    <input
+      matInput
+      [(ngModel)]="titulo" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Fecha</mat-label>
+
+    <input
+      matInput
+      type="date"
+      [(ngModel)]="fecha" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Hora</mat-label>
+
+    <mat-select [(ngModel)]="hora">
+      <mat-option
+        *ngFor="let h of horasDisponibles"
+        [value]="h">
+        {{ h }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Estado</mat-label>
+
+    <mat-select [(ngModel)]="estado">
+      <mat-option value="pendiente">Pendiente</mat-option>
+      <mat-option value="en_progreso">En progreso</mat-option>
+      <mat-option value="realizada">Realizada</mat-option>
+      <mat-option value="cancelada">Cancelada</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Observaciones</mat-label>
+
+    <textarea
+      matInput
+      rows="3"
+      [(ngModel)]="observaciones">
+    </textarea>
+  </mat-form-field>
+
+</div>
+
+<div mat-dialog-actions align="end">
+  <button
+    mat-button
+    type="button"
+    (click)="cancelar()">
+    Cancelar
+  </button>
+
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="guardar()">
+    Guardar
+  </button>
+</div>

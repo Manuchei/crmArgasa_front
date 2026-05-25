@@ -1,4 +1,8 @@
-export type EstadoVisita = 'pendiente' | 'realizada' | 'cancelada';
+export type EstadoVisita =
+  | 'pendiente'
+  | 'en_progreso'
+  | 'realizada'
+  | 'cancelada';
 
 export interface IVisita {
   id: number;
