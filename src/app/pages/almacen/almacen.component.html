@@ -1,0 +1,153 @@
+<div class="container mt-4">
+
+  <h2 class="mb-4">Almacén - Inventario</h2>
+
+  <div *ngIf="mensaje" class="alert alert-info">
+    {{ mensaje }}
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      Nuevo inventario
+    </div>
+
+    <div class="card-body">
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Descripción</label>
+          <input type="text" class="form-control" [(ngModel)]="inventario.descripcion"
+            placeholder="Ej: Inventario almacén mayo">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Realizado por</label>
+          <input type="text" class="form-control" [(ngModel)]="inventario.realizadoPor" placeholder="Ej: Manu">
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead>
+            <tr>
+              <th>Referencia</th>
+              <th>Gama</th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th>Familia</th>
+              <th>Subfamilia</th>
+              <th>Descripción</th>
+              <th>Stock sistema</th>
+              <th>Stock contado</th>
+              <th>Diferencia</th>
+              <th>Precio unitario</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let linea of inventario.lineas">
+              <td>{{ linea.referencia }}</td>
+              <td>{{ linea.gama }}</td>
+              <td>{{ linea.marca }}</td>
+              <td>{{ linea.modelo }}</td>
+              <td>{{ linea.familia }}</td>
+              <td>{{ linea.subfamilia }}</td>
+              <td>{{ linea.descripcion }}</td>
+
+              <td>
+                <span class="badge bg-success">
+                  {{ linea.stockSistema }}
+                </span>
+              </td>
+
+              <td>
+                <input type="number" class="form-control form-control-sm input-stock" [(ngModel)]="linea.stockContado"
+                  (ngModelChange)="actualizarLinea(linea)">
+              </td>
+
+              <td>
+                <span class="badge" [ngClass]="{
+                    'bg-success': (linea.diferencia || 0) > 0,
+                    'bg-danger': (linea.diferencia || 0) < 0,
+                    'bg-secondary': (linea.diferencia || 0) === 0
+                  }">
+                  {{ linea.diferencia }}
+                </span>
+              </td>
+
+              <td>{{ linea.precioUnitario | currency:'EUR' }}</td>
+              <td>{{ linea.precioTotal | currency:'EUR' }}</td>
+            </tr>
+          </tbody>
+
+          <tfoot>
+            <tr>
+              <th colspan="8">Totales</th>
+              <th>{{ calcularTotalUnidades() }}</th>
+              <th></th>
+              <th></th>
+              <th>{{ calcularTotalInventario() | currency:'EUR' }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <button class="btn btn-success mt-3" (click)="guardarInventario()">
+        Guardar inventario
+      </button>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      Inventarios realizados
+    </div>
+
+    <div class="card-body">
+
+      <div *ngIf="cargando">
+        Cargando inventarios...
+      </div>
+
+      <table class="table table-hover" *ngIf="!cargando && inventarios.length > 0">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Realizado por</th>
+            <th>Total unidades</th>
+            <th>Total inventario</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let inv of inventarios">
+            <td>{{ inv.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ inv.descripcion }}</td>
+            <td>{{ inv.realizadoPor }}</td>
+            <td>{{ inv.totalUnidades }}</td>
+            <td>{{ inv.totalInventario | currency:'EUR' }}</td>
+            <td class="d-flex gap-2">
+              <button class="btn btn-sm btn-primary" (click)="verDetalle(inv.id)">
+                Ver detalle
+              </button>
+
+              <button class="btn btn-sm btn-danger" (click)="eliminarInventario(inv.id)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!cargando && inventarios.length === 0">
+        No hay inventarios registrados.
+      </p>
+
+    </div>
+  </div>
+
+</div>

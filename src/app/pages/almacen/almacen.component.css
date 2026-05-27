@@ -1,0 +1,29 @@
+.card {
+  border-radius: 12px;
+}
+
+.card-header {
+  font-weight: 600;
+}
+
+.table th {
+  background-color: #f8f9fa;
+}
+
+input {
+  font-size: 14px;
+}
+
+button {
+  white-space: nowrap;
+}
+
+.input-stock {
+  width: 90px;
+}
+
+.table th,
+.table td {
+  font-size: 14px;
+  vertical-align: middle;
+}

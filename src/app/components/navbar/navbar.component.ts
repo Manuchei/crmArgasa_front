@@ -78,6 +78,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     return this.auth.hasRole('ADMIN');
   }
 
+  canAlmacen(): boolean {
+    return this.auth.hasRole('ADMIN');
+  }
+
   cambiarEmpresa(): void {
     this.empresaService.clearEmpresa();
     this.router.navigate(['/empresa']);
@@ -91,11 +95,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   menuOpen = false;
 
-toggleMenu(): void {
-  this.menuOpen = !this.menuOpen;
-}
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
 
-closeMenu(): void {
-  this.menuOpen = false;
-}
+  closeMenu(): void {
+    this.menuOpen = false;
+  }
 }

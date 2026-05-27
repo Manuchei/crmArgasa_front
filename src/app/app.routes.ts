@@ -42,6 +42,8 @@ import { InformeSaldosComponent } from './pages/informe-saldos/informe-saldos.co
 import { InformesComponent } from './pages/informes/informes.component';
 import { FacturaProveedorComponent } from './pages/factura-proveedor/factura-proveedor.component';
 
+import { AlmacenComponent } from './pages/almacen/almacen.component';
+
 export const routes: Routes = [
   { path: 'login', component: LoginFormComponent },
 
@@ -81,6 +83,13 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard, empresaGuard],
   },
+
+  {
+  path: 'app/almacen/detalle/:id',
+  loadComponent: () =>
+    import('./pages/almacen-detalle/almacen-detalle.component')
+      .then(m => m.AlmacenDetalleComponent)
+},
 
   {
     path: 'imprimir/factura/:id',
@@ -142,6 +151,13 @@ export const routes: Routes = [
         path: 'clientes/:id',
         component: ClienteDetalleComponent,
         canActivate: [roleGuard(['ADMIN', 'USER'])],
+      },
+
+      {
+        path: 'almacen',
+        component: AlmacenComponent,
+        canActivate: [authGuard],
+        data: { roles: ['ADMIN', 'USER'] },
       },
 
       // =========================
