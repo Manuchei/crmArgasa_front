@@ -80,6 +80,7 @@ export class ClienteDetalleComponent implements OnInit {
     this.cargarProductos();
     this.cargarTrabajos();
     this.cargarPagos();
+    this.cargarAlbaranes();
   }
 
   private static safeTrim(value: any): string {
@@ -130,6 +131,10 @@ export class ClienteDetalleComponent implements OnInit {
     if (pestana === 'productos-trabajos') {
       this.cargarProductos();
     }
+
+    if (pestana === 'albaranes') {
+      this.cargarAlbaranes();
+    }
   }
 
   cargarCliente(): void {
@@ -147,6 +152,24 @@ export class ClienteDetalleComponent implements OnInit {
         error: (err: any) => {
           this.logHttpError('cargar cliente', err);
           alert('No se pudo cargar el cliente.');
+        },
+      });
+  }
+
+  cargarAlbaranes(): void {
+    if (!this.clienteId) return;
+
+    this.http
+      .get<any[]>(`${this.apiUrl}/albaranes/clientes/${this.clienteId}`, {
+        headers: this.getEmpresaHeaders(),
+      })
+      .subscribe({
+        next: (data: any[]) => {
+          this.albaranes = Array.isArray(data) ? data : [];
+        },
+        error: (err: any) => {
+          this.logHttpError('cargar albaranes', err);
+          this.albaranes = [];
         },
       });
   }
@@ -328,6 +351,7 @@ export class ClienteDetalleComponent implements OnInit {
         },
       });
   }
+
   agregarTrabajo(): void {
     if (!this.cliente?.id) return;
 
@@ -395,6 +419,7 @@ export class ClienteDetalleComponent implements OnInit {
           };
 
           this.cargarCliente();
+          this.cargarTrabajos();
         },
         error: (err) => {
           this.logHttpError('añadir trabajo', err);
@@ -565,10 +590,8 @@ export class ClienteDetalleComponent implements OnInit {
           this.cargarProductos();
           this.calcularTotales();
         },
-
         error: (err: any) => {
           this.logHttpError('actualizar unidades del trabajo', err);
-
           alert('No se pudieron actualizar las unidades.');
         },
       });
@@ -603,7 +626,7 @@ export class ClienteDetalleComponent implements OnInit {
 
     this.http
       .post<any>(
-        `${this.apiUrl}/albaranes/cliente/${this.cliente.id}`,
+        `${this.apiUrl}/albaranes/clientes/${this.cliente.id}`,
         {},
         {
           headers: this.getEmpresaHeaders(),
@@ -617,6 +640,7 @@ export class ClienteDetalleComponent implements OnInit {
             this.albaranes = [...this.albaranes, albaran];
           }
 
+          this.cargarAlbaranes();
           this.cambiarPestana('albaranes');
         },
         error: (err) => {
@@ -630,29 +654,13 @@ export class ClienteDetalleComponent implements OnInit {
   verAlbaran(a: any): void {
     if (!a?.id) return;
 
-    this.router.navigate(['/albaranes', a.id]);
+    this.router.navigate(['/app/albaranes', a.id]);
   }
 
   imprimirAlbaran(a: any): void {
     if (!a?.id) return;
 
-    const url = `${this.apiUrl}/albaranes/${a.id}/pdf`;
-
-    this.http
-      .get(url, {
-        headers: this.getEmpresaHeaders(),
-        responseType: 'blob',
-      })
-      .subscribe({
-        next: (blob) => {
-          const fileURL = URL.createObjectURL(blob);
-          window.open(fileURL, '_blank');
-        },
-        error: (err) => {
-          this.logHttpError('imprimir albarán', err);
-          alert('No se pudo imprimir el albarán.');
-        },
-      });
+    window.open(`/imprimir/albaran/${a.id}`, '_blank');
   }
 
   eliminarAlbaran(a: any): void {
@@ -676,7 +684,7 @@ export class ClienteDetalleComponent implements OnInit {
   }
 
   volverAClientes(): void {
-    this.router.navigate(['/clientes']);
+    this.router.navigate(['/app/clientes']);
   }
 
   cargarTrabajos(): void {

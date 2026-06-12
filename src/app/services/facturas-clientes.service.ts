@@ -9,6 +9,8 @@ import { environment } from '../../environments/environment';
 export class FacturasClientesService {
   private baseUrl = `${environment.apiUrl}/facturas-clientes`;
 
+  
+
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<IfacturaCliente[]> {

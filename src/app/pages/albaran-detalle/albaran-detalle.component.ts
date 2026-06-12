@@ -213,35 +213,36 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
    * - lo resolvemos DESPUÉS del POST (y si el backend devuelve albarán actualizado, mejor)
    */
   confirmar(): void {
-    if (!this.albaran?.id || this.isConfirming) return;
-
-    this.isConfirming = true;
-
-    this.http
-      .post<any>(`${this.apiUrl}/albaranes/${this.albaran.id}/confirmar`, {})
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (albaranActualizado) => {
-          if (albaranActualizado) this.albaran = albaranActualizado;
-
-          this.asegurarEmpresaActiva();
-
-          const clienteIdSeguro = this.getClienteIdSeguro();
-          if (clienteIdSeguro) {
-            this.router.navigate(['/app/clientes', clienteIdSeguro]);
-            return;
-          }
-
-          // fallback (solo si de verdad no hay forma)
-          this.router.navigateByUrl('/app/clientes');
-        },
-        error: (err) => {
-          console.error('Error confirmando albarán:', err);
-          alert('No se pudo confirmar el albarán');
-          this.isConfirming = false;
-        },
-      });
+  if (!this.albaran?.id || this.isConfirming) {
+    return;
   }
+
+  this.isConfirming = true;
+
+  this.http
+    .post<any>(
+      `${this.apiUrl}/albaranes/${this.albaran.id}/confirmar`,
+      {}
+    )
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (albaranActualizado) => {
+
+        this.albaran = albaranActualizado;
+
+        this.isConfirming = false;
+
+        alert('Albarán confirmado correctamente');
+
+        // NO REDIRIGIR
+      },
+      error: (err) => {
+        console.error('Error confirmando albarán:', err);
+        alert('No se pudo confirmar el albarán');
+        this.isConfirming = false;
+      },
+    });
+}
 
   // =========================
   //  Líneas
