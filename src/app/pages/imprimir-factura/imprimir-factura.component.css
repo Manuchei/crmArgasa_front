@@ -1,264 +1,371 @@
 :host {
   display: block;
-  background: #f5f5f5;
   min-height: 100vh;
-  padding: 16px;
+  padding: 18px;
+  background: #d9d9d9;
+  color: #181818;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-.factura {
-  width: 900px;
-  min-height: 1270px;
-  margin: 20px auto;
+* {
+  box-sizing: border-box;
+}
+
+.print-toolbar {
+  width: 210mm;
+  margin: 0 auto 12px;
+}
+
+.print-toolbar button {
+  border: 0;
+  border-radius: 4px;
+  padding: 9px 18px;
+  background: #242424;
+  color: #fff;
+  cursor: pointer;
+}
+
+.estado-carga,
+.estado-error {
+  width: 210mm;
+  margin: 10px auto;
+  padding: 12px;
   background: #fff;
-  color: #222;
-  padding: 30px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  font-family: Arial, sans-serif;
-  font-size: 13px;
-}
-
-.cabecera-mi-electro {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.cabecera-izquierda {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-}
-
-.logos-factura {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-mielectro {
-  width: 120px;
-  height: auto;
-  object-fit: contain;
-}
-
-.logo-empresa {
-  width: 170px;
-  max-height: 95px;
-  object-fit: contain;
-}
-
-.empresa-datos {
-  font-size: 12px;
-  line-height: 1.35;
-  color: #333;
-}
-
-.empresa-nombre {
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.lema {
-  color: #c60000;
-  font-weight: 700;
-  font-size: 15px;
-  text-align: right;
-}
-
-.linea-separadora {
-  border-top: 1px solid #ddd;
-  margin: 18px 0 34px;
-}
-
-.datos-superiores {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  margin-bottom: 28px;
-  line-height: 1.45;
-}
-
-.datos-cliente {
-  color: #555;
-}
-
-.titulo-documento {
-  color: #c60000;
-  font-size: 26px;
-  font-weight: 700;
-  margin: 20px 0;
-}
-
-.info-documento {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
-  gap: 30px;
-  margin-bottom: 24px;
-  font-size: 13px;
-}
-
-.estado-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
-}
-
-.badge-estado {
-  display: inline-block;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 11px;
-  color: white;
-}
-
-.estado-ok {
-  background-color: #198754;
 }
 
 .estado-error {
-  background-color: #dc3545;
+  color: #9f1919;
+  border: 1px solid #9f1919;
+}
+
+.documento-a4 {
+  position: relative;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 12mm 13mm 9mm;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 8px rgb(0 0 0 / 20%);
+  font-size: 10.5pt;
+}
+
+/* CABECERA */
+.cabecera-documento {
+  position: relative;
+  height: 65mm;
+}
+
+.bloque-emisor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 47%;
+}
+
+.logo-argasa {
+  display: block;
+  width: 64mm;
+  max-height: 25mm;
+  object-fit: contain;
+  object-position: left center;
+  margin-bottom: 6mm;
+}
+
+.datos-emisor,
+.datos-receptor {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1mm;
+  line-height: 1.22;
+}
+
+.datos-emisor strong,
+.datos-receptor strong {
+  margin-bottom: 1mm;
+  font-size: 10.5pt;
+}
+
+.titulo-documento {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 17pt;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.bloque-receptor {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 39%;
+  padding-top: 28mm;
+}
+
+.logo-mielectro {
+  position: absolute;
+  top: 6mm;
+  left: 0;
+  width: 47mm;
+  max-height: 19mm;
+  object-fit: contain;
+  object-position: left center;
+}
+
+/* FRANJA Nº/FECHAS/REFERENCIA */
+.franja-documento {
+  display: grid;
+  grid-template-columns: 15% 14% 14% 1fr;
+  min-height: 15mm;
+  margin-top: 1mm;
+  background: #f6dfd6;
+}
+
+.dato-franja {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 3mm 3mm 2.5mm;
+}
+
+.dato-franja + .dato-franja {
+  border-left: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+.dato-franja strong {
+  font-size: 10.5pt;
+}
+
+.dato-franja span {
+  margin-top: 1mm;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rotulo-descripcion {
+  height: 8mm;
+  padding: 2mm 2.5mm 1mm;
+  border-bottom: 1px solid #d96b62;
+  font-weight: 700;
+}
+
+/* TABLA PRINCIPAL */
+.tabla-contenedor {
+  position: relative;
+  height: 155mm;
+  margin-top: 6mm;
+  border: 1px solid #dc776e;
+  overflow: hidden;
+}
+
+.marca-agua {
+  position: absolute;
+  z-index: 0;
+  top: 19mm;
+  left: 50%;
+  width: 72%;
+  max-height: 74mm;
+  transform: translateX(-50%);
+  object-fit: contain;
+  opacity: 0.22;
+  filter: grayscale(1);
+  pointer-events: none;
 }
 
 .tabla-lineas {
+  position: relative;
+  z-index: 1;
   width: 100%;
+  height: 100%;
   border-collapse: collapse;
-  font-size: 12px;
-  margin-top: 6px;
+  table-layout: fixed;
+  background: transparent;
 }
 
-.tabla-lineas th {
-  border-bottom: 1px solid #bbb;
-  padding: 7px 6px;
-  font-weight: 700;
-  text-align: left;
-}
+.tabla-lineas col.col-cantidad { width: 11%; }
+.tabla-lineas col.col-codigo { width: 16%; }
+.tabla-lineas col.col-articulo { width: 38%; }
+.tabla-lineas col.col-precio { width: 10%; }
+.tabla-lineas col.col-iva { width: 9%; }
+.tabla-lineas col.col-subtotal { width: 16%; }
 
+.tabla-lineas th,
 .tabla-lineas td {
-  padding: 7px 6px;
+  border-right: 1px solid #dc776e;
+}
+
+.tabla-lineas th:last-child,
+.tabla-lineas td:last-child {
+  border-right: 0;
+}
+
+.tabla-lineas thead {
+  height: 8mm;
+}
+
+.tabla-lineas thead th {
+  padding: 1.5mm 2mm;
+  border-bottom: 1px solid #dc776e;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 10pt;
+}
+
+.tabla-lineas tbody {
+  height: calc(100% - 16mm);
+}
+
+.tabla-lineas tbody tr {
+  height: 8mm;
+}
+
+.tabla-lineas tbody td {
+  padding: 2mm 2mm 1mm;
+  vertical-align: top;
+  background: transparent;
+  line-height: 1.5;
+}
+
+.tabla-lineas td.numero {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tabla-lineas td.articulo {
+  white-space: pre-line;
+}
+
+.tabla-lineas .sin-lineas {
+  text-align: center;
+  color: #777;
+}
+
+.tabla-lineas tfoot {
+  height: 8mm;
+}
+
+.tabla-lineas tfoot td {
+  padding: 1.5mm 2mm;
+  border-top: 1px solid #dc776e;
   vertical-align: middle;
 }
 
-.tabla-lineas tbody tr:nth-child(odd) {
-  background: #f1f1f1;
-}
-
-.text-end {
+.etiqueta-subtotal {
   text-align: right;
+  font-weight: 700;
 }
 
-.col-cant {
-  width: 75px;
+/* TOTALES */
+.resumen-totales {
+  display: grid;
+  grid-template-columns: 18% 20% 15% 15% 14% 18%;
+  min-height: 17mm;
+  border: 1px solid #dc776e;
+  border-top: 0;
 }
 
-.col-iva {
-  width: 95px;
-}
-
-.col-eur {
-  width: 115px;
-}
-
-.bloque-totales {
+.caja-total {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 12px;
-}
-
-.tabla-totales {
-  width: 330px;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.tabla-totales td {
-  padding: 7px 8px;
-  border-bottom: 1px solid #ddd;
-}
-
-.total-final td {
-  font-weight: 700;
-  border-top: 1px solid #999;
-}
-
-.referencia-pago {
-  margin-top: 26px;
-  font-size: 12px;
-}
-
-.pie-factura {
-  margin-top: 170px;
-  border-top: 1px solid #444;
-  padding-top: 10px;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2.5mm 2mm 2mm;
+  border-right: 1px solid #dc776e;
   text-align: center;
-  font-weight: 700;
-  font-size: 12px;
 }
 
-.no-print {
-  display: inline-block;
-  margin-bottom: 12px;
+.caja-total:last-child {
+  border-right: 0;
+}
+
+.caja-total strong {
+  font-size: 9.5pt;
+}
+
+.caja-total span {
+  text-align: right;
+  font-size: 10.5pt;
+}
+
+.total-documento {
+  font-weight: 700;
+}
+
+.total-documento strong {
+  font-size: 10.5pt;
+}
+
+.total-documento span {
+  font-size: 13pt;
+}
+
+/* LOGÍSTICA */
+.datos-logisticos {
+  display: grid;
+  grid-template-columns: 21% 29% 10% 10%;
+  column-gap: 7mm;
+  margin-top: 5mm;
+  padding: 0 2mm 2mm;
+  border-bottom: 1px solid #dc776e;
+}
+
+.datos-logisticos > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+}
+
+.datos-logisticos strong {
+  font-size: 10pt;
+}
+
+/* PIE */
+.pie-documento {
+  margin-top: 6mm;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 7.2pt;
+  line-height: 1.1;
+}
+
+.pie-superior {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1mm;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 7.5pt;
+}
+
+.pie-documento p {
+  margin: 0;
+  text-align: justify;
 }
 
 @media print {
-  .no-print,
-  header,
-  nav,
-  .navbar,
-  .topbar,
-  app-header,
-  app-navbar,
-  app-topbar,
-  .app-shell,
-  .layout,
-  .sidebar {
-    display: none !important;
-  }
-
   @page {
-    size: A4;
-    margin: 10mm;
+    size: A4 portrait;
+    margin: 0;
   }
 
   :host {
-    background: #fff;
     padding: 0;
+    background: #fff;
   }
 
-  body {
-    margin: 0 !important;
-    background: #fff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  .no-print {
+    display: none !important;
   }
 
-  .container {
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .factura {
-    width: auto !important;
-    min-height: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
+  .documento-a4 {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    padding: 12mm 13mm 9mm;
     box-shadow: none;
-  }
-
-  .logo-mielectro {
-    width: 110px;
-  }
-
-  .logo-empresa {
-    width: 155px;
-    max-height: 85px;
-  }
-
-  .titulo-documento {
-    font-size: 24px;
-  }
-
-  .pie-factura {
-    margin-top: 150px;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 }

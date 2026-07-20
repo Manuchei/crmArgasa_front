@@ -1,0 +1,30 @@
+export const EMPRESAS = {
+  argasa: {
+    nombre: 'Argasa Garrido S.L.',
+    cif: 'B-6879617',
+    direccion: 'Rúa Pintor Laxeiro Nº15 Bajo',
+    codigoPostal: '36211',
+    poblacion: 'Vigo',
+    provincia: 'Pontevedra',
+    telefono: '607 472 159',
+    email: 'argasaluis@gmail.com',
+    logoUrl: '/assets/logos/argasa.png',
+    marcaAguaUrl: '/assets/logos/marca-agua-argasa.png',
+    colorPrincipal: '#c62828',
+  },
+
+  electroluga: {
+    nombre: 'ELECTRODOMÉSTICOS LUIS GARRIDO, S.L.U.',
+    cif: 'B-42722389',
+    direccion: 'Rúa Pintor Laxeiro Nº15 Bajo',
+    codigoPostal: '36211',
+    poblacion: 'Vigo',
+    provincia: 'Pontevedra',
+    telefono: '607 472 159',
+    email: 'electrolugaslu@gmail.com',
+    logoUrl: '/assets/logos/luga.png',
+    logoMiElectroUrl: '/assets/logos/mielectro.jpeg',
+    marcaAguaUrl: '/assets/logos/marca-agua-electroluga.png',
+    colorPrincipal: '#c62828',
+  },
+};

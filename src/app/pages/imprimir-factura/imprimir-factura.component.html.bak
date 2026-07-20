@@ -1,0 +1,170 @@
+<div class="container mt-3">
+
+  <div class="no-print mb-3">
+    <button type="button" class="btn btn-dark" (click)="imprimirManual()">Imprimir</button>
+  </div>
+
+  <div *ngIf="loading" class="text-muted">Cargando…</div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="factura && !loading" class="factura">
+
+    <div class="cabecera-mi-electro" *ngIf="getEmisorVisualFactura() as emisor">
+
+      <div class="cabecera-izquierda">
+        <div class="logos-factura">
+          <img *ngIf="emisor.logoMiElectroUrl" [src]="emisor.logoMiElectroUrl" class="logo-mielectro" />
+          <img *ngIf="emisor.logoUrl" [src]="emisor.logoUrl" class="logo-empresa" />
+        </div>
+
+        <div class="empresa-datos">
+          <div class="empresa-nombre">{{ emisor.nombre || factura.empresa }}</div>
+          <div>{{ emisor.direccion }}</div>
+          <div>{{ emisor.codigoPostal }} {{ emisor.poblacion }}</div>
+          <div *ngIf="emisor.cif">{{ emisor.cif }}</div>
+        </div>
+      </div>
+
+      <div class="lema">
+        Lo que NECESITAS... pero de VERDAD
+      </div>
+
+    </div>
+
+    <div class="linea-separadora"></div>
+
+    <div class="datos-superiores">
+
+      <div class="direccion-entrega">
+        <strong>Dirección de Entrega:</strong><br>
+        {{ getNombreReceptor() }}<br>
+        <span *ngIf="getDireccionReceptor()">{{ getDireccionReceptor() }}<br></span>
+        <span *ngIf="getLocalidadReceptor()">{{ getLocalidadReceptor() }}</span>
+      </div>
+
+      <div class="datos-cliente">
+        <strong>{{ getNombreReceptor() }}</strong><br>
+        <span *ngIf="getDireccionReceptor()">{{ getDireccionReceptor() }}<br></span>
+        <span *ngIf="getLocalidadReceptor()">{{ getLocalidadReceptor() }}<br></span>
+        <span *ngIf="getTelefonoReceptor()">☎ {{ getTelefonoReceptor() }}<br></span>
+        <span *ngIf="getCifDniReceptor()">NIF: {{ getCifDniReceptor() }}</span>
+      </div>
+
+    </div>
+
+    <div class="titulo-documento">
+      Factura {{ getNumeroDocumento() }}
+    </div>
+
+    <div class="info-documento">
+
+      <div>
+        <strong>Fecha de factura:</strong><br>
+        {{ getFechaDocumento() }}
+      </div>
+
+      <div>
+        <strong>Origen:</strong><br>
+        -
+      </div>
+
+      <div>
+        <strong>Comercial:</strong><br>
+        VACÍO
+      </div>
+
+      <div class="estado-wrapper">
+        <span class="badge-estado" [ngClass]="documentoPagado() ? 'estado-ok' : 'estado-error'">
+          {{ getEstadoDocumento() }}
+        </span>
+      </div>
+
+    </div>
+
+    <table class="tabla-lineas">
+
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th class="text-end col-cant">Cantidad</th>
+          <th class="text-end col-eur">Precio unitario</th>
+          <th class="text-end col-eur">Subtotal</th>
+          <th class="text-end col-iva">Impuestos</th>
+          <th class="text-end col-eur">Precio total</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let l of getLineasDocumento()">
+          <td>{{ l.descripcion }}</td>
+
+          <td class="text-end">
+            {{ getCantidadLinea(l) | number:'1.2-2' }}
+          </td>
+
+          <td class="text-end">
+            {{ getPrecioLinea(l) | number:'1.2-2' }}
+          </td>
+
+          <td class="text-end">
+            {{ getSubtotalLinea(l) | number:'1.2-2' }}
+          </td>
+
+          <td class="text-end">
+            IVA {{ getIvaLinea(l) }}
+          </td>
+
+          <td class="text-end">
+            {{ getTotalLinea(l) | number:'1.2-2' }} €
+          </td>
+        </tr>
+
+        <tr *ngIf="getLineasDocumento().length === 0">
+          <td colspan="6" class="text-center text-muted">
+            Esta factura no tiene líneas para mostrar.
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+    <div class="bloque-totales">
+
+      <table class="tabla-totales">
+        <tr>
+          <td>Subtotal</td>
+          <td class="text-end">{{ getBaseImponible() | number:'1.2-2' }} €</td>
+        </tr>
+
+        <tr>
+          <td>IVA</td>
+          <td class="text-end">{{ getIvaTotal() | number:'1.2-2' }} €</td>
+        </tr>
+
+        <tr class="total-final">
+          <td>Total</td>
+          <td class="text-end">{{ getTotalDocumento() | number:'1.2-2' }} €</td>
+        </tr>
+      </table>
+
+    </div>
+
+    <div class="referencia-pago">
+      Por favor utilice la siguiente referencia al realizar su pago:
+      <strong>{{ getNumeroDocumento() }}</strong>
+    </div>
+
+    <div class="pie-factura" *ngIf="getEmisorVisualFactura() as emisor">
+      <div>
+        ☎ {{ emisor.telefono }} &nbsp;&nbsp;
+        ✉ {{ emisor.email }} &nbsp;&nbsp;
+        NIF: {{ emisor.cif }}
+      </div>
+    </div>
+
+  </div>
+
+</div>

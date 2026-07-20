@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
+import { EMPRESAS } from '../../shared/config/empresa-config';
 
 @Component({
   selector: 'app-albaran-imprimir',
@@ -45,48 +46,15 @@ export class AlbaranImprimirComponent implements OnInit {
     window.print();
   }
 
-  getEmpresaVisualAlbaran(): any {
-    const emp = String(this.albaran?.empresa || '')
-      .trim()
-      .toUpperCase();
+ getEmpresaVisualAlbaran(): any {
+  const emp = String(this.albaran?.empresa || '')
+    .trim()
+    .toLowerCase();
 
-    if (emp === 'ARGASA') {
-      return {
-        nombre: 'Argasa Garrido S.L.',
-        cif: 'B36879617',
-        direccion: 'Rúa Pintor Laxeiro Nº15 Bajo',
-        codigoPostal: '36211',
-        poblacion: 'Vigo',
-        provincia: 'Pontevedra',
-        telefono: '607472159',
-        email: 'argasaluis@gmail.com',
-        logoUrl: '/assets/logos/argasa.png',
-      };
-    }
-    if (emp === 'ELECTROLUGA' || emp === 'LUGA') {
-      return {
-        nombre: 'ELECTROLUGA, S.L.U',
-        cif: 'B42722389',
-        direccion: 'Rúa Pintor Laxeiro Nº15 Bajo',
-        codigoPostal: '36211',
-        poblacion: 'Vigo',
-        provincia: 'Pontevedra',
-        telefono: '607472159',
-        email: 'electrolugaslu@gmail.com',
-        logoUrl: '/assets/logos/luga.png',
-      };
-    }
-
-    return {
-      nombre: this.albaran?.empresa || '',
-      cif: '',
-      direccion: '',
-      codigoPostal: '',
-      poblacion: '',
-      provincia: '',
-      telefono: '',
-      email: '',
-      logoUrl: '',
-    };
+  if (emp === 'luga') {
+    return EMPRESAS.electroluga;
   }
+
+  return EMPRESAS[emp as keyof typeof EMPRESAS] || null;
+}
 }

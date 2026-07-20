@@ -1,113 +1,183 @@
-<button class="btn btn-dark btn-sm no-print" (click)="imprimirManual()">
-  <i class="bi bi-printer"></i> Imprimir
-</button>
+<div class="print-toolbar no-print">
+  <button type="button" (click)="imprimirManual()">Imprimir</button>
+</div>
 
-<div class="hoja" *ngIf="albaran">
-  <div class="cabecera-top">
-    <div class="empresa-box" *ngIf="getEmpresaVisualAlbaran() as emisor">
-      <img *ngIf="emisor.logoUrl" [src]="emisor.logoUrl" alt="Logo empresa" class="logo-empresa" />
+<main *ngIf="albaran" class="documento-a4">
+  <header class="cabecera-documento">
+    <section class="bloque-emisor">
+      <img
+        class="logo-empresa"
+        [src]="albaran.empresa === 'ELECTROLUGA' ? 'public\assets\logos\electroluga.png' : 'public\assets\logos\argasa.png'"
+        alt="Logo de la empresa"
+      />
 
-      <div class="empresa-datos">
-        <div class="empresa-nombre">{{ emisor.nombre }}</div>
-
-        <div *ngIf="emisor.direccion">
-          {{ emisor.direccion }}
-        </div>
-
-        <div>
-          {{ emisor.codigoPostal || '' }}
-          {{ emisor.poblacion || '' }}
-          <span *ngIf="emisor.provincia">
-            ({{ emisor.provincia }})
-          </span>
-        </div>
-
-        <div *ngIf="emisor.telefono">
-          Tel: {{ emisor.telefono }}
-        </div>
-
-        <div *ngIf="emisor.email">
-          Email: {{ emisor.email }}
-        </div>
-
-        <div *ngIf="emisor.cif">
-          CIF: {{ emisor.cif }}
-        </div>
-      </div>
-    </div>
-
-    <div class="doc-lateral">
-      <div class="doc-box">
-        <h2>ALBARÁN</h2>
-        <div><b>Nº Albarán:</b> {{ albaran.numero || ('#' + albaran.id) }}</div>
-        <div><b>Fecha:</b> {{ albaran.fechaEmision }}</div>
-        <div><b>Empresa:</b> {{ albaran.empresa }}</div>
+      <div class="datos-emisor" *ngIf="albaran.empresa === 'ELECTROLUGA'; else datosArgasa">
+        <strong>ELECTROLUGA</strong>
+        <span>ELECTROLUGA, S.L.</span>
+        <span>DATOS DE DIRECCIÓN DE ELECTROLUGA</span>
+        <span>DATOS DE POBLACIÓN DE ELECTROLUGA</span>
+        <span>Tel. DATOS DE TELÉFONO</span>
+        <span>e-Mail DATOS DE EMAIL</span>
+        <span>C.I.F. DATOS DE CIF</span>
       </div>
 
-      <div class="right no-print mt-2 text-end">
-        <div class="badge-estado" [class.ok]="albaran.confirmado" [class.no]="!albaran.confirmado">
-          {{ albaran.confirmado ? 'CONFIRMADO' : 'NO CONFIRMADO' }}
+      <ng-template #datosArgasa>
+        <div class="datos-emisor">
+          <strong>ARGASA</strong>
+          <span>ARGASA</span>
+          <span>DATOS DE DIRECCIÓN DE ARGASA</span>
+          <span>DATOS DE POBLACIÓN DE ARGASA</span>
+          <span>Tel. DATOS DE TELÉFONO</span>
+          <span>e-Mail DATOS DE EMAIL</span>
+          <span>C.I.F. DATOS DE CIF</span>
         </div>
+      </ng-template>
+    </section>
+
+    <h1 class="titulo-documento">ALBARÁN</h1>
+
+    <section class="bloque-receptor">
+      <div class="datos-receptor">
+        <strong>{{ (albaran.nombreComercial || albaran.nombreApellidos || '') | uppercase }}</strong>
+        <span *ngIf="albaran.nombreComercial && albaran.nombreApellidos">{{ albaran.nombreApellidos | uppercase }}</span>
+        <span *ngIf="albaran.direccion">{{ albaran.direccion | uppercase }}</span>
+        <span *ngIf="albaran.codigoPostal || albaran.poblacion">
+          {{ albaran.codigoPostal }} {{ albaran.poblacion | uppercase }}
+        </span>
+        <span *ngIf="albaran.provincia">{{ albaran.provincia | uppercase }}</span>
+        <span *ngIf="albaran.cifDni">C.I.F./D.N.I. {{ albaran.cifDni | uppercase }}</span>
+        <span *ngIf="albaran.telefono">Tel. {{ albaran.telefono }}</span>
       </div>
+    </section>
+  </header>
+
+  <section class="franja-documento">
+    <div class="dato-franja">
+      <strong>Nº Albarán</strong>
+      <span>{{ albaran.numero || ('#' + albaran.id) }}</span>
     </div>
-  </div>
 
-  <hr>
-
-  <div class="bloque">
-    <h5>Cliente</h5>
-    <div><b>Nombre:</b> {{ albaran.nombreApellidos }}</div>
-    <div *ngIf="albaran.nombreComercial">
-      <b>Nombre comercial:</b> {{ albaran.nombreComercial }}
+    <div class="dato-franja">
+      <strong>Fecha</strong>
+      <span>{{ albaran.fechaEmision | date:'dd/MM/yyyy' }}</span>
     </div>
-    <div><b>CIF/DNI:</b> {{ albaran.cifDni }}</div>
-    <div><b>Dirección:</b> {{ albaran.direccion }}</div>
-    <div><b>CP / Población:</b> {{ albaran.codigoPostal }} - {{ albaran.poblacion }}</div>
-    <div><b>Provincia:</b> {{ albaran.provincia }}</div>
-    <div><b>Teléfono:</b> {{ albaran.telefono }}</div>
-    <div><b>Móvil:</b> {{ albaran.movil }}</div>
-    <div><b>Email:</b> {{ albaran.email }}</div>
-  </div>
 
-  <hr>
+    <div class="dato-franja">
+      <strong>Modo de envío</strong>
+      <span>{{ albaran.modoEnvio || '-' }}</span>
+    </div>
 
-  <div class="bloque">
-    <h5>Conceptos</h5>
+    <div class="dato-franja">
+      <strong>Estado</strong>
+      <span>{{ albaran.confirmado ? 'CONFIRMADO' : 'PENDIENTE' }}</span>
+    </div>
+  </section>
 
-    <table class="tabla" *ngIf="albaran.lineas?.length; else sinLineas">
+  <div class="rotulo-descripcion">Descripción</div>
+
+  <section class="tabla-contenedor">
+    <img
+      class="marca-agua"
+      [src]="albaran.empresa === 'ELECTROLUGA' ? 'assets/ElectroLuga mod.png' : 'assets/Argasa mod.png'"
+      alt=""
+    />
+
+    <table class="tabla-lineas">
+      <colgroup>
+        <col class="col-cantidad" />
+        <col class="col-codigo" />
+        <col class="col-articulo" />
+        <col class="col-precio" />
+        <col class="col-descuento" />
+        <col class="col-subtotal" />
+      </colgroup>
+
       <thead>
         <tr>
-          <th>Descripción</th>
-          <th class="num">Base</th>
-          <th class="num">Descuento</th>
-          <th class="num">Total</th>
+          <th>Cantidad</th>
+          <th>Código</th>
+          <th>Artículo</th>
+          <th>Precio</th>
+          <th>Dto. %</th>
+          <th>Subtotal</th>
         </tr>
       </thead>
+
       <tbody>
-        <tr *ngFor="let l of albaran.lineas">
-          <td>{{ l.descripcion || l.concepto || '-' }}</td>
-          <td class="num">{{ (l.baseLinea || 0) | number:'1.2-2' }} €</td>
-          <td class="num">{{ (l.descuentoImporte || 0) | number:'1.2-2' }} €</td>
-          <td class="num"><b>{{ (l.totalLinea || 0) | number:'1.2-2' }} €</b></td>
+        <tr *ngFor="let linea of (albaran.lineas || [])">
+          <td class="numero">{{ (linea.unidades || 0) | number:'1.2-2' }}</td>
+          <td>{{ linea.codigo || '' }}</td>
+          <td class="articulo">{{ linea.descripcion || '' }}</td>
+          <td class="numero">{{ (linea.precio || 0) | number:'1.2-2' }}</td>
+          <td class="numero">{{ (linea.dtoPct || 0) | number:'1.2-2' }}</td>
+          <td class="numero">{{ (linea.totalLinea || 0) | number:'1.2-2' }}</td>
+        </tr>
+
+        <tr *ngIf="!(albaran.lineas || []).length">
+          <td colspan="6" class="sin-lineas">Sin líneas</td>
         </tr>
       </tbody>
+
+      <tfoot>
+        <tr>
+          <td class="numero">{{ (albaran.lineas || []).length }}</td>
+          <td colspan="3"></td>
+          <td class="etiqueta-subtotal">Subtotal</td>
+          <td class="numero">{{ (albaran.subtotal || 0) | number:'1.2-2' }}</td>
+        </tr>
+      </tfoot>
     </table>
+  </section>
 
-    <ng-template #sinLineas>
-      <div class="muted">Este albarán no tiene líneas.</div>
-    </ng-template>
-  </div>
+  <section class="resumen-totales">
+    <div class="caja-total">
+      <strong>Subtotal</strong>
+      <span>{{ (albaran.subtotal || 0) | number:'1.2-2' }} €</span>
+    </div>
 
-  <hr>
+    <div class="caja-total">
+      <strong>Descuento</strong>
+      <span>{{ (albaran.totalDescuento || 0) | number:'1.2-2' }} €</span>
+    </div>
 
-  <div class="totales">
-    <div><span>Subtotal:</span><b>{{ (albaran.subtotal || 0) | number:'1.2-2' }} €</b></div>
-    <div><span>Descuento:</span><b>- {{ (albaran.totalDescuento || 0) | number:'1.2-2' }} €</b></div>
-    <div class="totalFinal"><span>Total:</span><b>{{ (albaran.totalImporte || 0) | number:'1.2-2' }} €</b></div>
-  </div>
+    <div class="caja-total total-documento">
+      <strong>TOTAL ALBARÁN</strong>
+      <span>{{ (albaran.totalImporte || 0) | number:'1.2-2' }} €</span>
+    </div>
+  </section>
 
-  <div class="bloque extra" *ngIf="albaran.observaciones">
-    <h5>Observaciones</h5>
-    <div>{{ albaran.observaciones }}</div>
-  </div>
-</div>
+  <section class="datos-finales">
+    <div>
+      <strong>Forma de cobro</strong>
+      <span>{{ albaran.formaCobro || '-' }}</span>
+    </div>
+
+    <div>
+      <strong>Cuenta</strong>
+      <span>{{ albaran.cuenta || '-' }}</span>
+    </div>
+
+    <div>
+      <strong>Modo de envío</strong>
+      <span>{{ albaran.modoEnvio || '-' }}</span>
+    </div>
+  </section>
+
+  <section class="observaciones" *ngIf="albaran.observaciones">
+    <strong>Observaciones</strong>
+    <p>{{ albaran.observaciones }}</p>
+  </section>
+
+  <footer class="pie-documento">
+    <div class="pie-superior">
+      <span>Documento generado por Novex.</span>
+      <span>Página 1 / 1</span>
+    </div>
+
+    <p>
+      De conformidad con la normativa vigente en materia de protección de datos, los datos personales
+      incluidos en este documento se utilizarán únicamente para la gestión administrativa y comercial
+      correspondiente.
+    </p>
+  </footer>
+</main>
