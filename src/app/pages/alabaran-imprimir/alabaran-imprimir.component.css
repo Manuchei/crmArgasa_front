@@ -11,17 +11,19 @@
   box-sizing: border-box;
 }
 
+/* BOTÓN DE IMPRESIÓN */
+
 .print-toolbar {
   width: 210mm;
   margin: 0 auto 12px;
 }
 
 .print-toolbar button {
+  padding: 9px 18px;
   border: 0;
   border-radius: 4px;
-  padding: 9px 18px;
   background: #242424;
-  color: #fff;
+  color: #ffffff;
   cursor: pointer;
 }
 
@@ -30,92 +32,99 @@
   width: 210mm;
   margin: 10px auto;
   padding: 12px;
-  background: #fff;
+  background: #ffffff;
 }
 
 .estado-error {
-  color: #9f1919;
   border: 1px solid #9f1919;
+  color: #9f1919;
 }
+
+/* DOCUMENTO A4 */
 
 .documento-a4 {
   position: relative;
   width: 210mm;
   min-height: 297mm;
   margin: 0 auto;
-  padding: 12mm 13mm 9mm;
-  overflow: hidden;
-  background: #fff;
+  padding: 5mm 13mm 9mm;
+  overflow: visible;
+  background: #ffffff;
   box-shadow: 0 1px 8px rgb(0 0 0 / 20%);
   font-size: 10.5pt;
 }
 
 /* CABECERA */
-.cabecera-documento {
-  position: relative;
-  height: 65mm;
+
+/* ===========================
+   CABECERA
+=========================== */
+
+.cabecera-documento{
+    display:grid;
+    grid-template-columns:42% 16% 42%;
+    align-items:start;
+    column-gap:8mm;
+
+    min-height:65mm;
+    margin-bottom:4mm;
 }
 
-.bloque-emisor {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 47%;
+.bloque-emisor,
+.bloque-receptor{
+    position:static;
+    width:100%;
 }
 
-.logo-argasa {
-  display: block;
-  width: 64mm;
-  max-height: 25mm;
-  object-fit: contain;
-  object-position: left center;
-  margin-bottom: 6mm;
+.logo-argasa{
+    display:block;
+    width:64mm;
+    max-height:25mm;
+    object-fit:contain;
+    margin-bottom:5mm;
+}
+
+.logo-mielectro{
+    display:block;
+    width:47mm;
+    max-height:19mm;
+    object-fit:contain;
+    margin:0 0 8mm auto;
+}
+
+.titulo-documento{
+    position:static;
+    transform:none;
+    margin-top:6mm;
+
+    text-align:center;
+
+    font-size:17pt;
+    font-weight:500;
+    letter-spacing:.3px;
 }
 
 .datos-emisor,
-.datos-receptor {
-  display: flex;
-  flex-direction: column;
-  gap: 1.1mm;
-  line-height: 1.22;
+.datos-receptor{
+    display:flex;
+    flex-direction:column;
+    gap:1mm;
+    line-height:1.2;
+    
+}
+
+.datos-receptor{
+    margin-top:30mm;
 }
 
 .datos-emisor strong,
-.datos-receptor strong {
-  margin-bottom: 1mm;
-  font-size: 10.5pt;
+.datos-receptor strong{
+    margin-bottom:1mm;
+    font-size:10.5pt;
 }
 
-.titulo-documento {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0;
-  font-size: 17pt;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
+/* FRANJA DE DATOS */
 
-.bloque-receptor {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 39%;
-  padding-top: 28mm;
-}
-
-.logo-mielectro {
-  position: absolute;
-  top: 6mm;
-  left: 0;
-  width: 47mm;
-  max-height: 19mm;
-  object-fit: contain;
-  object-position: left center;
-}
-
-/* FRANJA Nº/FECHAS/REFERENCIA */
 .franja-documento {
   display: grid;
   grid-template-columns: 15% 14% 14% 1fr;
@@ -143,10 +152,10 @@
 .dato-franja span {
   margin-top: 1mm;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  text-overflow: clip;
+  font-size: 9pt;
 }
-
 .rotulo-descripcion {
   height: 8mm;
   padding: 2mm 2.5mm 1mm;
@@ -155,12 +164,13 @@
 }
 
 /* TABLA PRINCIPAL */
+
 .tabla-contenedor {
   position: relative;
-  height: 155mm;
+  height: 145mm;
   margin-top: 6mm;
-  border: 1px solid #dc776e;
   overflow: hidden;
+  border: 1px solid #dc776e;
 }
 
 .marca-agua {
@@ -171,9 +181,9 @@
   width: 72%;
   max-height: 74mm;
   transform: translateX(-50%);
-  object-fit: contain;
   opacity: 0.22;
   filter: grayscale(1);
+  object-fit: contain;
   pointer-events: none;
 }
 
@@ -187,12 +197,29 @@
   background: transparent;
 }
 
-.tabla-lineas col.col-cantidad { width: 11%; }
-.tabla-lineas col.col-codigo { width: 16%; }
-.tabla-lineas col.col-articulo { width: 38%; }
-.tabla-lineas col.col-precio { width: 10%; }
-.tabla-lineas col.col-iva { width: 9%; }
-.tabla-lineas col.col-subtotal { width: 16%; }
+.tabla-lineas col.col-codigo {
+  width: 15%;
+}
+
+.tabla-lineas col.col-descripcion {
+  width: 42%;
+}
+
+.tabla-lineas col.col-unidades {
+  width: 10%;
+}
+
+.tabla-lineas col.col-precio {
+  width: 11%;
+}
+
+.tabla-lineas col.col-descuento {
+  width: 9%;
+}
+
+.tabla-lineas col.col-total {
+  width: 13%;
+}
 
 .tabla-lineas th,
 .tabla-lineas td {
@@ -241,8 +268,8 @@
 }
 
 .tabla-lineas .sin-lineas {
+  color: #777777;
   text-align: center;
-  color: #777;
 }
 
 .tabla-lineas tfoot {
@@ -261,9 +288,10 @@
 }
 
 /* TOTALES */
+
 .resumen-totales {
   display: grid;
-  grid-template-columns: 18% 20% 15% 15% 14% 18%;
+  grid-template-columns: 1fr 1fr 1.15fr;
   min-height: 17mm;
   border: 1px solid #dc776e;
   border-top: 0;
@@ -303,7 +331,8 @@
   font-size: 13pt;
 }
 
-/* LOGÍSTICA */
+/* DATOS LOGÍSTICOS */
+
 .datos-logisticos {
   display: grid;
   grid-template-columns: 21% 29% 10% 10%;
@@ -324,6 +353,7 @@
 }
 
 /* PIE */
+
 .pie-documento {
   margin-top: 6mm;
   font-family: "Courier New", Courier, monospace;
@@ -344,15 +374,17 @@
   text-align: justify;
 }
 
+/* IMPRESIÓN */
+
 @media print {
   @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 5mm;
   }
 
   :host {
     padding: 0;
-    background: #fff;
+    background: #ffffff;
   }
 
   .no-print {
@@ -360,54 +392,12 @@
   }
 
   .documento-a4 {
-    width: 210mm;
-    min-height: 297mm;
+    width: 200mm;
+    height: 287mm;
     margin: 0;
-    padding: 12mm 13mm 9mm;
+    padding: 5mm 13mm 9mm;
     box-shadow: none;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
-}
-
-.logo-empresa {
-  display: block;
-  width: 64mm;
-  max-height: 25mm;
-  object-fit: contain;
-  object-position: left center;
-  margin-bottom: 6mm;
-}
-
-.tabla-lineas col.col-descuento { width: 9%; }
-
-.resumen-totales {
-  grid-template-columns: 1fr 1fr 1.15fr;
-}
-
-.datos-finales {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 7mm;
-  margin-top: 5mm;
-  padding: 0 2mm 2mm;
-  border-bottom: 1px solid #dc776e;
-}
-
-.datos-finales > div {
-  display: flex;
-  flex-direction: column;
-  gap: 2mm;
-}
-
-.observaciones {
-  margin-top: 4mm;
-  min-height: 18mm;
-  padding: 2mm;
-  border: 1px solid #dc776e;
-}
-
-.observaciones p {
-  margin: 2mm 0 0;
-  white-space: pre-line;
 }

@@ -3,9 +3,10 @@ import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { EMPRESAS } from '../../shared/config/empresa-config';
 
 @Component({
-  selector: 'app-imprimir-factura-proveedor',
+  selector: 'app-imprimir-factura',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './imprimir-factura-proveedor.component.html',
@@ -37,7 +38,40 @@ export class ImprimirFacturaProveedorComponent implements OnInit {
   cargarFactura(id: number): void {
     this.loading = true;
     this.error = null;
+    this.cargarFacturaCliente(id);
+  }
 
+  private cargarFacturaCliente(id: number): void {
+    this.http
+      .get(`${this.baseUrl}facturas-proveedor/${id}`, {
+        responseType: 'text',
+      })
+      .subscribe({
+        next: (raw) => {
+          try {
+            const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+            this.factura = data;
+
+            if (this.factura?.empresa) {
+              localStorage.setItem('empresa', String(this.factura.empresa));
+            }
+
+            this.loading = false;
+          } catch (e) {
+            console.error(
+              'Respuesta no válida al cargar factura cliente:',
+              raw,
+            );
+            this.cargarFacturaProveedor(id);
+          }
+        },
+        error: () => {
+          this.cargarFacturaProveedor(id);
+        },
+      });
+  }
+
+  private cargarFacturaProveedor(id: number): void {
     this.http
       .get(`${this.baseUrl}/facturas/${id}`, {
         responseType: 'text',
@@ -81,113 +115,212 @@ export class ImprimirFacturaProveedorComponent implements OnInit {
     window.print();
   }
 
-  getEmisorVisualFactura(): any {
-    const emp = String(this.factura?.empresa || '')
-      .trim()
-      .toUpperCase();
+  esFacturaProveedor(): boolean {
+    return !!this.factura?.albaranProveedor || !!this.factura?.numeroInterno;
+  }
 
-    if (emp === 'ARGASA') {
-      return {
-        nombre: 'Argasa Garrido S.L.',
-        cif: 'B36879617',
-        direccion: 'Rúa Pintor Laxeiro Nº15 Bajo',
-        codigoPostal: '36211',
-        poblacion: 'Vigo',
-        provincia: 'Pontevedra',
-        telefono: '607472159',
-        email: 'argasaluis@gmail.com',
-        logoUrl: '/assets/logos/argasa.png',
-      };
+getEmisorVisualFactura(): any {
+  const emp = String(this.factura?.empresa || '')
+    .trim()
+    .toLowerCase();
+
+  return EMPRESAS[emp as keyof typeof EMPRESAS] || null;
+}
+
+  getNumeroDocumento(): string {
+    if (!this.factura) return '';
+
+    if (this.esFacturaProveedor()) {
+      return this.factura?.numeroInterno || '-';
     }
 
-    if (emp === 'ELECTROLUGA' || emp === 'LUGA') {
-      return {
-        nombre: 'ELECTROLUGA, S.L.U',
-        cif: 'B42722389',
-        direccion: 'Rúa Pintor Laxeiro Nº15 Bajo',
-        codigoPostal: '36211',
-        poblacion: 'Vigo',
-        provincia: 'Pontevedra',
-        telefono: '607472159',
-        email: 'electrolugaslu@gmail.com',
-        logoUrl: '/assets/logos/luga.png',
-      };
-    }
+    const numero = this.factura.numero ?? this.factura.id;
 
-    return null;
+    const fecha = this.factura.fechaEmision
+      ? new Date(this.factura.fechaEmision)
+      : new Date();
+
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const anio = fecha.getFullYear();
+
+    return `FC-${numero}-${mes}-${anio}`;
   }
 
-  getNumeroInterno(): string {
-    return this.factura?.numeroInterno || '-';
-  }
-
-  getNumeroFacturaProveedor(): string {
-    return (
-      this.factura?.numeroFacturaProveedor ||
-      this.factura?.albaranProveedor?.numeroProveedor ||
-      '-'
-    );
-  }
-
-  getFechaEmision(): string {
+  getFechaDocumento(): string {
     return this.factura?.fechaEmision || '-';
   }
 
-  getFechaVencimiento(): string {
-    return this.factura?.fechaVencimiento || '-';
+  getFechaVencimientoDocumento(): string {
+    if (this.esFacturaProveedor()) {
+      return this.factura?.fechaVencimiento || '-';
+    }
+
+    return '-';
   }
 
-  getEstado(): string {
-    return this.factura?.pagada ? 'PAGADA' : 'PENDIENTE';
+  getEstadoDocumento(): string {
+    if (this.esFacturaProveedor()) {
+      return this.factura?.pagada ? 'PAGADA' : 'PENDIENTE';
+    }
+
+    const estado = String(this.factura?.estado || '').toUpperCase();
+
+    if (estado === 'PAGADA') {
+      return 'PAGADA';
+    }
+
+    if (estado === 'EMITIDA') {
+      return 'PENDIENTE';
+    }
+
+    if (estado === 'BORRADOR') {
+      return 'BORRADOR';
+    }
+
+    if (estado === 'ANULADA') {
+      return 'ANULADA';
+    }
+
+    return estado || '-';
   }
 
-  getProveedor(): any {
-    return this.factura?.proveedor || {};
+  documentoPagado(): boolean {
+    return this.getEstadoDocumento() === 'PAGADA';
   }
 
-  getNombreProveedor(): string {
-    const p = this.getProveedor();
-    return `${p?.nombre || ''} ${p?.apellido || ''}`.trim() || '—';
+  getTituloReceptor(): string {
+    return this.esFacturaProveedor() ? 'Proveedor' : 'Cliente';
   }
 
-  getCifProveedor(): string {
-    return this.getProveedor()?.cif || '-';
+  getNombreReceptor(): string {
+    if (this.esFacturaProveedor()) {
+      const proveedor = this.factura?.proveedor || {};
+      return (
+        `${proveedor?.nombre || ''} ${proveedor?.apellido || ''}`.trim() || '—'
+      );
+    }
+
+    return (
+      this.factura?.cliente?.nombreComercial ??
+      this.factura?.cliente?.nombreApellidos ??
+      '—'
+    );
   }
 
-  getDireccionProveedor(): string {
-    return this.getProveedor()?.direccion || '-';
+  getCifDniReceptor(): string | null {
+    if (this.esFacturaProveedor()) {
+      return this.factura?.proveedor?.cif || null;
+    }
+
+    return this.factura?.cliente?.cifDni || null;
   }
 
-  getLocalidadProveedor(): string {
-    const p = this.getProveedor();
-    return `${p?.codigoPostal || ''} ${p?.localidad || ''} ${p?.provincia ? `(${p.provincia})` : ''}`.trim();
+  getDireccionReceptor(): string | null {
+    if (this.esFacturaProveedor()) {
+      return this.factura?.proveedor?.direccion || null;
+    }
+
+    return this.factura?.cliente?.direccion || null;
   }
 
-  getTelefonoProveedor(): string {
-    return this.getProveedor()?.telefono || '-';
+  getLocalidadReceptor(): string {
+    if (this.esFacturaProveedor()) {
+      const p = this.factura?.proveedor || {};
+      return `${p?.codigoPostal || ''} ${p?.localidad || ''} ${p?.provincia ? `(${p.provincia})` : ''}`.trim();
+    }
+
+    const c = this.factura?.cliente || {};
+    return `${c?.codigoPostal || ''} ${c?.poblacion || ''} ${c?.provincia ? `(${c.provincia})` : ''}`.trim();
   }
 
-  getEmailProveedor(): string {
-    return this.getProveedor()?.email || '-';
+  getTelefonoReceptor(): string | null {
+    if (this.esFacturaProveedor()) {
+      return this.factura?.proveedor?.telefono || null;
+    }
+
+    return this.factura?.cliente?.telefono || null;
   }
 
-  getLineas(): any[] {
+  getEmailReceptor(): string | null {
+    if (this.esFacturaProveedor()) {
+      return this.factura?.proveedor?.email || null;
+    }
+
+    return this.factura?.cliente?.email || null;
+  }
+
+  getLineasDocumento(): any[] {
+    if (this.esFacturaProveedor()) {
+      return (
+        this.factura?.albaranProveedor?.lineas || this.factura?.lineas || []
+      );
+    }
+
     return this.factura?.lineas || [];
   }
 
+  getCantidadLinea(linea: any): number {
+    if (this.esFacturaProveedor()) {
+      return Number(linea?.unidades ?? linea?.cantidad ?? 0);
+    }
+
+    return Number(linea?.cantidad || 0);
+  }
+
+  getPrecioLinea(linea: any): number {
+    if (this.esFacturaProveedor()) {
+      return Number(linea?.precio ?? linea?.precioUnitario ?? 0);
+    }
+
+    return Number(linea?.precioUnitario || 0);
+  }
+
+  getSubtotalLinea(linea: any): number {
+    if (this.esFacturaProveedor()) {
+      return Number(linea?.baseLinea ?? linea?.subtotal ?? 0);
+    }
+
+    return Number(linea?.subtotal || 0);
+  }
+
+  getIvaLinea(linea: any): string {
+    if (this.esFacturaProveedor()) {
+      return `${linea?.ivaPct ?? 21}%`;
+    }
+
+    return `${linea?.ivaPct ?? 0}%`;
+  }
+
+  getTotalLinea(linea: any): number {
+    return Number(linea?.totalLinea || 0);
+  }
+
   getBaseImponible(): number {
+    if (this.esFacturaProveedor()) {
+      return Number(
+        this.factura?.baseImponible ??
+          this.factura?.albaranProveedor?.subtotal ??
+          this.factura?.totalImporte ??
+          0,
+      );
+    }
+
     return Number(this.factura?.baseImponible || 0);
   }
 
-  getDescuentoTotal(): number {
-    return 0;
-  }
-
   getIvaTotal(): number {
+    if (this.esFacturaProveedor()) {
+      return Number(this.factura?.ivaTotal || 0);
+    }
+
     return Number(this.factura?.ivaTotal || 0);
   }
 
-  getTotal(): number {
-    return Number(this.factura?.totalImporte || 0);
+  getTotalDocumento(): number {
+    if (this.esFacturaProveedor()) {
+      return Number(this.factura?.totalImporte || this.factura?.total || 0);
+    }
+
+    return Number(this.factura?.total || 0);
   }
 }

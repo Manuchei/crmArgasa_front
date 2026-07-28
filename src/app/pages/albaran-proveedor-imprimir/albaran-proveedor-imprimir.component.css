@@ -1,185 +1,403 @@
 :host {
   display: block;
-  background: #f3f3f3;
   min-height: 100vh;
-  padding: 16px;
+  padding: 18px;
+  background: #d9d9d9;
+  color: #181818;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
   box-sizing: border-box;
 }
 
-.hoja {
+/* BOTÓN DE IMPRESIÓN */
+
+.print-toolbar {
+  width: 210mm;
+  margin: 0 auto 12px;
+}
+
+.print-toolbar button {
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 4px;
+  background: #242424;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.estado-carga,
+.estado-error {
+  width: 210mm;
+  margin: 10px auto;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.estado-error {
+  border: 1px solid #9f1919;
+  color: #9f1919;
+}
+
+/* DOCUMENTO A4 */
+
+.documento-a4 {
+  position: relative;
   width: 210mm;
   min-height: 297mm;
-  background: #fff;
   margin: 0 auto;
-  padding: 18mm 14mm;
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.12);
-  color: #111;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 14px;
-  line-height: 1.35;
-  box-sizing: border-box;
+  padding: 5mm 13mm 9mm;
+  overflow: visible;
+  background: #ffffff;
+  box-shadow: 0 1px 8px rgb(0 0 0 / 20%);
+  font-size: 10.5pt;
 }
 
-.cabecera-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
+/* CABECERA */
+
+/* ===========================
+   CABECERA
+=========================== */
+
+.cabecera-documento{
+    display:grid;
+    grid-template-columns:42% 16% 42%;
+    align-items:start;
+    column-gap:8mm;
+
+    min-height:68mm;
+    margin-bottom:4mm;
 }
 
-.empresa-box {
+.bloque-emisor,
+.bloque-receptor{
+    position:static;
+    width:100%;
+}
+
+.logo-argasa{
+    display:block;
+    width:64mm;
+    max-height:25mm;
+    object-fit:contain;
+    margin-bottom:5mm;
+}
+
+.logo-mielectro{
+    display:block;
+    width:47mm;
+    max-height:19mm;
+    object-fit:contain;
+    margin:0 0 8mm auto;
+}
+
+.titulo-documento{
+    position:static;
+    transform:none;
+    margin-top:6mm;
+
+    text-align:center;
+
+    font-size:17pt;
+    font-weight:500;
+    letter-spacing:.3px;
+}
+
+.datos-emisor,
+.datos-receptor{
+    display:flex;
+    flex-direction:column;
+    gap:1mm;
+    line-height:1.2;
+    
+}
+
+.datos-receptor{
+    margin-top:30mm;
+}
+
+.datos-emisor strong,
+.datos-receptor strong{
+    margin-bottom:1mm;
+    font-size:10.5pt;
+}
+
+/* FRANJA DE DATOS */
+
+.franja-documento {
+  display: grid;
+  grid-template-columns: 14% 18% 14% 14% 1fr;
+  min-height: 15mm;
+  margin-top: 1mm;
+  background: #f6dfd6;
+}
+
+.dato-franja {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  max-width: 48%;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 3mm 3mm 2.5mm;
 }
 
-.logo-empresa {
-  max-width: 180px;
-  max-height: 90px;
+.dato-franja + .dato-franja {
+  border-left: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+.dato-franja strong {
+  font-size: 10.5pt;
+}
+
+.dato-franja span {
+  margin-top: 1mm;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  font-size: 9pt;
+}
+.rotulo-descripcion {
+  height: 8mm;
+  padding: 2mm 2.5mm 1mm;
+  border-bottom: 1px solid #d96b62;
+  font-weight: 700;
+}
+
+/* TABLA PRINCIPAL */
+
+.tabla-contenedor {
+  position: relative;
+  height: 145mm;
+  margin-top: 6mm;
+  overflow: hidden;
+  border: 1px solid #dc776e;
+}
+
+.marca-agua {
+  position: absolute;
+  z-index: 0;
+  top: 19mm;
+  left: 50%;
+  width: 72%;
+  max-height: 74mm;
+  transform: translateX(-50%);
+  opacity: 0.22;
+  filter: grayscale(1);
   object-fit: contain;
+  pointer-events: none;
 }
 
-.empresa-datos {
-  font-size: 13px;
+.tabla-lineas {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: transparent;
 }
 
-.empresa-nombre {
-  font-size: 18px;
+.tabla-lineas col.col-codigo {
+  width: 15%;
+}
+
+.tabla-lineas col.col-descripcion {
+  width: 42%;
+}
+
+.tabla-lineas col.col-unidades {
+  width: 10%;
+}
+
+.tabla-lineas col.col-precio {
+  width: 11%;
+}
+
+.tabla-lineas col.col-descuento {
+  width: 9%;
+}
+
+.tabla-lineas col.col-total {
+  width: 13%;
+}
+
+.tabla-lineas th,
+.tabla-lineas td {
+  border-right: 1px solid #dc776e;
+}
+
+.tabla-lineas th:last-child,
+.tabla-lineas td:last-child {
+  border-right: 0;
+}
+
+.tabla-lineas thead {
+  height: 8mm;
+}
+
+.tabla-lineas thead th {
+  padding: 1.5mm 2mm;
+  border-bottom: 1px solid #dc776e;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 10pt;
+}
+
+.tabla-lineas tbody {
+  height: calc(100% - 16mm);
+}
+
+.tabla-lineas tbody tr {
+  height: 8mm;
+}
+
+.tabla-lineas tbody td {
+  padding: 2mm 2mm 1mm;
+  vertical-align: top;
+  background: transparent;
+  line-height: 1.5;
+}
+
+.tabla-lineas td.numero {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tabla-lineas td.articulo {
+  white-space: pre-line;
+}
+
+.tabla-lineas .sin-lineas {
+  color: #777777;
+  text-align: center;
+}
+
+.tabla-lineas tfoot {
+  height: 8mm;
+}
+
+.tabla-lineas tfoot td {
+  padding: 1.5mm 2mm;
+  border-top: 1px solid #dc776e;
+  vertical-align: middle;
+}
+
+.etiqueta-subtotal {
+  text-align: right;
   font-weight: 700;
-  margin-bottom: 8px;
 }
 
-.doc-lateral {
+/* TOTALES */
+
+.resumen-totales {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.15fr;
+  min-height: 17mm;
+  border: 1px solid #dc776e;
+  border-top: 0;
+}
+
+.caja-total {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  width: 40%;
+  justify-content: space-between;
+  padding: 2.5mm 2mm 2mm;
+  border-right: 1px solid #dc776e;
+  text-align: center;
 }
 
-.doc-box {
-  border: 2px solid #222;
-  border-radius: 10px;
-  padding: 14px 18px;
-  width: 100%;
+.caja-total:last-child {
+  border-right: 0;
+}
+
+.caja-total strong {
+  font-size: 9.5pt;
+}
+
+.caja-total span {
   text-align: right;
-  box-sizing: border-box;
+  font-size: 10.5pt;
 }
 
-.doc-box h2 {
-  margin: 0 0 8px 0;
-  font-size: 28px;
-  letter-spacing: 0.5px;
-}
-
-.badge-estado {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 999px;
-  color: #fff;
-  font-size: 12px;
+.total-documento {
   font-weight: 700;
 }
 
-.badge-estado.ok {
-  background: #19984f;
+.total-documento strong {
+  font-size: 10.5pt;
 }
 
-.badge-estado.no {
-  background: #a94442;
+.total-documento span {
+  font-size: 13pt;
 }
 
-hr {
-  border: none;
-  border-top: 1px solid #cfcfcf;
-  margin: 18px 0;
+/* DATOS LOGÍSTICOS */
+
+.datos-logisticos {
+  display: grid;
+  grid-template-columns: 21% 29% 10% 10%;
+  column-gap: 7mm;
+  margin-top: 5mm;
+  padding: 0 2mm 2mm;
+  border-bottom: 1px solid #dc776e;
 }
 
-.bloque h5 {
-  margin: 0 0 10px 0;
-  font-size: 18px;
-  font-weight: 500;
+.datos-logisticos > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
 }
 
-.tabla {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
+.datos-logisticos strong {
+  font-size: 10pt;
 }
 
-.tabla th,
-.tabla td {
-  border: 1px solid #444;
-  padding: 8px 10px;
+/* PIE */
+
+.pie-documento {
+  margin-top: 6mm;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 7.2pt;
+  line-height: 1.1;
 }
 
-.tabla th {
-  text-align: left;
-  font-weight: 700;
-}
-
-.tabla .num,
-.totales .num {
-  text-align: right;
-}
-
-.muted {
-  color: #666;
-  font-style: italic;
-}
-
-.totales {
-  margin-top: 8px;
-  margin-left: auto;
-  width: 320px;
-  font-size: 15px;
-}
-
-.totales > div {
+.pie-superior {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 1mm;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 7.5pt;
 }
 
-.totalFinal {
-  font-size: 18px;
-  font-weight: 700;
+.pie-documento p {
+  margin: 0;
+  text-align: justify;
 }
 
-.extra {
-  margin-top: 18px;
-}
-
-.no-print {
-  margin-bottom: 12px;
-}
-
-.right {
-  width: 100%;
-}
+/* IMPRESIÓN */
 
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 5mm;
+  }
+
   :host {
-    background: #fff;
     padding: 0;
+    background: #ffffff;
   }
 
   .no-print {
     display: none !important;
   }
 
-  .hoja {
-    width: 100%;
-    min-height: auto;
+  .documento-a4 {
+    width: 200mm;
+    height: 287mm;
     margin: 0;
+    padding: 5mm 13mm 9mm;
     box-shadow: none;
-    padding: 10mm 10mm;
-  }
-
-  @page {
-    size: A4;
-    margin: 10mm;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 }
