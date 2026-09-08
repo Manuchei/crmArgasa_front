@@ -56,6 +56,9 @@ export const routes: Routes = [
   // =========================
   // 🧾 IMPRIMIR
   // =========================
+  // =========================
+  // 🧾 ALBARÁN ARGASA
+  // =========================
   {
     path: 'imprimir/albaran/:id',
     loadComponent: () =>
@@ -74,6 +77,17 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard, empresaGuard],
   },
+  // =========================
+  // 🧾 ALBARÁN ELECTROLUGA
+  // =========================
+  {
+    path: 'imprimir/albaran-electroluga/:id',
+    loadComponent: () =>
+      import('./pages/albaran-imprimir-electroluga/albaran-imprimir-electroluga.component').then(
+        (m) => m.AlbaranImprimirElectrolugaComponent,
+      ),
+    canActivate: [authGuard, empresaGuard],
+  },
 
   {
     path: 'imprimir/factura-proveedor/:id',
@@ -85,11 +99,12 @@ export const routes: Routes = [
   },
 
   {
-  path: 'app/almacen/detalle/:id',
-  loadComponent: () =>
-    import('./pages/almacen-detalle/almacen-detalle.component')
-      .then(m => m.AlmacenDetalleComponent)
-},
+    path: 'app/almacen/detalle/:id',
+    loadComponent: () =>
+      import('./pages/almacen-detalle/almacen-detalle.component').then(
+        (m) => m.AlmacenDetalleComponent,
+      ),
+  },
 
   {
     path: 'imprimir/factura/:id',

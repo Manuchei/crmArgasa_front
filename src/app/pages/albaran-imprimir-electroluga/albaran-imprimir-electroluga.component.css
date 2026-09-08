@@ -1,0 +1,633 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: 18px;
+  background: #d9d9d9;
+  color: #181818;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ===========================
+   BOTÓN DE IMPRESIÓN
+=========================== */
+
+.print-toolbar {
+  width: 210mm;
+  margin: 0 auto 12px;
+}
+
+.print-toolbar button {
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 4px;
+  background: #242424;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.estado-carga,
+.estado-error {
+  width: 210mm;
+  margin: 10px auto;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.estado-error {
+  border: 1px solid #9f1919;
+  color: #9f1919;
+}
+
+/* ===========================
+   DOCUMENTO A4
+=========================== */
+
+.documento-a4 {
+  position: relative;
+
+  width: 210mm;
+  min-height: 297mm;
+
+  margin: 0 auto;
+
+  padding: 5mm 13mm 9mm;
+
+  overflow: visible;
+
+  background: #ffffff;
+
+  box-shadow: 0 1px 8px rgb(0 0 0 / 20%);
+
+  font-size: 10.5pt;
+}
+
+/* ===========================
+   CABECERA
+=========================== */
+
+.cabecera-documento {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    32mm
+    minmax(0, 1fr);
+
+  column-gap: 6mm;
+
+  align-items: start;
+
+  min-height: 65mm;
+
+  margin-bottom: 4mm;
+}
+
+/* ===========================
+   BLOQUES IZQUIERDA / DERECHA
+=========================== */
+
+.bloque-emisor,
+.bloque-receptor {
+  width: 100%;
+  min-width: 0;
+
+  display: grid;
+
+  grid-template-rows:
+    24mm
+    auto;
+
+  align-items: start;
+
+  overflow: hidden;
+}
+
+/* ===========================
+   CAJA DE LOGOS
+=========================== */
+
+.caja-logo {
+  width: 100%;
+  height: 24mm;
+
+  display: flex;
+  align-items: center;
+
+  margin: 0;
+  padding: 0;
+
+  overflow: visible;
+}
+
+/* El logo izquierdo se pega a la izquierda */
+.bloque-emisor .caja-logo {
+  justify-content: flex-start;
+}
+
+/* El logo derecho se pega a la derecha */
+.bloque-receptor .caja-logo {
+  justify-content: flex-end;
+}
+
+/* ===========================
+   ELECTROLUGA
+=========================== */
+
+.logo-electroluga {
+  display: block;
+
+  width: 52mm;
+  height: 20mm;
+
+  object-fit: contain;
+  object-position: left center;
+
+  margin: 0;
+  padding: 0;
+}
+
+/* ===========================
+   MI ELECTRO
+=========================== */
+
+.logo-mielectro {
+  display: block;
+
+  width: 40mm;
+  height: 20mm;
+
+  object-fit: contain;
+  object-position: right center;
+
+  margin: 0;
+  padding: 0;
+}
+
+/* ===========================
+   TÍTULO
+=========================== */
+
+.titulo-documento {
+  margin: 6mm 0 0;
+
+  padding: 0;
+
+  text-align: center;
+
+  font-size: 17pt;
+
+  font-weight: 500;
+
+  line-height: 1;
+
+  letter-spacing: 0.3px;
+
+  white-space: nowrap;
+}
+
+/* ===========================
+   DATOS EMISOR / CLIENTE
+=========================== */
+
+.cabecera-documento .datos-emisor,
+.cabecera-documento .datos-receptor {
+  display: flex !important;
+
+  flex-direction: column !important;
+
+  gap: 1mm !important;
+
+  margin: 4mm 0 0 0 !important;
+
+  padding: 0 !important;
+
+  line-height: 1.2 !important;
+
+  align-self: start !important;
+
+  min-width: 0;
+
+  overflow: hidden;
+}
+
+.cabecera-documento .datos-emisor strong,
+.cabecera-documento .datos-receptor strong {
+  margin: 0 0 1mm 0 !important;
+
+  padding: 0;
+
+  font-size: 10.5pt;
+}
+
+/* ===========================
+   FRANJA DE DATOS
+=========================== */
+
+.franja-documento {
+  display: grid;
+
+  grid-template-columns:
+    15%
+    14%
+    14%
+    1fr;
+
+  min-height: 15mm;
+
+  margin-top: 1mm;
+
+  background: #f6dfd6;
+}
+
+.dato-franja {
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  min-width: 0;
+
+  padding: 3mm 3mm 2.5mm;
+}
+
+.dato-franja + .dato-franja {
+  border-left: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+.dato-franja strong {
+  font-size: 10.5pt;
+}
+
+.dato-franja span {
+  margin-top: 1mm;
+
+  white-space: nowrap;
+
+  overflow: visible;
+
+  text-overflow: clip;
+
+  font-size: 9pt;
+}
+
+/* ===========================
+   RÓTULO DESCRIPCIÓN
+=========================== */
+
+.rotulo-descripcion {
+  height: 8mm;
+
+  padding: 2mm 2.5mm 1mm;
+
+  border-bottom: 1px solid #d96b62;
+
+  font-weight: 700;
+}
+
+/* ===========================
+   TABLA PRINCIPAL
+=========================== */
+
+.tabla-contenedor {
+  position: relative;
+
+  height: 145mm;
+
+  margin-top: 6mm;
+
+  overflow: hidden;
+
+  border: 1px solid #dc776e;
+}
+
+/* ===========================
+   MARCA DE AGUA
+=========================== */
+
+.marca-agua {
+  position: absolute;
+
+  z-index: 0;
+
+  top: 19mm;
+
+  left: 50%;
+
+  width: 72%;
+
+  max-height: 74mm;
+
+  transform: translateX(-50%);
+
+  opacity: 0.22;
+
+  filter: grayscale(1);
+
+  object-fit: contain;
+
+  pointer-events: none;
+}
+
+/* ===========================
+   TABLA
+=========================== */
+
+.tabla-lineas {
+  position: relative;
+
+  z-index: 1;
+
+  width: 100%;
+  height: 100%;
+
+  border-collapse: collapse;
+
+  table-layout: fixed;
+
+  background: transparent;
+}
+
+.tabla-lineas col.col-codigo {
+  width: 15%;
+}
+
+.tabla-lineas col.col-descripcion {
+  width: 42%;
+}
+
+.tabla-lineas col.col-unidades {
+  width: 10%;
+}
+
+.tabla-lineas col.col-precio {
+  width: 11%;
+}
+
+.tabla-lineas col.col-descuento {
+  width: 9%;
+}
+
+.tabla-lineas col.col-total {
+  width: 13%;
+}
+
+.tabla-lineas th,
+.tabla-lineas td {
+  border-right: 1px solid #dc776e;
+}
+
+.tabla-lineas th:last-child,
+.tabla-lineas td:last-child {
+  border-right: 0;
+}
+
+/* CABECERA TABLA */
+
+.tabla-lineas thead {
+  height: 8mm;
+}
+
+.tabla-lineas thead th {
+  padding: 1.5mm 2mm;
+
+  border-bottom: 1px solid #dc776e;
+
+  text-align: center;
+
+  vertical-align: middle;
+
+  font-size: 10pt;
+}
+
+/* CUERPO TABLA */
+
+.tabla-lineas tbody {
+  height: calc(100% - 16mm);
+}
+
+.tabla-lineas tbody tr {
+  height: 8mm;
+}
+
+.tabla-lineas tbody td {
+  padding: 2mm 2mm 1mm;
+
+  vertical-align: top;
+
+  background: transparent;
+
+  line-height: 1.5;
+}
+
+.tabla-lineas td.numero {
+  text-align: right;
+
+  white-space: nowrap;
+}
+
+.tabla-lineas td.articulo {
+  white-space: pre-line;
+}
+
+.tabla-lineas .sin-lineas {
+  color: #777777;
+
+  text-align: center;
+}
+
+/* PIE TABLA */
+
+.tabla-lineas tfoot {
+  height: 8mm;
+}
+
+.tabla-lineas tfoot td {
+  padding: 1.5mm 2mm;
+
+  border-top: 1px solid #dc776e;
+
+  vertical-align: middle;
+}
+
+.etiqueta-subtotal {
+  text-align: right;
+
+  font-weight: 700;
+}
+
+/* ===========================
+   TOTALES
+=========================== */
+
+.resumen-totales {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr
+    1.15fr;
+
+  min-height: 17mm;
+
+  border: 1px solid #dc776e;
+
+  border-top: 0;
+}
+
+.caja-total {
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  padding: 2.5mm 2mm 2mm;
+
+  border-right: 1px solid #dc776e;
+
+  text-align: center;
+}
+
+.caja-total:last-child {
+  border-right: 0;
+}
+
+.caja-total strong {
+  font-size: 9.5pt;
+}
+
+.caja-total span {
+  text-align: right;
+
+  font-size: 10.5pt;
+}
+
+.total-documento {
+  font-weight: 700;
+}
+
+.total-documento strong {
+  font-size: 10.5pt;
+}
+
+.total-documento span {
+  font-size: 13pt;
+}
+
+/* ===========================
+   DATOS LOGÍSTICOS
+=========================== */
+
+.datos-logisticos {
+  display: grid;
+
+  grid-template-columns:
+    21%
+    29%
+    10%
+    10%;
+
+  column-gap: 7mm;
+
+  margin-top: 5mm;
+
+  padding: 0 2mm 2mm;
+
+  border-bottom: 1px solid #dc776e;
+}
+
+.datos-logisticos > div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2mm;
+}
+
+.datos-logisticos strong {
+  font-size: 10pt;
+}
+
+/* ===========================
+   PIE
+=========================== */
+
+.pie-documento {
+  margin-top: 6mm;
+
+  font-family: "Courier New", Courier, monospace;
+
+  font-size: 7.2pt;
+
+  line-height: 1.1;
+}
+
+.pie-superior {
+  display: flex;
+
+  justify-content: space-between;
+
+  margin-bottom: 1mm;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  font-size: 7.5pt;
+}
+
+.pie-documento p {
+  margin: 0;
+
+  text-align: justify;
+}
+
+/* ===========================
+   IMPRESIÓN
+=========================== */
+
+@media print {
+  @page {
+    size: A4 portrait;
+
+    margin: 5mm;
+  }
+
+  :host {
+    padding: 0;
+
+    background: #ffffff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .documento-a4 {
+    width: 200mm;
+
+    height: 287mm;
+
+    margin: 0;
+
+    padding: 5mm 13mm 9mm;
+
+    box-shadow: none;
+
+    print-color-adjust: exact;
+
+    -webkit-print-color-adjust: exact;
+  }
+
+  .cabecera-documento {
+    grid-template-columns:
+      minmax(0, 1fr)
+      32mm
+      minmax(0, 1fr);
+
+    column-gap: 6mm;
+  }
+}

@@ -660,6 +660,15 @@ export class ClienteDetalleComponent implements OnInit {
   imprimirAlbaran(a: any): void {
     if (!a?.id) return;
 
+    const empresa = String(a.empresa || this.getEmpresa())
+      .trim()
+      .toUpperCase();
+
+    if (empresa === 'ELECTROLUGA') {
+      window.open(`/imprimir/albaran-electroluga/${a.id}`, '_blank');
+      return;
+    }
+
     window.open(`/imprimir/albaran/${a.id}`, '_blank');
   }
 

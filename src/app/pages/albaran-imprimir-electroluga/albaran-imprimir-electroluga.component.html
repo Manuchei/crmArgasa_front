@@ -1,0 +1,532 @@
+<div class="print-toolbar no-print">
+    <button type="button" (click)="imprimirManual()">
+        Imprimir
+    </button>
+</div>
+
+<div *ngIf="loading" class="estado-carga no-print">
+    Cargando…
+</div>
+
+<div *ngIf="error" class="estado-error no-print">
+    {{ error }}
+</div>
+
+
+<main *ngIf="factura && !loading" class="documento-a4">
+
+    <ng-container *ngIf="getEmisorVisualFactura() as emisor">
+
+        <!-- CABECERA -->
+
+        <div class="cabecera-documento">
+
+
+            <!-- ELECTROLUGA -->
+
+            <section class="bloque-emisor">
+
+                <div class="caja-logo">
+
+                    <img *ngIf="emisor.logoUrl" class="logo-electroluga" [src]="emisor.logoUrl" alt="Electroluga" />
+
+                </div>
+
+
+                <div class="datos-emisor">
+
+                    <strong>
+                        {{ emisor.nombre | uppercase }}
+                    </strong>
+
+                    <span>
+                        {{ emisor.direccion | uppercase }}
+                    </span>
+
+                    <span>
+                        {{ emisor.codigoPostal }}
+                        {{ emisor.poblacion | uppercase }}
+                    </span>
+
+                    <span *ngIf="emisor.telefono">
+                        Tel. {{ emisor.telefono }}
+                    </span>
+
+                    <span *ngIf="emisor.email">
+                        e-Mail {{ emisor.email }}
+                    </span>
+
+                    <span *ngIf="emisor.cif">
+                        C.I.F. {{ emisor.cif }}
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <!-- TÍTULO -->
+
+            <h1 class="titulo-documento">
+                ALBARÁN
+            </h1>
+
+
+            <!-- MI ELECTRO + CLIENTE -->
+
+            <section class="bloque-receptor">
+
+                <div class="caja-logo">
+
+                    <img *ngIf="emisor.logoMiElectroUrl" class="logo-mielectro" [src]="emisor.logoMiElectroUrl"
+                        alt="Mi Electro" />
+
+                </div>
+
+
+                <div class="datos-receptor">
+
+                    <strong>
+                        {{ getNombreReceptor() | uppercase }}
+                    </strong>
+
+                    <span *ngIf="getDireccionReceptor()">
+                        {{ getDireccionReceptor() | uppercase }}
+                    </span>
+
+                    <span *ngIf="getLocalidadReceptor()">
+                        {{ getLocalidadReceptor() | uppercase }}
+                    </span>
+
+                    <span *ngIf="getCifDniReceptor()">
+                        {{ getCifDniReceptor() | uppercase }}
+                    </span>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <!-- DATOS PRINCIPALES -->
+
+        <section class="franja-documento">
+
+            <div class="dato-franja dato-numero">
+
+                <strong>
+                    Nº Albarán
+                </strong>
+
+                <span>
+                    {{ getNumeroDocumento() }}
+                </span>
+
+            </div>
+
+
+            <div class="dato-franja dato-fecha">
+
+                <strong>
+                    Fecha
+                </strong>
+
+                <span>
+                    {{ getFechaDocumento() | date:'dd/MM/yyyy' }}
+                </span>
+
+            </div>
+
+
+            <div class="dato-franja dato-fecha-valor">
+
+                <strong>
+                    Fecha valor
+                </strong>
+
+                <span>
+
+                    {{
+                    getFechaVencimientoDocumento() !== '-'
+                    ? (getFechaVencimientoDocumento() | date:'dd/MM/yyyy')
+                    : (getFechaDocumento() | date:'dd/MM/yyyy')
+                    }}
+
+                </span>
+
+            </div>
+
+
+            <div class="dato-franja dato-referencia">
+
+                <strong>
+                    Estado Albarán
+                </strong>
+
+                <span>
+                    {{ getEstadoDocumento() }}
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <div class="rotulo-descripcion">
+            Descripción
+        </div>
+
+
+        <!-- TABLA DE LÍNEAS -->
+
+        <section class="tabla-contenedor">
+
+
+            <!-- MARCA DE AGUA ELECTROLUGA -->
+
+            <img *ngIf="emisor.marcaAguaUrl || emisor.logoUrl" class="marca-agua"
+                [src]="emisor.marcaAguaUrl || emisor.logoUrl" alt="" />
+
+
+            <table class="tabla-lineas">
+
+
+                <colgroup>
+
+                    <col class="col-codigo" />
+
+                    <col class="col-descripcion" />
+
+                    <col class="col-unidades" />
+
+                    <col class="col-precio" />
+
+                    <col class="col-descuento" />
+
+                    <col class="col-total" />
+
+                </colgroup>
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Código
+                        </th>
+
+                        <th>
+                            Descripción
+                        </th>
+
+                        <th>
+                            Uds
+                        </th>
+
+                        <th>
+                            Precio
+                        </th>
+
+                        <th>
+                            Dto %
+                        </th>
+
+                        <th>
+                            Total
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    <tr *ngFor="let linea of getLineasDocumento()">
+
+
+                        <td>
+                            {{ linea?.codigo || '-' }}
+                        </td>
+
+
+                        <td class="articulo">
+                            {{ linea?.descripcion || '' }}
+                        </td>
+
+
+                        <td class="numero">
+
+                            {{
+                            getCantidadLinea(linea)
+                            | number:'1.2-2'
+                            }}
+
+                        </td>
+
+
+                        <td class="numero">
+
+                            {{
+                            getPrecioLinea(linea)
+                            | number:'1.2-2'
+                            }}
+
+                        </td>
+
+
+                        <td class="numero">
+
+                            {{
+                            getDescuentoLinea(linea)
+                            | number:'1.0-2'
+                            }}
+
+                        </td>
+
+
+                        <td class="numero">
+
+                            {{
+                            getTotalLinea(linea)
+                            | number:'1.2-2'
+                            }}
+
+                        </td>
+
+
+                    </tr>
+
+
+                    <tr *ngIf="getLineasDocumento().length === 0">
+
+                        <td colspan="6" class="sin-lineas">
+                            Sin líneas
+                        </td>
+
+                    </tr>
+
+
+                </tbody>
+
+
+                <tfoot>
+
+
+                    <tr>
+
+
+                        <td class="numero total-unidades">
+
+                            {{
+                            getLineasDocumento().length
+                            ? (getTotalUnidades() | number:'1.0-2')
+                            : ''
+                            }}
+
+                        </td>
+
+
+                        <td colspan="3"></td>
+
+
+                        <td class="etiqueta-subtotal">
+                            Total
+                        </td>
+
+
+                        <td class="numero">
+
+                            {{
+                            getBaseImponible()
+                            | number:'1.2-2'
+                            }}
+
+                        </td>
+
+
+                    </tr>
+
+
+                </tfoot>
+
+
+            </table>
+
+
+        </section>
+
+
+        <!-- TOTALES -->
+
+        <section class="resumen-totales">
+
+
+            <div class="caja-total">
+
+                <strong>
+                    Descuento
+                </strong>
+
+                <span>
+
+                    {{
+                    (factura?.descuentoPct || 0)
+                    | number:'1.2-2'
+                    }} %
+
+                </span>
+
+            </div>
+
+
+            <div class="caja-total">
+
+                <strong>
+                    Base imponible
+                </strong>
+
+                <span>
+
+                    {{
+                    getBaseImponible()
+                    | number:'1.2-2'
+                    }}
+
+                </span>
+
+            </div>
+
+
+            <div class="caja-total total-documento">
+
+                <strong>
+                    TOTAL ALBARÁN
+                </strong>
+
+                <span>
+
+                    {{
+                    getTotalDocumento()
+                    | number:'1.2-2'
+                    }} €
+
+                </span>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- FORMA DE PAGO / TRANSPORTE -->
+
+        <section class="datos-logisticos">
+
+
+            <div>
+
+                <strong>
+                    Forma de pago
+                </strong>
+
+                <span>
+
+                    {{
+                    factura?.formaPago?.nombre ||
+                    factura?.formaPago ||
+                    factura?.metodoPago ||
+                    'CONTADO METÁLICO'
+                    }}
+
+                </span>
+
+            </div>
+
+
+            <div>
+
+                <strong>
+                    Transporte
+                </strong>
+
+                <span>
+                    {{ factura?.transporte || 'NUESTROS MEDIOS' }}
+                </span>
+
+                <span *ngIf="emisor.telefono">
+                    {{ emisor.telefono }}
+                </span>
+
+            </div>
+
+
+            <div>
+
+                <strong>
+                    Bultos
+                </strong>
+
+                <span>
+                    {{ factura?.bultos || '' }}
+                </span>
+
+            </div>
+
+
+            <div>
+
+                <strong>
+                    Kilos
+                </strong>
+
+                <span>
+                    {{ factura?.kilos || '' }}
+                </span>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- PIE -->
+
+        <footer class="pie-documento">
+
+
+            <div class="pie-superior">
+
+                <span>
+                    Documento generado por Novex.
+                </span>
+
+                <span>
+                    Página 1 / 1
+                </span>
+
+            </div>
+
+
+            <p>
+
+                De conformidad con lo establecido en la normativa vigente en
+                Protección de Datos de Carácter Personal, le informamos que sus datos
+                serán incorporados al sistema de tratamiento titularidad de
+                {{ emisor.nombre }}, con C.I.F. {{ emisor.cif }} y domicilio social en
+                {{ emisor.direccion }}. Los datos serán conservados durante los plazos
+                legalmente establecidos. Puede contactar con el responsable mediante
+                el teléfono {{ emisor.telefono }} o el correo {{ emisor.email }}.
+
+            </p>
+
+
+        </footer>
+
+
+    </ng-container>
+
+</main>
