@@ -186,7 +186,20 @@ export class AlbaranProveedorDetalleComponent implements OnInit, OnDestroy {
 
   imprimirAlbaran(): void {
     if (!this.albaran?.id) return;
-    const url = `${window.location.origin}/imprimir/albaran-proveedor/${this.albaran.id}`;
+
+    const empresa = String(
+      this.albaran.empresa || localStorage.getItem('empresa') || 'ARGASA',
+    )
+      .trim()
+      .toUpperCase();
+
+    const ruta =
+      empresa === 'ELECTROLUGA'
+        ? `/imprimir/albaran-proveedor-electroluga/${this.albaran.id}`
+        : `/imprimir/albaran-proveedor/${this.albaran.id}`;
+
+    const url = `${window.location.origin}${ruta}`;
+
     window.open(url, '_blank');
   }
 

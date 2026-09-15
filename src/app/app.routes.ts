@@ -77,6 +77,16 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard, empresaGuard],
   },
+
+  // ELECTROLUGA
+  {
+    path: 'imprimir/albaran-proveedor-electroluga/:id',
+    loadComponent: () =>
+      import('./pages/albaran-imprimir-proveedor-electroluga/albaran-imprimir-proveedor-electroluga.component').then(
+        (m) => m.AlbaranImprimirProveedorElectrolugaComponent,
+      ),
+    canActivate: [authGuard, empresaGuard],
+  },
   // =========================
   // 🧾 ALBARÁN ELECTROLUGA
   // =========================

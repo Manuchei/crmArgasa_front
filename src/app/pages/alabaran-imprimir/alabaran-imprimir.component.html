@@ -19,17 +19,12 @@
 
 
       <section class="bloque-emisor">
-        <img
-          *ngIf="emisor.logoUrl"
-          class="logo-argasa"
-          [src]="emisor.logoUrl"
-          alt="Logo de la empresa"
-        />
+        <img *ngIf="emisor.logoUrl" class="logo-argasa" [src]="emisor.logoUrl" alt="Logo de la empresa" />
 
         <div class="datos-emisor">
           <strong>{{ emisor.nombre | uppercase }}</strong>
 
-        
+
 
           <span>
             {{ emisor.direccion | uppercase }}
@@ -59,12 +54,7 @@
       </h1>
 
       <section class="bloque-receptor">
-        <img
-          *ngIf="emisor.logoMiElectroUrl"
-          class="logo-mielectro"
-          [src]="emisor.logoMiElectroUrl"
-          alt="Mi Electro"
-        />
+        <img *ngIf="emisor.logoMiElectroUrl" class="logo-mielectro" [src]="emisor.logoMiElectroUrl" alt="Mi Electro" />
 
         <div class="datos-receptor">
           <strong>
@@ -108,20 +98,20 @@
 
         <span>
           {{
-            getFechaVencimientoDocumento() !== '-'
-              ? (getFechaVencimientoDocumento() | date:'dd/MM/yyyy')
-              : (getFechaDocumento() | date:'dd/MM/yyyy')
+          getFechaVencimientoDocumento() !== '-'
+          ? (getFechaVencimientoDocumento() | date:'dd/MM/yyyy')
+          : (getFechaDocumento() | date:'dd/MM/yyyy')
           }}
         </span>
       </div>
 
       <div class="dato-franja dato-referencia">
-    <strong>Estado Albarán</strong>
+        <strong>Estado Albarán</strong>
 
-    <span>
-        {{ factura?.estado || factura?.estadoAlbaran || 'PENDIENTE' }}
-    </span>
-</div>
+        <span>
+          {{ factura?.estado || factura?.estadoAlbaran || 'PENDIENTE' }}
+        </span>
+      </div>
 
     </section>
 
@@ -132,12 +122,8 @@
     <!-- TABLA DE LÍNEAS -->
     <section class="tabla-contenedor">
 
-      <img
-        *ngIf="emisor.marcaAguaUrl || emisor.logoUrl"
-        class="marca-agua"
-        [src]="emisor.marcaAguaUrl || emisor.logoUrl"
-        alt=""
-      />
+      <img *ngIf="emisor.marcaAguaUrl || emisor.logoUrl" class="marca-agua"
+        [src]="emisor.marcaAguaUrl || emisor.logoUrl" alt="" />
 
       <table class="tabla-lineas">
 
@@ -203,9 +189,9 @@
           <tr>
             <td class="numero total-unidades">
               {{
-                getLineasDocumento().length
-                  ? (getLineasDocumento().length | number:'1.0-0')
-                  : ''
+              getLineasDocumento().length
+              ? (getLineasDocumento().length | number:'1.0-0')
+              : ''
               }}
             </td>
 
@@ -261,35 +247,17 @@
 
         <span>
           {{
-            factura?.formaPago?.nombre ||
-            factura?.formaPago ||
-            factura?.metodoPago ||
-            'CONTADO METÁLICO'
+          factura?.formaPago?.nombre ||
+          factura?.formaPago ||
+          factura?.metodoPago ||
+          'CONTADO METÁLICO'
           }}
         </span>
       </div>
 
-      <div>
-        <strong>Transporte</strong>
 
-        <span>
-          {{ factura?.transporte || 'NUESTROS MEDIOS' }}
-        </span>
 
-        <span *ngIf="emisor.telefono">
-          {{ emisor.telefono }}
-        </span>
-      </div>
 
-      <div>
-        <strong>Bultos</strong>
-        <span>{{ factura?.bultos || '' }}</span>
-      </div>
-
-      <div>
-        <strong>Kilos</strong>
-        <span>{{ factura?.kilos || '' }}</span>
-      </div>
 
     </section>
 

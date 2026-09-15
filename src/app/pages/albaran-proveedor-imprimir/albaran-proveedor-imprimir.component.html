@@ -260,49 +260,27 @@
         </span>
       </div>
 
-      <div>
-        <strong>Transporte</strong>
+       </section>
 
-        <span>
-          {{ factura?.transporte || 'NUESTROS MEDIOS' }}
-        </span>
+        <!-- PIE -->
+        <footer class="pie-documento">
 
-        <span *ngIf="emisor.telefono">
-          {{ emisor.telefono }}
-        </span>
-      </div>
+          <div class="pie-superior">
+            <span>Documento generado por Novex.</span>
+            <span>Página 1 / 1</span>
+          </div>
 
-      <div>
-        <strong>Bultos</strong>
-        <span>{{ factura?.bultos || '' }}</span>
-      </div>
+          <p>
+            De conformidad con lo establecido en la normativa vigente en
+            Protección de Datos de Carácter Personal, le informamos que sus datos
+            serán incorporados al sistema de tratamiento titularidad de
+            {{ emisor.nombre }}, con C.I.F. {{ emisor.cif }} y domicilio social en
+            {{ emisor.direccion }}. Los datos serán conservados durante los plazos
+            legalmente establecidos. Puede contactar con el responsable mediante
+            el teléfono {{ emisor.telefono }} o el correo {{ emisor.email }}.
+          </p>
 
-      <div>
-        <strong>Kilos</strong>
-        <span>{{ factura?.kilos || '' }}</span>
-      </div>
-
-    </section>
-
-    <!-- PIE -->
-    <footer class="pie-documento">
-
-      <div class="pie-superior">
-        <span>Documento generado por Novex.</span>
-        <span>Página 1 / 1</span>
-      </div>
-
-      <p>
-        De conformidad con lo establecido en la normativa vigente en
-        Protección de Datos de Carácter Personal, le informamos que sus datos
-        serán incorporados al sistema de tratamiento titularidad de
-        {{ emisor.nombre }}, con C.I.F. {{ emisor.cif }} y domicilio social en
-        {{ emisor.direccion }}. Los datos serán conservados durante los plazos
-        legalmente establecidos. Puede contactar con el responsable mediante
-        el teléfono {{ emisor.telefono }} o el correo {{ emisor.email }}.
-      </p>
-
-    </footer>
+        </footer>
 
   </ng-container>
 </main>

@@ -45,9 +45,9 @@
       </div>
 
       <div class="dato-franja dato-numero-proveedor">
-  <strong>Nº Proveedor</strong>
-  <span>{{ factura?.numeroFacturaProveedor || '-' }}</span>
-</div>
+        <strong>Nº Proveedor</strong>
+        <span>{{ factura?.numeroFacturaProveedor || '-' }}</span>
+      </div>
 
       <div class="dato-franja dato-fecha">
         <strong>Fecha</strong>
@@ -132,10 +132,7 @@
         <span>{{ factura?.descuentoPct || 0 | number:'1.2-2' }} %</span>
       </div>
 
-      <div class="caja-total caja-pronto-pago">
-        <strong>Descuento P.Pago</strong>
-        <span>{{ factura?.descuentoProntoPagoPct || 0 | number:'1.2-2' }} %</span>
-      </div>
+
 
       <div class="caja-total">
         <strong>Base Imponible</strong>
@@ -147,10 +144,7 @@
         <span>{{ getIvaTotal() | number:'1.3-3' }}</span>
       </div>
 
-      <div class="caja-total">
-        <strong>Importe R.E.</strong>
-        <span>{{ factura?.recargoEquivalenciaTotal || 0 | number:'1.3-3' }}</span>
-      </div>
+
 
       <div class="caja-total total-documento">
         <strong>TOTAL FACTURA</strong>
@@ -165,21 +159,6 @@
         <span>{{ factura?.formaPago?.nombre || factura?.formaPago || factura?.metodoPago || 'CONTADO METÁLICO' }}</span>
       </div>
 
-      <div>
-        <strong>Transporte</strong>
-        <span>{{ factura?.transporte || 'NUESTROS MEDIOS' }}</span>
-        <span *ngIf="emisor.telefono">{{ emisor.telefono }}</span>
-      </div>
-
-      <div>
-        <strong>Bultos</strong>
-        <span>{{ factura?.bultos || '' }}</span>
-      </div>
-
-      <div>
-        <strong>Kilos</strong>
-        <span>{{ factura?.kilos || '' }}</span>
-      </div>
     </section>
 
     <!-- PIE -->
