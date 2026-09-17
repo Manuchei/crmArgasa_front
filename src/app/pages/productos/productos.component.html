@@ -1,84 +1,210 @@
 <div class="container mt-4">
+
+  <!-- =========================================================
+       CABECERA
+       ========================================================= -->
+
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Productos</h3>
   </div>
 
+
+  <!-- =========================================================
+       CREAR PRODUCTO
+       ========================================================= -->
+
   <div class="card mb-4">
-    <div class="card-header">Crear producto</div>
+
+    <div class="card-header">
+      Crear producto
+    </div>
 
     <div class="card-body">
+
       <div class="row g-2">
+
         <div class="col-md-2">
           <label class="form-label">Fecha alta</label>
-          <input type="date" class="form-control" [(ngModel)]="form.fechaAlta" name="fechaAlta" />
+
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="form.fechaAlta"
+            name="fechaAlta"
+          />
         </div>
+
 
         <div class="col-md-2">
           <label class="form-label">Gama</label>
-          <input class="form-control" [(ngModel)]="form.gama" name="gama" required />
+
+          <input
+            class="form-control"
+            [(ngModel)]="form.gama"
+            name="gama"
+            required
+          />
         </div>
+
 
         <div class="col-md-2">
           <label class="form-label">Marca</label>
-          <input class="form-control" [(ngModel)]="form.marca" name="marca" required />
+
+          <input
+            class="form-control"
+            [(ngModel)]="form.marca"
+            name="marca"
+            required
+          />
         </div>
+
 
         <div class="col-md-2">
           <label class="form-label">Modelo</label>
-          <input class="form-control" [(ngModel)]="form.modelo" name="modelo" required />
+
+          <input
+            class="form-control"
+            [(ngModel)]="form.modelo"
+            name="modelo"
+            required
+          />
         </div>
+
 
         <div class="col-md-2">
           <label class="form-label">Familia</label>
-          <input class="form-control" [(ngModel)]="form.familia" name="familia" required />
+
+          <input
+            class="form-control"
+            [(ngModel)]="form.familia"
+            name="familia"
+            required
+          />
         </div>
+
 
         <div class="col-md-2">
           <label class="form-label">Subfamilia</label>
-          <input class="form-control" [(ngModel)]="form.subfamilia" name="subfamilia" required />
+
+          <input
+            class="form-control"
+            [(ngModel)]="form.subfamilia"
+            name="subfamilia"
+            required
+          />
         </div>
+
 
         <div class="col-md-7">
           <label class="form-label">Descripción</label>
-          <input class="form-control" [(ngModel)]="form.descripcion" name="descripcion" required />
+
+          <input
+            class="form-control"
+            [(ngModel)]="form.descripcion"
+            name="descripcion"
+            required
+          />
         </div>
+
 
         <div class="col-md-2">
           <label class="form-label">Precio sin IVA</label>
-          <input type="number" class="form-control" [(ngModel)]="form.precioSinIva" name="precioSinIva" min="0"
-            step="0.01" />
+
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="form.precioSinIva"
+            name="precioSinIva"
+            min="0"
+            step="0.01"
+          />
         </div>
+
 
         <div class="col-md-1">
           <label class="form-label">Unidades</label>
-          <input type="number" class="form-control" [(ngModel)]="form.unidades" name="unidades" min="0" />
+
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="form.unidades"
+            name="unidades"
+            min="0"
+          />
         </div>
+
 
         <div class="col-md-2 d-flex align-items-end">
-          <button class="btn btn-success w-100" (click)="crear()" [disabled]="loading">
-            ➕ Crear
+
+          <button
+            class="btn btn-success w-100"
+            (click)="crear()"
+            [disabled]="loading"
+          >
+
+            <span *ngIf="!loading">
+              ➕ Crear
+            </span>
+
+            <span *ngIf="loading">
+              Creando...
+            </span>
+
           </button>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
 
+
+  <!-- =========================================================
+       LISTADO PRODUCTOS
+       ========================================================= -->
+
   <div class="card mb-4">
-    <div class="card-header">Listado de productos</div>
+
+    <div class="card-header">
+      Listado de productos
+    </div>
 
     <div class="card-body">
+
+      <!-- BUSCADOR -->
+
       <div class="row mb-3">
+
         <div class="col-md-5">
-          <label class="form-label">Buscar producto</label>
-          <input type="text" class="form-control" [(ngModel)]="filtroProducto"
-            placeholder="Buscar por referencia, gama, marca, modelo o descripción" />
+
+          <label class="form-label">
+            Buscar producto
+          </label>
+
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="filtroProducto"
+            placeholder="Buscar por referencia, gama, marca, modelo o descripción"
+          />
+
         </div>
+
       </div>
 
+
+      <!-- TABLA -->
+
       <div class="table-responsive">
+
         <table class="table table-striped align-middle mb-0">
+
           <thead>
+
             <tr>
+
               <th>Referencia</th>
               <th>Gama</th>
               <th>Marca</th>
@@ -86,142 +212,998 @@
               <th>Familia</th>
               <th>Subfamilia</th>
               <th>Descripción</th>
-              <th class="text-end">Precio sin IVA</th>
-              <th class="text-center">Unidades</th>
-              <th class="text-center">Ajuste</th>
-              <th class="text-end">Unidades (+/-)</th>
-              <th class="text-center">Movimientos</th>
+
+              <th class="text-end">
+                Precio sin IVA
+              </th>
+
+              <th class="text-center">
+                Unidades
+              </th>
+
+              <th class="text-center">
+                Ajuste
+              </th>
+
+              <th class="text-end">
+                Unidades (+/-)
+              </th>
+
+              <th class="text-center">
+                Movimientos
+              </th>
+
             </tr>
+
           </thead>
 
+
           <tbody>
+
             <tr *ngFor="let p of productosFiltrados">
-              <td>{{ p.referencia || '-' }}</td>
-              <td>{{ p.gama || '-' }}</td>
-              <td>{{ p.marca || '-' }}</td>
-              <td>{{ p.modelo || '-' }}</td>
-              <td>{{ p.familia || '-' }}</td>
-              <td>{{ p.subfamilia || '-' }}</td>
-              <td>{{ p.descripcion || '-' }}</td>
-              <td class="text-end">{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
 
-              <td class="text-center">
-                <span class="badge" [class.bg-success]="(p.unidades || 0) > 0"
-                  [class.bg-danger]="(p.unidades || 0) <= 0">
-                  {{ (p.unidades || 0) <= 0 ? 'Sin unidades (' + p.unidades + ')' : p.unidades }} </span>
+              <td>
+                {{ p.referencia || '-' }}
               </td>
 
-              <td class="text-center" style="max-width: 140px;">
-                <input type="number" class="form-control form-control-sm text-center" [ngModel]="getAjuste(p.id ?? 0)"
-                  (ngModelChange)="setAjuste(p.id ?? 0, $event)" min="1" />
+              <td>
+                {{ p.gama || '-' }}
               </td>
+
+              <td>
+                {{ p.marca || '-' }}
+              </td>
+
+              <td>
+                {{ p.modelo || '-' }}
+              </td>
+
+              <td>
+                {{ p.familia || '-' }}
+              </td>
+
+              <td>
+                {{ p.subfamilia || '-' }}
+              </td>
+
+              <td>
+                {{ p.descripcion || '-' }}
+              </td>
+
 
               <td class="text-end">
-                <button class="btn btn-sm btn-outline-success me-2" (click)="subirUnidades(p)" [disabled]="!p.id">
+
+                {{
+                  (p.precioSinIva || 0)
+                    | number:'1.2-2'
+                }} €
+
+              </td>
+
+
+              <!-- STOCK -->
+
+              <td class="text-center">
+
+                <span
+                  class="badge"
+                  [class.bg-success]="(p.unidades || 0) > 0"
+                  [class.bg-danger]="(p.unidades || 0) <= 0"
+                >
+
+                  {{
+                    (p.unidades || 0) <= 0
+                      ? 'Sin unidades (' + p.unidades + ')'
+                      : p.unidades
+                  }}
+
+                </span>
+
+              </td>
+
+
+              <!-- AJUSTE -->
+
+              <td
+                class="text-center"
+                style="max-width: 140px;"
+              >
+
+                <input
+                  type="number"
+                  class="form-control form-control-sm text-center"
+                  [ngModel]="getAjuste(p.id ?? 0)"
+                  (ngModelChange)="setAjuste(p.id ?? 0, $event)"
+                  min="1"
+                />
+
+              </td>
+
+
+              <!-- SUBIR / BAJAR -->
+
+              <td class="text-end">
+
+                <button
+                  class="btn btn-sm btn-outline-success me-2"
+                  (click)="subirUnidades(p)"
+                  [disabled]="!p.id"
+                >
                   + Subir
                 </button>
 
-                <button class="btn btn-sm btn-outline-danger" (click)="bajarUnidades(p)" [disabled]="!p.id">
+
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="bajarUnidades(p)"
+                  [disabled]="!p.id"
+                >
                   - Bajar
                 </button>
+
               </td>
+
+
+              <!-- MOVIMIENTOS -->
 
               <td class="text-center">
-                <button class="btn btn-sm btn-outline-primary" (click)="verMovimientos(p)" [disabled]="!p.id">
+
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  (click)="verMovimientos(p)"
+                  [disabled]="!p.id"
+                >
                   Ver movimientos
                 </button>
+
               </td>
+
             </tr>
+
+
+            <!-- SIN RESULTADOS -->
 
             <tr *ngIf="productosFiltrados.length === 0">
-              <td colspan="12" class="text-center py-3">
+
+              <td
+                colspan="12"
+                class="text-center py-3"
+              >
                 No hay productos que coincidan con la búsqueda.
               </td>
+
             </tr>
+
           </tbody>
+
         </table>
+
       </div>
+
     </div>
+
   </div>
+
 </div>
 
-<div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.5);"
-  *ngIf="mostrarModalMovimientos">
+
+
+<!-- =============================================================
+     MODAL MOVIMIENTOS
+     ============================================================= -->
+
+<div
+  class="modal fade show"
+  tabindex="-1"
+  style="display: block; background: rgba(0,0,0,0.5);"
+  *ngIf="mostrarModalMovimientos"
+>
+
   <div class="modal-dialog modal-xl modal-dialog-centered">
+
     <div class="modal-content">
+
+      <!-- CABECERA -->
+
       <div class="modal-header">
+
         <h5 class="modal-title">
+
           Movimientos de:
-          <strong>{{ productoSeleccionado?.descripcion }}</strong>
+
+          <strong>
+            {{ productoSeleccionado?.descripcion }}
+          </strong>
+
           <span *ngIf="productoSeleccionado?.referencia">
+
             ({{ productoSeleccionado?.referencia }})
+
           </span>
+
         </h5>
 
-        <button type="button" class="btn-close" (click)="cerrarMovimientos()"></button>
+
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cerrarMovimientos()"
+        ></button>
+
       </div>
 
+
+      <!-- BODY -->
+
       <div class="modal-body">
+
         <div class="row mb-3">
+
           <div class="col-md-4">
-            <label class="form-label">Filtrar por referencia</label>
-            <input type="text" class="form-control" [(ngModel)]="filtroCodigo" placeholder="Buscar referencia" />
+
+            <label class="form-label">
+              Filtrar por referencia
+            </label>
+
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="filtroCodigo"
+              placeholder="Buscar referencia"
+            />
+
           </div>
+
         </div>
 
+
         <div class="table-responsive">
-          <table class="table table-bordered table-sm align-middle mb-0">
+
+          <table
+            class="table table-bordered table-sm align-middle mb-0"
+          >
+
             <thead>
+
               <tr>
+
                 <th>Fecha</th>
                 <th>Referencia</th>
                 <th>Producto</th>
                 <th>Tipo</th>
-                <th class="text-center">Cantidad</th>
-                <th class="text-center">Unidades anteriores</th>
-                <th class="text-center">Unidades nuevas</th>
+
+                <th class="text-center">
+                  Cantidad
+                </th>
+
+                <th class="text-center">
+                  Unidades anteriores
+                </th>
+
+                <th class="text-center">
+                  Unidades nuevas
+                </th>
+
                 <th>Motivo</th>
+
               </tr>
+
             </thead>
 
+
             <tbody>
+
               <tr *ngFor="let m of movimientosFiltrados">
-                <td>{{ m.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td>{{ m.producto?.referencia || '-' }}</td>
+
                 <td>
+                  {{ m.fecha | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+
+                <td>
+                  {{ m.producto?.referencia || '-' }}
+                </td>
+
+                <td>
+
                   {{ m.producto?.descripcion || '-' }}
+
                   <span *ngIf="m.producto?.modelo">
+
                     - {{ m.producto?.modelo }}
+
                   </span>
+
+                </td>
+
+
+                <td>
+
+                  <span
+                    class="badge"
+                    [class.bg-success]="m.tipo === 'ENTRADA'"
+                    [class.bg-danger]="m.tipo === 'SALIDA'"
+                  >
+
+                    {{ m.tipo }}
+
+                  </span>
+
+                </td>
+
+
+                <td class="text-center">
+                  {{ m.cantidad }}
+                </td>
+
+                <td class="text-center">
+                  {{ m.unidadesAnteriores }}
+                </td>
+
+                <td class="text-center">
+                  {{ m.unidadesNuevas }}
                 </td>
 
                 <td>
-                  <span class="badge" [class.bg-success]="m.tipo === 'ENTRADA'" [class.bg-danger]="m.tipo === 'SALIDA'">
-                    {{ m.tipo }}
-                  </span>
+                  {{ m.motivo || '-' }}
                 </td>
 
-                <td class="text-center">{{ m.cantidad }}</td>
-                <td class="text-center">{{ m.unidadesAnteriores }}</td>
-                <td class="text-center">{{ m.unidadesNuevas }}</td>
-                <td>{{ m.motivo || '-' }}</td>
               </tr>
+
 
               <tr *ngIf="movimientosFiltrados.length === 0">
-                <td colspan="8" class="text-center py-3">
+
+                <td
+                  colspan="8"
+                  class="text-center py-3"
+                >
+
                   No hay movimientos registrados.
+
                 </td>
+
               </tr>
+
             </tbody>
+
           </table>
+
         </div>
+
       </div>
 
+
+      <!-- FOOTER -->
+
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="cerrarMovimientos()">
+
+        <button
+          class="btn btn-secondary"
+          (click)="cerrarMovimientos()"
+        >
           Cerrar
         </button>
+
       </div>
+
     </div>
+
   </div>
+
+</div>
+
+
+
+<!-- =============================================================
+     MODAL NUEVO:
+     PRODUCTO → CLIENTE → DOCUMENTACIÓN
+     ============================================================= -->
+
+<div
+  class="modal fade show"
+  tabindex="-1"
+  style="display: block; background: rgba(0,0,0,0.55);"
+  *ngIf="mostrarModalAsignarCliente"
+>
+
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+
+    <div class="modal-content shadow">
+
+
+      <!-- =======================================================
+           CABECERA
+           ======================================================= -->
+
+      <div class="modal-header">
+
+        <h5 class="modal-title">
+
+          <span *ngIf="pasoAsignacion === 'cliente'">
+            Asignar producto a cliente
+          </span>
+
+          <span *ngIf="pasoAsignacion === 'documentacion'">
+            Producto asignado
+          </span>
+
+        </h5>
+
+
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cerrarAsignacionCliente()"
+          [disabled]="
+            asignandoProducto ||
+            generandoDocumento
+          "
+        ></button>
+
+      </div>
+
+
+
+      <!-- =======================================================
+           BODY
+           ======================================================= -->
+
+      <div class="modal-body">
+
+
+        <!-- =====================================================
+             PASO 1
+             SELECCIONAR CLIENTE
+             ===================================================== -->
+
+        <ng-container
+          *ngIf="pasoAsignacion === 'cliente'"
+        >
+
+
+          <!-- PRODUCTO CREADO -->
+
+          <div class="alert alert-success">
+
+            <div class="d-flex align-items-center">
+
+              <div>
+
+                <strong>
+                  ✓ Producto creado correctamente
+                </strong>
+
+                <div class="mt-2">
+
+                  {{ productoRecienCreado?.descripcion }}
+
+                </div>
+
+                <small class="text-muted">
+
+                  {{ productoRecienCreado?.marca }}
+
+                  <span *ngIf="productoRecienCreado?.modelo">
+                    · {{ productoRecienCreado?.modelo }}
+                  </span>
+
+                </small>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <h6 class="mb-3">
+            ¿Quieres añadir este producto a un cliente?
+          </h6>
+
+
+          <!-- BUSCADOR CLIENTE -->
+
+          <div class="mb-3">
+
+            <label class="form-label">
+              Buscar cliente
+            </label>
+
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="filtroCliente"
+              placeholder="Nombre, DNI/CIF, teléfono o email"
+              [disabled]="asignandoProducto"
+            />
+
+          </div>
+
+
+          <!-- SELECT CLIENTE -->
+
+          <div class="mb-4">
+
+            <label class="form-label">
+              Cliente
+            </label>
+
+            <select
+              class="form-select"
+              [(ngModel)]="clienteSeleccionadoId"
+              [disabled]="asignandoProducto"
+            >
+
+              <option [ngValue]="null">
+                Selecciona un cliente
+              </option>
+
+
+              <option
+                *ngFor="let cliente of clientesFiltrados"
+                [ngValue]="cliente.id"
+              >
+
+                {{ cliente.nombreApellidos }}
+
+                -
+                
+                {{ cliente.cifDni || 'Sin DNI/CIF' }}
+
+              </option>
+
+            </select>
+
+
+            <small
+              class="text-muted"
+              *ngIf="clientesFiltrados.length === 0"
+            >
+              No se han encontrado clientes.
+            </small>
+
+          </div>
+
+
+
+          <!-- ===================================================
+               DATOS ASIGNACIÓN
+               =================================================== -->
+
+          <div
+            *ngIf="clienteSeleccionadoId"
+            class="border rounded p-3 bg-light"
+          >
+
+            <h6 class="mb-3">
+              Datos de la asignación
+            </h6>
+
+
+            <div class="row g-3">
+
+
+              <!-- CANTIDAD -->
+
+              <div class="col-md-4">
+
+                <label class="form-label">
+                  Cantidad
+                </label>
+
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="cantidadAsignar"
+                  min="1"
+                  [max]="productoRecienCreado?.unidades || 1"
+                  [disabled]="asignandoProducto"
+                />
+
+
+                <small class="text-muted">
+
+                  Disponibles:
+
+                  <strong>
+                    {{ productoRecienCreado?.unidades || 0 }}
+                  </strong>
+
+                </small>
+
+              </div>
+
+
+              <!-- DESCUENTO -->
+
+              <div class="col-md-4">
+
+                <label class="form-label">
+                  Descuento %
+                </label>
+
+                <div class="input-group">
+
+                  <input
+                    type="number"
+                    class="form-control"
+                    [(ngModel)]="descuentoAsignar"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    [disabled]="asignandoProducto"
+                  />
+
+                  <span class="input-group-text">
+                    %
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <!-- IMPORTE PAGADO -->
+
+              <div class="col-md-4">
+
+                <label class="form-label">
+                  Importe pagado
+                </label>
+
+                <div class="input-group">
+
+                  <input
+                    type="number"
+                    class="form-control"
+                    [(ngModel)]="importePagadoCliente"
+                    min="0"
+                    step="0.01"
+                    [disabled]="asignandoProducto"
+                  />
+
+                  <span class="input-group-text">
+                    €
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- RESUMEN -->
+
+            <div class="mt-3">
+
+              <small class="text-muted">
+
+                Precio producto:
+
+                <strong>
+
+                  {{
+                    (productoRecienCreado?.precioSinIva || 0)
+                      | number:'1.2-2'
+                  }} €
+
+                </strong>
+
+                sin IVA
+
+              </small>
+
+            </div>
+
+          </div>
+
+        </ng-container>
+
+
+
+        <!-- =====================================================
+             PASO 2
+             DOCUMENTACIÓN
+             ===================================================== -->
+
+        <ng-container
+          *ngIf="pasoAsignacion === 'documentacion'"
+        >
+
+          <div class="text-center py-3">
+
+
+            <!-- OK -->
+
+            <div
+              class="text-success mb-3"
+              style="font-size: 3rem;"
+            >
+              ✓
+            </div>
+
+
+            <h4>
+              Producto asignado correctamente
+            </h4>
+
+
+            <p class="text-muted mb-4">
+              El producto se ha añadido correctamente
+              a la ficha del cliente.
+            </p>
+
+
+
+            <!-- RESUMEN -->
+
+            <div class="card text-start mb-4">
+
+              <div class="card-body">
+
+                <div class="row g-3">
+
+
+                  <div class="col-md-12">
+
+                    <small class="text-muted d-block">
+                      Producto
+                    </small>
+
+                    <strong>
+                      {{ productoRecienCreado?.descripcion }}
+                    </strong>
+
+                  </div>
+
+
+                  <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                      Cantidad
+                    </small>
+
+                    <strong>
+                      {{ cantidadAsignar }}
+                    </strong>
+
+                  </div>
+
+
+                  <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                      Precio unitario
+                    </small>
+
+                    <strong>
+
+                      {{
+                        (productoRecienCreado?.precioSinIva || 0)
+                          | number:'1.2-2'
+                      }} €
+
+                    </strong>
+
+                  </div>
+
+
+                  <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                      Descuento
+                    </small>
+
+                    <strong>
+                      {{ descuentoAsignar || 0 }} %
+                    </strong>
+
+                  </div>
+
+
+                  <div
+                    class="col-md-4"
+                    *ngIf="importePagadoCliente > 0"
+                  >
+
+                    <small class="text-muted d-block">
+                      Importe pagado
+                    </small>
+
+                    <strong>
+                      {{
+                        importePagadoCliente
+                          | number:'1.2-2'
+                      }} €
+                    </strong>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+
+            <!-- DOCUMENTACIÓN -->
+
+            <div class="text-start">
+
+              <h6 class="mb-2">
+                ¿Quieres generar documentación?
+              </h6>
+
+              <p class="text-muted small mb-3">
+                Puedes terminar ahora o generar los
+                documentos correspondientes.
+              </p>
+
+
+              <div class="row g-2">
+
+
+                <!-- ALBARÁN -->
+
+                <div class="col-md-4">
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary w-100 py-3"
+                    disabled
+                  >
+
+                    <div class="fw-semibold">
+                      📄 Albarán
+                    </div>
+
+                    <small>
+                      Generar albarán
+                    </small>
+
+                  </button>
+
+                </div>
+
+
+                <!-- FACTURA -->
+
+                <div class="col-md-4">
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-success w-100 py-3"
+                    disabled
+                  >
+
+                    <div class="fw-semibold">
+                      🧾 Factura
+                    </div>
+
+                    <small>
+                      Generar factura
+                    </small>
+
+                  </button>
+
+                </div>
+
+
+                <!-- ALBARÁN + FACTURA -->
+
+                <div class="col-md-4">
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-dark w-100 py-3"
+                    disabled
+                  >
+
+                    <div class="fw-semibold">
+                      📄 + 🧾
+                    </div>
+
+                    <small>
+                      Albarán + factura
+                    </small>
+
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <!-- AVISO TEMPORAL -->
+
+              <div class="alert alert-light border mt-3 mb-0">
+
+                <small class="text-muted">
+
+                  Las opciones de generación de documentos
+                  se activarán en el siguiente paso.
+
+                </small>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </ng-container>
+
+      </div>
+
+
+
+      <!-- =======================================================
+           FOOTER PASO 1
+           ======================================================= -->
+
+      <div
+        class="modal-footer"
+        *ngIf="pasoAsignacion === 'cliente'"
+      >
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="finalizarFlujoProducto()"
+          [disabled]="asignandoProducto"
+        >
+          No, terminar
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="asignarProductoACliente()"
+          [disabled]="
+            !clienteSeleccionadoId ||
+            asignandoProducto
+          "
+        >
+
+          <span *ngIf="!asignandoProducto">
+            Añadir al cliente
+          </span>
+
+          <span *ngIf="asignandoProducto">
+            Añadiendo...
+          </span>
+
+        </button>
+
+      </div>
+
+
+
+      <!-- =======================================================
+           FOOTER PASO 2
+           ======================================================= -->
+
+      <div
+        class="modal-footer"
+        *ngIf="pasoAsignacion === 'documentacion'"
+      >
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="finalizarFlujoProducto()"
+          [disabled]="generandoDocumento"
+        >
+          No generar documentación
+        </button>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
 </div>
