@@ -2,24 +2,43 @@
   <div class="informes-shell informes-container">
     <h2 class="mb-4">Informes</h2>
 
+    <!-- FILTROS -->
     <div class="card shadow-sm mb-4 no-print">
       <div class="card-body">
         <div class="row g-3 align-items-end">
-          <div class="col-12 col-md-3">
+
+          <!-- CLIENTE / PROVEEDOR -->
+          <div class="col-12 col-md-3" *ngIf="
+              tipoInforme !== 'SALDOS_PENDIENTES' &&
+              tipoInforme !== 'SALDOS_PENDIENTES_PROVEEDORES'
+            ">
             <label for="cliente" class="form-label">
-              {{ tipoInforme === 'FACTURAS_PROVEEDORES' ? 'Proveedor' : 'Cliente' }}
+              {{
+              tipoInforme === 'FACTURAS_PROVEEDORES'
+              ? 'Proveedor'
+              : 'Cliente'
+              }}
             </label>
 
             <select id="cliente" class="form-select" [(ngModel)]="clienteSeleccionadoId">
-              <ng-container *ngIf="tipoInforme !== 'FACTURAS_PROVEEDORES'; else proveedoresSelect">
-                <option [ngValue]="null">-- Todos los clientes --</option>
+              <ng-container *ngIf="
+                  tipoInforme !== 'FACTURAS_PROVEEDORES';
+                  else proveedoresSelect
+                ">
+                <option [ngValue]="null">
+                  -- Todos los clientes --
+                </option>
+
                 <option *ngFor="let cliente of clientesFiltrados" [ngValue]="cliente.id">
                   {{ cliente.nombreApellidos }} - {{ cliente.empresa }}
                 </option>
               </ng-container>
 
               <ng-template #proveedoresSelect>
-                <option [ngValue]="null">-- Todos los proveedores --</option>
+                <option [ngValue]="null">
+                  -- Todos los proveedores --
+                </option>
+
                 <option *ngFor="let proveedor of proveedores" [ngValue]="proveedor.id">
                   {{ proveedor.nombre }}
                 </option>
@@ -27,48 +46,95 @@
             </select>
           </div>
 
+          <!-- TIPO DE INFORME -->
           <div class="col-12 col-md-3">
-            <label for="tipoInforme" class="form-label">Tipo de informe</label>
+            <label for="tipoInforme" class="form-label">
+              Tipo de informe
+            </label>
+
             <select id="tipoInforme" class="form-select" [(ngModel)]="tipoInforme"
               (ngModelChange)="cambiarTipoInforme()">
-              <option value="SALDOS">Historial de saldos</option>
-              <option value="T_CONTABLE">T contable</option>
-              <option value="FACTURAS_CLIENTES">Facturas clientes</option>
-              <option value="FACTURAS_PROVEEDORES">Facturas proveedores</option>
+              <option value="SALDOS">
+                Historial de saldos
+              </option>
+
+              <option value="SALDOS_PENDIENTES">
+                Saldos pendientes de clientes
+              </option>
+
+              <option value="SALDOS_PENDIENTES_PROVEEDORES">
+                Saldos pendientes de proveedores
+              </option>
+
+              <option value="T_CONTABLE">
+                T contable
+              </option>
+
+              <option value="FACTURAS_CLIENTES">
+                Facturas clientes
+              </option>
+
+              <option value="FACTURAS_PROVEEDORES">
+                Facturas proveedores
+              </option>
             </select>
           </div>
 
-          <div class="col-12 col-md-2"
-            *ngIf="tipoInforme === 'FACTURAS_CLIENTES' || tipoInforme === 'FACTURAS_PROVEEDORES'">
-            <label for="estadoFactura" class="form-label">Estado</label>
+          <!-- ESTADO FACTURA -->
+          <div class="col-12 col-md-2" *ngIf="
+              tipoInforme === 'FACTURAS_CLIENTES' ||
+              tipoInforme === 'FACTURAS_PROVEEDORES'
+            ">
+            <label for="estadoFactura" class="form-label">
+              Estado
+            </label>
+
             <select id="estadoFactura" class="form-select" [(ngModel)]="estadoFactura">
               <option value="">Todos</option>
               <option value="BORRADOR">Borrador</option>
               <option value="EMITIDA">Emitida</option>
               <option value="PAGADA">Pagada</option>
+
               <option *ngIf="tipoInforme === 'FACTURAS_CLIENTES'" value="ANULADA">
                 Anulada
               </option>
             </select>
           </div>
 
-          <div class="col-12 col-md-2">
-            <label for="fechaInicio" class="form-label">Desde</label>
+          <!-- FECHA DESDE -->
+          <div class="col-12 col-md-2" *ngIf="
+              tipoInforme !== 'SALDOS_PENDIENTES' &&
+              tipoInforme !== 'SALDOS_PENDIENTES_PROVEEDORES'
+            ">
+            <label for="fechaInicio" class="form-label">
+              Desde
+            </label>
+
             <input id="fechaInicio" type="date" class="form-control" [(ngModel)]="fechaInicio" />
           </div>
 
-          <div class="col-12 col-md-2">
-            <label for="fechaFin" class="form-label">Hasta</label>
+          <!-- FECHA HASTA -->
+          <div class="col-12 col-md-2" *ngIf="
+              tipoInforme !== 'SALDOS_PENDIENTES' &&
+              tipoInforme !== 'SALDOS_PENDIENTES_PROVEEDORES'
+            ">
+            <label for="fechaFin" class="form-label">
+              Hasta
+            </label>
+
             <input id="fechaFin" type="date" class="form-control" [(ngModel)]="fechaFin" />
           </div>
 
+          <!-- BUSCAR -->
           <div class="col-12 col-md-2 d-flex gap-2 informe-actions">
             <button class="btn btn-danger w-100" (click)="buscarInforme()">
               Buscar
             </button>
           </div>
+
         </div>
 
+        <!-- IMPRIMIR -->
         <div class="row mt-3 no-print">
           <div class="col-12 d-flex justify-content-end print-actions">
             <button class="btn btn-outline-secondary" (click)="imprimir()" [disabled]="!puedeImprimir()">
@@ -77,27 +143,43 @@
           </div>
         </div>
 
+        <!-- ERROR -->
         <div *ngIf="error" class="alert alert-danger mt-3 mb-0">
           {{ error }}
         </div>
+
       </div>
     </div>
 
+    <!-- CARGANDO -->
     <div *ngIf="cargando" class="text-center my-4">
       <div class="spinner-border" role="status"></div>
     </div>
 
-    <!-- SALDOS -->
+    <!-- ======================================== -->
+    <!-- HISTORIAL DE SALDOS -->
+    <!-- ======================================== -->
+
     <div *ngIf="informesSaldos.length > 0">
       <div *ngFor="let informe of informesSaldos" class="cliente-print-block mb-4">
+
         <div class="card shadow-sm mb-3">
           <div class="card-body">
             <div class="d-flex justify-content-between flex-wrap gap-3">
+
               <div>
-                <h4 class="mb-1">{{ informe.clienteNombre }}</h4>
-                <p class="mb-1"><strong>Empresa:</strong> {{ informe.empresa }}</p>
+                <h4 class="mb-1">
+                  {{ informe.clienteNombre }}
+                </h4>
+
+                <p class="mb-1">
+                  <strong>Empresa:</strong>
+                  {{ informe.empresa }}
+                </p>
+
                 <p class="mb-0">
                   <strong>Estado:</strong>
+
                   <span [ngClass]="getClaseEstado(informe.estadoSaldo)">
                     {{ informe.estadoSaldo }}
                   </span>
@@ -105,18 +187,25 @@
               </div>
 
               <div class="text-md-end">
-                <h5 class="mb-1">Saldo final</h5>
+                <h5 class="mb-1">
+                  Saldo final
+                </h5>
+
                 <p class="mb-0 fs-4 fw-bold">
                   {{ formatearImporte(informe.saldoFinal) }}
                 </p>
               </div>
+
             </div>
           </div>
         </div>
 
         <div class="card shadow-sm">
           <div class="card-body">
-            <h5 class="mb-3">Historial de saldos</h5>
+
+            <h5 class="mb-3">
+              Historial de saldos
+            </h5>
 
             <p class="resumen-informe mb-3">
               {{ getResumenSaldos(informe) }}
@@ -124,6 +213,7 @@
 
             <div class="table-responsive">
               <table class="table table-bordered table-hover align-middle mb-0">
+
                 <thead class="table-light">
                   <tr>
                     <th>Fecha</th>
@@ -131,19 +221,41 @@
                     <th>Concepto</th>
                     <th class="text-end">Cargo</th>
                     <th class="text-end">Abono</th>
-                    <th class="text-end">Saldo acumulado</th>
+                    <th class="text-end">
+                      Saldo acumulado
+                    </th>
                   </tr>
                 </thead>
 
                 <tbody>
+
                   <tr *ngFor="let mov of informe.movimientos">
-                    <td>{{ mov.fecha | date:'dd/MM/yyyy' }}</td>
-                    <td>{{ mov.tipo }}</td>
-                    <td>{{ mov.concepto }}</td>
-                    <td class="text-end">{{ formatearImporte(mov.cargo) }}</td>
-                    <td class="text-end">{{ formatearImporte(mov.abono) }}</td>
+                    <td>
+                      {{ mov.fecha | date:'dd/MM/yyyy' }}
+                    </td>
+
+                    <td>
+                      {{ mov.tipo }}
+                    </td>
+
+                    <td>
+                      {{ mov.concepto }}
+                    </td>
+
+                    <td class="text-end">
+                      {{ formatearImporte(mov.cargo) }}
+                    </td>
+
+                    <td class="text-end">
+                      {{ formatearImporte(mov.abono) }}
+                    </td>
+
                     <td class="text-end fw-semibold">
-                      {{ formatearImporte(mov.saldoAcumulado) }}
+                      {{
+                      formatearImporte(
+                      mov.saldoAcumulado
+                      )
+                      }}
                     </td>
                   </tr>
 
@@ -152,89 +264,351 @@
                       No hay movimientos para este cliente
                     </td>
                   </tr>
+
                 </tbody>
 
                 <tfoot class="table-light">
                   <tr>
-                    <th colspan="5" class="text-end">Saldo final</th>
+                    <th colspan="5" class="text-end">
+                      Saldo final
+                    </th>
+
                     <th class="text-end">
-                      {{ formatearImporte(informe.saldoFinal) }}
+                      {{
+                      formatearImporte(
+                      informe.saldoFinal
+                      )
+                      }}
                     </th>
                   </tr>
                 </tfoot>
+
               </table>
             </div>
+
           </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================== -->
+    <!-- SALDOS PENDIENTES DE CLIENTES -->
+    <!-- ======================================== -->
+
+    <div *ngIf="saldosPendientes.length > 0" class="cliente-print-block saldos-pendientes-print">
+      <div class="card shadow-sm">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h5 class="mb-0">
+              Saldos pendientes de clientes
+            </h5>
+
+            <span class="fw-semibold">
+              {{ saldosPendientes.length }}
+              cliente(s) con saldo pendiente
+            </span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0">
+
+              <thead class="table-light">
+                <tr>
+                  <th>Nombre y apellidos</th>
+                  <th>Teléfono</th>
+                  <th class="text-end">
+                    Saldo pendiente
+                  </th>
+                  <th>Fecha último pago</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                <tr *ngFor="let cliente of saldosPendientes">
+
+                  <td>
+                    {{ cliente.nombreApellidos }}
+                  </td>
+
+                  <td>
+                    {{ cliente.telefono || '-' }}
+                  </td>
+
+                  <td class="text-end fw-semibold">
+                    {{
+                    formatearImporte(
+                    cliente.saldoPendiente
+                    )
+                    }}
+                  </td>
+
+                  <td>
+                    {{
+                    cliente.fechaUltimoPago
+                    ? (cliente.fechaUltimoPago
+                    | date:'dd/MM/yyyy')
+                    : '-'
+                    }}
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+              <tfoot class="table-light">
+                <tr>
+                  <th colspan="2" class="text-end">
+                    TOTAL SALDO PENDIENTE
+                  </th>
+
+                  <th class="text-end">
+                    {{
+                    formatearImporte(
+                    getTotalSaldosPendientes()
+                    )
+                    }}
+                  </th>
+
+                  <th></th>
+                </tr>
+              </tfoot>
+
+            </table>
+          </div>
+
         </div>
       </div>
     </div>
 
+    <!-- ======================================== -->
+    <!-- SALDOS PENDIENTES DE PROVEEDORES -->
+    <!-- ======================================== -->
+
+    <div *ngIf="saldosPendientesProveedores.length > 0" class="cliente-print-block saldos-pendientes-proveedores-print">
+      <div class="card shadow-sm">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h5 class="mb-0">
+              Saldos pendientes de proveedores
+            </h5>
+
+            <span class="fw-semibold">
+              {{ saldosPendientesProveedores.length }}
+              pago(s) pendiente(s)
+            </span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0">
+
+              <thead class="table-light">
+                <tr>
+                  <th>Proveedor</th>
+                  <th class="text-end">
+                    Saldo a pagar
+                  </th>
+                  <th>
+                    Fecha de vencimiento
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                <tr *ngFor="
+                    let factura
+                    of saldosPendientesProveedores
+                  ">
+
+                  <td>
+                    {{
+                    factura.proveedor?.nombre || '-'
+                    }}
+                  </td>
+
+                  <td class="text-end fw-semibold">
+                    {{
+                    formatearImporte(
+                    factura.totalImporte
+                    )
+                    }}
+                  </td>
+
+                  <td>
+                    {{
+                    factura.fechaVencimiento
+                    ? (factura.fechaVencimiento
+                    | date:'dd/MM/yyyy')
+                    : '-'
+                    }}
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+              <tfoot class="table-light">
+                <tr>
+
+                  <th class="text-end">
+                    TOTAL PENDIENTE
+                  </th>
+
+                  <th class="text-end">
+                    {{
+                    formatearImporte(
+                    getTotalSaldosPendientesProveedores()
+                    )
+                    }}
+                  </th>
+
+                  <th></th>
+
+                </tr>
+              </tfoot>
+
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================== -->
     <!-- T CONTABLE -->
+    <!-- ======================================== -->
+
     <div *ngIf="informeTContable" class="cliente-print-block">
+
       <div class="card shadow-sm mb-4">
         <div class="card-body">
+
           <div class="d-flex justify-content-between flex-wrap gap-3">
+
             <div>
-              <h4 class="mb-1">{{ informeTContable.clienteNombre }}</h4>
+              <h4 class="mb-1">
+                {{ informeTContable.clienteNombre }}
+              </h4>
+
               <p class="mb-1">
-                <strong>Empresa:</strong> {{ informeTContable.empresa }}
+                <strong>Empresa:</strong>
+                {{ informeTContable.empresa }}
               </p>
+
               <p class="mb-0">
                 <strong>Estado:</strong>
-                <span [ngClass]="getClaseEstado(informeTContable.estadoSaldo)">
+
+                <span [ngClass]="
+                    getClaseEstado(
+                      informeTContable.estadoSaldo
+                    )
+                  ">
                   {{ informeTContable.estadoSaldo }}
                 </span>
               </p>
             </div>
 
             <div class="text-md-end">
-              <h5 class="mb-1">Saldo final</h5>
+              <h5 class="mb-1">
+                Saldo final
+              </h5>
+
               <p class="mb-0 fs-4 fw-bold">
-                {{ formatearImporte(informeTContable.saldoFinal) }}
+                {{
+                formatearImporte(
+                informeTContable.saldoFinal
+                )
+                }}
               </p>
             </div>
+
           </div>
         </div>
       </div>
 
       <div class="card shadow-sm">
         <div class="card-body">
-          <h5 class="mb-3">Cuenta T contable</h5>
+
+          <h5 class="mb-3">
+            Cuenta T contable
+          </h5>
 
           <div class="table-responsive">
             <table class="table table-bordered align-middle tabla-t-contable mb-0">
+
               <thead class="table-light">
                 <tr>
-                  <th class="text-center">Debe</th>
-                  <th class="text-center">Haber</th>
+                  <th class="text-center">
+                    Debe
+                  </th>
+                  <th class="text-center">
+                    Haber
+                  </th>
                 </tr>
               </thead>
 
               <tbody>
+
                 <tr *ngFor="let fila of filasTContable">
+
                   <td class="columna-debe">
                     <div *ngIf="fila.debe">
+
                       <div>
-                        <strong>{{ fila.debe.fecha | date:'dd/MM/yyyy' }}</strong>
+                        <strong>
+                          {{
+                          fila.debe.fecha
+                          | date:'dd/MM/yyyy'
+                          }}
+                        </strong>
                       </div>
-                      <div>{{ fila.debe.concepto }}</div>
+
+                      <div>
+                        {{ fila.debe.concepto }}
+                      </div>
+
                       <div class="text-end fw-semibold">
-                        {{ formatearImporte(fila.debe.importe) }}
+                        {{
+                        formatearImporte(
+                        fila.debe.importe
+                        )
+                        }}
                       </div>
+
                     </div>
                   </td>
 
                   <td class="columna-haber">
                     <div *ngIf="fila.haber">
+
                       <div>
-                        <strong>{{ fila.haber.fecha | date:'dd/MM/yyyy' }}</strong>
+                        <strong>
+                          {{
+                          fila.haber.fecha
+                          | date:'dd/MM/yyyy'
+                          }}
+                        </strong>
                       </div>
-                      <div>{{ fila.haber.concepto }}</div>
+
+                      <div>
+                        {{ fila.haber.concepto }}
+                      </div>
+
                       <div class="text-end fw-semibold">
-                        {{ formatearImporte(fila.haber.importe) }}
+                        {{
+                        formatearImporte(
+                        fila.haber.importe
+                        )
+                        }}
                       </div>
+
                     </div>
                   </td>
+
                 </tr>
 
                 <tr *ngIf="filasTContable.length === 0">
@@ -242,44 +616,75 @@
                     No hay movimientos para este cliente
                   </td>
                 </tr>
+
               </tbody>
 
               <tfoot class="table-light">
                 <tr>
+
                   <th class="text-end">
                     Total Debe:
-                    {{ formatearImporte(informeTContable.totalDebe) }}
+                    {{
+                    formatearImporte(
+                    informeTContable.totalDebe
+                    )
+                    }}
                   </th>
+
                   <th class="text-end">
                     Total Haber:
-                    {{ formatearImporte(informeTContable.totalHaber) }}
+                    {{
+                    formatearImporte(
+                    informeTContable.totalHaber
+                    )
+                    }}
                   </th>
+
                 </tr>
               </tfoot>
+
             </table>
           </div>
 
           <div class="mt-3 text-end resultado-t">
             <h5>
               Resultado:
-              <span [ngClass]="getClaseEstado(informeTContable.estadoSaldo)">
+
+              <span [ngClass]="
+                  getClaseEstado(
+                    informeTContable.estadoSaldo
+                  )
+                ">
                 {{ informeTContable.estadoSaldo }} -
-                {{ formatearImporte(informeTContable.saldoFinal) }}
+                {{
+                formatearImporte(
+                informeTContable.saldoFinal
+                )
+                }}
               </span>
             </h5>
           </div>
+
         </div>
       </div>
+
     </div>
 
+    <!-- ======================================== -->
     <!-- FACTURAS CLIENTES -->
+    <!-- ======================================== -->
+
     <div *ngIf="facturasClientes.length > 0" class="cliente-print-block">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h5 class="mb-3">Informe de facturas de clientes</h5>
+
+          <h5 class="mb-3">
+            Informe de facturas de clientes
+          </h5>
 
           <div class="table-responsive">
             <table class="table table-bordered table-hover align-middle mb-0">
+
               <thead class="table-light">
                 <tr>
                   <th>Nº interno</th>
@@ -294,50 +699,114 @@
               </thead>
 
               <tbody>
+
                 <tr *ngFor="let factura of facturasClientes">
-                  <td>{{ getNumeroFacturaCliente(factura) }}</td>
-                  <td>{{ factura.fechaEmision | date:'dd/MM/yyyy' }}</td>
-                  <td>{{ getClienteNombreFactura(factura) }}</td>
-                  <td>{{ factura.empresa }}</td>
+
                   <td>
-                    <span [ngClass]="getClaseEstado(factura.estado)">
+                    {{
+                    getNumeroFacturaCliente(
+                    factura
+                    )
+                    }}
+                  </td>
+
+                  <td>
+                    {{
+                    factura.fechaEmision
+                    | date:'dd/MM/yyyy'
+                    }}
+                  </td>
+
+                  <td>
+                    {{
+                    getClienteNombreFactura(
+                    factura
+                    )
+                    }}
+                  </td>
+
+                  <td>
+                    {{ factura.empresa }}
+                  </td>
+
+                  <td>
+                    <span [ngClass]="
+                        getClaseEstado(
+                          factura.estado
+                        )
+                      ">
                       {{ factura.estado }}
                     </span>
                   </td>
+
                   <td class="text-end">
-                    {{ formatearImporte(factura.baseImponible) }}
+                    {{
+                    formatearImporte(
+                    factura.baseImponible
+                    )
+                    }}
                   </td>
+
                   <td class="text-end">
-                    {{ formatearImporte(factura.ivaTotal) }}
+                    {{
+                    formatearImporte(
+                    factura.ivaTotal
+                    )
+                    }}
                   </td>
+
                   <td class="text-end fw-semibold">
-                    {{ formatearImporte(factura.total) }}
+                    {{
+                    formatearImporte(
+                    factura.total
+                    )
+                    }}
                   </td>
+
                 </tr>
+
               </tbody>
 
               <tfoot class="table-light">
                 <tr>
-                  <th colspan="7" class="text-end">Total</th>
-                  <th class="text-end">
-                    {{ formatearImporte(getTotalFacturasClientes()) }}
+
+                  <th colspan="7" class="text-end">
+                    Total
                   </th>
+
+                  <th class="text-end">
+                    {{
+                    formatearImporte(
+                    getTotalFacturasClientes()
+                    )
+                    }}
+                  </th>
+
                 </tr>
               </tfoot>
+
             </table>
           </div>
+
         </div>
       </div>
     </div>
 
+    <!-- ======================================== -->
     <!-- FACTURAS PROVEEDORES -->
+    <!-- ======================================== -->
+
     <div *ngIf="facturasProveedores.length > 0" class="cliente-print-block">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h5 class="mb-3">Informe de facturas de proveedores</h5>
+
+          <h5 class="mb-3">
+            Informe de facturas de proveedores
+          </h5>
 
           <div class="table-responsive">
             <table class="table table-bordered table-hover align-middle mb-0">
+
               <thead class="table-light">
                 <tr>
                   <th>Nº interno</th>
@@ -353,41 +822,102 @@
               </thead>
 
               <tbody>
-                <tr *ngFor="let factura of facturasProveedores">
-                  <td>{{ factura.numeroInterno }}</td>
-                  <td>{{ factura.numeroFacturaProveedor || '-' }}</td>
-                  <td>{{ factura.fechaEmision | date:'dd/MM/yyyy' }}</td>
-                  <td>{{ factura.proveedor?.nombre || '-' }}</td>
-                  <td>{{ factura.empresa }}</td>
+
+                <tr *ngFor="
+                    let factura of facturasProveedores
+                  ">
+
                   <td>
-                    <span [ngClass]="getClaseEstado(factura.estado)">
+                    {{ factura.numeroInterno }}
+                  </td>
+
+                  <td>
+                    {{
+                    factura.numeroFacturaProveedor
+                    || '-'
+                    }}
+                  </td>
+
+                  <td>
+                    {{
+                    factura.fechaEmision
+                    | date:'dd/MM/yyyy'
+                    }}
+                  </td>
+
+                  <td>
+                    {{
+                    factura.proveedor?.nombre
+                    || '-'
+                    }}
+                  </td>
+
+                  <td>
+                    {{ factura.empresa }}
+                  </td>
+
+                  <td>
+                    <span [ngClass]="
+                        getClaseEstado(
+                          factura.estado
+                        )
+                      ">
                       {{ factura.estado }}
                     </span>
                   </td>
+
                   <td class="text-end">
-                    {{ formatearImporte(factura.baseImponible) }}
+                    {{
+                    formatearImporte(
+                    factura.baseImponible
+                    )
+                    }}
                   </td>
+
                   <td class="text-end">
-                    {{ formatearImporte(factura.ivaTotal) }}
+                    {{
+                    formatearImporte(
+                    factura.ivaTotal
+                    )
+                    }}
                   </td>
+
                   <td class="text-end fw-semibold">
-                    {{ formatearImporte(factura.totalImporte) }}
+                    {{
+                    formatearImporte(
+                    factura.totalImporte
+                    )
+                    }}
                   </td>
+
                 </tr>
+
               </tbody>
 
               <tfoot class="table-light">
                 <tr>
-                  <th colspan="8" class="text-end">Total</th>
-                  <th class="text-end">
-                    {{ formatearImporte(getTotalFacturasProveedores()) }}
+
+                  <th colspan="8" class="text-end">
+                    Total
                   </th>
+
+                  <th class="text-end">
+                    {{
+                    formatearImporte(
+                    getTotalFacturasProveedores()
+                    )
+                    }}
+                  </th>
+
                 </tr>
               </tfoot>
+
             </table>
           </div>
+
         </div>
       </div>
     </div>
+
   </div>
 </div>

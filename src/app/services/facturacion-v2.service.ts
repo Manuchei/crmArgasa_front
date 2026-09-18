@@ -8,7 +8,6 @@ import {
 } from '../interfaces/facturacion-v2';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-
 @Injectable({ providedIn: 'root' })
 export class FacturacionV2Service {
   private baseUrl = `${environment.apiUrl}/facturacion-v2`;
@@ -23,6 +22,12 @@ export class FacturacionV2Service {
 
   crearFactura(req: CrearFacturaV2Request): Observable<FacturaV2Response> {
     return this.http.post<FacturaV2Response>(`${this.baseUrl}/facturas`, req);
+  }
+  crearFacturaDesdeTrabajo(trabajoId: number): Observable<FacturaV2Response> {
+    return this.http.post<FacturaV2Response>(
+      `${this.baseUrl}/facturas/trabajos/${trabajoId}`,
+      {},
+    );
   }
 
   actualizarFactura(

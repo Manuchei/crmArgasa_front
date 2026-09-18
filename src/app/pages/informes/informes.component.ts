@@ -16,6 +16,9 @@ import { Proveedor } from '../../interfaces/iproveedor';
 import { IfacturaProveedor } from '../../interfaces/ifactura-proveedor';
 
 import { HistorialSaldoResponse } from '../../interfaces/historial-saldo';
+
+import { FacturasProveedoresService } from '../../services/facturas-proveedores.service';
+
 import {
   HistorialTContableResponse,
   TContableLinea,
@@ -23,9 +26,11 @@ import {
 
 type TipoInforme =
   | 'SALDOS'
+  | 'SALDOS_PENDIENTES'
   | 'T_CONTABLE'
   | 'FACTURAS_CLIENTES'
-  | 'FACTURAS_PROVEEDORES';
+  | 'FACTURAS_PROVEEDORES'
+  | 'SALDOS_PENDIENTES_PROVEEDORES';
 
 @Component({
   selector: 'app-informes',
@@ -39,6 +44,7 @@ export class InformesComponent implements OnInit, OnDestroy {
   private informesService = inject(InformesSaldosService);
   private empresaService = inject(EmpresaService);
   private proveedorService = inject(ProveedorService);
+  private facturasProveedoresService = inject(FacturasProveedoresService);
   private http = inject(HttpClient);
 
   empresa: Empresa | null = null;
@@ -57,9 +63,11 @@ export class InformesComponent implements OnInit, OnDestroy {
 
   informesSaldos: HistorialSaldoResponse[] = [];
   informeTContable: HistorialTContableResponse | null = null;
+  saldosPendientes: any[] = [];
 
   facturasClientes: any[] = [];
   facturasProveedores: IfacturaProveedor[] = [];
+  saldosPendientesProveedores: IfacturaProveedor[] = [];
 
   filasTContable: {
     debe: TContableLinea | null;
@@ -139,6 +147,11 @@ export class InformesComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.tipoInforme === 'SALDOS_PENDIENTES') {
+      this.buscarSaldosPendientes();
+      return;
+    }
+
     if (this.tipoInforme === 'T_CONTABLE') {
       this.buscarInformeTContable();
       return;
@@ -151,6 +164,11 @@ export class InformesComponent implements OnInit, OnDestroy {
 
     if (this.tipoInforme === 'FACTURAS_PROVEEDORES') {
       this.buscarFacturasProveedores();
+      return;
+    }
+
+    if (this.tipoInforme === 'SALDOS_PENDIENTES_PROVEEDORES') {
+      this.buscarSaldosPendientesProveedores();
       return;
     }
   }
@@ -300,6 +318,8 @@ export class InformesComponent implements OnInit, OnDestroy {
     this.filasTContable = [];
     this.facturasClientes = [];
     this.facturasProveedores = [];
+    this.saldosPendientes = [];
+    this.saldosPendientesProveedores = [];
   }
 
   generarFilasTContable(): void {
@@ -330,9 +350,11 @@ export class InformesComponent implements OnInit, OnDestroy {
   puedeImprimir(): boolean {
     return (
       this.informesSaldos.length > 0 ||
+      this.saldosPendientes.length > 0 ||
       !!this.informeTContable ||
       this.facturasClientes.length > 0 ||
-      this.facturasProveedores.length > 0
+      this.facturasProveedores.length > 0 ||
+      this.saldosPendientesProveedores.length > 0
     );
   }
 
@@ -415,5 +437,57 @@ export class InformesComponent implements OnInit, OnDestroy {
     }
 
     return `${informe.clienteNombre} (${informe.empresa}) tiene ${movimientos} movimiento(s) en el periodo seleccionado, con ${estadoTexto} de ${this.formatearImporte(informe.saldoFinal)}.`;
+  }
+
+  buscarSaldosPendientes(): void {
+    this.informesService
+      .obtenerSaldosPendientes(String(this.empresa))
+      .subscribe({
+        next: (data: any[]) => {
+          this.saldosPendientes = data || [];
+          this.cargando = false;
+
+          if (this.saldosPendientes.length === 0) {
+            this.error = 'No hay clientes con saldo pendiente';
+          }
+        },
+        error: (err) => {
+          console.error('Error cargando saldos pendientes:', err);
+          this.error = 'No se pudo cargar el informe de saldos pendientes';
+          this.cargando = false;
+        },
+      });
+  }
+
+  getTotalSaldosPendientes(): number {
+    return this.saldosPendientes.reduce(
+      (total, cliente) => total + (cliente.saldoPendiente || 0),
+      0,
+    );
+  }
+
+  buscarSaldosPendientesProveedores(): void {
+    this.facturasProveedoresService.getSaldosPendientes().subscribe({
+      next: (data: IfacturaProveedor[]) => {
+        this.saldosPendientesProveedores = data || [];
+        this.cargando = false;
+
+        if (this.saldosPendientesProveedores.length === 0) {
+          this.error = 'No hay saldos pendientes de proveedores';
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando saldos pendientes de proveedores:', err);
+        this.error =
+          'No se pudo cargar el informe de saldos pendientes de proveedores';
+        this.cargando = false;
+      },
+    });
+  }
+  getTotalSaldosPendientesProveedores(): number {
+    return this.saldosPendientesProveedores.reduce(
+      (total, factura) => total + (factura.totalImporte || 0),
+      0,
+    );
   }
 }

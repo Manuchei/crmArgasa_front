@@ -1,13 +1,8 @@
 <div class="container mt-4">
 
-  <!-- =========================================================
-       CABECERA
-       ========================================================= -->
-
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Productos</h3>
   </div>
-
 
   <!-- =========================================================
        CREAR PRODUCTO
@@ -34,7 +29,6 @@
           />
         </div>
 
-
         <div class="col-md-2">
           <label class="form-label">Gama</label>
 
@@ -45,7 +39,6 @@
             required
           />
         </div>
-
 
         <div class="col-md-2">
           <label class="form-label">Marca</label>
@@ -58,7 +51,6 @@
           />
         </div>
 
-
         <div class="col-md-2">
           <label class="form-label">Modelo</label>
 
@@ -69,7 +61,6 @@
             required
           />
         </div>
-
 
         <div class="col-md-2">
           <label class="form-label">Familia</label>
@@ -82,7 +73,6 @@
           />
         </div>
 
-
         <div class="col-md-2">
           <label class="form-label">Subfamilia</label>
 
@@ -94,7 +84,6 @@
           />
         </div>
 
-
         <div class="col-md-7">
           <label class="form-label">Descripción</label>
 
@@ -105,7 +94,6 @@
             required
           />
         </div>
-
 
         <div class="col-md-2">
           <label class="form-label">Precio sin IVA</label>
@@ -120,7 +108,6 @@
           />
         </div>
 
-
         <div class="col-md-1">
           <label class="form-label">Unidades</label>
 
@@ -132,7 +119,6 @@
             min="0"
           />
         </div>
-
 
         <div class="col-md-2 d-flex align-items-end">
 
@@ -160,7 +146,6 @@
 
   </div>
 
-
   <!-- =========================================================
        LISTADO PRODUCTOS
        ========================================================= -->
@@ -172,8 +157,6 @@
     </div>
 
     <div class="card-body">
-
-      <!-- BUSCADOR -->
 
       <div class="row mb-3">
 
@@ -194,9 +177,6 @@
 
       </div>
 
-
-      <!-- TABLA -->
-
       <div class="table-responsive">
 
         <table class="table table-striped align-middle mb-0">
@@ -204,7 +184,6 @@
           <thead>
 
             <tr>
-
               <th>Referencia</th>
               <th>Gama</th>
               <th>Marca</th>
@@ -232,56 +211,28 @@
               <th class="text-center">
                 Movimientos
               </th>
-
             </tr>
 
           </thead>
-
 
           <tbody>
 
             <tr *ngFor="let p of productosFiltrados">
 
-              <td>
-                {{ p.referencia || '-' }}
-              </td>
-
-              <td>
-                {{ p.gama || '-' }}
-              </td>
-
-              <td>
-                {{ p.marca || '-' }}
-              </td>
-
-              <td>
-                {{ p.modelo || '-' }}
-              </td>
-
-              <td>
-                {{ p.familia || '-' }}
-              </td>
-
-              <td>
-                {{ p.subfamilia || '-' }}
-              </td>
-
-              <td>
-                {{ p.descripcion || '-' }}
-              </td>
-
+              <td>{{ p.referencia || '-' }}</td>
+              <td>{{ p.gama || '-' }}</td>
+              <td>{{ p.marca || '-' }}</td>
+              <td>{{ p.modelo || '-' }}</td>
+              <td>{{ p.familia || '-' }}</td>
+              <td>{{ p.subfamilia || '-' }}</td>
+              <td>{{ p.descripcion || '-' }}</td>
 
               <td class="text-end">
-
                 {{
                   (p.precioSinIva || 0)
-                    | number:'1.2-2'
+                  | number:'1.2-2'
                 }} €
-
               </td>
-
-
-              <!-- STOCK -->
 
               <td class="text-center">
 
@@ -290,19 +241,14 @@
                   [class.bg-success]="(p.unidades || 0) > 0"
                   [class.bg-danger]="(p.unidades || 0) <= 0"
                 >
-
                   {{
                     (p.unidades || 0) <= 0
                       ? 'Sin unidades (' + p.unidades + ')'
                       : p.unidades
                   }}
-
                 </span>
 
               </td>
-
-
-              <!-- AJUSTE -->
 
               <td
                 class="text-center"
@@ -319,9 +265,6 @@
 
               </td>
 
-
-              <!-- SUBIR / BAJAR -->
-
               <td class="text-end">
 
                 <button
@@ -332,7 +275,6 @@
                   + Subir
                 </button>
 
-
                 <button
                   class="btn btn-sm btn-outline-danger"
                   (click)="bajarUnidades(p)"
@@ -342,9 +284,6 @@
                 </button>
 
               </td>
-
-
-              <!-- MOVIMIENTOS -->
 
               <td class="text-center">
 
@@ -359,9 +298,6 @@
               </td>
 
             </tr>
-
-
-            <!-- SIN RESULTADOS -->
 
             <tr *ngIf="productosFiltrados.length === 0">
 
@@ -387,7 +323,6 @@
 </div>
 
 
-
 <!-- =============================================================
      MODAL MOVIMIENTOS
      ============================================================= -->
@@ -403,8 +338,6 @@
 
     <div class="modal-content">
 
-      <!-- CABECERA -->
-
       <div class="modal-header">
 
         <h5 class="modal-title">
@@ -416,13 +349,10 @@
           </strong>
 
           <span *ngIf="productoSeleccionado?.referencia">
-
             ({{ productoSeleccionado?.referencia }})
-
           </span>
 
         </h5>
-
 
         <button
           type="button"
@@ -431,9 +361,6 @@
         ></button>
 
       </div>
-
-
-      <!-- BODY -->
 
       <div class="modal-body">
 
@@ -456,17 +383,13 @@
 
         </div>
 
-
         <div class="table-responsive">
 
-          <table
-            class="table table-bordered table-sm align-middle mb-0"
-          >
+          <table class="table table-bordered table-sm align-middle mb-0">
 
             <thead>
 
               <tr>
-
                 <th>Fecha</th>
                 <th>Referencia</th>
                 <th>Producto</th>
@@ -485,11 +408,9 @@
                 </th>
 
                 <th>Motivo</th>
-
               </tr>
 
             </thead>
-
 
             <tbody>
 
@@ -508,13 +429,10 @@
                   {{ m.producto?.descripcion || '-' }}
 
                   <span *ngIf="m.producto?.modelo">
-
                     - {{ m.producto?.modelo }}
-
                   </span>
 
                 </td>
-
 
                 <td>
 
@@ -523,13 +441,10 @@
                     [class.bg-success]="m.tipo === 'ENTRADA'"
                     [class.bg-danger]="m.tipo === 'SALIDA'"
                   >
-
                     {{ m.tipo }}
-
                   </span>
 
                 </td>
-
 
                 <td class="text-center">
                   {{ m.cantidad }}
@@ -549,16 +464,13 @@
 
               </tr>
 
-
               <tr *ngIf="movimientosFiltrados.length === 0">
 
                 <td
                   colspan="8"
                   class="text-center py-3"
                 >
-
                   No hay movimientos registrados.
-
                 </td>
 
               </tr>
@@ -570,9 +482,6 @@
         </div>
 
       </div>
-
-
-      <!-- FOOTER -->
 
       <div class="modal-footer">
 
@@ -592,10 +501,8 @@
 </div>
 
 
-
 <!-- =============================================================
-     MODAL NUEVO:
-     PRODUCTO → CLIENTE → DOCUMENTACIÓN
+     MODAL PRODUCTO → CLIENTE → DOCUMENTACIÓN
      ============================================================= -->
 
 <div
@@ -609,10 +516,7 @@
 
     <div class="modal-content shadow">
 
-
-      <!-- =======================================================
-           CABECERA
-           ======================================================= -->
+      <!-- CABECERA -->
 
       <div class="modal-header">
 
@@ -628,145 +532,266 @@
 
         </h5>
 
-
         <button
           type="button"
           class="btn-close"
           (click)="cerrarAsignacionCliente()"
-          [disabled]="
-            asignandoProducto ||
-            generandoDocumento
-          "
+          [disabled]="asignandoProducto || generandoDocumento"
         ></button>
 
       </div>
 
 
-
-      <!-- =======================================================
-           BODY
-           ======================================================= -->
+      <!-- BODY -->
 
       <div class="modal-body">
 
-
         <!-- =====================================================
-             PASO 1
-             SELECCIONAR CLIENTE
+             PASO 1: CLIENTE
              ===================================================== -->
 
-        <ng-container
-          *ngIf="pasoAsignacion === 'cliente'"
-        >
-
-
-          <!-- PRODUCTO CREADO -->
+        <ng-container *ngIf="pasoAsignacion === 'cliente'">
 
           <div class="alert alert-success">
 
-            <div class="d-flex align-items-center">
+            <strong>
+              ✓ Producto creado correctamente
+            </strong>
 
-              <div>
-
-                <strong>
-                  ✓ Producto creado correctamente
-                </strong>
-
-                <div class="mt-2">
-
-                  {{ productoRecienCreado?.descripcion }}
-
-                </div>
-
-                <small class="text-muted">
-
-                  {{ productoRecienCreado?.marca }}
-
-                  <span *ngIf="productoRecienCreado?.modelo">
-                    · {{ productoRecienCreado?.modelo }}
-                  </span>
-
-                </small>
-
-              </div>
-
+            <div class="mt-2">
+              {{ productoRecienCreado?.descripcion }}
             </div>
 
-          </div>
+            <small class="text-muted">
 
+              {{ productoRecienCreado?.marca }}
+
+              <span *ngIf="productoRecienCreado?.modelo">
+                · {{ productoRecienCreado?.modelo }}
+              </span>
+
+            </small>
+
+          </div>
 
           <h6 class="mb-3">
             ¿Quieres añadir este producto a un cliente?
           </h6>
 
 
-          <!-- BUSCADOR CLIENTE -->
-
-          <div class="mb-3">
-
-            <label class="form-label">
-              Buscar cliente
-            </label>
-
-            <input
-              type="text"
-              class="form-control"
-              [(ngModel)]="filtroCliente"
-              placeholder="Nombre, DNI/CIF, teléfono o email"
-              [disabled]="asignandoProducto"
-            />
-
-          </div>
-
-
-          <!-- SELECT CLIENTE -->
+          <!-- ===================================================
+               BUSCADOR DE CLIENTES
+               =================================================== -->
 
           <div class="mb-4">
 
-            <label class="form-label">
+            <label class="form-label fw-semibold">
               Cliente
             </label>
 
-            <select
-              class="form-select"
-              [(ngModel)]="clienteSeleccionadoId"
-              [disabled]="asignandoProducto"
+
+            <!-- ===============================================
+                 CLIENTE YA SELECCIONADO
+                 =============================================== -->
+
+            <div
+              *ngIf="clienteSeleccionado as cliente"
+              class="border rounded p-3 bg-light"
             >
 
-              <option [ngValue]="null">
-                Selecciona un cliente
-              </option>
-
-
-              <option
-                *ngFor="let cliente of clientesFiltrados"
-                [ngValue]="cliente.id"
+              <div
+                class="d-flex justify-content-between align-items-start gap-3"
               >
 
-                {{ cliente.nombreApellidos }}
+                <div>
 
-                -
-                
-                {{ cliente.cifDni || 'Sin DNI/CIF' }}
+                  <div class="fw-semibold">
+                    ✓ {{ cliente.nombreApellidos }}
+                  </div>
 
-              </option>
+                  <div class="text-muted small mt-1">
 
-            </select>
+                    <span *ngIf="cliente.cifDni">
+                      {{ cliente.cifDni }}
+                    </span>
+
+                    <span *ngIf="cliente.telefono">
+                      · {{ cliente.telefono }}
+                    </span>
+
+                    <span *ngIf="cliente.movil">
+                      · {{ cliente.movil }}
+                    </span>
+
+                  </div>
+
+                  <div
+                    *ngIf="cliente.email"
+                    class="text-muted small mt-1"
+                  >
+                    {{ cliente.email }}
+                  </div>
+
+                </div>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  (click)="quitarClienteSeleccionado()"
+                  [disabled]="asignandoProducto"
+                >
+                  Cambiar
+                </button>
+
+              </div>
+
+            </div>
 
 
-            <small
-              class="text-muted"
-              *ngIf="clientesFiltrados.length === 0"
-            >
-              No se han encontrado clientes.
-            </small>
+            <!-- ===============================================
+                 BUSCADOR
+                 =============================================== -->
+
+            <ng-container *ngIf="!clienteSeleccionado">
+
+              <div class="position-relative">
+
+                <div class="input-group">
+
+                  <span class="input-group-text">
+                    🔎
+                  </span>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="filtroCliente"
+                    placeholder="Escribe nombre, DNI/CIF, teléfono o email..."
+                    autocomplete="off"
+                    [disabled]="asignandoProducto"
+                  />
+
+                </div>
+
+
+                <!-- RESULTADOS -->
+
+                <div
+                  *ngIf="filtroCliente.trim().length > 0"
+                  class="border rounded mt-1 bg-white shadow-sm"
+                  style="
+                    max-height: 280px;
+                    overflow-y: auto;
+                  "
+                >
+
+                  <button
+                    *ngFor="let cliente of clientesFiltrados"
+                    type="button"
+                    class="btn btn-light w-100 text-start rounded-0 border-bottom p-3"
+                    (click)="seleccionarCliente(cliente)"
+                    [disabled]="asignandoProducto"
+                  >
+
+                    <div
+                      class="d-flex justify-content-between align-items-start"
+                    >
+
+                      <div>
+
+                        <div class="fw-semibold">
+                          {{ cliente.nombreApellidos }}
+                        </div>
+
+                        <div class="small text-muted mt-1">
+
+                          <span *ngIf="cliente.cifDni">
+                            DNI/CIF:
+                            {{ cliente.cifDni }}
+                          </span>
+
+                          <span *ngIf="cliente.telefono">
+                            · {{ cliente.telefono }}
+                          </span>
+
+                          <span *ngIf="cliente.movil">
+                            · {{ cliente.movil }}
+                          </span>
+
+                        </div>
+
+                        <div
+                          *ngIf="cliente.email"
+                          class="small text-muted"
+                        >
+                          {{ cliente.email }}
+                        </div>
+
+                      </div>
+
+                      <span class="text-primary">
+                        Seleccionar
+                      </span>
+
+                    </div>
+
+                  </button>
+
+
+                  <!-- SIN RESULTADOS -->
+
+                  <div
+                    *ngIf="clientesFiltrados.length === 0"
+                    class="p-4 text-center text-muted"
+                  >
+
+                    <div class="mb-1">
+                      No se encontraron clientes
+                    </div>
+
+                    <small>
+                      Prueba con otro nombre, DNI/CIF,
+                      teléfono o email.
+                    </small>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- TEXTO DE AYUDA -->
+
+              <div
+                *ngIf="!filtroCliente.trim()"
+                class="form-text"
+              >
+                Empieza a escribir para buscar un cliente.
+              </div>
+
+              <div
+                *ngIf="
+                  filtroCliente.trim() &&
+                  clientesFiltrados.length > 0
+                "
+                class="form-text"
+              >
+                {{
+                  clientesFiltrados.length
+                }}
+                resultado{{
+                  clientesFiltrados.length === 1 ? '' : 's'
+                }}
+              </div>
+
+            </ng-container>
 
           </div>
 
 
-
           <!-- ===================================================
-               DATOS ASIGNACIÓN
+               DATOS DE ASIGNACIÓN
                =================================================== -->
 
           <div
@@ -778,9 +803,7 @@
               Datos de la asignación
             </h6>
 
-
             <div class="row g-3">
-
 
               <!-- CANTIDAD -->
 
@@ -799,15 +822,11 @@
                   [disabled]="asignandoProducto"
                 />
 
-
                 <small class="text-muted">
-
                   Disponibles:
-
                   <strong>
                     {{ productoRecienCreado?.unidades || 0 }}
                   </strong>
-
                 </small>
 
               </div>
@@ -818,7 +837,7 @@
               <div class="col-md-4">
 
                 <label class="form-label">
-                  Descuento %
+                  Descuento
                 </label>
 
                 <div class="input-group">
@@ -842,7 +861,7 @@
               </div>
 
 
-              <!-- IMPORTE PAGADO -->
+              <!-- PAGADO -->
 
               <div class="col-md-4">
 
@@ -871,9 +890,6 @@
 
             </div>
 
-
-            <!-- RESUMEN -->
-
             <div class="mt-3">
 
               <small class="text-muted">
@@ -881,12 +897,10 @@
                 Precio producto:
 
                 <strong>
-
                   {{
                     (productoRecienCreado?.precioSinIva || 0)
-                      | number:'1.2-2'
+                    | number:'1.2-2'
                   }} €
-
                 </strong>
 
                 sin IVA
@@ -900,20 +914,13 @@
         </ng-container>
 
 
-
         <!-- =====================================================
-             PASO 2
-             DOCUMENTACIÓN
+             PASO 2: DOCUMENTACIÓN
              ===================================================== -->
 
-        <ng-container
-          *ngIf="pasoAsignacion === 'documentacion'"
-        >
+        <ng-container *ngIf="pasoAsignacion === 'documentacion'">
 
           <div class="text-center py-3">
-
-
-            <!-- OK -->
 
             <div
               class="text-success mb-3"
@@ -922,17 +929,14 @@
               ✓
             </div>
 
-
             <h4>
               Producto asignado correctamente
             </h4>
-
 
             <p class="text-muted mb-4">
               El producto se ha añadido correctamente
               a la ficha del cliente.
             </p>
-
 
 
             <!-- RESUMEN -->
@@ -943,6 +947,20 @@
 
                 <div class="row g-3">
 
+                  <div class="col-md-12">
+
+                    <small class="text-muted d-block">
+                      Cliente
+                    </small>
+
+                    <strong>
+                      {{
+                        clienteSeleccionado?.nombreApellidos
+                        || '-'
+                      }}
+                    </strong>
+
+                  </div>
 
                   <div class="col-md-12">
 
@@ -956,8 +974,7 @@
 
                   </div>
 
-
-                  <div class="col-md-4">
+                  <div class="col-md-3">
 
                     <small class="text-muted d-block">
                       Cantidad
@@ -969,26 +986,22 @@
 
                   </div>
 
-
-                  <div class="col-md-4">
+                  <div class="col-md-3">
 
                     <small class="text-muted d-block">
                       Precio unitario
                     </small>
 
                     <strong>
-
                       {{
                         (productoRecienCreado?.precioSinIva || 0)
-                          | number:'1.2-2'
+                        | number:'1.2-2'
                       }} €
-
                     </strong>
 
                   </div>
 
-
-                  <div class="col-md-4">
+                  <div class="col-md-3">
 
                     <small class="text-muted d-block">
                       Descuento
@@ -1000,11 +1013,7 @@
 
                   </div>
 
-
-                  <div
-                    class="col-md-4"
-                    *ngIf="importePagadoCliente > 0"
-                  >
+                  <div class="col-md-3">
 
                     <small class="text-muted d-block">
                       Importe pagado
@@ -1012,8 +1021,8 @@
 
                     <strong>
                       {{
-                        importePagadoCliente
-                          | number:'1.2-2'
+                        (importePagadoCliente || 0)
+                        | number:'1.2-2'
                       }} €
                     </strong>
 
@@ -1026,8 +1035,9 @@
             </div>
 
 
-
-            <!-- DOCUMENTACIÓN -->
+            <!-- =================================================
+                 DOCUMENTACIÓN
+                 ================================================= -->
 
             <div class="text-start">
 
@@ -1036,95 +1046,104 @@
               </h6>
 
               <p class="text-muted small mb-3">
-                Puedes terminar ahora o generar los
-                documentos correspondientes.
+                Elige si quieres generar únicamente el albarán
+                o generar la factura.
               </p>
 
 
-              <div class="row g-2">
+              <div class="row g-3">
 
+                <!-- =============================================
+                     SOLO ALBARÁN
+                     ============================================= -->
 
-                <!-- ALBARÁN -->
-
-                <div class="col-md-4">
+                <div class="col-md-6">
 
                   <button
                     type="button"
-                    class="btn btn-outline-primary w-100 py-3"
-                    disabled
+                    class="btn btn-outline-primary w-100 py-3 h-100"
+                    (click)="generarAlbaranProducto()"
+                    [disabled]="generandoDocumento"
                   >
 
-                    <div class="fw-semibold">
-                      📄 Albarán
-                    </div>
+                    <ng-container *ngIf="!generandoDocumento">
 
-                    <small>
-                      Generar albarán
-                    </small>
+                      <div
+                        class="fw-semibold mb-1"
+                        style="font-size: 1.05rem;"
+                      >
+                        📄 Solo albarán
+                      </div>
+
+                      <small>
+                        Crear el albarán del producto
+                      </small>
+
+                    </ng-container>
+
+
+                    <ng-container *ngIf="generandoDocumento">
+
+                      <div class="fw-semibold">
+                        Generando...
+                      </div>
+
+                      <small>
+                        Espera un momento
+                      </small>
+
+                    </ng-container>
 
                   </button>
 
                 </div>
 
 
-                <!-- FACTURA -->
+                <!-- =============================================
+                     FACTURA
+                     ============================================= -->
 
-                <div class="col-md-4">
+                <div class="col-md-6">
 
                   <button
                     type="button"
-                    class="btn btn-outline-success w-100 py-3"
-                    disabled
+                    class="btn btn-outline-success w-100 py-3 h-100"
+                    (click)="generarFacturaProducto()"
+                    [disabled]="generandoDocumento"
                   >
 
-                    <div class="fw-semibold">
-                      🧾 Factura
-                    </div>
+                    <ng-container *ngIf="!generandoDocumento">
 
-                    <small>
-                      Generar factura
-                    </small>
+                      <div
+                        class="fw-semibold mb-1"
+                        style="font-size: 1.05rem;"
+                      >
+                        🧾 Generar factura
+                      </div>
+
+                      <small>
+                        Confirma el albarán y crea
+                        la factura en borrador
+                      </small>
+
+                    </ng-container>
+
+
+                    <ng-container *ngIf="generandoDocumento">
+
+                      <div class="fw-semibold">
+                        Generando...
+                      </div>
+
+                      <small>
+                        Espera un momento
+                      </small>
+
+                    </ng-container>
 
                   </button>
 
                 </div>
-
-
-                <!-- ALBARÁN + FACTURA -->
-
-                <div class="col-md-4">
-
-                  <button
-                    type="button"
-                    class="btn btn-outline-dark w-100 py-3"
-                    disabled
-                  >
-
-                    <div class="fw-semibold">
-                      📄 + 🧾
-                    </div>
-
-                    <small>
-                      Albarán + factura
-                    </small>
-
-                  </button>
-
-                </div>
-
-              </div>
-
-
-              <!-- AVISO TEMPORAL -->
-
-              <div class="alert alert-light border mt-3 mb-0">
-
-                <small class="text-muted">
-
-                  Las opciones de generación de documentos
-                  se activarán en el siguiente paso.
-
-                </small>
 
               </div>
 
@@ -1135,7 +1154,6 @@
         </ng-container>
 
       </div>
-
 
 
       <!-- =======================================================
@@ -1155,7 +1173,6 @@
         >
           No, terminar
         </button>
-
 
         <button
           type="button"
@@ -1180,7 +1197,6 @@
       </div>
 
 
-
       <!-- =======================================================
            FOOTER PASO 2
            ======================================================= -->
@@ -1200,7 +1216,6 @@
         </button>
 
       </div>
-
 
     </div>
 

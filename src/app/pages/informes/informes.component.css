@@ -58,6 +58,10 @@
   min-width: 760px;
 }
 
+/* ========================================
+   MÓVIL
+   ======================================== */
+
 @media (max-width: 767.98px) {
   .informes-page {
     padding: 22px 12px 30px;
@@ -88,44 +92,219 @@
   }
 }
 
+/* ========================================
+   IMPRESIÓN
+   ======================================== */
+
 @media print {
+  /* ========================================
+     CONTROLES Y ESTRUCTURA GENERAL
+     ======================================== */
+
   .no-print {
     display: none !important;
-  }
-
-  .informes-page {
-    padding: 0;
-  }
-
-  .informes-shell {
-    max-width: 100%;
   }
 
   body {
     background: white !important;
   }
 
+  .informes-page {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .informes-shell {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Ocultar título general "Informes" */
+  .informes-container > h2 {
+    display: none !important;
+  }
+
+  /* ========================================
+     TARJETAS
+     ======================================== */
+
   .card {
     border: 1px solid #ccc !important;
     box-shadow: none !important;
+    border-radius: 0 !important;
   }
 
+  .card-body {
+    padding: 8px !important;
+  }
+
+  /* ========================================
+     BLOQUES DE INFORMES
+     ======================================== */
+
   .cliente-print-block {
-    page-break-inside: avoid;
-    margin-bottom: 20px;
+    margin-bottom: 10px !important;
+    page-break-inside: auto;
+    break-inside: auto;
   }
 
   .cliente-print-block:not(:last-child) {
-    page-break-after: always;
+    page-break-after: auto;
+    break-after: auto;
   }
 
-  .tabla-t-contable,
-  .table {
-    font-size: 12px;
+  /* ========================================
+     TABLAS GENERALES
+     ======================================== */
+
+  .table,
+  .tabla-t-contable {
+    min-width: 0 !important;
+    width: 100% !important;
+    font-size: 10px !important;
+    margin-bottom: 0 !important;
   }
+
+  .table th,
+  .table td {
+    padding: 3px 5px !important;
+    line-height: 1.15 !important;
+    vertical-align: middle !important;
+  }
+
+  /*
+   * Repetir cabecera de la tabla cuando
+   * continúa en una nueva página.
+   */
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-row-group;
+  }
+
+  /*
+   * Evitar que una fila se corte entre páginas.
+   */
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ========================================
+     TEXTOS AUXILIARES
+     ======================================== */
 
   .resumen-informe {
-    font-size: 12px;
-    margin-bottom: 10px;
+    font-size: 10px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .cliente-print-block h5 {
+    margin-top: 0 !important;
+    margin-bottom: 5px !important;
+  }
+
+  /* ========================================
+     SALDOS PENDIENTES DE CLIENTES
+     ======================================== */
+
+  .saldos-pendientes-print {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .saldos-pendientes-print .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .saldos-pendientes-print .card-body {
+    padding: 0 !important;
+  }
+
+  .saldos-pendientes-print h5 {
+    font-size: 14px !important;
+    margin: 0 0 5px 0 !important;
+  }
+
+  .saldos-pendientes-print .table {
+    width: 100% !important;
+    min-width: 0 !important;
+    font-size: 8.5px !important;
+    margin: 0 !important;
+  }
+
+  .saldos-pendientes-print .table th,
+  .saldos-pendientes-print .table td {
+    padding: 1.5px 4px !important;
+    line-height: 1.05 !important;
+    vertical-align: middle !important;
+  }
+
+  .saldos-pendientes-print thead {
+    display: table-header-group;
+  }
+
+  .saldos-pendientes-print tfoot {
+    display: table-row-group;
+  }
+
+  .saldos-pendientes-print tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ========================================
+     SALDOS PENDIENTES DE PROVEEDORES
+     ======================================== */
+
+  .saldos-pendientes-proveedores-print {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .saldos-pendientes-proveedores-print .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .saldos-pendientes-proveedores-print .card-body {
+    padding: 0 !important;
+  }
+
+  .saldos-pendientes-proveedores-print h5 {
+    font-size: 14px !important;
+    margin: 0 0 5px 0 !important;
+  }
+
+  .saldos-pendientes-proveedores-print .table {
+    width: 100% !important;
+    min-width: 0 !important;
+    font-size: 8.5px !important;
+    margin: 0 !important;
+  }
+
+  .saldos-pendientes-proveedores-print .table th,
+  .saldos-pendientes-proveedores-print .table td {
+    padding: 1.5px 4px !important;
+    line-height: 1.05 !important;
+    vertical-align: middle !important;
+  }
+
+  .saldos-pendientes-proveedores-print thead {
+    display: table-header-group;
+  }
+
+  .saldos-pendientes-proveedores-print tfoot {
+    display: table-row-group;
+  }
+
+  .saldos-pendientes-proveedores-print tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }

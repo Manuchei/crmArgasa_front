@@ -7,7 +7,6 @@ import { IEventoCalendario } from '../interfaces/ievento-calendario';
 import { ILlamadaRequest } from '../interfaces/illamada-request';
 import { environment } from '../../environments/environment';
 
-
 @Injectable({ providedIn: 'root' })
 export class LlamadasService {
   private baseUrl = `${environment.apiUrl}/llamadas`;
@@ -48,7 +47,9 @@ export class LlamadasService {
 
   eliminarLlamada(id: number): Observable<void> {
     const empresa = this.getEmpresaActual();
+
     const params = new HttpParams().set('empresa', empresa);
+
     return this.http.delete<void>(`${this.baseUrl}/${id}`, { params });
   }
 
@@ -65,5 +66,29 @@ export class LlamadasService {
     const params = new HttpParams().set('limit', limit).set('empresa', empresa);
 
     return this.http.get<ILlamada[]>(`${this.baseUrl}/proximas`, { params });
+  }
+
+  getLlamadasRealizadas(
+    nombre?: string,
+    fecha?: string,
+    direccion?: string,
+  ): Observable<ILlamada[]> {
+    const empresa = this.getEmpresaActual();
+
+    let params = new HttpParams().set('empresa', empresa);
+
+    if (nombre?.trim()) {
+      params = params.set('nombre', nombre.trim());
+    }
+
+    if (fecha?.trim()) {
+      params = params.set('fecha', fecha.trim());
+    }
+
+    if (direccion?.trim()) {
+      params = params.set('direccion', direccion.trim());
+    }
+
+    return this.http.get<ILlamada[]>(`${this.baseUrl}/realizadas`, { params });
   }
 }

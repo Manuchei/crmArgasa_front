@@ -5,7 +5,6 @@ import { HistorialSaldoResponse } from '../interfaces/historial-saldo';
 import { HistorialTContableResponse } from '../interfaces/t-contable.interface';
 import { environment } from '../../environments/environment';
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -51,5 +50,10 @@ export class InformesSaldosService {
     }
 
     return this.http.get<HistorialSaldoResponse[]>(this.apiUrl, { params });
+  }
+  obtenerSaldosPendientes(empresa: string) {
+    const params = new HttpParams().set('empresa', empresa);
+
+    return this.http.get<any[]>(`${this.apiUrl}/pendientes`, { params });
   }
 }

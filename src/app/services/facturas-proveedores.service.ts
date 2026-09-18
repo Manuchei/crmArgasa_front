@@ -76,4 +76,10 @@ export class FacturasProveedoresService {
   eliminarBorrador(facturaId: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${facturaId}`);
   }
+
+  getSaldosPendientes(): Observable<IfacturaProveedor[]> {
+    return this.http.get<IfacturaProveedor[]>(
+      `${this.baseUrl}/informe/saldos-pendientes`,
+    );
+  }
 }

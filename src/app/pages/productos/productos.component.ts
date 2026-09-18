@@ -9,7 +9,9 @@ import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { Subscription } from 'rxjs';
 import { ClientesService } from '../../services/cliente.service';
 import { ClienteProductoService } from '../../services/cliente-producto.service';
+import { AlbaranesService } from '../../services/albaranes.service';
 import { ICliente } from '../../interfaces/icliente';
+import { FacturacionV2Service } from '../../services/facturacion-v2.service';
 
 @Component({
   selector: 'app-productos',
@@ -18,7 +20,6 @@ import { ICliente } from '../../interfaces/icliente';
   styleUrl: './productos.component.css',
 })
 export class ProductosComponent implements OnInit, OnDestroy {
-
   // ============================================================
   // PRODUCTOS
   // ============================================================
@@ -57,35 +58,16 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
   cantidadAsignar = 1;
   descuentoAsignar = 0;
-
-  /**
-   * Importe pagado en la nueva asignación.
-   *
-   * IMPORTANTE:
-   * No usamos "importePagadoAsignar" porque ese nombre estaba
-   * entrando en conflicto con una propiedad anterior de tipo boolean.
-   */
   importePagadoCliente = 0;
 
-  /**
-   * Indica si la petición HTTP para asignar el producto está
-   * actualmente ejecutándose.
-   */
   asignandoProducto = false;
 
   // ============================================================
-  // SEGUNDO PASO: DOCUMENTACIÓN
+  // DOCUMENTACIÓN
   // ============================================================
 
   pasoAsignacion: 'cliente' | 'documentacion' = 'cliente';
 
-  /**
-   * Guardamos el Trabajo que devuelve el backend al asignar
-   * el producto al cliente.
-   *
-   * Su ID será necesario para generar posteriormente
-   * el albarán/factura.
-   */
   trabajoRecienCreado: any = null;
 
   generandoDocumento = false;
@@ -99,6 +81,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
     private empresaService: EmpresaService,
     private clientesService: ClientesService,
     private clienteProductoService: ClienteProductoService,
+    private albaranesService: AlbaranesService,
+    private facturacionV2Service: FacturacionV2Service,
   ) {}
 
   // ============================================================
@@ -119,8 +103,6 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
           this.cerrarMovimientos();
 
-          // Si cambiamos de empresa mientras está abierto
-          // el flujo de asignación, lo cerramos.
           this.finalizarFlujoProducto();
         }
       },
@@ -237,7 +219,6 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
         this.loading = false;
 
-        // Arrancamos automáticamente el nuevo flujo.
         this.abrirAsignacionCliente(nuevo);
       },
 
@@ -247,9 +228,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
         console.error(err);
 
         alert(
-          err.error?.message ||
-            err.error ||
-            'No se pudo crear el producto',
+          err.error?.message || err.error || 'No se pudo crear el producto',
         );
       },
     });
@@ -267,10 +246,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
     return isNaN(v) || v <= 0 ? 1 : v;
   }
 
-  setAjuste(
-    productoId: number | string,
-    value: number | string,
-  ): void {
+  setAjuste(productoId: number | string, value: number | string): void {
     const id = Number(productoId);
 
     let v = Number(value);
@@ -291,32 +267,29 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
     const cant = this.getAjuste(id);
 
-    const motivo =
-      prompt('Motivo de la subida de unidades (opcional):') || '';
+    const motivo = prompt('Motivo de la subida de unidades (opcional):') || '';
 
-    this.productosService
-      .ajustarStock(id, cant, motivo)
-      .subscribe({
-        next: (prodActualizado: IProducto) => {
-          p.unidades = prodActualizado.unidades;
+    this.productosService.ajustarStock(id, cant, motivo).subscribe({
+      next: (prodActualizado: IProducto) => {
+        p.unidades = prodActualizado.unidades;
 
-          this.ajusteMap[id] = 1;
+        this.ajusteMap[id] = 1;
 
-          if (this.productoSeleccionado?.id === id) {
-            this.verMovimientos(p);
-          }
-        },
+        if (this.productoSeleccionado?.id === id) {
+          this.verMovimientos(p);
+        }
+      },
 
-        error: (err: HttpErrorResponse) => {
-          console.error(err);
+      error: (err: HttpErrorResponse) => {
+        console.error(err);
 
-          alert(
-            err.error?.message ||
-              err.error ||
-              'No se pudieron subir las unidades',
-          );
-        },
-      });
+        alert(
+          err.error?.message ||
+            err.error ||
+            'No se pudieron subir las unidades',
+        );
+      },
+    });
   }
 
   bajarUnidades(p: IProducto): void {
@@ -328,32 +301,29 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
     const cant = this.getAjuste(id);
 
-    const motivo =
-      prompt('Motivo de la bajada de unidades (opcional):') || '';
+    const motivo = prompt('Motivo de la bajada de unidades (opcional):') || '';
 
-    this.productosService
-      .ajustarStock(id, -cant, motivo)
-      .subscribe({
-        next: (prodActualizado: IProducto) => {
-          p.unidades = prodActualizado.unidades;
+    this.productosService.ajustarStock(id, -cant, motivo).subscribe({
+      next: (prodActualizado: IProducto) => {
+        p.unidades = prodActualizado.unidades;
 
-          this.ajusteMap[id] = 1;
+        this.ajusteMap[id] = 1;
 
-          if (this.productoSeleccionado?.id === id) {
-            this.verMovimientos(p);
-          }
-        },
+        if (this.productoSeleccionado?.id === id) {
+          this.verMovimientos(p);
+        }
+      },
 
-        error: (err: HttpErrorResponse) => {
-          console.error(err);
+      error: (err: HttpErrorResponse) => {
+        console.error(err);
 
-          alert(
-            err.error?.message ||
-              err.error ||
-              'No se pudieron bajar las unidades',
-          );
-        },
-      });
+        alert(
+          err.error?.message ||
+            err.error ||
+            'No se pudieron bajar las unidades',
+        );
+      },
+    });
   }
 
   // ============================================================
@@ -368,53 +338,42 @@ export class ProductosComponent implements OnInit, OnDestroy {
     }
 
     this.productoSeleccionado = p;
-
     this.filtroCodigo = '';
-
     this.mostrarModalMovimientos = true;
 
-    this.productosService
-      .getMovimientosPorProducto(id)
-      .subscribe({
-        next: (res: IProductoMovimiento[]) => {
-          this.movimientosProducto = res;
-        },
+    this.productosService.getMovimientosPorProducto(id).subscribe({
+      next: (res: IProductoMovimiento[]) => {
+        this.movimientosProducto = res;
+      },
 
-        error: (err: HttpErrorResponse) => {
-          console.error(err);
+      error: (err: HttpErrorResponse) => {
+        console.error(err);
 
-          alert(
-            err.error?.message ||
-              err.error ||
-              'No se pudieron cargar los movimientos',
-          );
-        },
-      });
+        alert(
+          err.error?.message ||
+            err.error ||
+            'No se pudieron cargar los movimientos',
+        );
+      },
+    });
   }
 
   cerrarMovimientos(): void {
     this.mostrarModalMovimientos = false;
-
     this.productoSeleccionado = null;
-
     this.movimientosProducto = [];
-
     this.filtroCodigo = '';
   }
 
   get movimientosFiltrados(): IProductoMovimiento[] {
-    const filtro = this.filtroCodigo
-      .trim()
-      .toLowerCase();
+    const filtro = this.filtroCodigo.trim().toLowerCase();
 
     if (!filtro) {
       return this.movimientosProducto;
     }
 
     return this.movimientosProducto.filter((m) =>
-      (m.producto?.referencia || '')
-        .toLowerCase()
-        .includes(filtro),
+      (m.producto?.referencia || '').toLowerCase().includes(filtro),
     );
   }
 
@@ -423,9 +382,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
   // ============================================================
 
   get productosFiltrados(): IProducto[] {
-    const filtro = this.filtroProducto
-      .trim()
-      .toLowerCase();
+    const filtro = this.filtroProducto.trim().toLowerCase();
 
     if (!filtro) {
       return this.productos;
@@ -433,27 +390,13 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
     return this.productos.filter(
       (p) =>
-        (p.referencia || '')
-          .toLowerCase()
-          .includes(filtro) ||
-        (p.gama || '')
-          .toLowerCase()
-          .includes(filtro) ||
-        (p.marca || '')
-          .toLowerCase()
-          .includes(filtro) ||
-        (p.modelo || '')
-          .toLowerCase()
-          .includes(filtro) ||
-        (p.familia || '')
-          .toLowerCase()
-          .includes(filtro) ||
-        (p.subfamilia || '')
-          .toLowerCase()
-          .includes(filtro) ||
-        (p.descripcion || '')
-          .toLowerCase()
-          .includes(filtro),
+        (p.referencia || '').toLowerCase().includes(filtro) ||
+        (p.gama || '').toLowerCase().includes(filtro) ||
+        (p.marca || '').toLowerCase().includes(filtro) ||
+        (p.modelo || '').toLowerCase().includes(filtro) ||
+        (p.familia || '').toLowerCase().includes(filtro) ||
+        (p.subfamilia || '').toLowerCase().includes(filtro) ||
+        (p.descripcion || '').toLowerCase().includes(filtro),
     );
   }
 
@@ -462,33 +405,71 @@ export class ProductosComponent implements OnInit, OnDestroy {
   // ============================================================
 
   get clientesFiltrados(): ICliente[] {
-    const filtro = this.filtroCliente
-      .trim()
-      .toLowerCase();
+    const filtro = this.normalizarTexto(this.filtroCliente);
 
+    // No enseñamos 200 clientes nada más abrir el modal.
+    // Los resultados aparecen cuando el usuario empieza a escribir.
     if (!filtro) {
-      return this.clientes;
+      return [];
     }
 
-    return this.clientes.filter((c) =>
-      [
-        c.nombreApellidos,
-        c.cifDni,
-        c.telefono,
-        c.movil,
-        c.email,
-      ]
-        .filter(Boolean)
-        .some((valor) =>
-          String(valor)
-            .toLowerCase()
-            .includes(filtro),
-        ),
+    return this.clientes
+      .filter((cliente) => {
+        const valores = [
+          cliente.nombreApellidos,
+          cliente.cifDni,
+          cliente.telefono,
+          cliente.movil,
+          cliente.email,
+        ];
+
+        return valores.some((valor) =>
+          this.normalizarTexto(valor).includes(filtro),
+        );
+      })
+      .slice(0, 20);
+  }
+
+  private normalizarTexto(valor: any): string {
+    return String(valor ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  get clienteSeleccionado(): ICliente | null {
+    if (!this.clienteSeleccionadoId) {
+      return null;
+    }
+
+    return (
+      this.clientes.find(
+        (cliente) => cliente.id === this.clienteSeleccionadoId,
+      ) ?? null
     );
   }
 
+  seleccionarCliente(cliente: ICliente): void {
+    if (!cliente?.id) {
+      return;
+    }
+
+    this.clienteSeleccionadoId = cliente.id;
+    this.filtroCliente = '';
+  }
+
+  quitarClienteSeleccionado(): void {
+    if (this.asignandoProducto) {
+      return;
+    }
+
+    this.clienteSeleccionadoId = null;
+    this.filtroCliente = '';
+  }
+
   // ============================================================
-  // ABRIR MODAL DE ASIGNACIÓN
+  // ABRIR ASIGNACIÓN
   // ============================================================
 
   abrirAsignacionCliente(producto: IProducto): void {
@@ -532,14 +513,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
   }
 
   // ============================================================
-  // CERRAR MODAL
+  // CERRAR ASIGNACIÓN
   // ============================================================
 
   cerrarAsignacionCliente(): void {
-    if (
-      this.asignandoProducto ||
-      this.generandoDocumento
-    ) {
+    if (this.asignandoProducto || this.generandoDocumento) {
       return;
     }
 
@@ -547,97 +525,56 @@ export class ProductosComponent implements OnInit, OnDestroy {
   }
 
   // ============================================================
-  // ASIGNAR PRODUCTO A CLIENTE
+  // ASIGNAR PRODUCTO
   // ============================================================
 
   asignarProductoACliente(): void {
     const producto = this.productoRecienCreado;
 
-    // ----------------------------------------------------------
-    // Validar producto
-    // ----------------------------------------------------------
-
     if (!producto?.id) {
-      alert(
-        'No se ha podido identificar el producto.',
-      );
+      alert('No se ha podido identificar el producto.');
       return;
     }
-
-    // ----------------------------------------------------------
-    // Validar cliente
-    // ----------------------------------------------------------
 
     if (!this.clienteSeleccionadoId) {
       alert('Selecciona un cliente.');
       return;
     }
 
-    // ----------------------------------------------------------
-    // Validar cantidad
-    // ----------------------------------------------------------
-
     if (
       !Number.isFinite(Number(this.cantidadAsignar)) ||
       Number(this.cantidadAsignar) <= 0
     ) {
-      alert(
-        'La cantidad debe ser mayor que 0.',
-      );
+      alert('La cantidad debe ser mayor que 0.');
       return;
     }
 
-    if (
-      Number(this.cantidadAsignar) >
-      Number(producto.unidades || 0)
-    ) {
-      alert(
-        'No puedes asignar más unidades de las disponibles.',
-      );
+    if (Number(this.cantidadAsignar) > Number(producto.unidades || 0)) {
+      alert('No puedes asignar más unidades de las disponibles.');
       return;
     }
-
-    // ----------------------------------------------------------
-    // Validar descuento
-    // ----------------------------------------------------------
 
     if (
       !Number.isFinite(Number(this.descuentoAsignar)) ||
       Number(this.descuentoAsignar) < 0 ||
       Number(this.descuentoAsignar) > 100
     ) {
-      alert(
-        'El descuento debe estar entre 0 y 100.',
-      );
+      alert('El descuento debe estar entre 0 y 100.');
       return;
     }
-
-    // ----------------------------------------------------------
-    // Validar importe pagado
-    // ----------------------------------------------------------
 
     if (
       !Number.isFinite(Number(this.importePagadoCliente)) ||
       Number(this.importePagadoCliente) < 0
     ) {
-      alert(
-        'El importe pagado no puede ser negativo.',
-      );
+      alert('El importe pagado no puede ser negativo.');
       return;
     }
-
-    // ----------------------------------------------------------
-    // Validar empresa
-    // ----------------------------------------------------------
 
     if (!this.empresaActiva) {
       alert('Empresa no seleccionada.');
       return;
     }
-
-    // ----------------------------------------------------------
-    // Ejecutar asignación
-    // ----------------------------------------------------------
 
     this.asignandoProducto = true;
 
@@ -654,32 +591,14 @@ export class ProductosComponent implements OnInit, OnDestroy {
         next: (trabajoCreado: any) => {
           this.asignandoProducto = false;
 
-          // ----------------------------------------------------
-          // Actualizar stock visualmente
-          // ----------------------------------------------------
-
           producto.unidades =
-            Number(producto.unidades || 0) -
-            Number(this.cantidadAsignar);
+            Number(producto.unidades || 0) - Number(this.cantidadAsignar);
 
-          // ----------------------------------------------------
-          // Guardamos el Trabajo
-          // ----------------------------------------------------
+          this.trabajoRecienCreado = trabajoCreado;
 
-          this.trabajoRecienCreado =
-            trabajoCreado;
+          console.log('Trabajo creado:', trabajoCreado);
 
-          console.log(
-            'Trabajo creado:',
-            trabajoCreado,
-          );
-
-          // ----------------------------------------------------
-          // Pasamos al segundo paso del modal
-          // ----------------------------------------------------
-
-          this.pasoAsignacion =
-            'documentacion';
+          this.pasoAsignacion = 'documentacion';
         },
 
         error: (err: HttpErrorResponse) => {
@@ -694,6 +613,87 @@ export class ProductosComponent implements OnInit, OnDestroy {
           );
         },
       });
+  }
+
+  // ============================================================
+  // OBTENER EMPRESA PARA ALBARÁN
+  // ============================================================
+
+  private obtenerEmpresaParaPeticion(): string {
+    if (!this.empresaActiva) {
+      return '';
+    }
+
+    if (typeof this.empresaActiva === 'string') {
+      return this.empresaActiva;
+    }
+
+    const empresa = this.empresaActiva as any;
+
+    return empresa.nombre || empresa.codigo || empresa.razonSocial || '';
+  }
+
+  // ============================================================
+  // GENERAR ALBARÁN DEL PRODUCTO
+  // ============================================================
+
+  generarAlbaranProducto(): void {
+    const trabajoId = Number(this.trabajoRecienCreado?.id);
+
+    if (!trabajoId) {
+      alert('No se ha podido identificar el trabajo creado.');
+      return;
+    }
+
+    if (!this.empresaActiva) {
+      alert('Empresa no seleccionada.');
+      return;
+    }
+
+    if (this.generandoDocumento) {
+      return;
+    }
+
+    const empresa = this.obtenerEmpresaParaPeticion();
+
+    if (!empresa) {
+      console.error(
+        'No se pudo obtener el identificador de empresa:',
+        this.empresaActiva,
+      );
+
+      alert('No se ha podido identificar la empresa activa.');
+
+      return;
+    }
+
+    this.generandoDocumento = true;
+
+    this.albaranesService.crearDesdeTrabajo(trabajoId, empresa).subscribe({
+      next: (albaran: any) => {
+        this.generandoDocumento = false;
+
+        console.log('Albarán creado:', albaran);
+
+        alert(
+          albaran?.numero
+            ? `Albarán ${albaran.numero} generado correctamente.`
+            : 'Albarán generado correctamente.',
+        );
+
+        this.finalizarFlujoProducto();
+      },
+
+      error: (err: HttpErrorResponse) => {
+        this.generandoDocumento = false;
+
+        console.error('Error generando albarán:', err);
+
+        alert(
+          err.error?.message || err.error || 'No se pudo generar el albarán.',
+        );
+      },
+    });
   }
 
   // ============================================================
@@ -722,5 +722,45 @@ export class ProductosComponent implements OnInit, OnDestroy {
     this.asignandoProducto = false;
 
     this.generandoDocumento = false;
+  }
+  generarFacturaProducto(): void {
+    const trabajoId = Number(this.trabajoRecienCreado?.id);
+
+    if (!trabajoId) {
+      alert('No se ha podido identificar el trabajo creado.');
+      return;
+    }
+
+    if (this.generandoDocumento) {
+      return;
+    }
+
+    this.generandoDocumento = true;
+
+    this.facturacionV2Service.crearFacturaDesdeTrabajo(trabajoId).subscribe({
+      next: (factura) => {
+        this.generandoDocumento = false;
+
+        console.log('Factura creada:', factura);
+
+        alert(
+          factura?.numero
+            ? `Factura ${factura.serie}-${factura.numero} creada correctamente en BORRADOR.`
+            : 'Factura creada correctamente en BORRADOR.',
+        );
+
+        this.finalizarFlujoProducto();
+      },
+
+      error: (err: HttpErrorResponse) => {
+        this.generandoDocumento = false;
+
+        console.error('Error generando factura:', err);
+
+        alert(
+          err.error?.message || err.error || 'No se pudo generar la factura.',
+        );
+      },
+    });
   }
 }

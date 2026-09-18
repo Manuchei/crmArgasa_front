@@ -61,12 +61,22 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
   horasDisponibles: string[] = [];
   horaNueva = '12:00';
 
-  nuevaLlamada: ILlamadaRequest = this.crearRequestLlamadaVacio();
+  nuevaLlamada: ILlamadaRequest = this.crearRequestVacio();
 
   nuevoTitulo = '';
   nuevaObservacion = '';
 
   private fechasConEventos = new Set<string>();
+
+  // CONSULTA DE TAREAS REALIZADAS
+  filtroNombre = '';
+  filtroDireccion = '';
+  filtroFecha: Date | null = null;
+
+  llamadasRealizadas: ILlamada[] = [];
+
+  buscandoRealizadas = false;
+  busquedaRealizada = false;
 
   constructor(
     private llamadasService: LlamadasService,
@@ -92,9 +102,11 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     this.cargarDatosDia();
   }
 
-  private crearRequestLlamadaVacio(): ILlamadaRequest {
+  private crearRequestVacio(): ILlamadaRequest {
     return {
       empresa: 'ARGASA',
+      nombre: '',
+      direccion: '',
       motivo: '',
       fecha: '',
       estado: 'pendiente',
@@ -302,6 +314,9 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     this.nuevaObservacion = '';
 
     this.preCargarHoraDefault(ymd);
+  }
+  crearRequestLlamadaVacio(): ILlamadaRequest {
+    throw new Error('Method not implemented.');
   }
 
   trackByLlamadaId(_: number, item: ILlamada) {
@@ -521,5 +536,39 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     f.setHours(0, 0, 0, 0);
 
     return f < hoy;
+  }
+
+  buscarRealizadas(): void {
+    let fecha: string | undefined;
+
+    if (this.filtroFecha) {
+      fecha = this.toYmd(this.filtroFecha);
+    }
+
+    this.buscandoRealizadas = true;
+    this.busquedaRealizada = false;
+
+    this.llamadasService
+      .getLlamadasRealizadas(this.filtroNombre, fecha, this.filtroDireccion)
+      .subscribe({
+        next: (llamadas) => {
+          this.llamadasRealizadas = llamadas;
+          this.buscandoRealizadas = false;
+          this.busquedaRealizada = true;
+        },
+        error: (err) => {
+          console.error('Error buscando llamadas realizadas', err);
+          this.llamadasRealizadas = [];
+          this.buscandoRealizadas = false;
+          this.busquedaRealizada = true;
+        },
+      });
+  }
+  limpiarFiltrosRealizadas(): void {
+    this.filtroNombre = '';
+    this.filtroDireccion = '';
+    this.filtroFecha = null;
+    this.llamadasRealizadas = [];
+    this.busquedaRealizada = false;
   }
 }

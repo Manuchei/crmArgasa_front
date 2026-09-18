@@ -6,6 +6,8 @@ export type EstadoLlamada =
 
 export interface ILlamadaRequest {
   empresa: string; // ✅ NUEVO
+  nombre: string;
+  direccion: string;
   motivo: string;
   fecha: string; // yyyy-MM-ddTHH:mm
   estado: EstadoLlamada;
