@@ -199,12 +199,15 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
     this.asegurarEmpresaActiva();
 
     const id = this.getClienteIdSeguro();
+
     if (!id) {
       this.router.navigateByUrl('/app/clientes');
       return;
     }
 
-    this.router.navigate(['/app/clientes', id]);
+    this.router.navigate(['/app/clientes', id], {
+      queryParams: { tab: 'albaranes' },
+    });
   }
 
   /**
@@ -213,36 +216,32 @@ export class AlbaranDetalleComponent implements OnInit, OnDestroy {
    * - lo resolvemos DESPUÉS del POST (y si el backend devuelve albarán actualizado, mejor)
    */
   confirmar(): void {
-  if (!this.albaran?.id || this.isConfirming) {
-    return;
+    if (!this.albaran?.id || this.isConfirming) {
+      return;
+    }
+
+    this.isConfirming = true;
+
+    this.http
+      .post<any>(`${this.apiUrl}/albaranes/${this.albaran.id}/confirmar`, {})
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (albaranActualizado) => {
+          this.albaran = albaranActualizado;
+
+          this.isConfirming = false;
+
+          alert('Albarán confirmado correctamente');
+
+          // NO REDIRIGIR
+        },
+        error: (err) => {
+          console.error('Error confirmando albarán:', err);
+          alert('No se pudo confirmar el albarán');
+          this.isConfirming = false;
+        },
+      });
   }
-
-  this.isConfirming = true;
-
-  this.http
-    .post<any>(
-      `${this.apiUrl}/albaranes/${this.albaran.id}/confirmar`,
-      {}
-    )
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (albaranActualizado) => {
-
-        this.albaran = albaranActualizado;
-
-        this.isConfirming = false;
-
-        alert('Albarán confirmado correctamente');
-
-        // NO REDIRIGIR
-      },
-      error: (err) => {
-        console.error('Error confirmando albarán:', err);
-        alert('No se pudo confirmar el albarán');
-        this.isConfirming = false;
-      },
-    });
-}
 
   // =========================
   //  Líneas

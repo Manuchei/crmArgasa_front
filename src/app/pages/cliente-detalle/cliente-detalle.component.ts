@@ -74,6 +74,10 @@ export class ClienteDetalleComponent implements OnInit {
   ngOnInit(): void {
     this.clienteId = Number(this.route.snapshot.paramMap.get('id'));
 
+    if (this.route.snapshot.queryParamMap.get('tab') === 'albaranes') {
+      this.pestanaActiva = 'albaranes';
+    }
+
     this.nuevoPago.fecha = this.hoyISO();
 
     this.cargarCliente();
@@ -654,7 +658,9 @@ export class ClienteDetalleComponent implements OnInit {
   verAlbaran(a: any): void {
     if (!a?.id) return;
 
-    this.router.navigate(['/app/albaranes', a.id]);
+    this.router.navigate(['/app/albaranes', a.id], {
+      queryParams: { clienteId: this.clienteId },
+    });
   }
 
   imprimirAlbaran(a: any): void {

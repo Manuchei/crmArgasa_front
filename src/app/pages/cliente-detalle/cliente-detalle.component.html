@@ -18,7 +18,8 @@
       </div>
 
       <div class="header-actions d-flex gap-2 flex-wrap">
-        <button type="button" class="btn btn-dark w-100 w-sm-auto" (click)="crearAlbaran()" [disabled]="creandoAlbaran">
+        <button *ngIf="pestanaActiva === 'albaranes'" type="button" class="btn btn-dark w-100 w-sm-auto"
+          (click)="crearAlbaran()" [disabled]="creandoAlbaran">
           <span *ngIf="!creandoAlbaran">🧾 Crear albarán</span>
           <span *ngIf="creandoAlbaran">Creando...</span>
         </button>

@@ -167,12 +167,15 @@ export class AlbaranProveedorDetalleComponent implements OnInit, OnDestroy {
 
   volverAProveedor(): void {
     const id = this.getProveedorIdSeguro();
+
     if (!id) {
       this.router.navigateByUrl('/app/proveedores');
       return;
     }
 
-    this.router.navigate(['/app/proveedores', id]);
+    this.router.navigate(['/app/proveedores', id], {
+      queryParams: { tab: 'albaranes' },
+    });
   }
 
   editarAlbaran(): void {

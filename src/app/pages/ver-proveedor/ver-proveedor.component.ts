@@ -50,6 +50,10 @@ export class VerProveedorComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('tab') === 'albaranes') {
+      this.activeTab = 'albaranes';
+    }
+
     this.cargarProveedor();
   }
 

@@ -12,7 +12,8 @@
       </div>
 
       <div class="header-actions">
-        <button class="btn btn-dark w-100 w-sm-auto" (click)="generarAlbaran()" [disabled]="creandoAlbaran">
+        <button *ngIf="activeTab === 'albaranes'" class="btn btn-dark w-100 w-sm-auto" (click)="generarAlbaran()"
+          [disabled]="creandoAlbaran">
           <i class="bi bi-file-earmark-text"></i>
           {{ creandoAlbaran ? 'Creando...' : 'Crear albarán' }}
         </button>

@@ -68,7 +68,6 @@ export class InformesComponent implements OnInit, OnDestroy {
   facturasClientes: any[] = [];
   facturasProveedores: IfacturaProveedor[] = [];
   saldosPendientesProveedores: IfacturaProveedor[] = [];
-
   filasTContable: {
     debe: TContableLinea | null;
     haber: TContableLinea | null;
@@ -473,20 +472,24 @@ export class InformesComponent implements OnInit, OnDestroy {
         this.cargando = false;
 
         if (this.saldosPendientesProveedores.length === 0) {
-          this.error = 'No hay saldos pendientes de proveedores';
+          this.error = 'No hay facturas de proveedores pendientes de pago';
         }
       },
       error: (err) => {
-        console.error('Error cargando saldos pendientes de proveedores:', err);
+        console.error(
+          'Error cargando facturas pendientes de proveedores:',
+          err,
+        );
         this.error =
           'No se pudo cargar el informe de saldos pendientes de proveedores';
         this.cargando = false;
       },
     });
   }
+
   getTotalSaldosPendientesProveedores(): number {
     return this.saldosPendientesProveedores.reduce(
-      (total, factura) => total + (factura.totalImporte || 0),
+      (total, factura) => total + (Number(factura.totalImporte) || 0),
       0,
     );
   }
