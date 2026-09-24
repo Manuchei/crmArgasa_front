@@ -182,6 +182,10 @@
 
           </tr>
 
+          <tr class="fila-relleno" *ngIf="getLineasDocumento().length > 0">
+            <td colspan="6"></td>
+          </tr>
+
           <tr *ngIf="getLineasDocumento().length === 0">
             <td colspan="6" class="sin-lineas">
               Sin líneas
@@ -222,7 +226,7 @@
         <strong>Descuento</strong>
 
         <span>
-          {{ (factura?.descuentoPct || 0) | number:'1.2-2' }} %
+          {{ getDescuentoTotal() | number:'1.2-2' }} €
         </span>
       </div>
 
@@ -244,43 +248,26 @@
 
     </section>
 
-    <!-- FORMA DE PAGO / TRANSPORTE -->
-    <section class="datos-logisticos">
 
-      <div>
-        <strong>Forma de pago</strong>
+    <!-- PIE -->
+    <footer class="pie-documento">
 
-        <span>
-          {{
-          factura?.formaPago?.nombre ||
-          factura?.formaPago ||
-          factura?.metodoPago ||
-          'CONTADO METÁLICO'
-          }}
-        </span>
+      <div class="pie-superior">
+        <span>Documento generado por Novex.</span>
+        <span>Página 1 / 1</span>
       </div>
 
-       </section>
+      <p>
+        De conformidad con lo establecido en la normativa vigente en
+        Protección de Datos de Carácter Personal, le informamos que sus datos
+        serán incorporados al sistema de tratamiento titularidad de
+        {{ emisor.nombre }}, con C.I.F. {{ emisor.cif }} y domicilio social en
+        {{ emisor.direccion }}. Los datos serán conservados durante los plazos
+        legalmente establecidos. Puede contactar con el responsable mediante
+        el teléfono {{ emisor.telefono }} o el correo {{ emisor.email }}.
+      </p>
 
-        <!-- PIE -->
-        <footer class="pie-documento">
-
-          <div class="pie-superior">
-            <span>Documento generado por Novex.</span>
-            <span>Página 1 / 1</span>
-          </div>
-
-          <p>
-            De conformidad con lo establecido en la normativa vigente en
-            Protección de Datos de Carácter Personal, le informamos que sus datos
-            serán incorporados al sistema de tratamiento titularidad de
-            {{ emisor.nombre }}, con C.I.F. {{ emisor.cif }} y domicilio social en
-            {{ emisor.direccion }}. Los datos serán conservados durante los plazos
-            legalmente establecidos. Puede contactar con el responsable mediante
-            el teléfono {{ emisor.telefono }} o el correo {{ emisor.email }}.
-          </p>
-
-        </footer>
+    </footer>
 
   </ng-container>
 </main>

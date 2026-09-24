@@ -299,7 +299,9 @@
 
 
                     </tr>
-
+                    <tr class="fila-relleno" *ngIf="getLineasDocumento().length > 0">
+                        <td colspan="6"></td>
+                    </tr>
 
                     <tr *ngIf="getLineasDocumento().length === 0">
 
@@ -372,12 +374,7 @@
                 </strong>
 
                 <span>
-
-                    {{
-                    (factura?.descuentoPct || 0)
-                    | number:'1.2-2'
-                    }} %
-
+                    {{ getDescuentoTotal() | number:'1.2-2' }} €
                 </span>
 
             </div>
@@ -422,34 +419,6 @@
         </section>
 
 
-        <!-- FORMA DE PAGO / TRANSPORTE -->
-
-        <section class="datos-logisticos">
-
-
-            <div>
-
-                <strong>
-                    Forma de pago
-                </strong>
-
-                <span>
-
-                    {{
-                    factura?.formaPago?.nombre ||
-                    factura?.formaPago ||
-                    factura?.metodoPago ||
-                    'CONTADO METÁLICO'
-                    }}
-
-                </span>
-
-            </div>
-
-
-
-
-        </section>
 
 
         <!-- PIE -->

@@ -296,11 +296,11 @@
 .tabla-contenedor {
   position: relative;
 
-  height: 145mm;
+  height: 125mm;
 
   margin-top: 6mm;
 
-  overflow: hidden;
+  overflow: visible;
 
   border: 1px solid #dc776e;
 }
@@ -416,12 +416,18 @@
 
 .tabla-lineas tbody td {
   padding: 2mm 2mm 1mm;
-
   vertical-align: top;
-
   background: transparent;
-
   line-height: 1.5;
+  border-bottom: 1px solid #dc776e;
+}
+
+.tabla-lineas tbody tr:not(.fila-relleno) {
+  height: 8mm;
+}
+
+.tabla-lineas tbody tr.fila-relleno {
+  height: 100%;
 }
 
 .tabla-lineas td.numero {
@@ -608,20 +614,20 @@
 
   .documento-a4 {
     width: 200mm;
-
-    height: 287mm;
-
+    height: auto;
+    min-height: 0;
     margin: 0;
-
     padding: 5mm 13mm 9mm;
-
     box-shadow: none;
-
     print-color-adjust: exact;
-
     -webkit-print-color-adjust: exact;
   }
 
+  .tabla-lineas tbody tr,
+  .pie-documento {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
   .cabecera-documento {
     grid-template-columns:
       minmax(0, 1fr)

@@ -49,45 +49,38 @@ export class AlbaranImprimirComponent implements OnInit {
     this.error = null;
     this.factura = null;
 
-    this.http
-      .get<any>(`${this.baseUrl}/albaranes/${id}`)
-      .subscribe({
-        next: (data) => {
-          console.log('Albarán recibido:', data);
+    this.http.get<any>(`${this.baseUrl}/albaranes/${id}`).subscribe({
+      next: (data) => {
+        console.log('Albarán recibido:', data);
 
-          this.factura = data;
+        this.factura = data;
 
-          if (this.factura?.empresa) {
-            localStorage.setItem(
-              'empresa',
-              String(this.factura.empresa),
-            );
-          }
+        if (this.factura?.empresa) {
+          localStorage.setItem('empresa', String(this.factura.empresa));
+        }
 
-          this.loading = false;
-        },
+        this.loading = false;
+      },
 
-        error: (err) => {
-          console.error('Error cargando el albarán:', err);
+      error: (err) => {
+        console.error('Error cargando el albarán:', err);
 
-          this.loading = false;
+        this.loading = false;
 
-          const mensajeBackend =
-            typeof err?.error === 'string'
-              ? err.error
-              : err?.error?.message;
+        const mensajeBackend =
+          typeof err?.error === 'string' ? err.error : err?.error?.message;
 
-          this.error =
-            mensajeBackend ||
-            `No se pudo cargar el albarán (HTTP ${err?.status ?? '?'})`;
-        },
-      });
+        this.error =
+          mensajeBackend ||
+          `No se pudo cargar el albarán (HTTP ${err?.status ?? '?'})`;
+      },
+    });
   }
 
   imprimirManual(): void {
     setTimeout(() => {
-  window.print();
-}, 1000);
+      window.print();
+    }, 1000);
   }
 
   /*
@@ -95,13 +88,9 @@ export class AlbaranImprimirComponent implements OnInit {
    */
 
   getEmisorVisualFactura(): any {
-
-
     const empresa = String(this.factura?.empresa || '')
       .trim()
       .toLowerCase();
-
-    
 
     return EMPRESAS[empresa as keyof typeof EMPRESAS] || null;
   }
@@ -138,11 +127,7 @@ export class AlbaranImprimirComponent implements OnInit {
      * Para que el HTML siga funcionando, utilizamos la fecha
      * de emisión como fecha valor.
      */
-    return (
-      this.factura?.fechaValor ||
-      this.factura?.fechaEmision ||
-      '-'
-    );
+    return this.factura?.fechaValor || this.factura?.fechaEmision || '-';
   }
 
   getEstadoDocumento(): string {
@@ -201,19 +186,11 @@ export class AlbaranImprimirComponent implements OnInit {
   }
 
   getCifDniReceptor(): string | null {
-    return (
-      this.factura?.cifDni ||
-      this.factura?.cliente?.cifDni ||
-      null
-    );
+    return this.factura?.cifDni || this.factura?.cliente?.cifDni || null;
   }
 
   getDireccionReceptor(): string | null {
-    return (
-      this.factura?.direccion ||
-      this.factura?.cliente?.direccion ||
-      null
-    );
+    return this.factura?.direccion || this.factura?.cliente?.direccion || null;
   }
 
   getLocalidadReceptor(): string {
@@ -222,25 +199,15 @@ export class AlbaranImprimirComponent implements OnInit {
     }
 
     const codigoPostal =
-      this.factura.codigoPostal ||
-      this.factura.cliente?.codigoPostal ||
-      '';
+      this.factura.codigoPostal || this.factura.cliente?.codigoPostal || '';
 
     const poblacion =
-      this.factura.poblacion ||
-      this.factura.cliente?.poblacion ||
-      '';
+      this.factura.poblacion || this.factura.cliente?.poblacion || '';
 
     const provincia =
-      this.factura.provincia ||
-      this.factura.cliente?.provincia ||
-      '';
+      this.factura.provincia || this.factura.cliente?.provincia || '';
 
-    return [
-      codigoPostal,
-      poblacion,
-      provincia ? `(${provincia})` : '',
-    ]
+    return [codigoPostal, poblacion, provincia ? `(${provincia})` : '']
       .filter(Boolean)
       .join(' ')
       .trim();
@@ -257,11 +224,7 @@ export class AlbaranImprimirComponent implements OnInit {
   }
 
   getEmailReceptor(): string | null {
-    return (
-      this.factura?.email ||
-      this.factura?.cliente?.email ||
-      null
-    );
+    return this.factura?.email || this.factura?.cliente?.email || null;
   }
 
   /*
@@ -269,33 +232,19 @@ export class AlbaranImprimirComponent implements OnInit {
    */
 
   getLineasDocumento(): any[] {
-    return Array.isArray(this.factura?.lineas)
-      ? this.factura.lineas
-      : [];
+    return Array.isArray(this.factura?.lineas) ? this.factura.lineas : [];
   }
 
   getCantidadLinea(linea: any): number {
-    return Number(
-      linea?.unidades ??
-      linea?.cantidad ??
-      0,
-    );
+    return Number(linea?.unidades ?? linea?.cantidad ?? 0);
   }
 
   getPrecioLinea(linea: any): number {
-    return Number(
-      linea?.precio ??
-      linea?.precioUnitario ??
-      0,
-    );
+    return Number(linea?.precio ?? linea?.precioUnitario ?? 0);
   }
 
   getDescuentoLinea(linea: any): number {
-    return Number(
-      linea?.dtoPct ??
-      linea?.descuentoPct ??
-      0,
-    );
+    return Number(linea?.dtoPct ?? linea?.descuentoPct ?? 0);
   }
 
   getSubtotalLinea(linea: any): number {
@@ -303,13 +252,11 @@ export class AlbaranImprimirComponent implements OnInit {
      * En el modelo del albarán el importe final de la línea
      * se llama totalLinea.
      */
-    if (linea?.totalLinea !== null &&
-        linea?.totalLinea !== undefined) {
+    if (linea?.totalLinea !== null && linea?.totalLinea !== undefined) {
       return Number(linea.totalLinea);
     }
 
-    if (linea?.subtotal !== null &&
-        linea?.subtotal !== undefined) {
+    if (linea?.subtotal !== null && linea?.subtotal !== undefined) {
       return Number(linea.subtotal);
     }
 
@@ -336,8 +283,7 @@ export class AlbaranImprimirComponent implements OnInit {
 
   getTotalUnidades(): number {
     return this.getLineasDocumento().reduce(
-      (total, linea) =>
-        total + this.getCantidadLinea(linea),
+      (total, linea) => total + this.getCantidadLinea(linea),
       0,
     );
   }
@@ -351,26 +297,19 @@ export class AlbaranImprimirComponent implements OnInit {
     }
 
     return this.getLineasDocumento().reduce(
-      (total, linea) =>
-        total + this.getSubtotalLinea(linea),
+      (total, linea) => total + this.getSubtotalLinea(linea),
       0,
     );
   }
 
   getDescuentoTotal(): number {
     return Number(
-      this.factura?.totalDescuento ??
-      this.factura?.descuentoTotal ??
-      0,
+      this.factura?.totalDescuento ?? this.factura?.descuentoTotal ?? 0,
     );
   }
 
   getIvaTotal(): number {
-    return Number(
-      this.factura?.totalIva ??
-      this.factura?.ivaTotal ??
-      0,
-    );
+    return Number(this.factura?.totalIva ?? this.factura?.ivaTotal ?? 0);
   }
 
   getTotalDocumento(): number {
@@ -381,10 +320,7 @@ export class AlbaranImprimirComponent implements OnInit {
       return Number(this.factura.totalImporte);
     }
 
-    if (
-      this.factura?.total !== null &&
-      this.factura?.total !== undefined
-    ) {
+    if (this.factura?.total !== null && this.factura?.total !== undefined) {
       return Number(this.factura.total);
     }
 

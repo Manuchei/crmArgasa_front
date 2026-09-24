@@ -63,7 +63,8 @@
   width: 47%;
 }
 
-.logo-argasa {
+.logo-argasa,
+.logo-empresa {
   display: block;
   width: 64mm;
   max-height: 25mm;
@@ -115,7 +116,7 @@
   object-position: left center;
 }
 
-/* FRANJA Nº/FECHAS/REFERENCIA */
+/* DATOS DE LA FACTURA */
 .franja-documento {
   display: grid;
   grid-template-columns: 15% 14% 14% 1fr;
@@ -143,8 +144,6 @@
 .dato-franja span {
   margin-top: 1mm;
   white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip;
   font-size: 9pt;
 }
 
@@ -155,12 +154,13 @@
   font-weight: 700;
 }
 
-/* TABLA PRINCIPAL */
+/* TABLA DE PRODUCTOS */
 .tabla-contenedor {
   position: relative;
+  min-height: 120mm;
   margin-top: 6mm;
   border: 1px solid #dc776e;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .marca-agua {
@@ -181,17 +181,30 @@
   position: relative;
   z-index: 1;
   width: 100%;
+  height: 120mm;
   border-collapse: collapse;
   table-layout: fixed;
   background: transparent;
 }
 
-.tabla-lineas col.col-cantidad { width: 11%; }
-.tabla-lineas col.col-codigo { width: 16%; }
-.tabla-lineas col.col-articulo { width: 38%; }
-.tabla-lineas col.col-precio { width: 10%; }
-.tabla-lineas col.col-iva { width: 9%; }
-.tabla-lineas col.col-subtotal { width: 16%; }
+.tabla-lineas col.col-cantidad {
+  width: 11%;
+}
+.tabla-lineas col.col-codigo {
+  width: 16%;
+}
+.tabla-lineas col.col-articulo {
+  width: 38%;
+}
+.tabla-lineas col.col-precio {
+  width: 10%;
+}
+.tabla-lineas col.col-iva {
+  width: 9%;
+}
+.tabla-lineas col.col-subtotal {
+  width: 16%;
+}
 
 .tabla-lineas th,
 .tabla-lineas td {
@@ -215,13 +228,26 @@
   font-size: 10pt;
 }
 
+.tabla-lineas tbody tr:not(.fila-relleno) {
+  height: 8mm;
+}
 
+.tabla-lineas tbody tr.fila-relleno {
+  height: auto;
+}
 
 .tabla-lineas tbody td {
   padding: 2mm 2mm 1mm;
+  border-bottom: 1px solid #dc776e;
   vertical-align: top;
   background: transparent;
   line-height: 1.5;
+}
+
+.tabla-lineas tbody tr.fila-relleno td {
+  padding: 0;
+  border-bottom: 0;
+  border-right: 0;
 }
 
 .tabla-lineas td.numero {
@@ -256,8 +282,7 @@
 /* TOTALES */
 .resumen-totales {
   display: grid;
-  grid-template-columns: 18% 20% 15% 15% 14% 18%;
-  min-height: 17mm;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   border: 1px solid #dc776e;
   border-top: 0;
 }
@@ -266,12 +291,17 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-height: 17mm;
   padding: 2.5mm 2mm 2mm;
   border-right: 1px solid #dc776e;
   text-align: center;
 }
 
-.caja-total:last-child {
+.caja-total:nth-child(-n + 3) {
+  border-bottom: 1px solid #dc776e;
+}
+
+.caja-total:nth-child(3) {
   border-right: 0;
 }
 
@@ -285,6 +315,9 @@
 }
 
 .total-documento {
+  grid-column: 3;
+  border-left: 1px solid #dc776e;
+  border-right: 0;
   font-weight: 700;
 }
 
@@ -296,40 +329,15 @@
   font-size: 13pt;
 }
 
-/* LOGÍSTICA */
- .datos-logisticos {
-  display: grid;
-  grid-template-columns: 21% 29% 10% 10%;
-  column-gap: 7mm;
-  margin-top: 2mm;
-  padding: 0 2mm 2mm;
-  border-bottom: 1px solid #dc776e;
-
-  page-break-inside: avoid;
-  break-inside: avoid;
-}
-
-.datos-logisticos > div {
-  display: flex;
-  flex-direction: column;
-  gap: 2mm;
-}
-
-.datos-logisticos strong {
-  font-size: 10pt;
-}
-
 /* PIE */
 .pie-documento {
   margin-top: 2mm;
   font-family: "Courier New", Courier, monospace;
   font-size: 7.2pt;
   line-height: 1.1;
-
-    page-break-inside: avoid;
-    break-inside: avoid;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
-
 
 .pie-superior {
   display: flex;
@@ -351,6 +359,7 @@
   }
 
   :host {
+    min-height: 0;
     padding: 0;
     background: #fff;
   }
@@ -361,68 +370,19 @@
 
   .documento-a4 {
     width: 210mm;
-    min-height: auto;
     height: auto;
+    min-height: 0;
     margin: 0;
-    padding: 5mm 13mm 5mm;
+    padding: 5mm 13mm;
     box-shadow: none;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
 
-
-  .datos-logisticos,
-  .pie-documento,
-  .resumen-totales {
+  .tabla-lineas tbody tr,
+  .resumen-totales,
+  .pie-documento {
     break-inside: avoid;
     page-break-inside: avoid;
-    break-before: auto;
-    page-break-before: auto;
-    break-after: auto;
-    page-break-after: auto;
   }
-
-}
-
-
-.logo-empresa {
-  display: block;
-  width: 64mm;
-  max-height: 25mm;
-  object-fit: contain;
-  object-position: left center;
-  margin-bottom: 6mm;
-}
-
-.tabla-lineas col.col-descuento { width: 9%; }
-
-.resumen-totales {
-  grid-template-columns: 1fr 1fr 1.15fr;
-}
-
-.datos-finales {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 7mm;
-  margin-top: 5mm;
-  padding: 0 2mm 2mm;
-  border-bottom: 1px solid #dc776e;
-}
-
-.datos-finales > div {
-  display: flex;
-  flex-direction: column;
-  gap: 2mm;
-}
-
-.observaciones {
-  margin-top: 4mm;
-  min-height: 18mm;
-  padding: 2mm;
-  border: 1px solid #dc776e;
-}
-
-.observaciones p {
-  margin: 2mm 0 0;
-  white-space: pre-line;
 }

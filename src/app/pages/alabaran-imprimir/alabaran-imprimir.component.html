@@ -168,13 +168,17 @@
             </td>
 
             <td class="numero">
-              {{ (linea?.dtoPct || 0) | number:'1.0-2' }}
+              {{ getDescuentoLinea(linea) | number:'1.0-2' }}
             </td>
 
             <td class="numero">
               {{ linea?.totalLinea | number:'1.2-2' }}
             </td>
 
+          </tr>
+
+          <tr class="fila-relleno" *ngIf="getLineasDocumento().length > 0">
+            <td colspan="6"></td>
           </tr>
 
           <tr *ngIf="getLineasDocumento().length === 0">
@@ -217,8 +221,7 @@
         <strong>Descuento</strong>
 
         <span>
-          {{ (factura?.descuentoPct || 0) | number:'1.2-2' }} %
-        </span>
+          {{ (factura?.descuentoPct || 0) | number:'1.2-2' }} % </span>
       </div>
 
       <div class="caja-total">
@@ -236,28 +239,6 @@
           {{ getTotalDocumento() | number:'1.2-2' }} €
         </span>
       </div>
-
-    </section>
-
-    <!-- FORMA DE PAGO / TRANSPORTE -->
-    <section class="datos-logisticos">
-
-      <div>
-        <strong>Forma de pago</strong>
-
-        <span>
-          {{
-          factura?.formaPago?.nombre ||
-          factura?.formaPago ||
-          factura?.metodoPago ||
-          'CONTADO METÁLICO'
-          }}
-        </span>
-      </div>
-
-
-
-
 
     </section>
 

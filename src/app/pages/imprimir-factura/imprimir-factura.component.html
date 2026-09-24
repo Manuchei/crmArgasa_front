@@ -101,6 +101,10 @@
             <td class="numero">{{ getSubtotalLinea(linea) | number:'1.3-3' }}</td>
           </tr>
 
+          <tr class="fila-relleno" *ngIf="getLineasDocumento().length > 0">
+            <td colspan="6"></td>
+          </tr>
+
           <tr *ngIf="getLineasDocumento().length === 0">
             <td colspan="6" class="sin-lineas">Sin líneas</td>
           </tr>
@@ -145,15 +149,7 @@
       </div>
     </section>
 
-    <!-- FORMA DE PAGO / TRANSPORTE -->
-    <section class="datos-logisticos">
-      <div>
-        <strong>Forma de Pago</strong>
-        <span>{{ factura?.formaPago?.nombre || factura?.formaPago || factura?.metodoPago || 'CONTADO METÁLICO' }}</span>
-      </div>
 
-
-    </section>
 
     <!-- PIE -->
     <footer class="pie-documento">

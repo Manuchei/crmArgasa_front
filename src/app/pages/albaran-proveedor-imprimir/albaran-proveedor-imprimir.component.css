@@ -60,67 +60,66 @@
    CABECERA
 =========================== */
 
-.cabecera-documento{
-    display:grid;
-    grid-template-columns:42% 16% 42%;
-    align-items:start;
-    column-gap:8mm;
+.cabecera-documento {
+  display: grid;
+  grid-template-columns: 42% 16% 42%;
+  align-items: start;
+  column-gap: 8mm;
 
-    min-height:68mm;
-    margin-bottom:4mm;
+  min-height: 68mm;
+  margin-bottom: 4mm;
 }
 
 .bloque-emisor,
-.bloque-receptor{
-    position:static;
-    width:100%;
+.bloque-receptor {
+  position: static;
+  width: 100%;
 }
 
-.logo-argasa{
-    display:block;
-    width:64mm;
-    max-height:25mm;
-    object-fit:contain;
-    margin-bottom:5mm;
+.logo-argasa {
+  display: block;
+  width: 64mm;
+  max-height: 25mm;
+  object-fit: contain;
+  margin-bottom: 5mm;
 }
 
-.logo-mielectro{
-    display:block;
-    width:47mm;
-    max-height:19mm;
-    object-fit:contain;
-    margin:0 0 8mm auto;
+.logo-mielectro {
+  display: block;
+  width: 47mm;
+  max-height: 19mm;
+  object-fit: contain;
+  margin: 0 0 8mm auto;
 }
 
-.titulo-documento{
-    position:static;
-    transform:none;
-    margin-top:6mm;
+.titulo-documento {
+  position: static;
+  transform: none;
+  margin-top: 6mm;
 
-    text-align:center;
+  text-align: center;
 
-    font-size:17pt;
-    font-weight:500;
-    letter-spacing:.3px;
+  font-size: 17pt;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 .datos-emisor,
-.datos-receptor{
-    display:flex;
-    flex-direction:column;
-    gap:1mm;
-    line-height:1.2;
-    
+.datos-receptor {
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+  line-height: 1.2;
 }
 
-.datos-receptor{
-    margin-top:30mm;
+.datos-receptor {
+  margin-top: 30mm;
 }
 
 .datos-emisor strong,
-.datos-receptor strong{
-    margin-bottom:1mm;
-    font-size:10.5pt;
+.datos-receptor strong {
+  margin-bottom: 1mm;
+  font-size: 10.5pt;
 }
 
 /* FRANJA DE DATOS */
@@ -247,10 +246,17 @@
   height: calc(100% - 16mm);
 }
 
-.tabla-lineas tbody tr {
+.tabla-lineas tbody tr:not(.fila-relleno) {
   height: 8mm;
 }
 
+.tabla-lineas tbody tr.fila-relleno {
+  height: auto;
+}
+
+.tabla-lineas tbody tr:not(.fila-relleno) td {
+  border-bottom: 1px solid #dc776e;
+}
 .tabla-lineas tbody td {
   padding: 2mm 2mm 1mm;
   vertical-align: top;
@@ -383,8 +389,10 @@
   }
 
   :host {
+    min-height: 0;
+    height: auto;
     padding: 0;
-    background: #ffffff;
+    background: #fff;
   }
 
   .no-print {
@@ -393,11 +401,30 @@
 
   .documento-a4 {
     width: 200mm;
-    height: 287mm;
+    height: auto;
+    min-height: 0;
     margin: 0;
-    padding: 5mm 13mm 9mm;
+    padding: 5mm 13mm 7mm;
     box-shadow: none;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+  }
+
+  .tabla-contenedor {
+    height: 115mm;
+  }
+
+  .tabla-lineas {
+    height: 100%;
+  }
+
+  .tabla-lineas tbody tr.fila-relleno {
+    height: auto;
+  }
+
+  .tabla-lineas tbody tr:not(.fila-relleno),
+  .pie-documento {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

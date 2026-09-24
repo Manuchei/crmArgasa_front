@@ -309,8 +309,16 @@
   height: calc(100% - 16mm);
 }
 
-.tabla-lineas tbody tr {
+.tabla-lineas tbody tr:not(.fila-relleno) {
   height: 8mm;
+}
+
+.tabla-lineas tbody tr.fila-relleno {
+  height: auto;
+}
+
+.tabla-lineas tbody tr:not(.fila-relleno) td {
+  border-bottom: 1px solid #dc776e;
 }
 
 .tabla-lineas tbody td {
@@ -445,8 +453,10 @@
   }
 
   :host {
+    min-height: 0;
+    height: auto;
     padding: 0;
-    background: #ffffff;
+    background: #fff;
   }
 
   .no-print {
@@ -455,11 +465,30 @@
 
   .documento-a4 {
     width: 200mm;
-    height: 287mm;
+    height: auto;
+    min-height: 0;
     margin: 0;
-    padding: 5mm 13mm 9mm;
+    padding: 5mm 13mm 7mm;
     box-shadow: none;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+  }
+
+  .tabla-contenedor {
+    height: 115mm;
+  }
+
+  .tabla-lineas {
+    height: 100%;
+  }
+
+  .tabla-lineas tbody tr.fila-relleno {
+    height: auto;
+  }
+
+  .tabla-lineas tbody tr:not(.fila-relleno),
+  .pie-documento {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
