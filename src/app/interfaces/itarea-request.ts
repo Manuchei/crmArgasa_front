@@ -6,4 +6,6 @@ export interface ITareaRequest {
   fecha: string; // yyyy-MM-ddTHH:mm
   estado: EstadoTarea;
   observaciones: string;
+  nombre?: string | null;
+  direccion?: string | null;
 }

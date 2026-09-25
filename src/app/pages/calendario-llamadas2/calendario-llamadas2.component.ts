@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -9,11 +10,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-
-import { MatDialog } from '@angular/material/dialog';
-import { DialogEditarLlamadaComponent } from '../../components/dialog-editar-llamada/dialog-editar-llamada.component';
 
 import { LlamadasService } from '../../services/llamadas.service';
 import { TareasService } from '../../services/tareas.service';
@@ -64,19 +62,34 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
   nuevaLlamada: ILlamadaRequest = this.crearRequestVacio();
 
   nuevoTitulo = '';
+  nuevoNombre = '';
+  nuevaDireccion = '';
   nuevaObservacion = '';
 
   private fechasConEventos = new Set<string>();
 
-  // CONSULTA DE TAREAS REALIZADAS
   filtroNombre = '';
   filtroDireccion = '';
   filtroFecha: Date | null = null;
 
   llamadasRealizadas: ILlamada[] = [];
+  tareasRealizadas: ITarea[] = [];
+  visitasRealizadas: IVisita[] = [];
 
   buscandoRealizadas = false;
   busquedaRealizada = false;
+
+  get realizadas(): Array<ILlamada | ITarea | IVisita> {
+    if (this.tipoCalendario === 'llamadas') return this.llamadasRealizadas;
+    if (this.tipoCalendario === 'tareas') return this.tareasRealizadas;
+    return this.visitasRealizadas;
+  }
+
+  get etiquetaTipo(): string {
+    if (this.tipoCalendario === 'llamadas') return 'llamadas';
+    if (this.tipoCalendario === 'tareas') return 'tareas';
+    return 'visitas';
+  }
 
   constructor(
     private llamadasService: LlamadasService,
@@ -99,6 +112,7 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
   cambiarTipo(tipo: TipoCalendario): void {
     this.tipoCalendario = tipo;
+    this.limpiarFiltrosRealizadas();
     this.cargarDatosDia();
   }
 
@@ -117,6 +131,7 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
   private toYmd(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0');
+
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 
@@ -136,11 +151,15 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
   syncFechaHora(): void {
     if (!this.fechaNueva) {
-      if (this.selectedDate) this.fechaNueva = new Date(this.selectedDate);
-      else return;
+      if (this.selectedDate) {
+        this.fechaNueva = new Date(this.selectedDate);
+      } else {
+        return;
+      }
     }
 
     const ymd = this.toYmd(this.fechaNueva);
+
     const time =
       this.horaNueva && /^\d{2}:\d{2}$/.test(this.horaNueva)
         ? this.horaNueva
@@ -165,37 +184,40 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
     this.llamadasService.getEventosCalendario().subscribe({
       next: (eventos: IEventoCalendario[]) => {
-        for (const e of eventos) {
-          const ymd = e.start?.substring(0, 10);
+        for (const evento of eventos) {
+          const ymd = evento.start?.substring(0, 10);
           if (ymd) this.fechasConEventos.add(ymd);
         }
       },
-      error: (err) => console.error('Error cargando eventos de llamadas', err),
+      error: (err) =>
+        console.error('Error cargando eventos de llamadas', err),
     });
 
     this.tareasService.getAll().subscribe({
       next: (tareas) => {
-        tareas.forEach((t) => {
-          const ymd = t.fecha?.substring(0, 10);
+        tareas.forEach((tarea) => {
+          const ymd = tarea.fecha?.substring(0, 10);
           if (ymd) this.fechasConEventos.add(ymd);
         });
       },
-      error: (err) => console.error('Error cargando eventos de tareas', err),
+      error: (err) =>
+        console.error('Error cargando eventos de tareas', err),
     });
 
     this.visitasService.getAll().subscribe({
       next: (visitas) => {
-        visitas.forEach((v) => {
-          const ymd = v.fecha?.substring(0, 10);
+        visitas.forEach((visita) => {
+          const ymd = visita.fecha?.substring(0, 10);
           if (ymd) this.fechasConEventos.add(ymd);
         });
       },
-      error: (err) => console.error('Error cargando eventos de visitas', err),
+      error: (err) =>
+        console.error('Error cargando eventos de visitas', err),
     });
   }
 
-  dateClass = (d: Date) => {
-    const ymd = this.toYmd(d);
+  dateClass = (date: Date) => {
+    const ymd = this.toYmd(date);
     return this.fechasConEventos.has(ymd) ? 'dia-con-evento' : '';
   };
 
@@ -215,33 +237,48 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     if (!this.fechaSeleccionadaStr) return;
 
     if (this.tipoCalendario === 'llamadas') {
-      this.llamadasService.getLlamadasDia(this.fechaSeleccionadaStr).subscribe({
-        next: (llamadas) =>
-          (this.llamadasDelDia = llamadas.filter(
-            (l) => l.estado !== 'realizada' && l.estado !== 'cancelada',
-          )),
-        error: (err) => console.error('Error llamadas del día', err),
-      });
+      this.llamadasService
+        .getLlamadasDia(this.fechaSeleccionadaStr)
+        .subscribe({
+          next: (llamadas) => {
+            this.llamadasDelDia = llamadas.filter(
+              (llamada) =>
+                llamada.estado !== 'realizada' &&
+                llamada.estado !== 'cancelada',
+            );
+          },
+          error: (err) => console.error('Error llamadas del día', err),
+        });
     }
 
     if (this.tipoCalendario === 'tareas') {
-      this.tareasService.getTareasDia(this.fechaSeleccionadaStr).subscribe({
-        next: (tareas) =>
-          (this.tareasDelDia = tareas.filter(
-            (t) => t.estado !== 'realizada' && t.estado !== 'cancelada',
-          )),
-        error: (err) => console.error('Error tareas del día', err),
-      });
+      this.tareasService
+        .getTareasDia(this.fechaSeleccionadaStr)
+        .subscribe({
+          next: (tareas) => {
+            this.tareasDelDia = tareas.filter(
+              (tarea) =>
+                tarea.estado !== 'realizada' &&
+                tarea.estado !== 'cancelada',
+            );
+          },
+          error: (err) => console.error('Error tareas del día', err),
+        });
     }
 
     if (this.tipoCalendario === 'visitas') {
-      this.visitasService.getVisitasDia(this.fechaSeleccionadaStr).subscribe({
-        next: (visitas) =>
-          (this.visitasDelDia = visitas.filter(
-            (v) => v.estado !== 'realizada' && v.estado !== 'cancelada',
-          )),
-        error: (err) => console.error('Error visitas del día', err),
-      });
+      this.visitasService
+        .getVisitasDia(this.fechaSeleccionadaStr)
+        .subscribe({
+          next: (visitas) => {
+            this.visitasDelDia = visitas.filter(
+              (visita) =>
+                visita.estado !== 'realizada' &&
+                visita.estado !== 'cancelada',
+            );
+          },
+          error: (err) => console.error('Error visitas del día', err),
+        });
     }
   }
 
@@ -262,6 +299,8 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
         .crearTarea({
           empresa: 'ARGASA',
           titulo: this.nuevoTitulo,
+          nombre: this.nuevoNombre,
+          direccion: this.nuevaDireccion,
           fecha,
           estado: 'pendiente',
           observaciones: this.nuevaObservacion || '',
@@ -277,6 +316,8 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
         .crearVisita({
           empresa: 'ARGASA',
           titulo: this.nuevoTitulo,
+          nombre: this.nuevoNombre,
+          direccion: this.nuevaDireccion,
           fecha,
           estado: 'pendiente',
           observaciones: this.nuevaObservacion || '',
@@ -295,12 +336,15 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     this.syncFechaHora();
     if (!this.nuevaLlamada.fecha?.trim()) return;
 
-    this.nuevaLlamada.fecha = this.nuevaLlamada.fecha.substring(0, 16);
+    this.nuevaLlamada.fecha =
+      this.nuevaLlamada.fecha.substring(0, 16);
 
-    this.llamadasService.crearLlamada(this.nuevaLlamada).subscribe({
-      next: () => this.resetFormulario(),
-      error: (err) => console.error('Error guardando llamada', err),
-    });
+    this.llamadasService
+      .crearLlamada(this.nuevaLlamada)
+      .subscribe({
+        next: () => this.resetFormulario(),
+        error: (err) => console.error('Error guardando llamada', err),
+      });
   }
 
   private resetFormulario(): void {
@@ -309,25 +353,27 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
 
     const ymd = this.fechaSeleccionadaStr!;
 
-    this.nuevaLlamada = this.crearRequestLlamadaVacio();
+    this.nuevaLlamada = this.crearRequestVacio();
     this.nuevoTitulo = '';
+    this.nuevoNombre = '';
+    this.nuevaDireccion = '';
     this.nuevaObservacion = '';
 
     this.preCargarHoraDefault(ymd);
   }
-  crearRequestLlamadaVacio(): ILlamadaRequest {
-    throw new Error('Method not implemented.');
-  }
 
-  trackByLlamadaId(_: number, item: ILlamada) {
+  trackByLlamadaId(
+    _: number,
+    item: ILlamada | ITarea | IVisita,
+  ): number {
     return item.id;
   }
 
-  trackByTareaId(_: number, item: ITarea) {
+  trackByTareaId(_: number, item: ITarea): number {
     return item.id;
   }
 
-  trackByVisitaId(_: number, item: IVisita) {
+  trackByVisitaId(_: number, item: IVisita): number {
     return item.id;
   }
 
@@ -335,8 +381,10 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
     llamada: ILlamada,
     estado: 'pendiente' | 'en_progreso' | 'realizada' | 'cancelada',
   ): void {
-    const body = {
+    const body: ILlamadaRequest = {
       empresa: '',
+      nombre: llamada.nombre || '',
+      direccion: llamada.direccion || '',
       motivo: llamada.motivo,
       fecha: llamada.fecha.substring(0, 16),
       estado,
@@ -344,13 +392,16 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
       clienteId: llamada.clienteId ?? null,
     };
 
-    this.llamadasService.actualizarLlamada(llamada.id, body).subscribe({
-      next: () => {
-        this.cargarDatosDia();
-        this.cargarFechasConEventos();
-      },
-      error: (err) => console.error('Error cambiando estado llamada', err),
-    });
+    this.llamadasService
+      .actualizarLlamada(llamada.id, body)
+      .subscribe({
+        next: () => {
+          this.cargarDatosDia();
+          this.cargarFechasConEventos();
+        },
+        error: (err) =>
+          console.error('Error cambiando estado llamada', err),
+      });
   }
 
   cambiarEstadoTarea(
@@ -361,6 +412,8 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
       .actualizarTarea(tarea.id, {
         empresa: '',
         titulo: tarea.titulo,
+        nombre: tarea.nombre || '',
+        direccion: tarea.direccion || '',
         fecha: tarea.fecha.substring(0, 16),
         estado,
         observaciones: tarea.observaciones || '',
@@ -370,7 +423,8 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
           this.cargarDatosDia();
           this.cargarFechasConEventos();
         },
-        error: (err) => console.error('Error cambiando estado tarea', err),
+        error: (err) =>
+          console.error('Error cambiando estado tarea', err),
       });
   }
 
@@ -382,6 +436,8 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
       .actualizarVisita(visita.id, {
         empresa: '',
         titulo: visita.titulo,
+        nombre: visita.nombre || '',
+        direccion: visita.direccion || '',
         fecha: visita.fecha.substring(0, 16),
         estado,
         observaciones: visita.observaciones || '',
@@ -391,19 +447,23 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
           this.cargarDatosDia();
           this.cargarFechasConEventos();
         },
-        error: (err) => console.error('Error cambiando estado visita', err),
+        error: (err) =>
+          console.error('Error cambiando estado visita', err),
       });
   }
 
-  editar(l: ILlamada): void {
-    const dialogRef = this.dialog.open(DialogEditarCalendarioComponent, {
-      width: '520px',
-      maxWidth: '95vw',
-      data: {
-        tipo: 'llamadas',
-        item: l,
+  editar(llamada: ILlamada): void {
+    const dialogRef = this.dialog.open(
+      DialogEditarCalendarioComponent,
+      {
+        width: '520px',
+        maxWidth: '95vw',
+        data: {
+          tipo: 'llamadas',
+          item: llamada,
+        },
       },
-    });
+    );
 
     dialogRef.afterClosed().subscribe((result: any | null) => {
       if (!result) return;
@@ -411,6 +471,8 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
       this.llamadasService
         .actualizarLlamada(result.id, {
           empresa: '',
+          nombre: result.nombre || '',
+          direccion: result.direccion || '',
           motivo: result.motivo,
           fecha: result.fecha.substring(0, 16),
           estado: result.estado,
@@ -422,20 +484,24 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
             this.cargarDatosDia();
             this.cargarFechasConEventos();
           },
-          error: (err) => console.error('Error actualizando llamada', err),
+          error: (err) =>
+            console.error('Error actualizando llamada', err),
         });
     });
   }
 
-  editarTarea(t: ITarea): void {
-    const dialogRef = this.dialog.open(DialogEditarCalendarioComponent, {
-      width: '520px',
-      maxWidth: '95vw',
-      data: {
-        tipo: 'tareas',
-        item: t,
+  editarTarea(tarea: ITarea): void {
+    const dialogRef = this.dialog.open(
+      DialogEditarCalendarioComponent,
+      {
+        width: '520px',
+        maxWidth: '95vw',
+        data: {
+          tipo: 'tareas',
+          item: tarea,
+        },
       },
-    });
+    );
 
     dialogRef.afterClosed().subscribe((result: any | null) => {
       if (!result) return;
@@ -444,6 +510,8 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
         .actualizarTarea(result.id, {
           empresa: '',
           titulo: result.titulo,
+          nombre: result.nombre || '',
+          direccion: result.direccion || '',
           fecha: result.fecha.substring(0, 16),
           estado: result.estado,
           observaciones: result.observaciones || '',
@@ -453,20 +521,24 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
             this.cargarDatosDia();
             this.cargarFechasConEventos();
           },
-          error: (err) => console.error('Error actualizando tarea', err),
+          error: (err) =>
+            console.error('Error actualizando tarea', err),
         });
     });
   }
 
-  editarVisita(v: IVisita): void {
-    const dialogRef = this.dialog.open(DialogEditarCalendarioComponent, {
-      width: '520px',
-      maxWidth: '95vw',
-      data: {
-        tipo: 'visitas',
-        item: v,
+  editarVisita(visita: IVisita): void {
+    const dialogRef = this.dialog.open(
+      DialogEditarCalendarioComponent,
+      {
+        width: '520px',
+        maxWidth: '95vw',
+        data: {
+          tipo: 'visitas',
+          item: visita,
+        },
       },
-    });
+    );
 
     dialogRef.afterClosed().subscribe((result: any | null) => {
       if (!result) return;
@@ -475,6 +547,8 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
         .actualizarVisita(result.id, {
           empresa: '',
           titulo: result.titulo,
+          nombre: result.nombre || '',
+          direccion: result.direccion || '',
           fecha: result.fecha.substring(0, 16),
           estado: result.estado,
           observaciones: result.observaciones || '',
@@ -484,91 +558,122 @@ export class CalendarioLlamadas2Component implements AfterViewInit {
             this.cargarDatosDia();
             this.cargarFechasConEventos();
           },
-          error: (err) => console.error('Error actualizando visita', err),
+          error: (err) =>
+            console.error('Error actualizando visita', err),
         });
     });
   }
 
-  toggleEstadoLlamada(l: ILlamada): void {
+  toggleEstadoLlamada(llamada: ILlamada): void {
     const nuevoEstado =
-      l.estado === 'pendiente'
+      llamada.estado === 'pendiente'
         ? 'en_progreso'
-        : l.estado === 'en_progreso'
+        : llamada.estado === 'en_progreso'
           ? 'realizada'
-          : l.estado;
+          : llamada.estado;
 
-    if (nuevoEstado === l.estado) return;
+    if (nuevoEstado === llamada.estado) return;
 
-    this.cambiarEstadoLlamada(l, nuevoEstado);
+    this.cambiarEstadoLlamada(llamada, nuevoEstado);
   }
 
-  toggleEstadoTarea(t: ITarea): void {
+  toggleEstadoTarea(tarea: ITarea): void {
     const nuevoEstado =
-      t.estado === 'pendiente'
+      tarea.estado === 'pendiente'
         ? 'en_progreso'
-        : t.estado === 'en_progreso'
+        : tarea.estado === 'en_progreso'
           ? 'realizada'
-          : t.estado;
+          : tarea.estado;
 
-    if (nuevoEstado === t.estado) return;
+    if (nuevoEstado === tarea.estado) return;
 
-    this.cambiarEstadoTarea(t, nuevoEstado);
+    this.cambiarEstadoTarea(tarea, nuevoEstado);
   }
 
-  toggleEstadoVisita(v: IVisita): void {
+  toggleEstadoVisita(visita: IVisita): void {
     const nuevoEstado =
-      v.estado === 'pendiente'
+      visita.estado === 'pendiente'
         ? 'en_progreso'
-        : v.estado === 'en_progreso'
+        : visita.estado === 'en_progreso'
           ? 'realizada'
-          : v.estado;
+          : visita.estado;
 
-    if (nuevoEstado === v.estado) return;
+    if (nuevoEstado === visita.estado) return;
 
-    this.cambiarEstadoVisita(v, nuevoEstado);
+    this.cambiarEstadoVisita(visita, nuevoEstado);
   }
 
   esPasada(fecha: string): boolean {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
 
-    const f = new Date(fecha);
-    f.setHours(0, 0, 0, 0);
+    const fechaElemento = new Date(fecha);
+    fechaElemento.setHours(0, 0, 0, 0);
 
-    return f < hoy;
+    return fechaElemento < hoy;
   }
 
   buscarRealizadas(): void {
-    let fecha: string | undefined;
-
-    if (this.filtroFecha) {
-      fecha = this.toYmd(this.filtroFecha);
-    }
+    const fecha = this.filtroFecha
+      ? this.toYmd(this.filtroFecha)
+      : undefined;
 
     this.buscandoRealizadas = true;
     this.busquedaRealizada = false;
 
-    this.llamadasService
-      .getLlamadasRealizadas(this.filtroNombre, fecha, this.filtroDireccion)
-      .subscribe({
-        next: (llamadas) => {
-          this.llamadasRealizadas = llamadas;
-          this.buscandoRealizadas = false;
-          this.busquedaRealizada = true;
-        },
-        error: (err) => {
-          console.error('Error buscando llamadas realizadas', err);
-          this.llamadasRealizadas = [];
-          this.buscandoRealizadas = false;
-          this.busquedaRealizada = true;
-        },
-      });
+    const tipoBuscado = this.tipoCalendario;
+
+    const consulta: Observable<
+      ILlamada[] | ITarea[] | IVisita[]
+    > =
+      tipoBuscado === 'llamadas'
+        ? this.llamadasService.getLlamadasRealizadas(
+            this.filtroNombre,
+            fecha,
+            this.filtroDireccion,
+          )
+        : tipoBuscado === 'tareas'
+          ? this.tareasService.getRealizadas(
+              this.filtroNombre,
+              fecha,
+              this.filtroDireccion,
+            )
+          : this.visitasService.getRealizadas(
+              this.filtroNombre,
+              fecha,
+              this.filtroDireccion,
+            );
+
+    consulta.subscribe({
+      next: (resultados) => {
+        if (tipoBuscado === 'llamadas') {
+          this.llamadasRealizadas = resultados as ILlamada[];
+        } else if (tipoBuscado === 'tareas') {
+          this.tareasRealizadas = resultados as ITarea[];
+        } else {
+          this.visitasRealizadas = resultados as IVisita[];
+        }
+
+        this.buscandoRealizadas = false;
+        this.busquedaRealizada = true;
+      },
+      error: (err) => {
+        console.error('Error buscando elementos realizados', err);
+        this.buscandoRealizadas = false;
+        this.busquedaRealizada = true;
+      },
+    });
   }
+
   limpiarFiltrosRealizadas(): void {
     this.filtroNombre = '';
     this.filtroDireccion = '';
     this.filtroFecha = null;
+
     this.llamadasRealizadas = [];
+    this.tareasRealizadas = [];
+    this.visitasRealizadas = [];
+
     this.busquedaRealizada = false;
   }
 }

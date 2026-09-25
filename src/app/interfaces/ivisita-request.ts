@@ -6,4 +6,6 @@ export interface IVisitaRequest {
   fecha: string; // yyyy-MM-ddTHH:mm
   estado: EstadoVisita;
   observaciones: string;
+  nombre?: string | null;
+  direccion?: string | null;
 }

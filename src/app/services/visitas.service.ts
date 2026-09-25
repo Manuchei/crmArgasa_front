@@ -57,4 +57,18 @@ export class VisitasService {
 
     return this.http.delete<void>(`${this.baseUrl}/${id}`, { params });
   }
+
+  getRealizadas(
+    nombre?: string,
+    fecha?: string,
+    direccion?: string,
+  ): Observable<IVisita[]> {
+    let params = new HttpParams().set('empresa', this.getEmpresaActual());
+
+    if (nombre?.trim()) params = params.set('nombre', nombre.trim());
+    if (fecha) params = params.set('fecha', fecha);
+    if (direccion?.trim()) params = params.set('direccion', direccion.trim());
+
+    return this.http.get<IVisita[]>(`${this.baseUrl}/realizadas`, { params });
+  }
 }

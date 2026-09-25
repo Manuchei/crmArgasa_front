@@ -11,4 +11,6 @@ export interface ITarea {
   fecha: string;
   estado: EstadoTarea;
   observaciones?: string | null;
+  nombre?: string | null;
+  direccion?: string | null;
 }

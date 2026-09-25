@@ -186,12 +186,24 @@
   background: transparent;
 }
 
-.tabla-lineas col.col-cantidad { width: 11%; }
-.tabla-lineas col.col-codigo { width: 16%; }
-.tabla-lineas col.col-articulo { width: 38%; }
-.tabla-lineas col.col-precio { width: 10%; }
-.tabla-lineas col.col-iva { width: 9%; }
-.tabla-lineas col.col-subtotal { width: 16%; }
+.tabla-lineas col.col-cantidad {
+  width: 11%;
+}
+.tabla-lineas col.col-codigo {
+  width: 16%;
+}
+.tabla-lineas col.col-articulo {
+  width: 38%;
+}
+.tabla-lineas col.col-precio {
+  width: 10%;
+}
+.tabla-lineas col.col-iva {
+  width: 9%;
+}
+.tabla-lineas col.col-subtotal {
+  width: 16%;
+}
 
 .tabla-lineas th,
 .tabla-lineas td {
@@ -214,8 +226,6 @@
   vertical-align: middle;
   font-size: 10pt;
 }
-
-
 
 .tabla-lineas tbody td {
   padding: 2mm 2mm 1mm;
@@ -297,7 +307,7 @@
 }
 
 /* LOGÍSTICA */
- .datos-logisticos {
+.datos-logisticos {
   display: grid;
   grid-template-columns: 21% 29% 10% 10%;
   column-gap: 7mm;
@@ -326,10 +336,9 @@
   font-size: 7.2pt;
   line-height: 1.1;
 
-    page-break-inside: avoid;
-    break-inside: avoid;
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
-
 
 .pie-superior {
   display: flex;
@@ -370,7 +379,6 @@
     -webkit-print-color-adjust: exact;
   }
 
-
   .datos-logisticos,
   .pie-documento,
   .resumen-totales {
@@ -381,9 +389,7 @@
     break-after: auto;
     page-break-after: auto;
   }
-
 }
-
 
 .logo-empresa {
   display: block;
@@ -394,7 +400,9 @@
   margin-bottom: 6mm;
 }
 
-.tabla-lineas col.col-descuento { width: 9%; }
+.tabla-lineas col.col-descuento {
+  width: 9%;
+}
 
 .resumen-totales {
   grid-template-columns: 1fr 1fr 1.15fr;
@@ -425,4 +433,92 @@
 .observaciones p {
   margin: 2mm 0 0;
   white-space: pre-line;
+}
+
+.tabla-contenedor {
+  min-height: 120mm;
+  overflow: visible;
+}
+
+.tabla-lineas {
+  height: 120mm;
+}
+
+.tabla-lineas tbody tr:not(.fila-relleno) {
+  height: 8mm;
+}
+
+.tabla-lineas tbody tr.fila-relleno {
+  height: auto;
+}
+
+.tabla-lineas tbody tr:not(.fila-relleno) td {
+  border-bottom: 1px solid #dc776e;
+}
+
+.tabla-lineas tbody tr.fila-relleno td {
+  padding: 0;
+  border-right: 0;
+}
+
+.resumen-totales {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-height: 0;
+}
+
+.resumen-totales > .caja-total:nth-child(-n + 3) {
+  min-height: 17mm;
+  border-bottom: 1px solid #dc776e;
+}
+
+.resumen-totales > .caja-total:nth-child(3) {
+  border-right: 0;
+}
+
+.resumen-totales > .total-documento {
+  grid-column: 3;
+  min-height: 17mm;
+  border-left: 1px solid #dc776e;
+  border-right: 0;
+}
+
+@media print {
+  :host {
+    min-height: 0;
+  }
+
+  .documento-a4 {
+    min-height: 0;
+  }
+
+  .tabla-lineas col.col-cantidad {
+    width: 11%;
+  }
+  .tabla-lineas col.col-codigo {
+    width: 16%;
+  }
+  .tabla-lineas col.col-articulo {
+    width: 31%;
+  }
+  .tabla-lineas col.col-precio {
+    width: 10%;
+  }
+  .tabla-lineas col.col-descuento {
+    width: 7%;
+  }
+  .tabla-lineas col.col-iva {
+    width: 9%;
+  }
+  .tabla-lineas col.col-subtotal {
+    width: 16%;
+  }
+
+  .tabla-lineas tfoot tr {
+    border-top: 1px solid #dc776e;
+  }
+
+  .tabla-lineas tfoot td {
+  padding: 2mm;
+  vertical-align: middle;
+}
 }

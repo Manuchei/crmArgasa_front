@@ -11,4 +11,6 @@ export interface IVisita {
   fecha: string;
   estado: EstadoVisita;
   observaciones?: string | null;
+  nombre?: string | null;
+  direccion?: string | null;
 }

@@ -119,13 +119,13 @@ export class ImprimirFacturaProveedorComponent implements OnInit {
     return !!this.factura?.albaranProveedor || !!this.factura?.numeroInterno;
   }
 
-getEmisorVisualFactura(): any {
-  const emp = String(this.factura?.empresa || '')
-    .trim()
-    .toLowerCase();
+  getEmisorVisualFactura(): any {
+    const emp = String(this.factura?.empresa || '')
+      .trim()
+      .toLowerCase();
 
-  return EMPRESAS[emp as keyof typeof EMPRESAS] || null;
-}
+    return EMPRESAS[emp as keyof typeof EMPRESAS] || null;
+  }
 
   getNumeroDocumento(): string {
     if (!this.factura) return '';
@@ -276,11 +276,11 @@ getEmisorVisualFactura(): any {
   }
 
   getSubtotalLinea(linea: any): number {
-    if (this.esFacturaProveedor()) {
-      return Number(linea?.baseLinea ?? linea?.subtotal ?? 0);
+    if (this.esFacturaProveedor() && linea?.baseLinea != null) {
+      return Number(linea?.totalLinea ?? 0);
     }
 
-    return Number(linea?.subtotal || 0);
+    return Number(linea?.subtotal ?? 0);
   }
 
   getIvaLinea(linea: any): string {
@@ -322,5 +322,24 @@ getEmisorVisualFactura(): any {
     }
 
     return Number(this.factura?.total || 0);
+  }
+
+  getDescuentoTotal(): number {
+    return this.getLineasDocumento().reduce((total, linea) => {
+      const cantidad = this.getCantidadLinea(linea);
+      const precio = this.getPrecioLinea(linea);
+      const bruto = cantidad * precio;
+
+      const descuento =
+        linea?.descuentoImporte != null
+          ? Number(linea.descuentoImporte)
+          : (bruto * Number(linea?.dtoPct ?? linea?.descuentoPct ?? 0)) / 100;
+
+      return total + descuento;
+    }, 0);
+  }
+
+  getDescuentoLinea(linea: any): number {
+    return Number(linea?.dtoPct ?? linea?.descuentoPct ?? 0);
   }
 }

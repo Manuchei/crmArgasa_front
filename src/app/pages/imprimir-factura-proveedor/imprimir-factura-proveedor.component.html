@@ -83,6 +83,8 @@
           <col class="col-codigo" />
           <col class="col-articulo" />
           <col class="col-precio" />
+          <!-- En <colgroup>, después de col-precio -->
+          <col class="col-descuento" />
           <col class="col-iva" />
           <col class="col-subtotal" />
         </colgroup>
@@ -93,6 +95,8 @@
             <th>Código</th>
             <th>Artículo</th>
             <th>Precio</th>
+            <!-- En <thead>, después de <th>Precio</th> -->
+            <th>Dto %</th>
             <th>IVA</th>
             <th>Subtotal</th>
           </tr>
@@ -104,8 +108,14 @@
             <td>{{ linea?.codigo || linea?.codigoArticulo || linea?.referencia || '' }}</td>
             <td class="articulo">{{ linea?.descripcion || linea?.articulo || linea?.nombre || '' }}</td>
             <td class="numero">{{ getPrecioLinea(linea) | number:'1.3-3' }}</td>
+            <!-- En el *ngFor, después de la celda de Precio -->
+            <td class="numero">{{ getDescuentoLinea(linea) | number:'1.0-2' }}</td>
             <td class="numero">{{ (linea?.ivaPct ?? 21) | number:'1.2-2' }}</td>
             <td class="numero">{{ getSubtotalLinea(linea) | number:'1.3-3' }}</td>
+          </tr>
+
+          <tr class="fila-relleno" *ngIf="getLineasDocumento().length > 0">
+            <td colspan="6"></td>
           </tr>
 
           <tr *ngIf="getLineasDocumento().length === 0">
@@ -114,14 +124,22 @@
         </tbody>
 
         <tfoot>
-          <tr>
-            <td class="numero total-unidades">{{ getLineasDocumento().length ? (getLineasDocumento().length |
-              number:'1.3-3') : '' }}</td>
-            <td colspan="3"></td>
-            <td class="etiqueta-subtotal">Subtotal</td>
-            <td class="numero">{{ getBaseImponible() | number:'1.3-3' }}</td>
-          </tr>
-        </tfoot>
+  <tr>
+    <td class="numero total-unidades">
+      {{ getLineasDocumento().length
+        ? (getLineasDocumento().length | number:'1.3-3')
+        : '' }}
+    </td>
+
+    <td colspan="3"></td>
+
+    <td colspan="2" class="etiqueta-subtotal">Subtotal</td>
+
+    <td class="numero">
+      {{ getBaseImponible() | number:'1.3-3' }}
+    </td>
+  </tr>
+</tfoot>
       </table>
     </section>
 
@@ -129,7 +147,7 @@
     <section class="resumen-totales">
       <div class="caja-total caja-descuento">
         <strong>Descuento</strong>
-        <span>{{ factura?.descuentoPct || 0 | number:'1.2-2' }} %</span>
+        <span>{{ getDescuentoTotal() | number:'1.2-2' }} €</span>
       </div>
 
 
