@@ -1,115 +1,196 @@
 <div class="proveedores-page">
   <div class="proveedores-shell">
-    <h2 class="page-title">Listado de proveedores</h2>
 
-    <div class="card p-3 mb-4 filtros-card">
-      <div class="row g-3">
-        <div class="col-12 col-md-6 col-xl-4">
-          <label class="form-label">Buscar por nombre</label>
-          <input type="text" class="form-control" [(ngModel)]="filtros.texto" (input)="filtrar()" />
-        </div>
-
-        <div class="col-12 col-md-6 col-xl-4">
-          <label class="form-label">Empresa</label>
-          <select class="form-control" [(ngModel)]="filtros.empresa" (change)="filtrar()">
-            <option value="">Todas</option>
-            <option value="argasa">Argasa</option>
-            <option value="luga">Electroluga</option>
-          </select>
-        </div>
-
-        <div class="col-12 col-md-6 col-xl-4">
-          <label class="form-label">Oficio</label>
-          <select class="form-control" [(ngModel)]="filtros.oficio" (change)="filtrar()">
-            <option value="">Todos</option>
-            <option value="electricista">Electricista</option>
-            <option value="fontanero">Fontanero</option>
-            <option value="pintor">Pintor</option>
-            <option value="albañil">Albañil</option>
-            <option value="programador">Programador</option>
-          </select>
-        </div>
+    <header class="proveedores-header">
+      <div>
+        <span class="page-eyebrow">NOVEXAPP / GESTIÓN COMERCIAL</span>
+        <h1>Proveedores</h1>
+        <p>Consulta proveedores, compras y pagos pendientes.</p>
       </div>
 
-      <div class="mt-3 text-end filtros-actions">
-        <button class="btn btn-secondary btn-sm" (click)="limpiarFiltros()">
-          Limpiar filtros
-        </button>
-      </div>
-    </div>
-
-    <div class="top-actions-row">
-      <a routerLink="/app/proveedores/nuevo" class="btn btn-success nuevo-proveedor-btn">
-        + Nuevo proveedor
+      <a routerLink="/app/proveedores/nuevo" class="nuevo-proveedor-btn">
+        <span aria-hidden="true">＋</span>
+        Nuevo proveedor
       </a>
+    </header>
+
+    <div class="resumen-grid">
+      <div class="resumen-card">
+        <span>Proveedores</span>
+        <strong>{{ proveedores.length }}</strong>
+        <small>Según los filtros de búsqueda</small>
+      </div>
+
+      <div class="resumen-card resumen-pendiente">
+        <span>Con saldo pendiente</span>
+        <strong>{{ proveedoresConSaldo }}</strong>
+        <small>Pendiente de pago</small>
+      </div>
+
+      <div class="resumen-card resumen-aldia">
+        <span>Al día</span>
+        <strong>{{ proveedoresAlDia }}</strong>
+        <small>Sin saldo pendiente</small>
+      </div>
     </div>
 
-    <div class="alert alert-info mt-2 resumen-alerta">
-      <div><b>Total compra:</b> {{ totalCompras | number:'1.2-2' }} €</div>
-      <div><b class="text-success">Total pagado:</b> {{ totalPagado | number:'1.2-2' }} €</div>
-      <div><b class="text-danger">Pendiente de pago:</b> {{ totalPendientePago | number:'1.2-2' }} €</div>
-    </div>
+    <section class="listado-card" aria-labelledby="proveedores-titulo">
+      <div class="listado-header">
+        <span class="page-eyebrow">DIRECTORIO</span>
+        <h2 id="proveedores-titulo">Listado de proveedores</h2>
+        <p>
+          {{ proveedoresVisibles.length }}
+          {{ proveedoresVisibles.length === 1 ? 'resultado' : 'resultados' }}
+        </p>
+      </div>
 
-    <div class="table-card">
+      <div class="filtros-bar">
+        <div class="saldo-tabs" aria-label="Filtrar por saldo">
+          <button type="button" [class.active]="filtroSaldo === 'todos'" [attr.aria-pressed]="filtroSaldo === 'todos'"
+            (click)="filtroSaldo = 'todos'">
+            Todos
+          </button>
+
+          <button type="button" [class.active]="filtroSaldo === 'pendientes'"
+            [attr.aria-pressed]="filtroSaldo === 'pendientes'" (click)="filtroSaldo = 'pendientes'">
+            Con saldo
+          </button>
+
+          <button type="button" [class.active]="filtroSaldo === 'aldia'" [attr.aria-pressed]="filtroSaldo === 'aldia'"
+            (click)="filtroSaldo = 'aldia'">
+            Al día
+          </button>
+        </div>
+
+        <div class="filtros-campos">
+          <label class="filtro-busqueda">
+            <span class="visually-hidden">Buscar proveedor</span>
+            <input type="search" class="form-control" placeholder="Buscar proveedor, contacto o CIF"
+              [(ngModel)]="filtros.texto" (input)="filtrar()" />
+          </label>
+
+          <label>
+            <span class="visually-hidden">Filtrar por oficio</span>
+            <select class="form-select" [(ngModel)]="filtros.oficio" (change)="filtrar()">
+              <option value="">Todos los oficios</option>
+              <option value="electricista">Electricista</option>
+              <option value="fontanero">Fontanero</option>
+              <option value="pintor">Pintor</option>
+              <option value="albañil">Albañil</option>
+              <option value="programador">Programador</option>
+            </select>
+          </label>
+
+          <button type="button" class="limpiar-btn" (click)="limpiarFiltros()">
+            Limpiar
+          </button>
+        </div>
+      </div>
+
+      <div class="importes-bar">
+        <div>
+          <span>Total compra</span>
+          <strong>{{ comprasVisibles | number:'1.2-2' }} €</strong>
+        </div>
+
+        <div>
+          <span>Total pagado</span>
+          <strong>{{ pagadoVisible | number:'1.2-2' }} €</strong>
+        </div>
+
+        <div>
+          <span>Pendiente de pago</span>
+          <strong class="importe-pendiente">
+            {{ pendienteVisible | number:'1.2-2' }} €
+          </strong>
+        </div>
+      </div>
+
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 proveedores-table">
-          <thead class="table-dark">
+        <table class="table proveedores-table mb-0">
+          <thead>
             <tr>
-              <th>Proveedor</th>
-              <th>Oficio</th>
-              <th>Empresa</th>
-              <th>Teléfono</th>
-              <th class="text-end">Total compra (€)</th>
-              <th class="text-end">Total pagado (€)</th>
-              <th class="text-end">Pendiente (€)</th>
-              <th>Acciones</th>
+              <th scope="col">Proveedor</th>
+              <th scope="col">Oficio</th>
+              <th scope="col">Contacto</th>
+              <th scope="col" class="importe-col">Compra</th>
+              <th scope="col" class="importe-col">Pagado</th>
+              <th scope="col" class="importe-col">Pendiente</th>
+              <th scope="col" class="acciones-col">Acciones</th>
             </tr>
           </thead>
 
           <tbody>
-            <tr *ngFor="let p of proveedores" (click)="verProveedor(p.id!)" class="fila-clickable">
-              <td class="col-proveedor">{{ getNombreCompleto(p) || '-' }}</td>
-              <td>{{ p.oficio || '-' }}</td>
-              <td>{{ getEmpresaLabel(p) }}</td>
-              <td>{{ p.telefono || '-' }}</td>
+            <tr *ngFor="let p of proveedoresVisibles">
+              <td>
+                <div class="proveedor-identidad">
+                  <span class="proveedor-avatar" aria-hidden="true">
+                    {{ (getNombreCompleto(p) || '?').charAt(0).toUpperCase() }}
+                  </span>
 
-              <td class="text-end">
-                {{ (p.importeTotal || 0) | number:'1.2-2' }}
+                  <button type="button" class="proveedor-nombre" (click)="verProveedor(p.id!)">
+                    {{ getNombreCompleto(p) || 'Sin nombre' }}
+                  </button>
+                </div>
               </td>
 
-              <td class="text-end text-success">
-                {{ (p.importePagado || 0) | number:'1.2-2' }}
+              <td>{{ p.oficio || '—' }}</td>
+
+              <td>
+                <div class="contacto">
+                  <span>{{ p.telefono || '—' }}</span>
+                  <small>{{ p.email || 'Sin email' }}</small>
+                </div>
               </td>
 
-              <td class="text-end" [ngClass]="(p.importePendiente || 0) > 0 ? 'text-danger' : 'text-success'">
-                {{ (p.importePendiente || 0) | number:'1.2-2' }}
+              <td class="importe-col">
+                {{ (p.importeTotal || 0) | number:'1.2-2' }} €
               </td>
 
-              <td class="acciones-col" (click)="$event.stopPropagation()">
+              <td class="importe-col">
+                {{ (p.importePagado || 0) | number:'1.2-2' }} €
+              </td>
+
+              <td class="importe-col">
+                <span class="saldo-badge" [class.saldo-pendiente]="(p.importePendiente || 0) > 0.009"
+                  [class.saldo-aldia]="(p.importePendiente || 0) <= 0.009">
+                  {{ (p.importePendiente || 0) | number:'1.2-2' }} €
+                </span>
+              </td>
+
+              <td class="acciones-col">
                 <div class="acciones-wrap">
-                  <button class="btn btn-outline-primary btn-sm" (click)="verProveedor(p.id!)">
-                    Ver
+                  <button type="button" class="ver-proveedor" (click)="verProveedor(p.id!)">
+                    Ver ficha
                   </button>
 
-                  <button class="btn btn-outline-warning btn-sm" (click)="editarProveedor(p.id!)">
-                    Editar
+                  <button type="button" class="accion-icono" [attr.aria-label]="'Editar ' + getNombreCompleto(p)"
+                    title="Editar proveedor" (click)="editarProveedor(p.id!)">
+                    ✎
                   </button>
 
-                  <button class="btn btn-outline-danger btn-sm" (click)="eliminarProveedor(p.id!)">
-                    Borrar
+                  <button type="button" class="accion-icono accion-eliminar"
+                    [attr.aria-label]="'Eliminar ' + getNombreCompleto(p)" title="Eliminar proveedor"
+                    (click)="eliminarProveedor(p.id!)">
+                    ×
                   </button>
                 </div>
               </td>
             </tr>
 
-            <tr *ngIf="proveedores.length === 0">
-              <td colspan="8" class="text-center text-muted py-4">
-                No hay proveedores para mostrar.
+            <tr *ngIf="proveedoresVisibles.length === 0">
+              <td colspan="7">
+                <div class="empty-state">
+                  <span aria-hidden="true">⌕</span>
+                  <strong>No se encontraron proveedores</strong>
+                  <p>Prueba con otra búsqueda o cambia los filtros.</p>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
+
   </div>
 </div>

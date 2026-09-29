@@ -1,8 +1,14 @@
 /* You can add global styles to this file, and also import other style files */
-@import 'bootstrap/dist/css/bootstrap.min.css';
+@import "bootstrap/dist/css/bootstrap.min.css";
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
 /* =========================
    VARIABLES BASE
@@ -18,7 +24,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 ========================= */
 
 body.tema-argasa {
-  --color-primario: #c62828;   /* rojo fuerte */
+  --color-primario: #c62828; /* rojo fuerte */
   --color-secundario: #ef5350; /* rojo claro */
 }
 
@@ -27,7 +33,7 @@ body.tema-argasa {
 ========================= */
 
 body.tema-electroluga {
-  --color-primario: #1565c0;   /* azul fuerte */
+  --color-primario: #1565c0; /* azul fuerte */
   --color-secundario: #42a5f5; /* azul claro */
 }
 
@@ -57,7 +63,6 @@ body.tema-electroluga {
    IMPRESIÓN – OCULTAR LAYOUT
    =============================== */
 @media print {
-
   /* Oculta headers y navbars globales */
   header,
   nav,
@@ -93,5 +98,58 @@ body.tema-electroluga {
     margin: 0 auto !important;
   }
 }
+@media screen {
+  :root {
+    --ink: #17243b;
+    --muted: #68778b;
+    --line: #e4e9f1;
+    --canvas: #f5f7fb;
+  }
 
+  body {
+    color: var(--ink);
+    background: var(--canvas);
+    font-family: Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
 
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(23, 36, 59, 0.04);
+  }
+
+  .card-header {
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    padding: 1rem 1.25rem;
+  }
+
+  .btn {
+    border-radius: 9px;
+    font-weight: 600;
+  }
+
+  .form-control,
+  .form-select {
+    border-color: #d8e0ea;
+    border-radius: 9px;
+  }
+
+  .table thead th {
+    background: #f8fafd;
+    color: #64748b;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .table tbody td {
+    border-color: #edf0f5;
+  }
+
+  .table tbody tr:hover {
+    background: #f8fafd;
+  }
+}

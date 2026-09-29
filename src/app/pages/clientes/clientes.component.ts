@@ -19,41 +19,93 @@ export class ClientesComponent implements OnInit {
   clientes: any[] = [];
   clientesFiltrados: any[] = [];
 
-  textoBusqueda: string = '';
-
+  textoBusqueda = '';
+  filtroSaldo: 'todos' | 'pendientes' | 'aldia' = 'todos';
   generandoFacturaId: number | null = null;
 
   constructor(
     private clienteService: ClientesService,
     private facturasService: FacturasClientesService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.cargarClientes();
   }
 
+  get totalClientes(): number {
+    return this.clientes.length;
+  }
+
+  get clientesConSaldo(): number {
+    return this.clientes.filter((cliente) => this.saldoCliente(cliente) > 0.009)
+      .length;
+  }
+
+  get clientesAlDia(): number {
+    return this.clientes.filter(
+      (cliente) => this.saldoCliente(cliente) <= 0.009,
+    ).length;
+  }
+
+  get importeVisible(): number {
+    return this.clientesFiltrados.reduce(
+      (total, cliente) => total + Number(cliente.totalImporte ?? 0),
+      0,
+    );
+  }
+
+  get cobradoVisible(): number {
+    return this.clientesFiltrados.reduce(
+      (total, cliente) => total + Number(cliente.totalPagado ?? 0),
+      0,
+    );
+  }
+
+  get pendienteCobroVisible(): number {
+    return this.clientesFiltrados.reduce(
+      (total, cliente) => total + Math.max(this.saldoCliente(cliente), 0),
+      0,
+    );
+  }
+
+  saldoCliente(cliente: any): number {
+    return (
+      Number(cliente?.totalImporte ?? 0) - Number(cliente?.totalPagado ?? 0)
+    );
+  }
+
+  cambiarFiltro(filtro: 'todos' | 'pendientes' | 'aldia'): void {
+    this.filtroSaldo = filtro;
+    this.buscar();
+  }
+
   cargarClientes(): void {
     this.clienteService.getClientes().subscribe({
       next: (data: ICliente[]) => {
         this.clientes = (data ?? [])
-          .filter((c: any) => c != null)
+          .filter((cliente: any) => cliente != null)
           .map((cliente: any) => {
             let totalServicios = 0;
             let totalPagado = 0;
             let facturableSinFactura = 0;
 
-            if (Array.isArray(cliente.trabajos) && cliente.trabajos.length > 0) {
-              cliente.trabajos.forEach((t: any) => {
-                const importe = Number(t?.importe ?? 0);
+            if (Array.isArray(cliente.trabajos)) {
+              cliente.trabajos.forEach((trabajo: any) => {
+                const importe = Number(trabajo?.importe ?? 0);
                 totalServicios += importe;
 
-                const importePagado = Number(t?.importePagado ?? 0);
-                if (importePagado > 0) totalPagado += importePagado;
-                else if (t?.pagado === true) totalPagado += importe;
+                const importePagado = Number(trabajo?.importePagado ?? 0);
 
-                const sinFactura = (t?.factura == null);
-                if (sinFactura) facturableSinFactura += importe;
+                if (importePagado > 0) {
+                  totalPagado += importePagado;
+                } else if (trabajo?.pagado === true) {
+                  totalPagado += importe;
+                }
+
+                if (trabajo?.factura == null) {
+                  facturableSinFactura += importe;
+                }
               });
             }
 
@@ -67,23 +119,36 @@ export class ClientesComponent implements OnInit {
 
         this.buscar();
       },
-      error: (err: any) => console.error('Error al cargar los clientes:', err),
+      error: (err) => {
+        console.error('Error al cargar los clientes:', err);
+      },
     });
   }
 
   buscar(): void {
     const texto = (this.textoBusqueda ?? '').toLowerCase().trim();
 
-    this.clientesFiltrados = (this.clientes ?? []).filter((c: any) => {
-      if (!c) return false;
+    this.clientesFiltrados = this.clientes.filter((cliente: any) => {
+      const datos = [
+        cliente.nombreApellidos,
+        cliente.nombreComercial,
+        cliente.cifDni,
+        cliente.email,
+        cliente.telefono,
+        cliente.movil,
+      ]
+        .map((valor) => String(valor ?? '').toLowerCase())
+        .join(' ');
 
-      const nombre = (c.nombreApellidos ?? '').toLowerCase();
-      const doc = (c.cifDni ?? '').toLowerCase();
-      const email = (c.email ?? '').toLowerCase();
-      const tel = (c.telefono ?? '').toLowerCase();
-      const mov = (c.movil ?? '').toLowerCase();
+      const coincideBusqueda = datos.includes(texto);
+      const saldo = this.saldoCliente(cliente);
 
-      return (nombre + ' ' + doc + ' ' + email + ' ' + tel + ' ' + mov).includes(texto);
+      const coincideSaldo =
+        this.filtroSaldo === 'todos' ||
+        (this.filtroSaldo === 'pendientes' && saldo > 0.009) ||
+        (this.filtroSaldo === 'aldia' && saldo <= 0.009);
+
+      return coincideBusqueda && coincideSaldo;
     });
   }
 
@@ -92,16 +157,20 @@ export class ClientesComponent implements OnInit {
   }
 
   eliminarCliente(id: number): void {
-    if (confirm('¿Seguro que deseas eliminar este cliente?')) {
-      this.clienteService.eliminarCliente(id).subscribe({
-        next: () => {
-          this.clientes = this.clientes.filter((c) => c?.id !== id);
-          this.buscar();
-          alert('Cliente eliminado correctamente.');
-        },
-        error: (err) => console.error('Error al eliminar cliente:', err),
-      });
+    if (!confirm('¿Seguro que deseas eliminar este cliente?')) {
+      return;
     }
+
+    this.clienteService.eliminarCliente(id).subscribe({
+      next: () => {
+        this.clientes = this.clientes.filter((cliente) => cliente?.id !== id);
+        this.buscar();
+        alert('Cliente eliminado correctamente.');
+      },
+      error: (err) => {
+        console.error('Error al eliminar cliente:', err);
+      },
+    });
   }
 
   generarFactura(cliente: any): void {
@@ -112,15 +181,13 @@ export class ClientesComponent implements OnInit {
     }
 
     const clienteId = Number(cliente.id);
-
     const facturable = Number(cliente.pendiente ?? 0);
+
     if (facturable <= 0) {
       alert('Este cliente no tiene servicios sin factura.');
       return;
     }
 
-    // ✅ Ya NO pasamos "empresa" aquí.
-    // El backend sabe la empresa por el header X-Empresa (TenantContext)
     this.generandoFacturaId = clienteId;
 
     this.facturasService
@@ -129,10 +196,15 @@ export class ClientesComponent implements OnInit {
       .subscribe({
         next: (factura: any) => {
           if (!factura) {
-            alert('No se pudo generar la factura (no hay servicios sin factura).');
+            alert(
+              'No se pudo generar la factura (no hay servicios sin factura).',
+            );
             return;
           }
-          alert(`Factura generada (#${factura.id}) por ${factura.totalImporte} €`);
+
+          alert(
+            `Factura generada (#${factura.id}) por ${factura.totalImporte} €`,
+          );
           this.cargarClientes();
         },
         error: (err) => {

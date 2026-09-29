@@ -6,6 +6,9 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FacturacionV2Service } from '../../services/facturacion-v2.service';
+import { ClientesService } from '../../services/cliente.service';
+import { ICliente } from '../../interfaces/icliente';
+import { EMPRESAS } from '../../shared/config/empresa-config';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -34,12 +37,16 @@ export class FacturarV2Component implements OnInit, OnChanges {
   error: string | null = null;
 
   factura: FacturaV2Response | null = null;
+  clienteFactura: ICliente | null = null;
   facturasCliente: FacturaV2Response[] = [];
 
   modoEdicion = false;
   facturaEdit: any = null;
 
-  constructor(private factService: FacturacionV2Service) {}
+  constructor(
+    private factService: FacturacionV2Service,
+    private clientesService: ClientesService,
+  ) {}
 
   ngOnInit(): void {}
 
@@ -48,6 +55,32 @@ export class FacturarV2Component implements OnInit, OnChanges {
       this.resetEstadoVista();
       this.cargarPendientes();
       this.cargarFacturasCliente();
+      this.cargarClienteFactura();
+    }
+  }
+
+  get empresaVisual() {
+    return String(this.factura?.empresa || '').toUpperCase() === 'ELECTROLUGA'
+      ? EMPRESAS.electroluga
+      : EMPRESAS.argasa;
+  }
+
+  private cargarClienteFactura(): void {
+    this.clientesService.getCliente(this.clienteId).subscribe({
+      next: (cliente) => (this.clienteFactura = cliente),
+      error: () => (this.clienteFactura = null),
+    });
+  }
+
+  confirmarEmision(): void {
+    if (!this.factura || this.factura.estado !== 'BORRADOR' || this.modoEdicion)
+      return;
+    if (
+      confirm(
+        `¿Confirmar y emitir la factura ${this.getNumeroFacturaCliente(this.factura)}?`,
+      )
+    ) {
+      this.emitir();
     }
   }
 
@@ -86,6 +119,7 @@ export class FacturarV2Component implements OnInit, OnChanges {
   private resetEstadoVista(): void {
     this.pendientes = null;
     this.factura = null;
+    this.clienteFactura = null;
     this.facturasCliente = [];
     this.error = null;
     this.loading = false;
@@ -285,7 +319,10 @@ export class FacturarV2Component implements OnInit, OnChanges {
     for (const l of this.facturaEdit.lineas) {
       const cantidad = Number(l.cantidad) || 0;
       const precioUnitario = Number(l.precioUnitario) || 0;
-      const descuentoPct = Math.max(0, Math.min(100, Number(l.descuentoPct) || 0));
+      const descuentoPct = Math.max(
+        0,
+        Math.min(100, Number(l.descuentoPct) || 0),
+      );
       const ivaPct = Number(l.ivaPct) || 0;
 
       const bruto = cantidad * precioUnitario;
@@ -426,6 +463,7 @@ export class FacturarV2Component implements OnInit, OnChanges {
     this.factura = null;
     this.modoEdicion = false;
     this.facturaEdit = null;
+    this.error = null;
   }
 
   verFactura(f: FacturaV2Response): void {
@@ -437,6 +475,38 @@ export class FacturarV2Component implements OnInit, OnChanges {
       return;
     }
     this.abrirFacturaDetalle(f.id);
+  }
+
+  editarFacturaDesdeListado(f: FacturaV2Response): void {
+    if (!f?.id || f.estado !== 'BORRADOR') {
+      this.error = 'Solo se puede modificar una factura en borrador';
+      return;
+    }
+
+    this.loading = true;
+    this.error = null;
+    this.modoEdicion = false;
+    this.facturaEdit = null;
+
+    this.factService.getFacturaById(f.id).subscribe({
+      next: (facturaCompleta) => {
+        this.factura = facturaCompleta;
+        this.loading = false;
+        this.iniciarEdicion();
+
+        // Lleva al usuario al editor después de cargar la factura.
+        setTimeout(() => {
+          document
+            .getElementById('factura-print')
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error =
+          err?.error?.message ?? 'No se pudo cargar la factura para editar';
+      },
+    });
   }
 
   private abrirFacturaDetalle(id: number): void {
@@ -507,38 +577,39 @@ export class FacturarV2Component implements OnInit, OnChanges {
     return String(value).slice(0, 10);
   }
   getNumeroFacturaCliente(factura: any): string {
-  if (!factura) {
-    return '';
+    if (!factura) {
+      return '';
+    }
+
+    const numero = factura.numero ?? factura.id;
+
+    const fecha = factura.fechaEmision
+      ? new Date(factura.fechaEmision)
+      : new Date();
+
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const anio = fecha.getFullYear();
+
+    return `FC-${numero}-${mes}-${anio}`;
   }
 
-  const numero = factura.numero ?? factura.id;
+  marcarComoPagada(): void {
+    if (!this.factura?.id) return;
 
-  const fecha = factura.fechaEmision
-    ? new Date(factura.fechaEmision)
-    : new Date();
+    this.loading = true;
+    this.error = null;
 
-  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-  const anio = fecha.getFullYear();
-
-  return `FC-${numero}-${mes}-${anio}`;
-}
-
-marcarComoPagada(): void {
-  if (!this.factura?.id) return;
-
-  this.loading = true;
-  this.error = null;
-
-  this.factService.marcarComoPagada(this.factura.id).subscribe({
-    next: (factPagada) => {
-      this.factura = factPagada;
-      this.loading = false;
-      this.cargarFacturasCliente();
-    },
-    error: (err) => {
-      this.loading = false;
-      this.error = err?.error?.message ?? 'Error marcando factura como pagada';
-    },
-  });
-}
+    this.factService.marcarComoPagada(this.factura.id).subscribe({
+      next: (factPagada) => {
+        this.factura = factPagada;
+        this.loading = false;
+        this.cargarFacturasCliente();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error =
+          err?.error?.message ?? 'Error marcando factura como pagada';
+      },
+    });
+  }
 }

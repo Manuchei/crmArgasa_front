@@ -1,80 +1,187 @@
 <div class="clientes-page">
   <div class="clientes-shell">
-    <h2 class="page-title text-center">Listado de Clientes</h2>
 
-    <div class="toolbar-card">
-      <div class="row g-3 justify-content-center align-items-stretch filtros-row">
-        <div class="col-12 col-md-4 col-lg-3">
-          <a class="btn btn-success w-100 btn-toolbar" [routerLink]="['/app/clientes/nuevo']">
-            <i class="bi bi-person-plus"></i> Añadir cliente
-          </a>
-        </div>
+    <header class="clientes-header">
+      <div>
+        <span class="page-eyebrow">
+          NOVEXAPP / GESTIÓN COMERCIAL
+        </span>
+        <h1>Clientes</h1>
+        <p>Consulta los datos de contacto y el estado de cada cliente.</p>
+      </div>
 
-        <div class="col-12 col-md-8 col-lg-7">
-          <input type="text" class="form-control buscador-input"
-            placeholder="Buscar por nombre, CIF/DNI, email o teléfono" [(ngModel)]="textoBusqueda" (input)="buscar()" />
-        </div>
+      <a class="nuevo-cliente-btn" routerLink="/app/clientes/nuevo">
+        <span aria-hidden="true">＋</span>
+        Nuevo cliente
+      </a>
+    </header>
+
+    <div class="resumen-grid">
+      <div class="resumen-card">
+        <span>Total de clientes</span>
+        <strong>{{ totalClientes }}</strong>
+      </div>
+
+      <div class="resumen-card resumen-pendiente">
+        <span>Con saldo pendiente</span>
+        <strong>{{ clientesConSaldo }}</strong>
+      </div>
+
+      <div class="resumen-card resumen-aldia">
+        <span>Al día</span>
+        <strong>{{ clientesAlDia }}</strong>
       </div>
     </div>
 
-    <div class="table-card">
+    <section class="listado-card" aria-labelledby="listado-titulo">
+      <div class="listado-header">
+        <span class="page-eyebrow">DIRECTORIO</span>
+        <h2 id="listado-titulo">Listado de clientes</h2>
+        <p>
+          {{ clientesFiltrados.length }}
+          {{ clientesFiltrados.length === 1 ? 'resultado' : 'resultados' }}
+        </p>
+      </div>
+
+      <div class="filtros-bar">
+        <div class="filtros-tabs" aria-label="Filtrar clientes por saldo">
+          <button type="button" [class.active]="filtroSaldo === 'todos'" [attr.aria-pressed]="filtroSaldo === 'todos'"
+            (click)="cambiarFiltro('todos')">
+            Todos
+          </button>
+
+          <button type="button" [class.active]="filtroSaldo === 'pendientes'"
+            [attr.aria-pressed]="filtroSaldo === 'pendientes'" (click)="cambiarFiltro('pendientes')">
+            Con saldo
+          </button>
+
+          <button type="button" [class.active]="filtroSaldo === 'aldia'" [attr.aria-pressed]="filtroSaldo === 'aldia'"
+            (click)="cambiarFiltro('aldia')">
+            Al día
+          </button>
+        </div>
+
+        <label class="buscador">
+          <span class="visually-hidden">Buscar clientes</span>
+          <span class="buscador-icono" aria-hidden="true">⌕</span>
+
+          <input type="search" class="form-control" placeholder="Buscar nombre, CIF, teléfono o email"
+            [(ngModel)]="textoBusqueda" (input)="buscar()" />
+        </label>
+      </div>
+
+      <div class="importes-bar">
+        <div>
+          <span>Importe total de trabajos</span>
+          <strong>{{ importeVisible | number:'1.2-2' }} €</strong>
+        </div>
+
+        <div>
+          <span>Total cobrado</span>
+          <strong>{{ cobradoVisible | number:'1.2-2' }} €</strong>
+        </div>
+
+        <div>
+          <span>Pendiente de cobro</span>
+          <strong class="importe-pendiente">
+            {{ pendienteCobroVisible | number:'1.2-2' }} €
+          </strong>
+        </div>
+      </div>
+
       <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle text-center mb-0 clientes-table">
-          <thead class="table-dark">
+        <table class="table clientes-table mb-0">
+          <thead>
             <tr>
-              <th>Nombre y apellidos</th>
-              <th>Teléfono</th>
-              <th>Móvil</th>
-              <th>CIF/DNI</th>
-              <th>Email</th>
-              <th>Precio (€)</th>
-              <th>Pagado (€)</th>
-              <th>Diferencia (€)</th>
-              <th>Acciones</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Contacto</th>
+              <th scope="col">CIF/DNI</th>
+              <th scope="col" class="importe-col">Importe</th>
+              <th scope="col" class="importe-col">Pagado</th>
+              <th scope="col" class="importe-col">Saldo</th>
+              <th scope="col" class="acciones-col">Acciones</th>
             </tr>
           </thead>
 
           <tbody>
             <tr *ngFor="let c of clientesFiltrados">
-              <td class="col-nombre">{{ c.nombreApellidos }}</td>
-              <td>{{ c.telefono }}</td>
-              <td>{{ c.movil }}</td>
-              <td>{{ c.cifDni }}</td>
-              <td class="col-email">{{ c.email }}</td>
+              <td>
+                <div class="cliente-identidad">
+                  <span class="cliente-avatar" aria-hidden="true">
+                    {{ (c.nombreApellidos || '?').charAt(0).toUpperCase() }}
+                  </span>
 
-              <td>{{ (c.totalImporte || 0) | number: '1.2-2' }}</td>
-              <td class="pagado">{{ (c.totalPagado || 0) | number: '1.2-2' }}</td>
+                  <div>
+                    <a class="cliente-nombre" [routerLink]="['/app/clientes', c.id]">
+                      {{ c.nombreApellidos }}
+                    </a>
 
-              <td [ngClass]="{
-                  'text-success': (c.totalPagado || 0) - (c.totalImporte || 0) >= 0,
-                  'text-danger': (c.totalPagado || 0) - (c.totalImporte || 0) < 0
-                }">
-                {{ (c.totalPagado || 0) - (c.totalImporte || 0) | number: '1.2-2' }}
+                    <small *ngIf="c.nombreComercial">
+                      {{ c.nombreComercial }}
+                    </small>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="contacto">
+                  <span>{{ c.movil || c.telefono || '—' }}</span>
+                  <small>{{ c.email || 'Sin email' }}</small>
+                </div>
+              </td>
+
+              <td class="documento">
+                {{ c.cifDni || '—' }}
+              </td>
+
+              <td class="importe-col">
+                {{ (c.totalImporte || 0) | number:'1.2-2' }} €
+              </td>
+
+              <td class="importe-col">
+                {{ (c.totalPagado || 0) | number:'1.2-2' }} €
+              </td>
+
+              <td class="importe-col">
+                <span class="saldo-badge" [class.saldo-pendiente]="saldoCliente(c) > 0.009"
+                  [class.saldo-aldia]="saldoCliente(c) <= 0.009">
+                  {{ saldoCliente(c) | number:'1.2-2' }} €
+                </span>
               </td>
 
               <td class="acciones-col">
                 <div class="acciones-wrap">
-                  <button class="btn btn-sm btn-primary" [routerLink]="['/app/clientes', c.id]">
-                    <i class="bi bi-eye"></i> Ver
+                  <a class="ver-cliente" [routerLink]="['/app/clientes', c.id]">
+                    Ver ficha
+                  </a>
+
+                  <button type="button" class="accion-icono" [attr.aria-label]="'Modificar ' + c.nombreApellidos"
+                    title="Modificar cliente" (click)="editarCliente(c.id!)">
+                    ✎
                   </button>
 
-                  <button class="btn btn-sm btn-warning" (click)="editarCliente(c.id!)">
-                    <i class="bi bi-pencil-square"></i> Modificar
-                  </button>
-
-                  <button class="btn btn-sm btn-danger" (click)="eliminarCliente(c.id!)">
-                    <i class="bi bi-trash"></i> Eliminar
+                  <button type="button" class="accion-icono accion-eliminar"
+                    [attr.aria-label]="'Eliminar ' + c.nombreApellidos" title="Eliminar cliente"
+                    (click)="eliminarCliente(c.id!)">
+                    ×
                   </button>
                 </div>
               </td>
             </tr>
 
             <tr *ngIf="clientesFiltrados.length === 0">
-              <td colspan="9" class="text-muted py-4">No hay clientes disponibles.</td>
+              <td colspan="7">
+                <div class="empty-state">
+                  <span aria-hidden="true">⌕</span>
+                  <strong>No se encontraron clientes</strong>
+                  <p>Prueba con otra búsqueda o cambia el filtro.</p>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
+
   </div>
 </div>
