@@ -1,586 +1,684 @@
-.transportista-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  .left {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .name {
-    display: flex;
-    align-items: center;
-    line-height: 1.1;
-    flex-wrap: wrap;
-  }
-
-  .mail {
-    font-size: 0.85rem;
-    word-break: break-word;
-  }
+:host {
+  display: block;
+  color: #172033;
 }
 
-.tarea-cell {
+.routes-page,
+.routes-page * {
+  box-sizing: border-box;
+}
+
+.routes-page {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 20px 0 36px;
+}
+
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.page-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--color-primario);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+}
+
+.page-heading h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 750;
+  letter-spacing: -0.9px;
+}
+
+.page-heading p {
+  margin: 8px 0 0;
+  color: #7c8799;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.action-primary,
+.action-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.action-primary {
+  background: var(--color-primario);
+  color: #ffffff;
+}
+
+.action-primary:hover {
+  background: var(--color-secundario);
+}
+
+.action-primary > span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.action-secondary {
+  border-color: #dce3ed;
+  background: #ffffff;
+  color: #526077;
+}
+
+.action-secondary:hover {
+  background: #f5f7fa;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  line-height: 1.1;
-}
-
-.tarea-main {
-  font-weight: 600;
-  font-size: 0.92rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 280px;
-}
-
-.tarea-sub {
-  font-size: 0.85rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 280px;
-}
-
-.rutas-page {
-  padding-bottom: 2rem;
-}
-
-.top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.top-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.filtros-card {
-  border-radius: 14px;
-}
-
-.rutas-accordion .accordion-item {
-  border-radius: 14px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-  border: 1px solid #dee2e6;
-}
-
-.accordion-head-content {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding-right: 0.75rem;
-}
-
-.accordion-main {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.transportista-dia,
-.fecha-dia {
-  font-size: 1rem;
-}
-
-.resumen-dia {
-  color: #6c757d;
-  font-size: 0.95rem;
-  white-space: nowrap;
-}
-
-.transportista-card {
+  gap: 7px;
+  padding: 22px;
+  border: 1px solid #e5eaf1;
   border-radius: 12px;
+  background: #ffffff;
+}
+
+.summary-label {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.summary-card strong {
+  font-size: 29px;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+}
+
+.summary-caption {
+  color: #8a95a6;
+  font-size: 11px;
+}
+
+.surface {
   overflow: hidden;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.025);
 }
 
-.transportista-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+.filters-panel {
+  margin-bottom: 26px;
+  padding: 24px;
 }
 
-.transportista-header-left {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.transportista-email {
-  font-size: 0.95rem;
-}
-
-.desktop-table {
-  display: block;
-}
-
-.mobile-rutas {
-  display: none;
-}
-
-.ruta-mobile-card {
-  border: 1px solid #dee2e6;
-  border-radius: 14px;
-  padding: 1rem;
-  margin: 1rem;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.ruta-mobile-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 0.9rem;
-}
-
-.ruta-mobile-id {
+.section-heading h2,
+.results-heading h2 {
+  margin: 0;
+  font-size: 17px;
   font-weight: 700;
-  font-size: 1rem;
+  letter-spacing: -0.3px;
 }
 
-.ruta-mobile-fecha {
-  color: #6c757d;
-  font-size: 0.9rem;
+.section-heading p {
+  margin: 6px 0 20px;
+  color: #7c8799;
+  font-size: 12px;
 }
 
-.ruta-mobile-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}
-
-.ruta-line {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  font-size: 0.98rem;
-}
-
-.ruta-line .label {
-  font-weight: 700;
-  color: #495057;
-}
-
-.ruta-mobile-actions {
-  margin-top: 1rem;
+.filters-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.65rem;
+  grid-template-columns: minmax(240px, 2fr) 1fr 1fr auto;
+  align-items: end;
+  gap: 16px;
 }
 
-.ruta-mobile-actions .btn {
+.field {
+  min-width: 0;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #526077;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.form-control,
+.form-select {
+  min-height: 42px;
+  border-color: #dce3ed;
+  border-radius: 8px;
+  color: #172033;
+  font-size: 13px;
+}
+
+.form-control::placeholder {
+  color: #94a3b8;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--color-primario);
+  box-shadow: none;
+  outline: 2px solid var(--color-suave);
+  outline-offset: 1px;
+}
+
+.results-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.results-heading > span {
+  color: #8a95a6;
+  font-size: 12px;
+}
+
+.date-group {
+  margin-bottom: 18px;
+}
+
+.date-heading {
+  margin: 0;
+}
+
+.date-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
   width: 100%;
-  min-height: 44px;
-  font-weight: 600;
+  padding: 20px 24px;
+  border: 0;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
 }
 
-/* Tablet */
-@media (max-width: 992px) {
-  .accordion-head-content {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .resumen-dia {
-    white-space: normal;
-  }
+.date-toggle:hover {
+  background: #f8fafc;
 }
 
-/* Móvil */
-@media (max-width: 768px) {
-  .rutas-page {
-    padding-left: 0.4rem;
-    padding-right: 0.4rem;
-  }
-
-  .top-bar {
-    align-items: stretch;
-  }
-
-  .top-actions {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .top-actions .btn {
-    width: 100%;
-    min-height: 44px;
-  }
-
-  .desktop-table {
-    display: none;
-  }
-
-  .mobile-rutas {
-    display: block;
-  }
-
-  .transportista-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .accordion-button {
-    padding: 1rem;
-  }
-
-  .transportista-dia,
-  .fecha-dia {
-    font-size: 0.98rem;
-  }
-
-  .card-body {
-    padding: 1rem;
-  }
-
-  .form-control,
-  .form-select,
-  .btn {
-    min-height: 44px;
-  }
+.date-toggle[aria-expanded="true"] {
+  background: #f8fafc;
 }
 
-.rutas-page {
-  padding-bottom: 2rem;
-}
-
-.top-bar-rutas {
-  gap: 0.75rem;
-}
-
-.top-actions-rutas {
+.date-info {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.filtros-card,
-.transportista-card {
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.transportista-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
   flex-wrap: wrap;
+  gap: 16px;
 }
 
-.transportista-header .left .name {
-  font-size: 1rem;
+.date-info strong {
+  color: #172033;
+  font-size: 15px;
+  font-weight: 700;
 }
 
-.transportista-header .mail {
-  font-size: 0.95rem;
+.date-info > span {
+  color: #7c8799;
+  font-size: 12px;
 }
 
-.tarea-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+.chevron {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-right: 1.5px solid #64748b;
+  border-bottom: 1.5px solid #64748b;
+  transform: rotate(45deg);
 }
 
-.tarea-main {
-  font-weight: 600;
+.chevron.is-open {
+  transform: rotate(225deg);
 }
 
-.tarea-sub {
-  font-size: 0.9rem;
-  line-height: 1.25;
+.date-content {
+  padding: 0 24px 24px;
 }
 
-.desktop-table {
-  display: block;
-}
-
-.mobile-rutas {
+.date-content[hidden] {
   display: none;
 }
 
-.ruta-mobile-card {
-  border: 1px solid #dee2e6;
-  border-radius: 14px;
-  padding: 1rem;
-  margin: 1rem;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.ruta-mobile-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.ruta-mobile-id {
-  font-weight: 700;
-  font-size: 1rem;
-}
-
-.ruta-mobile-fecha {
-  color: #6c757d;
-  font-size: 0.92rem;
-}
-
-.ruta-mobile-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.ruta-line {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.ruta-line .label {
-  font-weight: 700;
-  color: #495057;
-  font-size: 0.95rem;
-}
-
-.ruta-mobile-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.65rem;
-  margin-top: 1rem;
-}
-
-.ruta-mobile-actions .btn {
-  min-height: 44px;
-  font-weight: 600;
-}
-
-@media (max-width: 768px) {
-  .rutas-page {
-    padding-left: 0.4rem;
-    padding-right: 0.4rem;
-  }
-
-  .top-bar-rutas {
-    align-items: stretch !important;
-  }
-
-  .top-actions-rutas {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .top-actions-rutas .btn {
-    width: 100%;
-    margin-right: 0 !important;
-  }
-
-  .desktop-table {
-    display: none;
-  }
-
-  .mobile-rutas {
-    display: block;
-  }
-
-  .accordion-button {
-    padding: 1rem;
-  }
-
-  .transportista-header {
-    align-items: flex-start;
-  }
-
-  .form-control,
-  .form-select,
-  .btn {
-    min-height: 44px;
-  }
-}
-
-@media (max-width: 480px) {
-  .ruta-mobile-actions {
-    grid-template-columns: 1fr;
-  }
-}.rutas-page {
-  padding-bottom: 2rem;
-}
-
-.top-bar-rutas {
-  gap: 0.75rem;
-}
-
-.top-actions-rutas {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.filtros-card,
-.transportista-card {
-  border-radius: 14px;
+.driver-section {
+  margin-top: 20px;
   overflow: hidden;
+  border: 1px solid #e5eaf1;
+  border-radius: 10px;
 }
 
-.transportista-header {
+.driver-heading {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.transportista-header .left .name {
-  font-size: 1rem;
-}
-
-.transportista-header .mail {
-  font-size: 0.95rem;
-}
-
-.tarea-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.tarea-main {
-  font-weight: 600;
-}
-
-.tarea-sub {
-  font-size: 0.9rem;
-  line-height: 1.25;
-}
-
-.desktop-table {
-  display: block;
-}
-
-.mobile-rutas {
-  display: none;
-}
-
-.ruta-mobile-card {
-  border: 1px solid #dee2e6;
-  border-radius: 14px;
-  padding: 1rem;
-  margin: 1rem;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.ruta-mobile-top {
-  display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #edf0f5;
 }
 
-.ruta-mobile-id {
-  font-weight: 700;
-  font-size: 1rem;
-}
-
-.ruta-mobile-fecha {
-  color: #6c757d;
-  font-size: 0.92rem;
-}
-
-.ruta-mobile-body {
+.driver-identity {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
 }
 
-.ruta-line {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.ruta-line .label {
-  font-weight: 700;
-  color: #495057;
-  font-size: 0.95rem;
-}
-
-.ruta-mobile-actions {
+.driver-avatar {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.65rem;
-  margin-top: 1rem;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--color-suave);
+  color: var(--color-primario);
+  font-size: 13px;
+  font-weight: 700;
 }
 
-.ruta-mobile-actions .btn {
-  min-height: 44px;
+.driver-identity h4 {
+  margin: 0;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.driver-identity div > span {
+  display: block;
+  margin-top: 4px;
+  color: #8a95a6;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.driver-count {
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border-radius: 5px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.routes-table-wrapper {
+  overflow-x: auto;
+}
+
+.routes-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+}
+
+.routes-table th {
+  padding: 13px 18px;
+  background: #f8fafc;
+  color: #7c8799;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.routes-table td {
+  padding: 18px;
+  border-top: 1px solid #edf0f5;
+  color: #526077;
+  font-size: 12px;
+  line-height: 1.6;
+  vertical-align: middle;
+}
+
+.routes-table tbody tr:hover {
+  background: #fcfdff;
+}
+
+.client-cell {
+  min-width: 180px;
+}
+
+.route-reference {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--color-primario);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.client-cell > strong {
+  display: block;
+  color: #172033;
+  font-size: 13px;
   font-weight: 600;
 }
 
-@media (max-width: 768px) {
-  .rutas-page {
-    padding-left: 0.4rem;
-    padding-right: 0.4rem;
-  }
+.cell-detail {
+  display: block;
+  margin-top: 4px;
+  color: #8a95a6;
+  font-size: 11px;
+}
 
-  .top-bar-rutas {
-    align-items: stretch !important;
-  }
+.destination-cell {
+  min-width: 160px;
+  max-width: 250px;
+  overflow-wrap: anywhere;
+}
 
-  .top-actions-rutas {
-    width: 100%;
+.task-cell {
+  min-width: 200px;
+  max-width: 320px;
+  overflow-wrap: anywhere;
+}
+
+.route-observations {
+  display: block;
+  margin-top: 8px;
+  color: #7c8799;
+  font-size: 11px;
+}
+
+.route-observations strong {
+  font-weight: 600;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.status-badge.pending {
+  border-color: #f4e3b4;
+  background: #fff8e8;
+  color: #8b6515;
+}
+
+.status-badge.in-progress {
+  border-color: #d6e5fa;
+  background: #edf4fd;
+  color: #24558a;
+}
+
+.status-badge.closed {
+  border-color: #d9ede1;
+  background: #f0f9f3;
+  color: #28754a;
+}
+
+.actions-column {
+  text-align: right;
+}
+
+.actions-cell {
+  min-width: 170px;
+}
+
+.row-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.row-button {
+  padding: 7px 10px;
+  border: 1px solid #dce3ed;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #526077;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.row-button:hover {
+  background: #f1f5f9;
+}
+
+.view-button {
+  border-color: transparent;
+  background: var(--color-suave);
+  color: var(--color-primario);
+}
+
+.view-button:hover {
+  border-color: var(--color-primario);
+  background: var(--color-suave);
+}
+
+.close-button {
+  color: #28754a;
+}
+
+.close-button:hover {
+  border-color: #28754a;
+  background: #f0f9f3;
+}
+
+.delete-button {
+  color: #b42318;
+}
+
+.delete-button:hover {
+  border-color: #b42318;
+  background: #fff3f2;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-primario);
+  outline-offset: -3px;
+}
+
+.feedback-panel {
+  padding: 44px 20px;
+  text-align: center;
+}
+
+.feedback-panel > strong {
+  color: #344054;
+  font-size: 15px;
+}
+
+.feedback-panel p {
+  margin: 9px 0 18px;
+  color: #7c8799;
+  font-size: 13px;
+}
+
+.error-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid #f5d1cd;
+  border-radius: 10px;
+  background: #fff3f2;
+  color: #b42318;
+  font-size: 13px;
+}
+
+.error-panel p {
+  margin: 6px 0 0;
+}
+
+@media (max-width: 1000px) {
+  .page-heading {
+    align-items: flex-start;
     flex-direction: column;
   }
 
-  .top-actions-rutas .btn {
-    width: 100%;
-    margin-right: 0 !important;
+  .filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .desktop-table {
-    display: none;
-  }
-
-  .mobile-rutas {
-    display: block;
-  }
-
-  .accordion-button {
-    padding: 1rem;
-  }
-
-  .transportista-header {
-    align-items: flex-start;
-  }
-
-  .form-control,
-  .form-select,
-  .btn {
-    min-height: 44px;
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 480px) {
-  .ruta-mobile-actions {
+@media (max-width: 700px) {
+  .routes-page {
+    padding-top: 12px;
+  }
+
+  .page-heading h1 {
+    font-size: 28px;
+  }
+
+  .heading-actions {
+    width: 100%;
+  }
+
+  .heading-actions button {
+    flex: 1;
+  }
+
+  .summary-grid {
+    gap: 10px;
+  }
+
+  .summary-card {
+    padding: 16px;
+  }
+
+  .summary-card strong {
+    font-size: 25px;
+  }
+
+  .filters-panel {
+    padding: 18px;
+  }
+
+  .filters-grid {
     grid-template-columns: 1fr;
+  }
+
+  .results-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .date-toggle {
+    padding: 18px;
+  }
+
+  .date-info {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .date-content {
+    padding: 0 12px 12px;
+  }
+
+  .driver-heading {
+    padding: 16px;
+  }
+
+  /* La misma tabla se presenta como tarjetas en móvil. */
+  .routes-table {
+    display: block;
+    min-width: 0;
+  }
+
+  .routes-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .routes-table tbody,
+  .routes-table tr,
+  .routes-table td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .routes-table tr {
+    padding: 16px;
+    border-top: 1px solid #e5eaf1;
+  }
+
+  .routes-table td {
+    padding: 7px 0;
+    border: 0;
+  }
+
+  .routes-table td::before {
+    display: block;
+    margin-bottom: 4px;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 600;
+    content: attr(data-label);
+  }
+
+  .row-actions {
+    justify-content: flex-start;
+    margin-top: 5px;
+  }
+
+  .row-button {
+    min-height: 36px;
+    padding: 8px 12px;
+  }
+
+  .error-panel {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

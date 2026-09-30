@@ -1,21 +1,109 @@
-<div class="container mt-5" style="max-width: 400px;">
-  <h2 class="text-center mb-3">Iniciar sesión</h2>
+<section class="login-page" aria-labelledby="login-title">
+  <div class="login-wrapper">
 
-  <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
-    <div class="mb-3">
-      <label>Email</label>
-      <input type="email" class="form-control" name="email" [(ngModel)]="email" required />
+    <div class="login-brand" aria-label="NovexApp">
+      <img src="assets/logos/novexapp-icon.png" alt="" class="brand-icon" />
+
+      <span>Novex<span class="brand-app">App</span></span>
     </div>
 
-    <div class="mb-3">
-      <label>Contraseña</label>
-      <input type="password" class="form-control" name="password" [(ngModel)]="password" required />
+    <div class="login-card">
+      <header class="login-heading">
+        <span class="eyebrow">TU ESPACIO DE TRABAJO</span>
+
+        <h1 id="login-title">Bienvenido de nuevo</h1>
+
+        <p>Inicia sesión para acceder a la gestión de tu empresa.</p>
+      </header>
+
+      <div *ngIf="aviso" class="login-notice" role="status">
+        {{ aviso }}
+      </div>
+
+      <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" [attr.aria-busy]="cargando" novalidate>
+        <fieldset [disabled]="cargando">
+
+          <div class="field">
+            <label for="login-email">Correo electrónico</label>
+
+            <input id="login-email" name="email" type="email" [(ngModel)]="email" #emailInput="ngModel" required email
+              autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="nombre@empresa.com"
+              [class.invalid]="
+                emailInput.invalid &&
+                (emailInput.touched || loginForm.submitted)
+              " [attr.aria-invalid]="
+                emailInput.invalid &&
+                (emailInput.touched || loginForm.submitted)
+              " aria-describedby="email-error" />
+
+            <span id="email-error" class="field-error" *ngIf="
+                emailInput.invalid &&
+                (emailInput.touched || loginForm.submitted)
+              ">
+              Introduce un correo electrónico válido.
+            </span>
+          </div>
+
+          <div class="field">
+            <label for="login-password">Contraseña</label>
+
+            <div class="password-field">
+              <input id="login-password" name="password" [type]="mostrarPassword ? 'text' : 'password'"
+                [(ngModel)]="password" #passwordInput="ngModel" required autocomplete="current-password"
+                placeholder="Introduce tu contraseña" [class.invalid]="
+                  passwordInput.invalid &&
+                  (passwordInput.touched || loginForm.submitted)
+                " [attr.aria-invalid]="
+                  passwordInput.invalid &&
+                  (passwordInput.touched || loginForm.submitted)
+                " aria-describedby="password-error" />
+
+              <button type="button" class="password-toggle" [attr.aria-label]="
+                  mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                " [attr.aria-pressed]="mostrarPassword" aria-controls="login-password"
+                (click)="mostrarPassword = !mostrarPassword">
+                {{ mostrarPassword ? 'Ocultar' : 'Mostrar' }}
+              </button>
+            </div>
+
+            <span id="password-error" class="field-error" *ngIf="
+                passwordInput.invalid &&
+                (passwordInput.touched || loginForm.submitted)
+              ">
+              Introduce tu contraseña.
+            </span>
+          </div>
+
+          <label class="remember-option">
+            <input type="checkbox" name="recordar" [(ngModel)]="recordar" (ngModelChange)="cambiarRecordatorio()"
+              aria-describedby="remember-help" />
+            <span>Recuérdame</span>
+          </label>
+
+          <p id="remember-help" class="remember-help">
+            Recordar mi correo en este dispositivo.
+          </p>
+
+          <div *ngIf="errorMsg" class="login-error" role="alert">
+            {{ errorMsg }}
+          </div>
+
+          <button type="submit" class="login-submit">
+            <span *ngIf="cargando" class="spinner" aria-hidden="true"></span>
+            {{ cargando ? 'Iniciando sesión…' : 'Iniciar sesión' }}
+          </button>
+
+        </fieldset>
+      </form>
+
+      <div class="card-bottom">
+        Argasa · Electroluga
+      </div>
     </div>
 
-    <button class="btn btn-primary w-100" [disabled]="!loginForm.valid">Entrar</button>
+    <footer class="login-footer">
+      NovexApp · Gestión empresarial
+    </footer>
 
-    <div *ngIf="errorMsg" class="error">
-      {{ errorMsg }}
-    </div>
-  </form>
-</div>
+  </div>
+</section>

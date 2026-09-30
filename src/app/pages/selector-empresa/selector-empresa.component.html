@@ -1,13 +1,88 @@
-<div class="selector-container">
-  <h1>Selecciona tu empresa</h1>
+<section class="company-page" aria-labelledby="selector-title">
+  <div class="company-shell">
 
-  <div class="buttons">
-    <button class="btn-empresa argasa" (click)="seleccionarEmpresa('ARGASA')">
-      ARGASA
-    </button>
+    <header class="selector-header">
+      <div class="novex-brand" aria-label="NovexApp">
+        <img src="assets/logos/novexapp-icon.png" alt="" class="novex-icon" />
 
-    <button class="btn-empresa electroluga" (click)="seleccionarEmpresa('ELECTROLUGA')">
-      ELECTROLUGA
-    </button>
+        <span>Novex<span class="brand-app">App</span></span>
+      </div>
+
+      <span class="header-caption">Gestión empresarial</span>
+    </header>
+
+    <main class="selector-main">
+      <div class="selector-intro">
+        <span class="eyebrow">TU ESPACIO DE TRABAJO</span>
+
+        <h1 id="selector-title">¿Con qué empresa vas a trabajar?</h1>
+
+        <p>
+          Selecciona una empresa para acceder a su gestión.
+        </p>
+      </div>
+
+      <div class="company-grid">
+        <button type="button" class="company-card argasa" aria-label="Acceder a Argasa"
+          (click)="seleccionarEmpresa('ARGASA')">
+          <span class="card-top">
+            <span class="company-tag">
+              <span class="company-dot" aria-hidden="true"></span>
+              ARGASA
+            </span>
+
+            <span class="card-arrow" aria-hidden="true">↗</span>
+          </span>
+
+          <span class="company-logo-area">
+            <img src="assets/logos/argasa.png" alt="" class="company-logo" />
+          </span>
+
+          <span class="company-title">Argasa</span>
+          <span class="company-legal">Argasa Garrido S.L.</span>
+
+          <span class="card-footer">
+            <span>Acceder a la empresa</span>
+            <span aria-hidden="true">→</span>
+          </span>
+        </button>
+
+        <button type="button" class="company-card electroluga" aria-label="Acceder a Electroluga"
+          (click)="seleccionarEmpresa('ELECTROLUGA')">
+          <span class="card-top">
+            <span class="company-tag">
+              <span class="company-dot" aria-hidden="true"></span>
+              ELECTROLUGA
+            </span>
+
+            <span class="card-arrow" aria-hidden="true">↗</span>
+          </span>
+
+          <span class="company-logo-area">
+            <img src="assets/logos/luga_mod.png" alt="" class="company-logo" />
+          </span>
+
+          <span class="company-title">Electroluga</span>
+          <span class="company-legal">
+            Electrodomésticos Luis Garrido, S.L.U.
+          </span>
+
+          <span class="card-footer">
+            <span>Acceder a la empresa</span>
+            <span aria-hidden="true">→</span>
+          </span>
+        </button>
+      </div>
+
+      <p class="selector-help">
+        Puedes cambiar de empresa desde la barra superior.
+      </p>
+    </main>
+
+    <footer class="selector-footer">
+      <span>NovexApp</span>
+      <span>Un espacio para organizar tu trabajo.</span>
+    </footer>
+
   </div>
-</div>
+</section>

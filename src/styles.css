@@ -15,26 +15,25 @@ body {
 ========================= */
 
 :root {
-  --color-primario: #666;
-  --color-secundario: #999;
+  --color-primario: #1565c0;
+  --color-secundario: #0d47a1;
+  --color-suave: #eaf2fc;
 }
 
-/* =========================
-   ARGASA (ROJO)
-========================= */
+/* ARGASA — AZUL */
 
 body.tema-argasa {
-  --color-primario: #c62828; /* rojo fuerte */
-  --color-secundario: #ef5350; /* rojo claro */
+  --color-primario: #1565c0;
+  --color-secundario: #0d47a1;
+  --color-suave: #eaf2fc;
 }
 
-/* =========================
-   ELECTROLUGA (AZUL)
-========================= */
+/* ELECTROLUGA — ROJO CORPORATIVO */
 
 body.tema-electroluga {
-  --color-primario: #1565c0; /* azul fuerte */
-  --color-secundario: #42a5f5; /* azul claro */
+  --color-primario: #e30613;
+  --color-secundario: #bb0510;
+  --color-suave: #fff0f1;
 }
 
 /* =========================
@@ -46,11 +45,24 @@ body.tema-electroluga {
 }
 
 .btn-primary {
+  --bs-btn-bg: var(--color-primario);
+  --bs-btn-border-color: var(--color-primario);
+
+  --bs-btn-hover-bg: var(--color-secundario);
+  --bs-btn-hover-border-color: var(--color-secundario);
+
+  --bs-btn-active-bg: var(--color-secundario);
+  --bs-btn-active-border-color: var(--color-secundario);
+
+  --bs-btn-disabled-bg: var(--color-primario);
+  --bs-btn-disabled-border-color: var(--color-primario);
+
   background-color: var(--color-primario);
   border-color: var(--color-primario);
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-primary:active {
   background-color: var(--color-secundario);
   border-color: var(--color-secundario);
 }

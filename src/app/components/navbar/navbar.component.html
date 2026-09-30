@@ -1,86 +1,136 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark no-print">
-  <div class="container-fluid navbar-inner">
+<header class="novex-header no-print">
+  <nav class="novex-nav" aria-label="Navegación principal">
 
-    <span class="badge badge-empresa me-2">
-      {{ empresa }}
-    </span>
+    <span class="novex-brand" aria-label="NovexApp">
+  <img
+    src="assets/logos/novexapp-icon.png"
+    alt=""
+    class="novex-icon"
+  />
 
-    <button class="navbar-toggler" type="button" (click)="toggleMenu()" aria-controls="navbarNav"
-      [attr.aria-expanded]="menuOpen" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+  <span class="novex-wordmark">
+    Novex<span class="brand-app">App</span>
+  </span>
+</span>
+
+    <button class="mobile-toggle" type="button" aria-controls="novex-navigation" [attr.aria-expanded]="menuOpen"
+      [attr.aria-label]="menuOpen ? 'Cerrar navegación' : 'Abrir navegación'" (click)="toggleMenu($event)">
+      <span class="hamburger" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
     </button>
 
-    <div id="navbarNav" class="navbar-collapse" [class.collapse]="!menuOpen" [class.show]="menuOpen">
-      <ul class="navbar-nav me-auto navbar-menu">
+    <div id="novex-navigation" class="navigation-content" [class.is-open]="menuOpen">
+      <div class="navigation-links">
 
-        <li class="nav-item" *ngIf="canInicio()">
-          <a class="nav-link" routerLink="/app/dashboard" routerLinkActive="active" (click)="closeMenu()">
-            🏠 Inicio
-          </a>
-        </li>
+        <a *ngIf="canInicio()" class="nav-link" [routerLink]="rutaInicio" routerLinkActive="is-active"
+          ariaCurrentWhenActive="page" (click)="closeMenu()">
+          Inicio
+        </a>
 
-        <li class="nav-item" *ngIf="canClientes()">
-          <a class="nav-link" routerLink="/app/clientes" routerLinkActive="active" (click)="closeMenu()">
-            👥 Clientes
-          </a>
-        </li>
+        <div *ngFor="let grupo of grupos; trackBy: trackGrupo" class="nav-dropdown" routerLinkActive="is-active-group">
+          <button class="nav-link dropdown-trigger" type="button" [attr.aria-expanded]="desplegable === grupo.id"
+            [attr.aria-controls]="'panel-' + grupo.id" (click)="toggleDesplegable(grupo.id, $event)">
+            {{ grupo.texto }}
+            <span class="chevron" aria-hidden="true"></span>
+          </button>
 
-        <li class="nav-item" *ngIf="canProveedores()">
-          <a class="nav-link" routerLink="/app/proveedores" routerLinkActive="active" (click)="closeMenu()">
-            🔧 Proveedores
-          </a>
-        </li>
+          <div *ngIf="desplegable === grupo.id" class="dropdown-panel" [id]="'panel-' + grupo.id">
+            <span class="panel-label">{{ grupo.texto }}</span>
 
-        <li class="nav-item" *ngIf="canProductos()">
-          <a class="nav-link" routerLink="/app/productos" routerLinkActive="active" (click)="closeMenu()">
-            📦 Productos
-          </a>
-        </li>
+            <a *ngFor="let enlace of grupo.enlaces; trackBy: trackEnlace" class="dropdown-link"
+              [routerLink]="enlace.ruta" routerLinkActive="is-active" ariaCurrentWhenActive="page"
+              (click)="closeMenu()">
+              {{ enlace.texto }}
+            </a>
+          </div>
+        </div>
 
-        <li class="nav-item" *ngIf="canRutas()">
-          <a class="nav-link" routerLink="/app/rutas" routerLinkActive="active" (click)="closeMenu()">
-            🗺️ Rutas
-          </a>
-        </li>
+        <a *ngIf="canCalendario()" class="nav-link" routerLink="/app/calendario" routerLinkActive="is-active"
+          ariaCurrentWhenActive="page" (click)="closeMenu()">
+          Calendario
+        </a>
 
-        <li class="nav-item" *ngIf="canCalendario()">
-          <a class="nav-link" routerLink="/app/calendario" routerLinkActive="active" (click)="closeMenu()">
-            📅 Calendario
-          </a>
-        </li>
+        <div *ngIf="canInformes()" class="nav-dropdown" routerLinkActive="is-active-group">
+          <button class="nav-link dropdown-trigger" type="button" aria-controls="panel-analisis"
+            [attr.aria-expanded]="desplegable === 'analisis'" (click)="toggleDesplegable('analisis', $event)">
+            Análisis
+            <span class="chevron" aria-hidden="true"></span>
+          </button>
 
-        <li class="nav-item" *ngIf="canTransportistas()">
-          <a class="nav-link" routerLink="/app/transportistas" routerLinkActive="active" (click)="closeMenu()">
-            🚚 Transportistas
-          </a>
-        </li>
+          <div *ngIf="desplegable === 'analisis'" id="panel-analisis" class="dropdown-panel">
+            <span class="panel-label">Análisis</span>
 
-        <li class="nav-item" *ngIf="canInformes()">
-          <a class="nav-link" routerLink="/app/informes" routerLinkActive="active" (click)="closeMenu()">
-            📊 Informes
-          </a>
-        </li>
+            <a class="dropdown-link" routerLink="/app/informes" routerLinkActive="is-active"
+              ariaCurrentWhenActive="page" (click)="closeMenu()">
+              Informes
+            </a>
+          </div>
+        </div>
+      </div>
 
-        <li class="nav-item" *ngIf="canAlmacen()">
-          <a class="nav-link" routerLink="/app/almacen" routerLinkActive="active" (click)="closeMenu()">
-            🏬 Almacén
-          </a>
-        </li>
-      </ul>
+      <div class="navigation-actions">
 
-      <div class="navbar-actions d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center">
-        <span class="navbar-text user-email me-lg-2 mb-2 mb-lg-0">
-          {{ usuario?.email }}
-        </span>
+        <div class="nav-dropdown company-dropdown">
+          <button class="company-button" type="button" aria-controls="panel-empresa"
+            [attr.aria-expanded]="desplegable === 'empresa'" (click)="toggleDesplegable('empresa', $event)">
+            <span class="company-dot" aria-hidden="true"></span>
 
-        <button class="btn btn-outline-warning btn-sm me-lg-2 mb-2 mb-lg-0" (click)="cambiarEmpresa(); closeMenu()">
-          Cambiar empresa
-        </button>
+            <span class="company-text">
+              <span class="company-caption">Empresa activa</span>
+              <span class="company-name">{{ nombreEmpresa }}</span>
+            </span>
 
-        <button class="btn btn-outline-danger btn-sm" (click)="logout(); closeMenu()">
-          Cerrar sesión
-        </button>
+            <span class="chevron" aria-hidden="true"></span>
+          </button>
+
+          <div *ngIf="desplegable === 'empresa'" id="panel-empresa" class="dropdown-panel align-right">
+            <span class="panel-label">Entorno de trabajo</span>
+
+            <div class="company-summary">
+              <span class="company-dot" aria-hidden="true"></span>
+              <strong>{{ nombreEmpresa }}</strong>
+              <span class="current-label">Actual</span>
+            </div>
+
+            <div class="panel-divider"></div>
+
+            <button class="dropdown-link" type="button" (click)="cambiarEmpresa()">
+              Cambiar empresa
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-dropdown account-dropdown">
+          <button class="account-button" type="button" aria-controls="panel-cuenta"
+            [attr.aria-expanded]="desplegable === 'cuenta'" aria-label="Abrir opciones de mi cuenta"
+            (click)="toggleDesplegable('cuenta', $event)">
+            <span class="user-avatar" aria-hidden="true">
+              {{ inicialUsuario }}
+            </span>
+            <span class="chevron" aria-hidden="true"></span>
+          </button>
+
+          <div *ngIf="desplegable === 'cuenta'" id="panel-cuenta" class="dropdown-panel account-panel align-right">
+            <div class="account-summary">
+              <span class="panel-label">Mi cuenta</span>
+              <strong class="account-email">
+                {{ usuario?.email || 'Usuario' }}
+              </strong>
+              <span class="account-role">{{ nombreRol }}</span>
+            </div>
+
+            <div class="panel-divider"></div>
+
+            <button class="dropdown-link logout-link" type="button" (click)="logout()">
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
-  </div>
-</nav>
+  </nav>
+</header>

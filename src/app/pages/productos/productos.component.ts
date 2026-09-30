@@ -219,6 +219,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
         this.loading = false;
 
+        this.mostrarFormulario = false;
         this.abrirAsignacionCliente(nuevo);
       },
 
@@ -333,47 +334,74 @@ export class ProductosComponent implements OnInit, OnDestroy {
   verMovimientos(p: IProducto): void {
     const id = Number(p?.id);
 
-    if (!id) {
-      return;
+    if (!id) return;
+
+    if (!this.mostrarModalMovimientos) {
+      this.botonOrigenMovimientos =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
     }
+
+    const peticion = ++this.peticionMovimientos;
 
     this.productoSeleccionado = p;
     this.filtroCodigo = '';
+    this.movimientosProducto = [];
+    this.errorMovimientos = '';
+    this.cargandoMovimientos = true;
     this.mostrarModalMovimientos = true;
+
+    setTimeout(() => {
+      if (
+        this.mostrarModalMovimientos &&
+        peticion === this.peticionMovimientos
+      ) {
+        document.getElementById('movement-close')?.focus();
+      }
+    });
 
     this.productosService.getMovimientosPorProducto(id).subscribe({
       next: (res: IProductoMovimiento[]) => {
+        if (peticion !== this.peticionMovimientos) return;
+
         this.movimientosProducto = res;
+        this.cargandoMovimientos = false;
       },
+      error: () => {
+        if (peticion !== this.peticionMovimientos) return;
 
-      error: (err: HttpErrorResponse) => {
-        console.error(err);
-
-        alert(
-          err.error?.message ||
-            err.error ||
-            'No se pudieron cargar los movimientos',
-        );
+        this.cargandoMovimientos = false;
+        this.errorMovimientos =
+          'No se pudieron cargar los movimientos. Inténtalo de nuevo.';
       },
     });
   }
 
   cerrarMovimientos(): void {
+    // Ignorar respuestas pendientes de un modal que ya se ha cerrado.
+    this.peticionMovimientos++;
+
     this.mostrarModalMovimientos = false;
     this.productoSeleccionado = null;
     this.movimientosProducto = [];
     this.filtroCodigo = '';
+    this.cargandoMovimientos = false;
+    this.errorMovimientos = '';
+
+    this.botonOrigenMovimientos?.focus();
+    this.botonOrigenMovimientos = null;
   }
 
   get movimientosFiltrados(): IProductoMovimiento[] {
-    const filtro = this.filtroCodigo.trim().toLowerCase();
+    const filtro = this.normalizarTexto(this.filtroCodigo);
 
-    if (!filtro) {
-      return this.movimientosProducto;
-    }
+    if (!filtro) return this.movimientosProducto;
 
-    return this.movimientosProducto.filter((m) =>
-      (m.producto?.referencia || '').toLowerCase().includes(filtro),
+    return this.movimientosProducto.filter((movimiento) =>
+      [movimiento.tipo, movimiento.motivo].some((valor) =>
+        this.normalizarTexto(valor).includes(filtro),
+      ),
     );
   }
 
@@ -762,5 +790,72 @@ export class ProductosComponent implements OnInit, OnDestroy {
         );
       },
     });
+  }
+
+  mostrarFormulario = false;
+
+  get totalUnidades(): number {
+    return this.productos.reduce(
+      (total, producto) => total + Number(producto.unidades || 0),
+      0,
+    );
+  }
+
+  get productosSinStock(): number {
+    return this.productos.filter(
+      (producto) => Number(producto.unidades || 0) <= 0,
+    ).length;
+  }
+
+  abrirFormulario(): void {
+    this.mostrarFormulario = true;
+  }
+
+  cerrarFormulario(): void {
+    if (this.loading) return;
+
+    this.mostrarFormulario = false;
+  }
+
+  trackProducto(index: number, producto: IProducto): number {
+    return producto.id ?? index;
+  }
+
+  cargandoMovimientos = false;
+  errorMovimientos = '';
+
+  private peticionMovimientos = 0;
+  private botonOrigenMovimientos: HTMLElement | null = null;
+
+  gestionarTecladoMovimientos(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.cerrarMovimientos();
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+
+    const panel = event.currentTarget as HTMLElement;
+
+    const elementos = Array.from(
+      panel.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), [tabindex="0"]',
+      ),
+    ).filter((elemento) => elemento.getClientRects().length > 0);
+
+    const primero = elementos[0];
+    const ultimo = elementos[elementos.length - 1];
+
+    if (!primero || !ultimo) return;
+
+    if (event.shiftKey && document.activeElement === primero) {
+      event.preventDefault();
+      ultimo.focus();
+    } else if (!event.shiftKey && document.activeElement === ultimo) {
+      event.preventDefault();
+      primero.focus();
+    }
   }
 }

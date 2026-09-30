@@ -47,7 +47,7 @@ export class RutasListComponent implements OnInit {
   constructor(
     private rutaService: RutaService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -157,7 +157,10 @@ export class RutasListComponent implements OnInit {
     // 1. Si NO es admin/developer, solo ve sus rutas
     if (this.esTransportista) {
       rutasFiltradas = rutasFiltradas.filter((r: any) => {
-        const emailRuta = (r?.emailTransportista || '').toString().trim().toLowerCase();
+        const emailRuta = (r?.emailTransportista || '')
+          .toString()
+          .trim()
+          .toLowerCase();
         return emailRuta === this.emailUsuario;
       });
     }
@@ -172,7 +175,9 @@ export class RutasListComponent implements OnInit {
 
     // 3. Filtro por estado
     if (this.filtroEstado) {
-      rutasFiltradas = rutasFiltradas.filter((r) => r.estado === this.filtroEstado);
+      rutasFiltradas = rutasFiltradas.filter(
+        (r) => r.estado === this.filtroEstado,
+      );
     }
 
     // 4. Filtro por nombre/transportista/búsqueda
@@ -180,7 +185,8 @@ export class RutasListComponent implements OnInit {
       const texto = this.filtroNombre.trim().toLowerCase();
 
       rutasFiltradas = rutasFiltradas.filter((r: any) => {
-        const cliente = `${r?.cliente?.nombreApellidos || ''} ${r?.cliente?.nombreComercial || ''}`.toLowerCase();
+        const cliente =
+          `${r?.cliente?.nombreApellidos || ''} ${r?.cliente?.nombreComercial || ''}`.toLowerCase();
         const transportista = (r?.nombreTransportista || '').toLowerCase();
         const emailTransportista = (r?.emailTransportista || '').toLowerCase();
         const destino = (r?.destino || '').toLowerCase();
@@ -400,5 +406,30 @@ export class RutasListComponent implements OnInit {
     if (entrega && tarea) return tarea;
 
     return null;
+  }
+
+  get rutasPendientes(): number {
+    return this.rutas.filter((ruta) => ruta.estado === 'pendiente').length;
+  }
+
+  get rutasEnCurso(): number {
+    return this.rutas.filter((ruta) => ruta.estado === 'en_curso').length;
+  }
+
+  get rutasCerradas(): number {
+    return this.rutas.filter((ruta) => ruta.estado === 'cerrada').length;
+  }
+
+  nombreEstado(estado: string | null | undefined): string {
+    switch (estado) {
+      case 'pendiente':
+        return 'Pendiente';
+      case 'en_curso':
+        return 'En curso';
+      case 'cerrada':
+        return 'Cerrada';
+      default:
+        return estado || 'Sin estado';
+    }
   }
 }

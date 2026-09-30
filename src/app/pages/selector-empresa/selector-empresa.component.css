@@ -1,106 +1,348 @@
-.selector-container {
-  min-height: 100vh;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 36px;
-  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 45%, #ecfdf5 100%);
-  animation: fadeIn 0.6s ease;
+:host {
+  display: block;
 }
 
-.selector-container h1 {
-  margin: 0;
-  font-size: clamp(28px, 4vw, 46px);
+.company-page,
+.company-page * {
+  box-sizing: border-box;
+}
+
+.company-page {
+  /* Descuenta el padding vertical del contenedor app-content. */
+  min-height: calc(100dvh - 2rem);
+  padding: 22px 32px;
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      ellipse at 15% 15%,
+      rgba(21, 101, 192, 0.05),
+      transparent 50%
+    ),
+    #f7f9fc;
+  color: #172033;
+}
+
+.company-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 2rem - 44px);
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 8px 0 22px;
+  border-bottom: 1px solid #e5eaf1;
+}
+
+.novex-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 24px;
   font-weight: 800;
-  color: #0f172a;
+  letter-spacing: -0.8px;
+}
+
+.novex-icon {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.brand-app {
+  color: #1565c0;
+}
+
+.header-caption {
+  color: #7c8799;
+  font-size: 13px;
+}
+
+.selector-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+}
+
+.selector-intro {
+  max-width: 650px;
+  margin-bottom: 36px;
   text-align: center;
 }
 
-.buttons {
-  width: 100%;
-  max-width: 760px;
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.selector-intro h1 {
+  margin: 0;
+  color: #172033;
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -1px;
+}
+
+.selector-intro p {
+  margin: 16px 0 0;
+  color: #758196;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.company-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
+  width: 100%;
+  max-width: 780px;
 }
 
-.btn-empresa {
-  min-height: 170px;
-  padding: 32px 24px;
-  border: 0;
-  border-radius: 28px;
-  cursor: pointer;
-  color: #ffffff;
-  font-size: clamp(20px, 2.5vw, 28px);
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  box-shadow: 0 18px 35px rgba(15, 23, 42, 0.18);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
-}
-
-.btn-empresa:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 24px 45px rgba(15, 23, 42, 0.25);
-  filter: brightness(1.05);
-}
-
-.btn-empresa:active {
-  transform: scale(0.98);
-}
-
+/* Cada tarjeta tiene su color propio, incluso sin empresa activa. */
 .argasa {
-  background: linear-gradient(135deg, #2563eb, #1e40af);
+  --company-color: #1565c0;
+  --company-soft: #edf4fd;
 }
 
 .electroluga {
-  background: linear-gradient(135deg, #16a34a, #166534);
+  --company-color: #e30613;
+  --company-soft: #fff0f1;
 }
 
-/* Tablet */
-@media (max-width: 768px) {
-  .selector-container {
-    gap: 28px;
+.company-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+  width: 100%;
+  padding: 26px;
+  border: 1px solid #e2e8f0;
+  border-top: 4px solid var(--company-color);
+  border-radius: 16px;
+  background: #ffffff;
+  color: #172033;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.company-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--company-color);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.09);
+}
+
+.company-card:active {
+  transform: translateY(-1px);
+}
+
+.company-card:focus-visible {
+  outline: 3px solid var(--company-color);
+  outline-offset: 5px;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.company-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: var(--company-soft);
+  color: var(--company-color);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+}
+
+.company-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--company-color);
+}
+
+.card-arrow {
+  color: #94a3b8;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.company-card:hover .card-arrow {
+  color: var(--company-color);
+}
+
+.company-logo-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 116px;
+  margin: 22px 0;
+  padding: 18px;
+  border: 1px solid #edf0f5;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.company-logo {
+  display: block;
+  max-width: 100%;
+  max-height: 80px;
+  object-fit: contain;
+}
+
+.company-title {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 25px;
+  font-weight: 750;
+  letter-spacing: -0.6px;
+}
+
+.company-legal {
+  display: block;
+  min-height: 40px;
+  color: #7c8799;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 13px 15px;
+  border-radius: 8px;
+  background: var(--company-soft);
+  color: var(--company-color);
+  font-size: 13px;
+  font-weight: 650;
+  transition:
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.company-card:hover .card-footer {
+  background: var(--company-color);
+  color: #ffffff;
+}
+
+.selector-help {
+  margin: 26px 0 0;
+  color: #7c8799;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.selector-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 0 4px;
+  border-top: 1px solid #e5eaf1;
+  color: #8a95a6;
+  font-size: 11px;
+}
+
+.selector-footer > span:first-child {
+  color: #64748b;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .company-page {
+    padding: 18px;
+    border-radius: 12px;
   }
 
-  .buttons {
-    max-width: 520px;
+  .company-shell {
+    min-height: calc(100dvh - 2rem - 36px);
+  }
+
+  .selector-header {
+    padding-bottom: 18px;
+  }
+
+  .header-caption {
+    display: none;
+  }
+
+  .selector-main {
+    padding: 42px 0;
+  }
+
+  .selector-intro {
+    margin-bottom: 26px;
+  }
+
+  .company-grid {
+    grid-template-columns: 1fr;
+    max-width: 390px;
     gap: 18px;
   }
 
-  .btn-empresa {
-    min-height: 140px;
-    border-radius: 24px;
+  .company-card {
+    padding: 22px;
+  }
+
+  .company-logo-area {
+    height: 96px;
+    margin: 18px 0;
+  }
+
+  .company-logo {
+    max-height: 65px;
+  }
+
+  .company-legal {
+    min-height: 0;
+  }
+
+  .selector-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
   }
 }
 
-/* Móvil */
-@media (max-width: 576px) {
-  .selector-container {
-    padding: 20px;
+@media (prefers-reduced-motion: reduce) {
+  .company-card,
+  .card-footer {
+    transition: none;
   }
 
-  .buttons {
-    grid-template-columns: 1fr;
-    max-width: 360px;
-  }
-
-  .btn-empresa {
-    min-height: 115px;
-    padding: 24px 18px;
-  }
-}
-
-/* Animación */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .company-card:hover,
+  .company-card:active {
+    transform: none;
   }
 }

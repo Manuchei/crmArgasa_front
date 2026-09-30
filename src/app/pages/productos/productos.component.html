@@ -1,527 +1,444 @@
-<div class="container mt-4">
+<section class="products-page" aria-labelledby="products-title">
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">Productos</h3>
-  </div>
-
-  <!-- =========================================================
-       CREAR PRODUCTO
-       ========================================================= -->
-
-  <div class="card mb-4">
-
-    <div class="card-header">
-      Crear producto
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">NOVEXAPP / CATÁLOGO</span>
+      <h1 id="products-title">Productos</h1>
+      <p>Consulta el catálogo y gestiona las existencias.</p>
     </div>
 
-    <div class="card-body">
+    <button type="button" class="action-primary" aria-controls="product-create-panel"
+      [attr.aria-expanded]="mostrarFormulario" (click)="abrirFormulario()">
+      <span aria-hidden="true">+</span>
+      Nuevo producto
+    </button>
+  </header>
 
-      <div class="row g-2">
+  <div class="summary-grid">
+    <div class="summary-card">
+      <span class="summary-label">Productos registrados</span>
+      <strong>{{ productos.length | number:'1.0-0' }}</strong>
+      <span class="summary-caption">Referencias del catálogo</span>
+    </div>
 
-        <div class="col-md-2">
-          <label class="form-label">Fecha alta</label>
+    <div class="summary-card">
+      <span class="summary-label">Unidades en stock</span>
+      <strong>{{ totalUnidades | number:'1.0-2' }}</strong>
+      <span class="summary-caption">Existencias totales</span>
+    </div>
 
-          <input
-            type="date"
-            class="form-control"
-            [(ngModel)]="form.fechaAlta"
-            name="fechaAlta"
-          />
-        </div>
+    <div class="summary-card">
+      <span class="summary-label">Productos sin stock</span>
+      <strong [class.warning-value]="productosSinStock > 0">
+        {{ productosSinStock | number:'1.0-0' }}
+      </strong>
+      <span class="summary-caption">Referencias sin existencias</span>
+    </div>
+  </div>
 
-        <div class="col-md-2">
-          <label class="form-label">Gama</label>
+  <!-- CREAR PRODUCTO -->
 
-          <input
-            class="form-control"
-            [(ngModel)]="form.gama"
-            name="gama"
-            required
-          />
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Marca</label>
-
-          <input
-            class="form-control"
-            [(ngModel)]="form.marca"
-            name="marca"
-            required
-          />
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Modelo</label>
-
-          <input
-            class="form-control"
-            [(ngModel)]="form.modelo"
-            name="modelo"
-            required
-          />
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Familia</label>
-
-          <input
-            class="form-control"
-            [(ngModel)]="form.familia"
-            name="familia"
-            required
-          />
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Subfamilia</label>
-
-          <input
-            class="form-control"
-            [(ngModel)]="form.subfamilia"
-            name="subfamilia"
-            required
-          />
-        </div>
-
-        <div class="col-md-7">
-          <label class="form-label">Descripción</label>
-
-          <input
-            class="form-control"
-            [(ngModel)]="form.descripcion"
-            name="descripcion"
-            required
-          />
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Precio sin IVA</label>
-
-          <input
-            type="number"
-            class="form-control"
-            [(ngModel)]="form.precioSinIva"
-            name="precioSinIva"
-            min="0"
-            step="0.01"
-          />
-        </div>
-
-        <div class="col-md-1">
-          <label class="form-label">Unidades</label>
-
-          <input
-            type="number"
-            class="form-control"
-            [(ngModel)]="form.unidades"
-            name="unidades"
-            min="0"
-          />
-        </div>
-
-        <div class="col-md-2 d-flex align-items-end">
-
-          <button
-            class="btn btn-success w-100"
-            (click)="crear()"
-            [disabled]="loading"
-          >
-
-            <span *ngIf="!loading">
-              ➕ Crear
-            </span>
-
-            <span *ngIf="loading">
-              Creando...
-            </span>
-
-          </button>
-
-        </div>
-
+  <section *ngIf="mostrarFormulario" id="product-create-panel" class="surface create-panel"
+    aria-labelledby="create-title">
+    <div class="section-heading">
+      <div>
+        <h2 id="create-title">Nuevo producto</h2>
+        <p>Los campos marcados con * son obligatorios.</p>
       </div>
 
+      <button type="button" class="action-secondary" (click)="cerrarFormulario()" [disabled]="loading">
+        Cerrar
+      </button>
     </div>
 
-  </div>
+    <form #productoForm="ngForm" (ngSubmit)="productoForm.valid && crear()">
+      <fieldset [disabled]="loading">
+        <div class="product-form-grid">
 
-  <!-- =========================================================
-       LISTADO PRODUCTOS
-       ========================================================= -->
+          <div class="field">
+            <label for="product-date">Fecha de alta</label>
+            <input id="product-date" type="date" class="form-control" [(ngModel)]="form.fechaAlta" name="fechaAlta" />
+          </div>
 
-  <div class="card mb-4">
+          <div class="field">
+            <label for="product-range">Gama *</label>
+            <input id="product-range" class="form-control" [(ngModel)]="form.gama" name="gama" required />
+          </div>
 
-    <div class="card-header">
-      Listado de productos
+          <div class="field">
+            <label for="product-brand">Marca *</label>
+            <input id="product-brand" class="form-control" [(ngModel)]="form.marca" name="marca" required />
+          </div>
+
+          <div class="field">
+            <label for="product-model">Modelo *</label>
+            <input id="product-model" class="form-control" [(ngModel)]="form.modelo" name="modelo" required />
+          </div>
+
+          <div class="field">
+            <label for="product-family">Familia *</label>
+            <input id="product-family" class="form-control" [(ngModel)]="form.familia" name="familia" required />
+          </div>
+
+          <div class="field">
+            <label for="product-subfamily">Subfamilia *</label>
+            <input id="product-subfamily" class="form-control" [(ngModel)]="form.subfamilia" name="subfamilia"
+              required />
+          </div>
+
+          <div class="field description-field">
+            <label for="product-description">Descripción *</label>
+            <input id="product-description" class="form-control" [(ngModel)]="form.descripcion" name="descripcion"
+              required />
+          </div>
+
+          <div class="field">
+            <label for="product-price">Precio sin IVA (€)</label>
+            <input id="product-price" type="number" class="form-control" [(ngModel)]="form.precioSinIva"
+              name="precioSinIva" required min="0" step="0.01" />
+          </div>
+
+          <div class="field">
+            <label for="product-units">Unidades iniciales</label>
+            <input id="product-units" type="number" class="form-control" [(ngModel)]="form.unidades" name="unidades"
+              required min="0" step="1" />
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <span>Después podrás asignarlo a un cliente.</span>
+
+          <div class="form-actions">
+            <button type="button" class="action-secondary" (click)="cerrarFormulario()">
+              Cancelar
+            </button>
+
+            <button type="submit" class="action-primary">
+              {{ loading ? 'Guardando…' : 'Guardar producto' }}
+            </button>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+  </section>
+
+  <!-- CATÁLOGO -->
+
+  <section class="surface catalog-panel" aria-labelledby="catalog-title">
+    <div class="catalog-toolbar">
+      <div>
+        <h2 id="catalog-title">Catálogo de productos</h2>
+        <p aria-live="polite">
+          {{ productosFiltrados.length }} de {{ productos.length }} productos
+        </p>
+      </div>
+
+      <div class="search-field">
+        <label class="visually-hidden" for="product-search">
+          Buscar productos
+        </label>
+
+        <input id="product-search" type="search" class="form-control" [(ngModel)]="filtroProducto"
+          placeholder="Buscar referencia, marca, modelo…" />
+      </div>
     </div>
 
-    <div class="card-body">
+    <div class="table-responsive" tabindex="0" role="region"
+      aria-label="Catálogo de productos; desplázate para ver todas las columnas">
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th scope="col">Producto</th>
+            <th scope="col">Clasificación</th>
+            <th scope="col" class="text-end">Precio sin IVA</th>
+            <th scope="col" class="text-center">Stock</th>
+            <th scope="col">Ajustar existencias</th>
+            <th scope="col" class="text-end">Historial</th>
+          </tr>
+        </thead>
 
-      <div class="row mb-3">
+        <tbody>
+          <tr *ngFor="let p of productosFiltrados; trackBy: trackProducto">
+            <td class="product-cell">
+              <span class="reference">
+                {{ p.referencia || 'Sin referencia' }}
+              </span>
+              <strong>{{ p.descripcion || 'Sin descripción' }}</strong>
+              <span class="cell-detail">
+                {{ p.marca || '—' }} · {{ p.modelo || '—' }}
+              </span>
+            </td>
 
-        <div class="col-md-5">
+            <td class="classification-cell">
+              <span>{{ p.familia || '—' }}</span>
+              <span class="cell-detail">{{ p.subfamilia || '—' }}</span>
+              <span class="range-label">{{ p.gama || '—' }}</span>
+            </td>
 
-          <label class="form-label">
-            Buscar producto
+            <td class="text-end price-cell">
+              {{ (p.precioSinIva || 0) | number:'1.2-2' }} €
+            </td>
+
+            <td class="text-center">
+              <span class="stock-badge" [class.stock-empty]="(p.unidades || 0) <= 0">
+                {{ (p.unidades || 0) | number:'1.0-2' }}
+                {{ (p.unidades || 0) <= 0 ? ' · Sin stock' : ' uds.' }} </span>
+            </td>
+
+            <td>
+              <div class="stock-controls">
+                <button type="button" class="stock-button decrease" [attr.aria-label]="
+                    'Restar unidades de ' + (p.descripcion || p.referencia)
+                  " (click)="bajarUnidades(p)" [disabled]="!p.id">
+                  −
+                </button>
+
+                <input type="number" class="stock-input" [ngModel]="getAjuste(p.id ?? 0)"
+                  (ngModelChange)="setAjuste(p.id ?? 0, $event)" [attr.aria-label]="
+                    'Cantidad a ajustar de ' + (p.descripcion || p.referencia)
+                  " min="1" step="1" [disabled]="!p.id" />
+
+                <button type="button" class="stock-button increase" [attr.aria-label]="
+                    'Añadir unidades a ' + (p.descripcion || p.referencia)
+                  " (click)="subirUnidades(p)" [disabled]="!p.id">
+                  +
+                </button>
+              </div>
+            </td>
+
+            <td class="text-end">
+              <button type="button" class="history-button" (click)="verMovimientos(p)" [disabled]="!p.id"
+                [attr.aria-label]="
+                  'Ver movimientos de ' + (p.descripcion || p.referencia)
+                ">
+                Movimientos
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="productosFiltrados.length === 0">
+            <td colspan="6" class="empty-state">
+              <strong>
+                {{
+                filtroProducto.trim()
+                ? 'No encontramos productos'
+                : 'Todavía no hay productos'
+                }}
+              </strong>
+
+              <p>
+                {{
+                filtroProducto.trim()
+                ? 'Prueba con otra referencia, marca o descripción.'
+                : 'Añade el primer producto para empezar a gestionar el catálogo.'
+                }}
+              </p>
+
+              <button *ngIf="filtroProducto.trim()" type="button" class="action-secondary"
+                (click)="filtroProducto = ''">
+                Limpiar búsqueda
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="catalog-footer">
+      Introduce la cantidad y utiliza − o + para ajustar las existencias.
+    </div>
+  </section>
+
+</section>
+
+<!-- MODAL MOVIMIENTOS -->
+
+<div *ngIf="mostrarModalMovimientos" class="movements-overlay">
+  <section class="movements-dialog" role="dialog" aria-modal="true" aria-labelledby="movement-title"
+    aria-describedby="movement-description" (keydown)="gestionarTecladoMovimientos($event)">
+    <header class="movements-heading">
+      <div>
+        <span class="movement-eyebrow">NOVEXAPP / CATÁLOGO</span>
+        <h2 id="movement-title">Movimientos de stock</h2>
+        <p id="movement-description">
+          Historial de entradas, salidas y ajustes del producto.
+        </p>
+      </div>
+
+      <button id="movement-close" type="button" class="movement-close" aria-label="Cerrar historial de movimientos"
+        (click)="cerrarMovimientos()">
+        <span aria-hidden="true">×</span>
+      </button>
+    </header>
+
+    <div class="movements-body">
+      <div class="movement-product">
+        <div class="movement-product-info">
+          <span class="movement-reference">
+            {{ productoSeleccionado?.referencia || 'Sin referencia' }}
+          </span>
+
+          <strong>
+            {{ productoSeleccionado?.descripcion || 'Producto' }}
+          </strong>
+
+          <span class="movement-product-detail">
+            {{ productoSeleccionado?.marca || '—' }}
+            · {{ productoSeleccionado?.modelo || '—' }}
+          </span>
+        </div>
+
+        <div class="movement-current-stock">
+          <span>Stock actual</span>
+          <strong>
+            {{ (productoSeleccionado?.unidades || 0) | number:'1.0-2' }}
+            <small>uds.</small>
+          </strong>
+        </div>
+      </div>
+
+      <div class="movements-toolbar">
+        <div>
+          <h3>Historial del producto</h3>
+          <p aria-live="polite">
+            {{
+            cargandoMovimientos
+            ? 'Cargando movimientos…'
+            : errorMovimientos
+            ? 'Historial no disponible'
+            : movimientosFiltrados.length + ' movimientos'
+            }}
+          </p>
+        </div>
+
+        <div class="movement-search">
+          <label class="visually-hidden" for="movement-search">
+            Buscar por tipo o motivo
           </label>
 
-          <input
-            type="text"
-            class="form-control"
-            [(ngModel)]="filtroProducto"
-            placeholder="Buscar por referencia, gama, marca, modelo o descripción"
-          />
-
+          <input id="movement-search" type="search" class="form-control" [(ngModel)]="filtroCodigo"
+            placeholder="Buscar por tipo o motivo…" [disabled]="cargandoMovimientos || !!errorMovimientos" />
         </div>
-
       </div>
 
-      <div class="table-responsive">
+      <div *ngIf="errorMovimientos" class="movement-error" role="alert">
+        <span>{{ errorMovimientos }}</span>
 
-        <table class="table table-striped align-middle mb-0">
+        <button *ngIf="productoSeleccionado as producto" type="button" class="action-secondary"
+          (click)="verMovimientos(producto)">
+          Reintentar
+        </button>
+      </div>
 
+      <div *ngIf="!errorMovimientos" class="movement-table-scroll" tabindex="0" role="region"
+        aria-label="Tabla de movimientos" [attr.aria-busy]="cargandoMovimientos">
+        <table class="movement-table">
           <thead>
-
             <tr>
-              <th>Referencia</th>
-              <th>Gama</th>
-              <th>Marca</th>
-              <th>Modelo</th>
-              <th>Familia</th>
-              <th>Subfamilia</th>
-              <th>Descripción</th>
-
-              <th class="text-end">
-                Precio sin IVA
-              </th>
-
-              <th class="text-center">
-                Unidades
-              </th>
-
-              <th class="text-center">
-                Ajuste
-              </th>
-
-              <th class="text-end">
-                Unidades (+/-)
-              </th>
-
-              <th class="text-center">
-                Movimientos
-              </th>
+              <th scope="col">Fecha y hora</th>
+              <th scope="col">Tipo</th>
+              <th scope="col" class="text-end">Variación</th>
+              <th scope="col" class="text-end">Stock anterior</th>
+              <th scope="col" class="text-end">Stock resultante</th>
+              <th scope="col">Motivo</th>
             </tr>
-
           </thead>
 
           <tbody>
-
-            <tr *ngFor="let p of productosFiltrados">
-
-              <td>{{ p.referencia || '-' }}</td>
-              <td>{{ p.gama || '-' }}</td>
-              <td>{{ p.marca || '-' }}</td>
-              <td>{{ p.modelo || '-' }}</td>
-              <td>{{ p.familia || '-' }}</td>
-              <td>{{ p.subfamilia || '-' }}</td>
-              <td>{{ p.descripcion || '-' }}</td>
-
-              <td class="text-end">
-                {{
-                  (p.precioSinIva || 0)
-                  | number:'1.2-2'
-                }} €
+            <tr *ngIf="cargandoMovimientos">
+              <td colspan="6" class="movement-empty">
+                <strong>Cargando historial…</strong>
               </td>
-
-              <td class="text-center">
-
-                <span
-                  class="badge"
-                  [class.bg-success]="(p.unidades || 0) > 0"
-                  [class.bg-danger]="(p.unidades || 0) <= 0"
-                >
-                  {{
-                    (p.unidades || 0) <= 0
-                      ? 'Sin unidades (' + p.unidades + ')'
-                      : p.unidades
-                  }}
-                </span>
-
-              </td>
-
-              <td
-                class="text-center"
-                style="max-width: 140px;"
-              >
-
-                <input
-                  type="number"
-                  class="form-control form-control-sm text-center"
-                  [ngModel]="getAjuste(p.id ?? 0)"
-                  (ngModelChange)="setAjuste(p.id ?? 0, $event)"
-                  min="1"
-                />
-
-              </td>
-
-              <td class="text-end">
-
-                <button
-                  class="btn btn-sm btn-outline-success me-2"
-                  (click)="subirUnidades(p)"
-                  [disabled]="!p.id"
-                >
-                  + Subir
-                </button>
-
-                <button
-                  class="btn btn-sm btn-outline-danger"
-                  (click)="bajarUnidades(p)"
-                  [disabled]="!p.id"
-                >
-                  - Bajar
-                </button>
-
-              </td>
-
-              <td class="text-center">
-
-                <button
-                  class="btn btn-sm btn-outline-primary"
-                  (click)="verMovimientos(p)"
-                  [disabled]="!p.id"
-                >
-                  Ver movimientos
-                </button>
-
-              </td>
-
             </tr>
 
-            <tr *ngIf="productosFiltrados.length === 0">
-
-              <td
-                colspan="12"
-                class="text-center py-3"
-              >
-                No hay productos que coincidan con la búsqueda.
-              </td>
-
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- =============================================================
-     MODAL MOVIMIENTOS
-     ============================================================= -->
-
-<div
-  class="modal fade show"
-  tabindex="-1"
-  style="display: block; background: rgba(0,0,0,0.5);"
-  *ngIf="mostrarModalMovimientos"
->
-
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-
-    <div class="modal-content">
-
-      <div class="modal-header">
-
-        <h5 class="modal-title">
-
-          Movimientos de:
-
-          <strong>
-            {{ productoSeleccionado?.descripcion }}
-          </strong>
-
-          <span *ngIf="productoSeleccionado?.referencia">
-            ({{ productoSeleccionado?.referencia }})
-          </span>
-
-        </h5>
-
-        <button
-          type="button"
-          class="btn-close"
-          (click)="cerrarMovimientos()"
-        ></button>
-
-      </div>
-
-      <div class="modal-body">
-
-        <div class="row mb-3">
-
-          <div class="col-md-4">
-
-            <label class="form-label">
-              Filtrar por referencia
-            </label>
-
-            <input
-              type="text"
-              class="form-control"
-              [(ngModel)]="filtroCodigo"
-              placeholder="Buscar referencia"
-            />
-
-          </div>
-
-        </div>
-
-        <div class="table-responsive">
-
-          <table class="table table-bordered table-sm align-middle mb-0">
-
-            <thead>
-
-              <tr>
-                <th>Fecha</th>
-                <th>Referencia</th>
-                <th>Producto</th>
-                <th>Tipo</th>
-
-                <th class="text-center">
-                  Cantidad
-                </th>
-
-                <th class="text-center">
-                  Unidades anteriores
-                </th>
-
-                <th class="text-center">
-                  Unidades nuevas
-                </th>
-
-                <th>Motivo</th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
+            <ng-container *ngIf="!cargandoMovimientos">
               <tr *ngFor="let m of movimientosFiltrados">
-
-                <td>
-                  {{ m.fecha | date:'dd/MM/yyyy HH:mm' }}
+                <td class="movement-date">
+                  <strong>{{ m.fecha | date:'dd/MM/yyyy' }}</strong>
+                  <span>{{ m.fecha | date:'HH:mm' }}</span>
                 </td>
 
                 <td>
-                  {{ m.producto?.referencia || '-' }}
+                  <span class="movement-type">{{ m.tipo }}</span>
                 </td>
 
-                <td>
-
-                  {{ m.producto?.descripcion || '-' }}
-
-                  <span *ngIf="m.producto?.modelo">
-                    - {{ m.producto?.modelo }}
-                  </span>
-
+                <td class="text-end movement-delta" [class.delta-positive]="
+                    m.unidadesNuevas > m.unidadesAnteriores
+                  " [class.delta-negative]="
+                    m.unidadesNuevas < m.unidadesAnteriores
+                  ">
+                  {{
+                  m.unidadesNuevas > m.unidadesAnteriores ? '+' : ''
+                  }}{{
+                  (m.unidadesNuevas - m.unidadesAnteriores)
+                  | number:'1.0-2'
+                  }}
                 </td>
 
-                <td>
-
-                  <span
-                    class="badge"
-                    [class.bg-success]="m.tipo === 'ENTRADA'"
-                    [class.bg-danger]="m.tipo === 'SALIDA'"
-                  >
-                    {{ m.tipo }}
-                  </span>
-
+                <td class="text-end movement-number">
+                  {{ m.unidadesAnteriores | number:'1.0-2' }}
                 </td>
 
-                <td class="text-center">
-                  {{ m.cantidad }}
+                <td class="text-end movement-number resulting-stock">
+                  {{ m.unidadesNuevas | number:'1.0-2' }}
                 </td>
 
-                <td class="text-center">
-                  {{ m.unidadesAnteriores }}
+                <td class="movement-reason">
+                  {{ m.motivo || 'Sin motivo indicado' }}
                 </td>
-
-                <td class="text-center">
-                  {{ m.unidadesNuevas }}
-                </td>
-
-                <td>
-                  {{ m.motivo || '-' }}
-                </td>
-
               </tr>
 
               <tr *ngIf="movimientosFiltrados.length === 0">
+                <td colspan="6" class="movement-empty">
+                  <span class="empty-symbol" aria-hidden="true">↔</span>
 
-                <td
-                  colspan="8"
-                  class="text-center py-3"
-                >
-                  No hay movimientos registrados.
+                  <strong>
+                    {{
+                    filtroCodigo.trim()
+                    ? 'No encontramos coincidencias'
+                    : 'Todavía no hay movimientos'
+                    }}
+                  </strong>
+
+                  <p>
+                    {{
+                    filtroCodigo.trim()
+                    ? 'Prueba con otro tipo o motivo.'
+                    : 'Las entradas, salidas y ajustes registrados aparecerán aquí.'
+                    }}
+                  </p>
+
+                  <button *ngIf="filtroCodigo.trim()" type="button" class="action-secondary"
+                    (click)="filtroCodigo = ''">
+                    Limpiar búsqueda
+                  </button>
                 </td>
-
               </tr>
-
-            </tbody>
-
-          </table>
-
-        </div>
-
+            </ng-container>
+          </tbody>
+        </table>
       </div>
-
-      <div class="modal-footer">
-
-        <button
-          class="btn btn-secondary"
-          (click)="cerrarMovimientos()"
-        >
-          Cerrar
-        </button>
-
-      </div>
-
     </div>
 
-  </div>
+    <footer class="movements-footer">
+      <span>La variación muestra el cambio de existencias registrado.</span>
 
+      <button type="button" class="action-secondary" (click)="cerrarMovimientos()">
+        Cerrar
+      </button>
+    </footer>
+  </section>
 </div>
 
+<!-- MODAL PRODUCTO → CLIENTE → DOCUMENTACIÓN -->
 
-<!-- =============================================================
-     MODAL PRODUCTO → CLIENTE → DOCUMENTACIÓN
-     ============================================================= -->
-
-<div
-  class="modal fade show"
-  tabindex="-1"
-  style="display: block; background: rgba(0,0,0,0.55);"
-  *ngIf="mostrarModalAsignarCliente"
->
-
+<div class="modal fade show" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="assignment-title"
+  style="display: block; background: rgba(0,0,0,0.55);" *ngIf="mostrarModalAsignarCliente">
   <div class="modal-dialog modal-lg modal-dialog-centered">
-
     <div class="modal-content shadow">
 
-      <!-- CABECERA -->
-
       <div class="modal-header">
-
-        <h5 class="modal-title">
-
+        <h5 id="assignment-title" class="modal-title">
           <span *ngIf="pasoAsignacion === 'cliente'">
             Asignar producto a cliente
           </span>
@@ -529,88 +446,52 @@
           <span *ngIf="pasoAsignacion === 'documentacion'">
             Producto asignado
           </span>
-
         </h5>
 
-        <button
-          type="button"
-          class="btn-close"
-          (click)="cerrarAsignacionCliente()"
-          [disabled]="asignandoProducto || generandoDocumento"
-        ></button>
-
+        <button type="button" class="btn-close" aria-label="Cerrar asignación de producto"
+          (click)="cerrarAsignacionCliente()" [disabled]="asignandoProducto || generandoDocumento"></button>
       </div>
-
-
-      <!-- BODY -->
 
       <div class="modal-body">
 
-        <!-- =====================================================
-             PASO 1: CLIENTE
-             ===================================================== -->
+        <!-- PASO 1: CLIENTE -->
 
         <ng-container *ngIf="pasoAsignacion === 'cliente'">
-
           <div class="alert alert-success">
-
-            <strong>
-              ✓ Producto creado correctamente
-            </strong>
+            <strong>✓ Producto creado correctamente</strong>
 
             <div class="mt-2">
               {{ productoRecienCreado?.descripcion }}
             </div>
 
             <small class="text-muted">
-
               {{ productoRecienCreado?.marca }}
 
               <span *ngIf="productoRecienCreado?.modelo">
                 · {{ productoRecienCreado?.modelo }}
               </span>
-
             </small>
-
           </div>
 
           <h6 class="mb-3">
             ¿Quieres añadir este producto a un cliente?
           </h6>
 
-
-          <!-- ===================================================
-               BUSCADOR DE CLIENTES
-               =================================================== -->
-
           <div class="mb-4">
-
-            <label class="form-label fw-semibold">
+            <label for="assignment-client-search" class="form-label fw-semibold" *ngIf="!clienteSeleccionado">
               Cliente
             </label>
 
+            <!-- CLIENTE SELECCIONADO -->
 
-            <!-- ===============================================
-                 CLIENTE YA SELECCIONADO
-                 =============================================== -->
-
-            <div
-              *ngIf="clienteSeleccionado as cliente"
-              class="border rounded p-3 bg-light"
-            >
-
-              <div
-                class="d-flex justify-content-between align-items-start gap-3"
-              >
-
+            <div *ngIf="clienteSeleccionado as cliente" class="border rounded p-3 bg-light">
+              <div class="d-flex justify-content-between align-items-start gap-3">
                 <div>
-
                   <div class="fw-semibold">
                     ✓ {{ cliente.nombreApellidos }}
                   </div>
 
                   <div class="text-muted small mt-1">
-
                     <span *ngIf="cliente.cifDni">
                       {{ cliente.cifDni }}
                     </span>
@@ -622,92 +503,48 @@
                     <span *ngIf="cliente.movil">
                       · {{ cliente.movil }}
                     </span>
-
                   </div>
 
-                  <div
-                    *ngIf="cliente.email"
-                    class="text-muted small mt-1"
-                  >
+                  <div *ngIf="cliente.email" class="text-muted small mt-1">
                     {{ cliente.email }}
                   </div>
-
                 </div>
 
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary"
-                  (click)="quitarClienteSeleccionado()"
-                  [disabled]="asignandoProducto"
-                >
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="quitarClienteSeleccionado()"
+                  [disabled]="asignandoProducto">
                   Cambiar
                 </button>
-
               </div>
-
             </div>
 
-
-            <!-- ===============================================
-                 BUSCADOR
-                 =============================================== -->
+            <!-- BUSCADOR -->
 
             <ng-container *ngIf="!clienteSeleccionado">
-
               <div class="position-relative">
-
                 <div class="input-group">
-
-                  <span class="input-group-text">
+                  <span class="input-group-text" aria-hidden="true">
                     🔎
                   </span>
 
-                  <input
-                    type="text"
-                    class="form-control"
-                    [(ngModel)]="filtroCliente"
-                    placeholder="Escribe nombre, DNI/CIF, teléfono o email..."
-                    autocomplete="off"
-                    [disabled]="asignandoProducto"
-                  />
-
+                  <input id="assignment-client-search" type="text" class="form-control" [(ngModel)]="filtroCliente"
+                    placeholder="Escribe nombre, DNI/CIF, teléfono o email..." autocomplete="off"
+                    [disabled]="asignandoProducto" />
                 </div>
 
-
-                <!-- RESULTADOS -->
-
-                <div
-                  *ngIf="filtroCliente.trim().length > 0"
-                  class="border rounded mt-1 bg-white shadow-sm"
-                  style="
-                    max-height: 280px;
-                    overflow-y: auto;
-                  "
-                >
-
-                  <button
-                    *ngFor="let cliente of clientesFiltrados"
-                    type="button"
+                <div *ngIf="filtroCliente.trim().length > 0" class="border rounded mt-1 bg-white shadow-sm"
+                  style="max-height: 280px; overflow-y: auto;">
+                  <button *ngFor="let cliente of clientesFiltrados" type="button"
                     class="btn btn-light w-100 text-start rounded-0 border-bottom p-3"
-                    (click)="seleccionarCliente(cliente)"
-                    [disabled]="asignandoProducto"
-                  >
-
-                    <div
-                      class="d-flex justify-content-between align-items-start"
-                    >
-
+                    (click)="seleccionarCliente(cliente)" [disabled]="asignandoProducto">
+                    <div class="d-flex justify-content-between align-items-start">
                       <div>
-
                         <div class="fw-semibold">
                           {{ cliente.nombreApellidos }}
                         </div>
 
                         <div class="small text-muted mt-1">
-
                           <span *ngIf="cliente.cifDni">
-                            DNI/CIF:
-                            {{ cliente.cifDni }}
+                            DNI/CIF: {{ cliente.cifDni }}
                           </span>
 
                           <span *ngIf="cliente.telefono">
@@ -717,508 +554,232 @@
                           <span *ngIf="cliente.movil">
                             · {{ cliente.movil }}
                           </span>
-
                         </div>
 
-                        <div
-                          *ngIf="cliente.email"
-                          class="small text-muted"
-                        >
+                        <div *ngIf="cliente.email" class="small text-muted">
                           {{ cliente.email }}
                         </div>
-
                       </div>
 
-                      <span class="text-primary">
-                        Seleccionar
-                      </span>
-
+                      <span class="text-primary">Seleccionar</span>
                     </div>
-
                   </button>
 
-
-                  <!-- SIN RESULTADOS -->
-
-                  <div
-                    *ngIf="clientesFiltrados.length === 0"
-                    class="p-4 text-center text-muted"
-                  >
-
-                    <div class="mb-1">
-                      No se encontraron clientes
-                    </div>
+                  <div *ngIf="clientesFiltrados.length === 0" class="p-4 text-center text-muted">
+                    <div class="mb-1">No se encontraron clientes</div>
 
                     <small>
-                      Prueba con otro nombre, DNI/CIF,
-                      teléfono o email.
+                      Prueba con otro nombre, DNI/CIF, teléfono o email.
                     </small>
-
                   </div>
-
                 </div>
-
               </div>
 
-
-              <!-- TEXTO DE AYUDA -->
-
-              <div
-                *ngIf="!filtroCliente.trim()"
-                class="form-text"
-              >
+              <div *ngIf="!filtroCliente.trim()" class="form-text">
                 Empieza a escribir para buscar un cliente.
               </div>
 
-              <div
-                *ngIf="
+              <div *ngIf="
                   filtroCliente.trim() &&
                   clientesFiltrados.length > 0
-                "
-                class="form-text"
-              >
-                {{
-                  clientesFiltrados.length
-                }}
-                resultado{{
-                  clientesFiltrados.length === 1 ? '' : 's'
-                }}
+                " class="form-text">
+                {{ clientesFiltrados.length }}
+                resultado{{ clientesFiltrados.length === 1 ? '' : 's' }}
               </div>
-
             </ng-container>
-
           </div>
 
+          <!-- DATOS DE ASIGNACIÓN -->
 
-          <!-- ===================================================
-               DATOS DE ASIGNACIÓN
-               =================================================== -->
-
-          <div
-            *ngIf="clienteSeleccionadoId"
-            class="border rounded p-3 bg-light"
-          >
-
-            <h6 class="mb-3">
-              Datos de la asignación
-            </h6>
+          <div *ngIf="clienteSeleccionadoId" class="border rounded p-3 bg-light">
+            <h6 class="mb-3">Datos de la asignación</h6>
 
             <div class="row g-3">
-
-              <!-- CANTIDAD -->
-
               <div class="col-md-4">
-
-                <label class="form-label">
+                <label for="assignment-quantity" class="form-label">
                   Cantidad
                 </label>
 
-                <input
-                  type="number"
-                  class="form-control"
-                  [(ngModel)]="cantidadAsignar"
-                  min="1"
-                  [max]="productoRecienCreado?.unidades || 1"
-                  [disabled]="asignandoProducto"
-                />
+                <input id="assignment-quantity" type="number" class="form-control" [(ngModel)]="cantidadAsignar" min="1"
+                  [max]="productoRecienCreado?.unidades || 1" [disabled]="asignandoProducto" />
 
                 <small class="text-muted">
                   Disponibles:
-                  <strong>
-                    {{ productoRecienCreado?.unidades || 0 }}
-                  </strong>
+                  <strong>{{ productoRecienCreado?.unidades || 0 }}</strong>
                 </small>
-
               </div>
 
-
-              <!-- DESCUENTO -->
-
               <div class="col-md-4">
-
-                <label class="form-label">
+                <label for="assignment-discount" class="form-label">
                   Descuento
                 </label>
 
                 <div class="input-group">
+                  <input id="assignment-discount" type="number" class="form-control" [(ngModel)]="descuentoAsignar"
+                    min="0" max="100" step="0.01" [disabled]="asignandoProducto" />
 
-                  <input
-                    type="number"
-                    class="form-control"
-                    [(ngModel)]="descuentoAsignar"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    [disabled]="asignandoProducto"
-                  />
-
-                  <span class="input-group-text">
-                    %
-                  </span>
-
+                  <span class="input-group-text">%</span>
                 </div>
-
               </div>
 
-
-              <!-- PAGADO -->
-
               <div class="col-md-4">
-
-                <label class="form-label">
+                <label for="assignment-payment" class="form-label">
                   Importe pagado
                 </label>
 
                 <div class="input-group">
+                  <input id="assignment-payment" type="number" class="form-control" [(ngModel)]="importePagadoCliente"
+                    min="0" step="0.01" [disabled]="asignandoProducto" />
 
-                  <input
-                    type="number"
-                    class="form-control"
-                    [(ngModel)]="importePagadoCliente"
-                    min="0"
-                    step="0.01"
-                    [disabled]="asignandoProducto"
-                  />
-
-                  <span class="input-group-text">
-                    €
-                  </span>
-
+                  <span class="input-group-text">€</span>
                 </div>
-
               </div>
-
             </div>
 
             <div class="mt-3">
-
               <small class="text-muted">
-
                 Precio producto:
-
                 <strong>
                   {{
-                    (productoRecienCreado?.precioSinIva || 0)
-                    | number:'1.2-2'
+                  (productoRecienCreado?.precioSinIva || 0)
+                  | number:'1.2-2'
                   }} €
                 </strong>
-
                 sin IVA
-
               </small>
-
             </div>
-
           </div>
-
         </ng-container>
 
-
-        <!-- =====================================================
-             PASO 2: DOCUMENTACIÓN
-             ===================================================== -->
+        <!-- PASO 2: DOCUMENTACIÓN -->
 
         <ng-container *ngIf="pasoAsignacion === 'documentacion'">
-
           <div class="text-center py-3">
-
-            <div
-              class="text-success mb-3"
-              style="font-size: 3rem;"
-            >
+            <div class="text-success mb-3" style="font-size: 3rem;" aria-hidden="true">
               ✓
             </div>
 
-            <h4>
-              Producto asignado correctamente
-            </h4>
+            <h4>Producto asignado correctamente</h4>
 
             <p class="text-muted mb-4">
-              El producto se ha añadido correctamente
-              a la ficha del cliente.
+              El producto se ha añadido correctamente a la ficha del cliente.
             </p>
 
-
-            <!-- RESUMEN -->
-
             <div class="card text-start mb-4">
-
               <div class="card-body">
-
                 <div class="row g-3">
-
                   <div class="col-md-12">
-
-                    <small class="text-muted d-block">
-                      Cliente
-                    </small>
-
+                    <small class="text-muted d-block">Cliente</small>
                     <strong>
-                      {{
-                        clienteSeleccionado?.nombreApellidos
-                        || '-'
-                      }}
+                      {{ clienteSeleccionado?.nombreApellidos || '-' }}
                     </strong>
-
                   </div>
 
                   <div class="col-md-12">
-
-                    <small class="text-muted d-block">
-                      Producto
-                    </small>
-
-                    <strong>
-                      {{ productoRecienCreado?.descripcion }}
-                    </strong>
-
+                    <small class="text-muted d-block">Producto</small>
+                    <strong>{{ productoRecienCreado?.descripcion }}</strong>
                   </div>
 
                   <div class="col-md-3">
-
-                    <small class="text-muted d-block">
-                      Cantidad
-                    </small>
-
-                    <strong>
-                      {{ cantidadAsignar }}
-                    </strong>
-
+                    <small class="text-muted d-block">Cantidad</small>
+                    <strong>{{ cantidadAsignar }}</strong>
                   </div>
 
                   <div class="col-md-3">
-
-                    <small class="text-muted d-block">
-                      Precio unitario
-                    </small>
-
+                    <small class="text-muted d-block">Precio unitario</small>
                     <strong>
                       {{
-                        (productoRecienCreado?.precioSinIva || 0)
-                        | number:'1.2-2'
+                      (productoRecienCreado?.precioSinIva || 0)
+                      | number:'1.2-2'
                       }} €
                     </strong>
-
                   </div>
 
                   <div class="col-md-3">
-
-                    <small class="text-muted d-block">
-                      Descuento
-                    </small>
-
-                    <strong>
-                      {{ descuentoAsignar || 0 }} %
-                    </strong>
-
+                    <small class="text-muted d-block">Descuento</small>
+                    <strong>{{ descuentoAsignar || 0 }} %</strong>
                   </div>
 
                   <div class="col-md-3">
-
-                    <small class="text-muted d-block">
-                      Importe pagado
-                    </small>
-
+                    <small class="text-muted d-block">Importe pagado</small>
                     <strong>
-                      {{
-                        (importePagadoCliente || 0)
-                        | number:'1.2-2'
-                      }} €
+                      {{ (importePagadoCliente || 0) | number:'1.2-2' }} €
                     </strong>
-
                   </div>
-
                 </div>
-
               </div>
-
             </div>
 
-
-            <!-- =================================================
-                 DOCUMENTACIÓN
-                 ================================================= -->
-
             <div class="text-start">
-
-              <h6 class="mb-2">
-                ¿Quieres generar documentación?
-              </h6>
+              <h6 class="mb-2">¿Quieres generar documentación?</h6>
 
               <p class="text-muted small mb-3">
                 Elige si quieres generar únicamente el albarán
                 o generar la factura.
               </p>
 
-
               <div class="row g-3">
-
-                <!-- =============================================
-                     SOLO ALBARÁN
-                     ============================================= -->
-
                 <div class="col-md-6">
-
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary w-100 py-3 h-100"
-                    (click)="generarAlbaranProducto()"
-                    [disabled]="generandoDocumento"
-                  >
-
+                  <button type="button" class="btn btn-outline-primary w-100 py-3 h-100"
+                    (click)="generarAlbaranProducto()" [disabled]="generandoDocumento">
                     <ng-container *ngIf="!generandoDocumento">
-
-                      <div
-                        class="fw-semibold mb-1"
-                        style="font-size: 1.05rem;"
-                      >
+                      <div class="fw-semibold mb-1" style="font-size: 1.05rem;">
                         📄 Solo albarán
                       </div>
-
-                      <small>
-                        Crear el albarán del producto
-                      </small>
-
+                      <small>Crear el albarán del producto</small>
                     </ng-container>
-
 
                     <ng-container *ngIf="generandoDocumento">
-
-                      <div class="fw-semibold">
-                        Generando...
-                      </div>
-
-                      <small>
-                        Espera un momento
-                      </small>
-
+                      <div class="fw-semibold">Generando...</div>
+                      <small>Espera un momento</small>
                     </ng-container>
-
                   </button>
-
                 </div>
-
-
-                <!-- =============================================
-                     FACTURA
-                     ============================================= -->
 
                 <div class="col-md-6">
-
-                  <button
-                    type="button"
-                    class="btn btn-outline-success w-100 py-3 h-100"
-                    (click)="generarFacturaProducto()"
-                    [disabled]="generandoDocumento"
-                  >
-
+                  <button type="button" class="btn btn-outline-success w-100 py-3 h-100"
+                    (click)="generarFacturaProducto()" [disabled]="generandoDocumento">
                     <ng-container *ngIf="!generandoDocumento">
-
-                      <div
-                        class="fw-semibold mb-1"
-                        style="font-size: 1.05rem;"
-                      >
+                      <div class="fw-semibold mb-1" style="font-size: 1.05rem;">
                         🧾 Generar factura
                       </div>
-
                       <small>
-                        Confirma el albarán y crea
-                        la factura en borrador
+                        Confirma el albarán y crea la factura en borrador
                       </small>
-
                     </ng-container>
-
 
                     <ng-container *ngIf="generandoDocumento">
-
-                      <div class="fw-semibold">
-                        Generando...
-                      </div>
-
-                      <small>
-                        Espera un momento
-                      </small>
-
+                      <div class="fw-semibold">Generando...</div>
+                      <small>Espera un momento</small>
                     </ng-container>
-
                   </button>
-
                 </div>
-
               </div>
-
             </div>
-
           </div>
-
         </ng-container>
 
       </div>
 
-
-      <!-- =======================================================
-           FOOTER PASO 1
-           ======================================================= -->
-
-      <div
-        class="modal-footer"
-        *ngIf="pasoAsignacion === 'cliente'"
-      >
-
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          (click)="finalizarFlujoProducto()"
-          [disabled]="asignandoProducto"
-        >
+      <div class="modal-footer" *ngIf="pasoAsignacion === 'cliente'">
+        <button type="button" class="btn btn-outline-secondary" (click)="finalizarFlujoProducto()"
+          [disabled]="asignandoProducto">
           No, terminar
         </button>
 
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="asignarProductoACliente()"
-          [disabled]="
-            !clienteSeleccionadoId ||
-            asignandoProducto
-          "
-        >
-
-          <span *ngIf="!asignandoProducto">
-            Añadir al cliente
-          </span>
-
-          <span *ngIf="asignandoProducto">
-            Añadiendo...
-          </span>
-
+        <button type="button" class="btn btn-primary" (click)="asignarProductoACliente()"
+          [disabled]="!clienteSeleccionadoId || asignandoProducto">
+          {{ asignandoProducto ? 'Añadiendo...' : 'Añadir al cliente' }}
         </button>
-
       </div>
 
-
-      <!-- =======================================================
-           FOOTER PASO 2
-           ======================================================= -->
-
-      <div
-        class="modal-footer"
-        *ngIf="pasoAsignacion === 'documentacion'"
-      >
-
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="finalizarFlujoProducto()"
-          [disabled]="generandoDocumento"
-        >
+      <div class="modal-footer" *ngIf="pasoAsignacion === 'documentacion'">
+        <button type="button" class="btn btn-secondary" (click)="finalizarFlujoProducto()"
+          [disabled]="generandoDocumento">
           No generar documentación
         </button>
-
       </div>
 
     </div>
-
   </div>
-
 </div>
