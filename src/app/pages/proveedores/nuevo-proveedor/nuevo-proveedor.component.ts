@@ -11,6 +11,7 @@ import { ProveedorSaveDto } from '../../../interfaces/iproveedor-save';
   standalone: true,
   imports: [FormsModule, CommonModule],
   templateUrl: './nuevo-proveedor.component.html',
+  styleUrl: './nuevo-proveedor.component.css',
 })
 export class NuevoProveedorComponent {
   proveedor: Proveedor = {
@@ -148,5 +149,11 @@ export class NuevoProveedorComponent {
         alert('Error al guardar el proveedor');
       },
     });
+  }
+
+  readonly esEdicion = false;
+
+  cancelar(): void {
+    void this.router.navigate(['/app/proveedores']);
   }
 }

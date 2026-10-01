@@ -1,180 +1,292 @@
-<div class="container my-4">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h3 class="fw-bold mb-3">{{ titulo }}</h3>
-
-      <form [formGroup]="rutaForm" (ngSubmit)="onSubmit()">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Cliente</label>
-            <select class="form-select" formControlName="clienteId">
-              <option [ngValue]="null">— Selecciona cliente —</option>
-              <option *ngFor="let c of clientes" [ngValue]="c.id">
-                {{ c.nombreApellidos }}{{ c.nombreComercial ? ' (' + c.nombreComercial + ')' : '' }}
-              </option>
-            </select>
-            <div class="text-danger mt-1" *ngIf="enviado && f['clienteId'].invalid">
-              El cliente es obligatorio.
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Nombre del Transportista</label>
-            <select class="form-select" formControlName="transportistaId">
-              <option [ngValue]="null">— Selecciona transportista —</option>
-              <option *ngFor="let t of transportistas" [ngValue]="t.id">
-                {{ t.nombre }}
-              </option>
-            </select>
-            <div class="text-danger mt-1" *ngIf="enviado && f['nombreTransportista'].invalid">
-              El transportista es obligatorio.
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Correo del transportista</label>
-            <input type="email" class="form-control" formControlName="emailTransportista" readonly />
-            <div class="text-danger mt-1" *ngIf="enviado && f['emailTransportista'].invalid">
-              Debes introducir un correo válido.
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Acompañante 1</label>
-            <input type="text" class="form-control" formControlName="acompanante1" placeholder="Opcional" />
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Acompañante 2</label>
-            <input type="text" class="form-control" formControlName="acompanante2" placeholder="Opcional" />
-          </div>
-
-          <div class="col-md-3">
-            <label class="form-label">Fecha</label>
-            <input type="date" class="form-control" formControlName="fecha" />
-            <div class="text-danger mt-1" *ngIf="enviado && f['fecha'].invalid">
-              La fecha es obligatoria.
-            </div>
-          </div>
-
-          <div class="col-md-3">
-            <label class="form-label">Estado</label>
-            <select class="form-select" formControlName="estado">
-              <option value="pendiente">Pendiente</option>
-              <option value="en_curso">En curso</option>
-              <option value="cerrada">Cerrada</option>
-            </select>
-          </div>
-
-          <input type="hidden" formControlName="destino" />
-
-          <div class="col-md-6">
-            <label class="form-label">Tarea</label>
-            <input type="text" class="form-control" formControlName="tarea" />
-          </div>
-
-          <div class="col-12 mt-2">
-            <hr class="my-2" />
-            <h5 class="fw-bold mb-2">Productos a entregar</h5>
-
-            <div class="row g-2 align-items-end" [formGroup]="lineaForm">
-              <div class="col-md-7">
-                <label class="form-label">Producto (solo pendientes)</label>
-                <select class="form-select" formControlName="productoId" [disabled]="!rutaForm.value.clienteId">
-                  <option [ngValue]="null">— Selecciona producto —</option>
-
-                  <option *ngFor="let cp of clienteProductos" [ngValue]="cp.productoId"
-                    [disabled]="getDisponibles(cp.productoId) === 0">
-                    {{ cp.codigo ? cp.codigo + ' - ' : '' }}{{ cp.nombre }}
-                    | Pendiente: {{ getDisponibles(cp.productoId) }}
-                  </option>
-                </select>
-
-                <div class="form-text" *ngIf="productoSeleccionado">
-                  Disponibles: {{ getDisponibles(productoSeleccionado.productoId) }}
-                </div>
-
-                <div class="form-text" *ngIf="rutaForm.value.clienteId && clienteProductos.length === 0">
-                  Este cliente no tiene productos pendientes de entrega.
-                </div>
-              </div>
-
-              <div class="col-md-3">
-                <label class="form-label">Cantidad</label>
-                <input type="number" class="form-control" formControlName="cantidad" min="1" step="1" />
-
-                <div class="text-danger mt-1" *ngIf="lf['cantidad'].touched && lf['cantidad'].errors?.['min']">
-                  Cantidad mínima: 1
-                </div>
-
-                <div class="text-danger mt-1" *ngIf="
-    productoSeleccionado &&
-    lf['cantidad'].touched &&
-    (lf['cantidad'].value || 0) > getDisponibles(productoSeleccionado.productoId)
-  ">
-                  Te pasaste. Máximo disponible:
-                  {{ getDisponibles(productoSeleccionado.productoId) }}
-                </div>
-
-                <div class="text-danger mt-1"
-                  *ngIf="productoSeleccionado && getDisponibles(productoSeleccionado.productoId) === 0">
-                  No quedan unidades pendientes para este producto.
-                </div>
-              </div>
-
-              <div class="col-md-2">
-                <button type="button" class="btn btn-primary w-100" (click)="addLinea()" [disabled]="
-                    lineaForm.invalid ||
-                    !rutaForm.value.clienteId ||
-                    clienteProductos.length === 0 ||
-                    (productoSeleccionado && getDisponibles(productoSeleccionado.productoId) === 0)
-                  ">
-                  Añadir
-                </button>
-              </div>
-            </div>
-
-            <div class="mt-3" *ngIf="lineas.length > 0">
-              <table class="table table-sm">
-                <thead>
-                  <tr>
-                    <th>Producto</th>
-                    <th style="width: 120px">Cantidad</th>
-                    <th style="width: 120px"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let l of lineas">
-                    <td>{{ getNombreProducto(l.productoId) }}</td>
-                    <td>{{ l.cantidad }}</td>
-                    <td>
-                      <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeLinea(l.productoId)">
-                        Quitar
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="col-12">
-            <label class="form-label">Observaciones</label>
-            <textarea class="form-control" rows="3" formControlName="observaciones"></textarea>
-          </div>
-        </div>
-
-        <div class="mt-4 d-flex justify-content-between">
-          <button class="btn btn-secondary" type="button" (click)="volver()">⬅ Volver</button>
-
-          <button class="btn btn-primary" type="submit" [disabled]="cargando">
-            {{ idRuta ? 'Actualizar Ruta' : 'Crear Ruta' }}
-          </button>
-        </div>
-
-        <div *ngIf="cargando" class="alert alert-info mt-3">Guardando...</div>
-        <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
-      </form>
+<div class="routes-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">NOVEXAPP / LOGÍSTICA</p>
+      <h1>{{ titulo }}</h1>
+      <p class="page-description">
+        Configura el cliente, el equipo de transporte y las entregas de la ruta.
+      </p>
     </div>
-  </div>
+
+    <button class="button button-secondary" type="button" (click)="volver()">
+      ← Volver a rutas
+    </button>
+  </header>
+
+  <form [formGroup]="rutaForm" (ngSubmit)="onSubmit()">
+    <section class="surface form-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">01</span>
+        <div>
+          <h2>Datos de la ruta</h2>
+          <p>Cliente, fecha y trabajo previsto.</p>
+        </div>
+        <span class="section-tag">Información general</span>
+      </div>
+
+      <div class="fields-grid">
+        <div class="field field-wide">
+          <label for="clienteRuta">
+            Cliente <span class="required">*</span>
+          </label>
+
+          <select id="clienteRuta" class="form-select" formControlName="clienteId"
+            [class.is-invalid]="enviado && f['clienteId'].invalid">
+            <option [ngValue]="null">Selecciona un cliente</option>
+            <option *ngFor="let c of clientes" [ngValue]="c.id">
+              {{ c.nombreApellidos }}
+              {{ c.nombreComercial ? ' (' + c.nombreComercial + ')' : '' }}
+            </option>
+          </select>
+
+          <small class="field-error" *ngIf="enviado && f['clienteId'].invalid">
+            El cliente es obligatorio.
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="fechaRuta">
+            Fecha <span class="required">*</span>
+          </label>
+          <input id="fechaRuta" type="date" class="form-control" formControlName="fecha"
+            [class.is-invalid]="enviado && f['fecha'].invalid" />
+          <small class="field-error" *ngIf="enviado && f['fecha'].invalid">
+            La fecha es obligatoria.
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="estadoRuta">Estado</label>
+          <select id="estadoRuta" class="form-select" formControlName="estado">
+            <option value="pendiente">Pendiente</option>
+            <option value="en_curso">En curso</option>
+            <option value="cerrada">Cerrada</option>
+          </select>
+        </div>
+
+        <div class="field field-wide">
+          <label for="tareaRuta">Tarea</label>
+          <input id="tareaRuta" type="text" class="form-control" formControlName="tarea"
+            placeholder="Ej. Entrega de electrodomésticos o instalación" />
+          <small class="field-hint">
+            Indica una tarea o añade al menos un producto a entregar.
+          </small>
+        </div>
+      </div>
+
+      <input type="hidden" formControlName="destino" />
+    </section>
+
+    <section class="surface form-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">02</span>
+        <div>
+          <h2>Equipo de transporte</h2>
+          <p>Transportista y acompañantes de la ruta.</p>
+        </div>
+      </div>
+
+      <div class="fields-grid">
+        <div class="field">
+          <label for="transportistaRuta">
+            Transportista <span class="required">*</span>
+          </label>
+          <select id="transportistaRuta" class="form-select" formControlName="transportistaId"
+            [class.is-invalid]="enviado && f['nombreTransportista'].invalid">
+            <option [ngValue]="null">Selecciona un transportista</option>
+            <option *ngFor="let t of transportistas" [ngValue]="t.id">
+              {{ t.nombre }}
+            </option>
+          </select>
+          <small class="field-error" *ngIf="enviado && f['nombreTransportista'].invalid">
+            El transportista es obligatorio.
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="emailRuta">
+            Correo del transportista <span class="required">*</span>
+          </label>
+          <input id="emailRuta" type="email" class="form-control" formControlName="emailTransportista"
+            placeholder="Se completa automáticamente" readonly
+            [class.is-invalid]="enviado && f['emailTransportista'].invalid" />
+          <small class="field-error" *ngIf="enviado && f['emailTransportista'].invalid">
+            El transportista debe tener un correo válido en su ficha.
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="acompananteRuta1">Acompañante 1</label>
+          <input id="acompananteRuta1" type="text" class="form-control" formControlName="acompanante1"
+            placeholder="Opcional" />
+        </div>
+
+        <div class="field">
+          <label for="acompananteRuta2">Acompañante 2</label>
+          <input id="acompananteRuta2" type="text" class="form-control" formControlName="acompanante2"
+            placeholder="Opcional" />
+        </div>
+      </div>
+    </section>
+
+    <section class="surface form-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">03</span>
+        <div>
+          <h2>Productos a entregar</h2>
+          <p>Añade los productos pendientes de entrega del cliente.</p>
+        </div>
+        <span class="count-badge">{{ lineas.length }} líneas</span>
+      </div>
+
+      <div class="product-picker" [formGroup]="lineaForm">
+        <div class="field">
+          <label for="productoRuta">Producto</label>
+
+          <select id="productoRuta" class="form-select" formControlName="productoId">
+            <option [ngValue]="null">Selecciona un producto</option>
+            <option *ngFor="let cp of clienteProductos" [ngValue]="cp.productoId"
+              [disabled]="getDisponibles(cp.productoId) === 0">
+              {{ cp.codigo ? cp.codigo + ' - ' : '' }}{{ cp.nombre }}
+              · Pendiente: {{ getDisponibles(cp.productoId) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="cantidadRuta">Cantidad</label>
+          <input id="cantidadRuta" type="number" class="form-control" formControlName="cantidad" min="1" step="1" />
+        </div>
+
+        <button type="button" class="button button-primary" (click)="addLinea()" [disabled]="
+            lineaForm.invalid ||
+            !rutaForm.value.clienteId ||
+            !productoSeleccionado ||
+            (productoSeleccionado &&
+              (
+                getDisponibles(productoSeleccionado.productoId) === 0 ||
+                lf['cantidad'].value >
+                  getDisponibles(productoSeleccionado.productoId)
+              ))
+          ">
+          + Añadir producto
+        </button>
+      </div>
+
+      <p class="field-hint" *ngIf="!rutaForm.value.clienteId">
+        Selecciona primero un cliente para consultar sus productos.
+      </p>
+
+      <p class="field-hint" *ngIf="rutaForm.value.clienteId && clienteProductos.length === 0">
+        No hay productos pendientes disponibles para este cliente.
+      </p>
+
+      <p class="field-hint" *ngIf="productoSeleccionado">
+        Pendiente disponible:
+        <strong>
+          {{ getDisponibles(productoSeleccionado.productoId) }}
+        </strong>
+      </p>
+
+      <p class="field-error" *ngIf="lf['cantidad'].touched && lf['cantidad'].invalid">
+        Introduce una cantidad válida, como mínimo 1.
+      </p>
+
+      <p class="field-error" *ngIf="
+          productoSeleccionado &&
+          lf['cantidad'].value >
+            getDisponibles(productoSeleccionado.productoId)
+        ">
+        La cantidad no puede superar las
+        {{ getDisponibles(productoSeleccionado.productoId) }}
+        unidades disponibles.
+      </p>
+
+      <div class="empty-state" *ngIf="lineas.length === 0">
+        <span class="empty-symbol" aria-hidden="true">+</span>
+        <div>
+          <strong>Sin productos añadidos</strong>
+          <p>Selecciona un producto y su cantidad para añadirlo a la ruta.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap" *ngIf="lineas.length > 0">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th class="quantity-column">Cantidad</th>
+              <th class="actions-column">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of lineas">
+              <td class="product-name">
+                {{ getNombreProducto(l.productoId) }}
+              </td>
+              <td>
+                <span class="quantity-badge">{{ l.cantidad }}</span>
+              </td>
+              <td class="actions-column">
+                <button type="button" class="button button-danger button-small" (click)="removeLinea(l.productoId)"
+                  [attr.aria-label]="
+                    'Quitar ' + getNombreProducto(l.productoId)
+                  ">
+                  Quitar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="surface form-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">04</span>
+        <div>
+          <h2>Observaciones</h2>
+          <p>Indicaciones para facilitar el trabajo del equipo.</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="observacionesRuta">Notas de la ruta</label>
+        <textarea id="observacionesRuta" class="form-control" rows="4" formControlName="observaciones"
+          placeholder="Horario de entrega, acceso al domicilio, avisos..."></textarea>
+      </div>
+    </section>
+
+    <div class="feedback feedback-info" *ngIf="cargando" role="status">
+      Procesando la ruta…
+    </div>
+
+    <div class="feedback feedback-error" *ngIf="error" role="alert">
+      {{ error }}
+    </div>
+
+    <footer class="surface form-footer">
+      <div class="footer-help">
+        <strong>{{ idRuta ? 'Actualizar ruta' : 'Crear ruta' }}</strong>
+        <p>
+          Los campos con <span class="required">*</span> son obligatorios.
+          Indica una tarea o añade productos.
+        </p>
+      </div>
+
+      <div class="form-actions">
+        <button class="button button-secondary" type="button" (click)="volver()">
+          Cancelar
+        </button>
+
+        <button class="button button-primary" type="submit" [disabled]="cargando">
+          {{
+          cargando
+          ? 'Procesando…'
+          : (idRuta ? 'Guardar cambios' : 'Crear ruta')
+          }}
+        </button>
+      </div>
+    </footer>
+  </form>
 </div>

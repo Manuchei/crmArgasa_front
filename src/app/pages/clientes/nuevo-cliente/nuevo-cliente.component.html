@@ -1,123 +1,374 @@
-<div class="cliente-form-page container-fluid mt-4">
-  <h3 class="text-center mb-4">Nuevo Cliente</h3>
+<section class="client-page" aria-labelledby="client-title">
 
-  <form (ngSubmit)="guardarCliente(formCliente)" #formCliente="ngForm">
-    <div class="row mb-3">
-      <div class="col-12">
-        <label>Nombre y apellidos o Empresa *</label>
-        <input [(ngModel)]="cliente.nombreApellidos" name="nombreApellidos" class="form-control" required />
-      </div>
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">NOVEXAPP / GESTIÓN COMERCIAL</span>
+      <h1 id="client-title">Nuevo cliente</h1>
+      <p>Crea su ficha y añade los datos necesarios para trabajar con él.</p>
     </div>
 
-    <h5 class="mt-3">Dirección de facturación</h5>
+    <button type="button" class="action-secondary" (click)="volver()">
+      Volver a clientes
+    </button>
+  </header>
 
-    <div class="row mb-3 g-3">
-      <div class="col-12 col-lg-8">
-        <label>Dirección</label>
-        <input [(ngModel)]="cliente.direccion" name="direccion" class="form-control" />
-      </div>
+  <form #formCliente="ngForm" (ngSubmit)="guardarCliente(formCliente)">
 
-      <div class="col-12 col-md-6 col-lg-4">
-        <label>Código Postal</label>
-        <input [(ngModel)]="cliente.codigoPostal" name="codigoPostal" class="form-control" />
-      </div>
-    </div>
+    <!-- DATOS DEL CLIENTE -->
 
-    <div class="row mb-3 g-3">
-      <div class="col-12 col-md-6">
-        <label>Población</label>
-        <input [(ngModel)]="cliente.poblacion" name="poblacion" class="form-control" />
-      </div>
+    <section class="surface form-section" aria-labelledby="identity-title">
+      <header class="section-heading">
+        <span class="section-number" aria-hidden="true">01</span>
+        <div>
+          <h2 id="identity-title">Datos del cliente</h2>
+          <p>Para guardar necesitas el nombre y al menos un teléfono o móvil.</p>
+        </div>
+      </header>
 
-      <div class="col-12 col-md-6">
-        <label>Provincia</label>
-        <input [(ngModel)]="cliente.provincia" name="provincia" class="form-control" />
-      </div>
-    </div>
+      <div class="fields-grid">
+        <div class="field full-width">
+          <label for="client-name">Nombre y apellidos o razón social *</label>
 
-    <h5 class="mt-3">Dirección de entrega</h5>
+          <input id="client-name" class="form-control" [(ngModel)]="cliente.nombreApellidos" name="nombreApellidos"
+            #nombre="ngModel" required pattern=".*\S.*" placeholder="Nombre del cliente o empresa" [attr.aria-invalid]="
+              nombre.invalid && (nombre.touched || formCliente.submitted)
+            " aria-describedby="name-error" />
 
-    <div class="row mb-3 g-3">
-      <div class="col-12 col-lg-8">
-        <label>Dirección de entrega</label>
-        <input [(ngModel)]="cliente.direccionEntrega" name="direccionEntrega" class="form-control" />
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-4">
-        <label>Código Postal entrega</label>
-        <input [(ngModel)]="cliente.codigoPostalEntrega" name="codigoPostalEntrega" class="form-control" />
-      </div>
-    </div>
-
-    <div class="row mb-3 g-3">
-      <div class="col-12 col-md-6">
-        <label>Población entrega</label>
-        <input [(ngModel)]="cliente.poblacionEntrega" name="poblacionEntrega" class="form-control" />
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label>Provincia entrega</label>
-        <input [(ngModel)]="cliente.provinciaEntrega" name="provinciaEntrega" class="form-control" />
-      </div>
-    </div>
-
-    <div class="row mb-3 g-3">
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">Número de cuenta *</label>
-
-        <input type="text" class="form-control" [(ngModel)]="cliente.numeroCuenta" name="numeroCuenta"
-          #numeroCuenta="ngModel" required pattern="^\d{20}$" placeholder="Ej: 21000418450200051339" inputmode="numeric"
-          maxlength="20" (ngModelChange)="formatearNumeroCuenta($event)" />
-
-        <div class="text-danger mt-1" *ngIf="numeroCuenta.touched && numeroCuenta.errors?.['required']">
-          El número de cuenta es obligatorio.
+          <span id="name-error" class="field-error" *ngIf="
+              nombre.invalid && (nombre.touched || formCliente.submitted)
+            ">
+            Introduce el nombre del cliente o la razón social.
+          </span>
         </div>
 
-        <div class="text-danger mt-1" *ngIf="numeroCuenta.touched && numeroCuenta.errors?.['pattern']">
-          Debe tener exactamente 20 dígitos.
+        <div class="field">
+          <label for="client-tax-id">CIF / DNI</label>
+          <input id="client-tax-id" class="form-control" [(ngModel)]="cliente.cifDni" name="cifDni"
+            placeholder="Documento de identificación" />
+        </div>
+
+        <div class="field">
+          <label for="client-email">Correo electrónico</label>
+
+          <input id="client-email" type="email" class="form-control" [(ngModel)]="cliente.email" name="email"
+            #correo="ngModel" email placeholder="nombre@empresa.com" [attr.aria-invalid]="
+              correo.invalid && (correo.touched || formCliente.submitted)
+            " aria-describedby="email-error" />
+
+          <span id="email-error" class="field-error" *ngIf="
+              correo.invalid && (correo.touched || formCliente.submitted)
+            ">
+            Introduce un correo electrónico válido.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="client-phone">Teléfono</label>
+
+          <input id="client-phone" type="tel" class="form-control" [(ngModel)]="cliente.telefono" name="telefono"
+            #telefono="ngModel" placeholder="Teléfono de contacto" [required]="!cliente.movil?.trim()"
+            [attr.aria-invalid]="
+              !tieneContacto &&
+              (telefono.touched || movil.touched || formCliente.submitted)
+            " aria-describedby="contact-help" />
+        </div>
+
+        <div class="field">
+          <label for="client-mobile">Móvil</label>
+
+          <input id="client-mobile" type="tel" class="form-control" [(ngModel)]="cliente.movil" name="movil"
+            #movil="ngModel" placeholder="Teléfono móvil" [required]="!cliente.telefono?.trim()" [attr.aria-invalid]="
+              !tieneContacto &&
+              (telefono.touched || movil.touched || formCliente.submitted)
+            " aria-describedby="contact-help" />
+        </div>
+
+        <div class="full-width">
+          <span id="contact-help" class="field-help" [class.field-error]="
+              !tieneContacto &&
+              (telefono.touched || movil.touched || formCliente.submitted)
+            ">
+            Introduce al menos un teléfono o móvil de contacto.
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIRECCIONES -->
+
+    <section class="surface form-section" aria-labelledby="addresses-title">
+      <header class="section-heading">
+        <span class="section-number" aria-hidden="true">02</span>
+        <div>
+          <h2 id="addresses-title">Direcciones</h2>
+          <p>Opcionales al crear la ficha. Puedes completarlas más adelante.</p>
+        </div>
+      </header>
+
+      <div class="addresses-grid">
+
+        <div class="address-panel">
+          <h3>Dirección de facturación</h3>
+
+          <div class="fields-grid">
+            <div class="field full-width">
+              <label for="billing-address">Dirección</label>
+              <input id="billing-address" class="form-control" [(ngModel)]="cliente.direccion" name="direccion"
+                placeholder="Calle, número, piso…" />
+            </div>
+
+            <div class="field">
+              <label for="billing-postcode">Código postal</label>
+              <input id="billing-postcode" class="form-control" [(ngModel)]="cliente.codigoPostal"
+                name="codigoPostal" />
+            </div>
+
+            <div class="field">
+              <label for="billing-city">Población</label>
+              <input id="billing-city" class="form-control" [(ngModel)]="cliente.poblacion" name="poblacion" />
+            </div>
+
+            <div class="field full-width">
+              <label for="billing-province">Provincia</label>
+              <input id="billing-province" class="form-control" [(ngModel)]="cliente.provincia" name="provincia" />
+            </div>
+          </div>
+        </div>
+
+        <div class="address-panel">
+          <h3>Dirección de entrega</h3>
+
+          <div class="fields-grid">
+            <div class="field full-width">
+              <label for="delivery-address">Dirección</label>
+              <input id="delivery-address" class="form-control" [(ngModel)]="cliente.direccionEntrega"
+                name="direccionEntrega" placeholder="Dirección de entrega" />
+            </div>
+
+            <div class="field">
+              <label for="delivery-postcode">Código postal</label>
+              <input id="delivery-postcode" class="form-control" [(ngModel)]="cliente.codigoPostalEntrega"
+                name="codigoPostalEntrega" />
+            </div>
+
+            <div class="field">
+              <label for="delivery-city">Población</label>
+              <input id="delivery-city" class="form-control" [(ngModel)]="cliente.poblacionEntrega"
+                name="poblacionEntrega" />
+            </div>
+
+            <div class="field full-width">
+              <label for="delivery-province">Provincia</label>
+              <input id="delivery-province" class="form-control" [(ngModel)]="cliente.provinciaEntrega"
+                name="provinciaEntrega" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- DATOS BANCARIOS -->
+
+    <section class="surface form-section" aria-labelledby="bank-title">
+      <header class="section-heading">
+        <span class="section-number" aria-hidden="true">03</span>
+        <div>
+          <h2 id="bank-title">Datos bancarios</h2>
+          <p>Opcionales. El IBAN español se calcula a partir del número de cuenta.</p>
+        </div>
+      </header>
+
+      <div class="fields-grid">
+        <div class="field">
+          <label for="client-account">Número de cuenta (opcional)</label>
+
+          <input id="client-account" type="text" class="form-control account-input" [(ngModel)]="cliente.numeroCuenta"
+            (ngModelChange)="formatearNumeroCuenta($event)" name="numeroCuenta" #numeroCuenta="ngModel"
+            pattern="^\d{20}$" inputmode="numeric" maxlength="20" placeholder="20 dígitos, si procede"
+            [attr.aria-invalid]="
+              numeroCuenta.invalid &&
+              (numeroCuenta.touched || formCliente.submitted)
+            " aria-describedby="account-help account-error" />
+
+          <span id="account-help" class="field-help">
+            Puedes dejarlo vacío. Si lo rellenas, introduce 20 dígitos sin el prefijo ES.
+          </span>
+
+          <span id="account-error" class="field-error" *ngIf="
+              numeroCuenta.invalid &&
+              (numeroCuenta.touched || formCliente.submitted)
+            ">
+            El número de cuenta debe tener exactamente 20 dígitos.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="client-iban">IBAN generado</label>
+
+          <input id="client-iban" type="text" class="form-control account-input"
+            [value]="formatearIbanVisual(cliente.iban)" readonly placeholder="Se genera automáticamente" />
+
+          <span class="field-help">
+            Campo calculado automáticamente.
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPRAS INICIALES -->
+
+    <section class="surface form-section" aria-labelledby="purchases-title">
+      <header class="section-heading">
+        <span class="section-number" aria-hidden="true">04</span>
+        <div>
+          <h2 id="purchases-title">Compras iniciales</h2>
+          <p>Opcional. Añade compras si deseas registrarlas al crear la ficha.</p>
+        </div>
+      </header>
+
+      <div class="purchase-editor">
+        <div class="purchase-grid">
+
+          <div class="field purchase-description">
+            <label for="purchase-description">Descripción</label>
+            <input id="purchase-description" class="form-control" [(ngModel)]="nuevoTrabajo.descripcion"
+              [ngModelOptions]="{ standalone: true }" placeholder="Producto o trabajo realizado" />
+          </div>
+
+          <div class="field">
+            <label for="purchase-units">Unidades</label>
+            <input id="purchase-units" type="number" class="form-control" [(ngModel)]="nuevoTrabajo.unidades"
+              [ngModelOptions]="{ standalone: true }" min="1" step="1" />
+          </div>
+
+          <div class="field">
+            <label for="purchase-price">Precio unitario (€)</label>
+            <input id="purchase-price" type="number" class="form-control" [(ngModel)]="nuevoTrabajo.precioUnitario"
+              [ngModelOptions]="{ standalone: true }" min="0" step="0.01" />
+          </div>
+
+          <div class="field">
+            <label for="purchase-discount">Descuento (%)</label>
+            <input id="purchase-discount" type="number" class="form-control" [ngModel]="nuevoTrabajo.descuento ?? 0"
+              (ngModelChange)="nuevoTrabajo.descuento = ($event ?? 0)" [ngModelOptions]="{ standalone: true }" min="0"
+              max="100" step="0.01" />
+          </div>
+
+          <div class="field">
+            <label for="purchase-payment">Importe pagado (€)</label>
+            <input id="purchase-payment" type="number" class="form-control" [(ngModel)]="nuevoTrabajo.importePagado"
+              [ngModelOptions]="{ standalone: true }" min="0" step="0.01" />
+          </div>
+        </div>
+
+        <div class="purchase-editor-footer">
+          <div class="purchase-preview">
+            <span>Importe neto</span>
+            <strong>{{ getNetoNuevoTrabajo() | number:'1.2-2' }} €</strong>
+          </div>
+
+          <button type="button" class="action-primary" (click)="agregarTrabajo()">
+            + Añadir compra
+          </button>
         </div>
       </div>
 
-      <div class="col-12 col-md-6">
-        <label class="form-label">IBAN generado</label>
+      <div *ngIf="cliente.trabajos.length > 0" class="table-responsive" tabindex="0" role="region"
+        aria-label="Compras añadidas al cliente">
+        <table class="purchases-table">
+          <thead>
+            <tr>
+              <th scope="col">Descripción</th>
+              <th scope="col" class="text-end">Uds.</th>
+              <th scope="col" class="text-end">Precio/U</th>
+              <th scope="col" class="text-end">Dto.</th>
+              <th scope="col" class="text-end">Neto</th>
+              <th scope="col" class="text-end">Pagado</th>
+              <th scope="col" class="text-end">Diferencia</th>
+              <th scope="col" class="text-end">Acciones</th>
+            </tr>
+          </thead>
 
-        <input type="text" class="form-control" [value]="formatearIbanVisual(cliente.iban)" readonly
-          placeholder="Se genera automáticamente" />
+          <tbody>
+            <tr *ngFor="let t of cliente.trabajos; let i = index">
+              <td>{{ t.descripcion }}</td>
+
+              <td class="text-end">{{ t.unidades ?? 1 }}</td>
+
+              <td class="text-end">
+                {{ (t.precioUnitario ?? 0) | number:'1.2-2' }} €
+              </td>
+
+              <td class="text-end">
+                {{ (t.descuento ?? 0) | number:'1.0-2' }} %
+              </td>
+
+              <td class="text-end amount">
+                {{ (t.importe ?? 0) | number:'1.2-2' }} €
+              </td>
+
+              <td class="text-end">
+                {{ (t.importePagado ?? 0) | number:'1.2-2' }} €
+              </td>
+
+              <td class="text-end" [class.pending-amount]="
+                  (t.importePagado ?? 0) < (t.importe ?? 0)
+                ">
+                {{
+                ((t.importe ?? 0) - (t.importePagado ?? 0))
+                | number:'1.2-2'
+                }} €
+              </td>
+
+              <td class="text-end">
+                <button type="button" class="remove-button" [attr.aria-label]="'Quitar compra: ' + t.descripcion"
+                  (click)="cliente.trabajos.splice(i, 1); recalcularTotales()">
+                  Quitar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-    </div>
-
-    <div class="row mb-3 g-3">
-      <div class="col-12 col-md-6">
-        <label>Teléfono</label>
-        <input [(ngModel)]="cliente.telefono" name="telefono" class="form-control" />
+      <div *ngIf="cliente.trabajos.length === 0" class="empty-purchases">
+        No has añadido compras. Puedes crear la ficha sin ellas.
       </div>
 
-      <div class="col-12 col-md-6">
-        <label>Móvil</label>
-        <input [(ngModel)]="cliente.movil" name="movil" class="form-control" />
+      <div class="totals-grid">
+        <div>
+          <span>Importe total</span>
+          <strong>{{ cliente.totalImporte | currency:'EUR' }}</strong>
+        </div>
+
+        <div>
+          <span>Total pagado</span>
+          <strong>{{ cliente.totalPagado | currency:'EUR' }}</strong>
+        </div>
+
+        <div class="balance-total">
+          <span>Diferencia total</span>
+          <strong>
+            {{ (cliente.totalImporte - cliente.totalPagado) | currency:'EUR' }}
+          </strong>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <div class="row mb-3 g-3">
-      <div class="col-12 col-md-6">
-        <label>CIF / DNI</label>
-        <input [(ngModel)]="cliente.cifDni" name="cifDni" class="form-control" />
+    <footer class="form-footer">
+      <span>Revisa los datos antes de guardar la ficha.</span>
+
+      <div class="footer-actions">
+        <button type="button" class="action-secondary" (click)="volver()">
+          Cancelar
+        </button>
+
+        <button type="submit" class="action-primary" [disabled]="formCliente.invalid || !tieneContacto">
+          Guardar cliente
+        </button>
       </div>
+    </footer>
 
-      <div class="col-12 col-md-6">
-        <label>Email</label>
-        <input [(ngModel)]="cliente.email" name="email" class="form-control" />
-      </div>
-    </div>
-
-
-
-    <div class="text-end mt-3 form-actions">
-      <button class="btn btn-success" type="submit" [disabled]="formCliente.invalid">
-        Guardar cliente
-      </button>
-    </div>
   </form>
-</div>
+</section>

@@ -1,163 +1,212 @@
-<div class="container mt-4" *ngIf="!cargando">
+<div class="warehouse-page">
+    <header class="page-heading">
+        <div>
+            <p class="eyebrow">NOVEXAPP / ALMACÉN</p>
+            <h1>Detalle del inventario</h1>
+            <p class="page-description">
+                Consulta el recuento y las diferencias respecto al stock del sistema.
+            </p>
+        </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-        <h2>Detalle del inventario</h2>
-
-        <div class="d-flex gap-2">
-            <button class="btn btn-secondary" routerLink="/app/almacen">
-                Volver
+        <div class="header-actions no-print">
+            <button type="button" class="button button-secondary" routerLink="/app/almacen">
+                ← Volver a almacén
             </button>
 
-            <button class="btn btn-primary" (click)="imprimir()">
-                Imprimir
+            <button type="button" class="button button-primary" (click)="imprimir()"
+                [disabled]="cargando || !inventario">
+                Imprimir inventario
             </button>
         </div>
+    </header>
+
+    <div *ngIf="cargando" class="feedback no-print" role="status">
+        Cargando detalle del inventario…
     </div>
 
-    <div *ngIf="mensaje" class="alert alert-info">
+    <div *ngIf="mensaje" class="feedback" role="alert">
         {{ mensaje }}
     </div>
 
-    <div *ngIf="inventario">
-
-        <div class="card mb-4">
-            <div class="card-header">
-                Datos generales
-            </div>
-
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <strong>Fecha:</strong><br>
-                        {{ inventario.fecha | date:'dd/MM/yyyy HH:mm' }}
-                    </div>
-
-                    <div class="col-md-3">
-                        <strong>Descripción:</strong><br>
-                        {{ inventario.descripcion }}
-                    </div>
-
-                    <div class="col-md-3">
-                        <strong>Realizado por:</strong><br>
-                        {{ inventario.realizadoPor }}
-                    </div>
-
-                    <div class="col-md-3">
-                        <strong>Total inventario:</strong><br>
-                        {{ inventario.totalInventario | currency:'EUR' }}
+    <div *ngIf="inventario && !cargando">
+        <section class="surface">
+            <div class="section-heading">
+                <div class="section-identity">
+                    <span class="section-number">01</span>
+                    <div>
+                        <h2>Datos generales</h2>
+                        <p>Identificación del inventario y persona responsable.</p>
                     </div>
                 </div>
             </div>
+
+            <dl class="details-grid">
+                <div>
+                    <dt>Descripción</dt>
+                    <dd>{{ inventario.descripcion || '—' }}</dd>
+                </div>
+
+                <div>
+                    <dt>Fecha</dt>
+                    <dd>{{ inventario.fecha | date:'dd/MM/yyyy HH:mm' }}</dd>
+                </div>
+
+                <div>
+                    <dt>Realizado por</dt>
+                    <dd>{{ inventario.realizadoPor || '—' }}</dd>
+                </div>
+
+                <div>
+                    <dt>Valor del inventario</dt>
+                    <dd>{{ inventario.totalInventario | currency:'EUR' }}</dd>
+                </div>
+            </dl>
+        </section>
+
+        <div class="summary-grid four-columns">
+            <article class="summary-card">
+                <span>Unidades contadas</span>
+                <strong>{{ inventario.totalUnidades || 0 }}</strong>
+                <small>Total de unidades registradas</small>
+            </article>
+
+            <article class="summary-card summary-correct">
+                <span>Productos correctos</span>
+                <strong>{{ productosCorrectos() }}</strong>
+                <small>Sin diferencias de stock</small>
+            </article>
+
+            <article class="summary-card summary-missing">
+                <span>Productos con falta</span>
+                <strong>{{ productosConFalta() }}</strong>
+                <small>Recuento inferior al sistema</small>
+            </article>
+
+            <article class="summary-card summary-surplus">
+                <span>Productos con sobrante</span>
+                <strong>{{ productosConSobrante() }}</strong>
+                <small>Recuento superior al sistema</small>
+            </article>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5>{{ inventario.totalUnidades }}</h5>
-                        <p class="mb-0">Unidades contadas</p>
+        <section class="surface">
+            <div class="section-heading">
+                <div class="section-identity">
+                    <span class="section-number">02</span>
+                    <div>
+                        <h2>Resumen de diferencias</h2>
+                        <p>Balance neto entre las existencias contadas y las registradas.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5>{{ productosCorrectos() }}</h5>
-                        <p class="mb-0">Productos correctos</p>
+            <div class="difference-summary">
+                <div>
+                    <span>Diferencia total de unidades</span>
+                    <strong [class.value-negative]="unidadesDiferencia() < 0"
+                        [class.value-positive]="unidadesDiferencia() > 0">
+                        {{ unidadesDiferencia() > 0 ? '+' : '' }}{{ unidadesDiferencia() }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Valor económico de la diferencia</span>
+                    <strong [class.value-negative]="valorDiferencia() < 0"
+                        [class.value-positive]="valorDiferencia() > 0">
+                        {{ valorDiferencia() | currency:'EUR' }}
+                    </strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="surface">
+            <div class="section-heading">
+                <div class="section-identity">
+                    <span class="section-number">03</span>
+                    <div>
+                        <h2>Líneas del inventario</h2>
+                        <p>Detalle de productos, cantidades y valoración.</p>
                     </div>
                 </div>
+
+                <span class="count-badge">{{ lineas.length }} productos</span>
             </div>
 
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5>{{ productosConFalta() }}</h5>
-                        <p class="mb-0">Productos con falta</p>
-                    </div>
+            <div class="table-responsive" *ngIf="lineas.length; else sinLineas">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Gama</th>
+                            <th>Marca / Modelo</th>
+                            <th>Familia / Subfamilia</th>
+                            <th class="numeric">Stock sistema</th>
+                            <th class="numeric">Stock contado</th>
+                            <th class="numeric">Diferencia</th>
+                            <th class="numeric">Precio unitario</th>
+                            <th class="numeric">Total contado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let linea of lineas">
+                            <td>
+                                <div class="product-identity">
+                                    <strong>{{ linea.descripcion || '—' }}</strong>
+                                    <small>Ref. {{ linea.referencia || '—' }}</small>
+                                </div>
+                            </td>
+
+                            <td>{{ linea.gama || '—' }}</td>
+
+                            <td>
+                                <div class="product-identity">
+                                    <span>{{ linea.marca || '—' }}</span>
+                                    <small>{{ linea.modelo || '—' }}</small>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="product-identity">
+                                    <span>{{ linea.familia || '—' }}</span>
+                                    <small>{{ linea.subfamilia || '—' }}</small>
+                                </div>
+                            </td>
+
+                            <td class="numeric">{{ linea.stockSistema || 0 }}</td>
+                            <td class="numeric">{{ linea.stockContado || 0 }}</td>
+
+                            <td class="numeric">
+                                <span class="difference-badge" [class.difference-positive]="(linea.diferencia || 0) > 0"
+                                    [class.difference-negative]="(linea.diferencia || 0) < 0">
+                                    {{ (linea.diferencia || 0) > 0 ? '+' : '' }}{{ linea.diferencia || 0 }}
+                                </span>
+                            </td>
+
+                            <td class="numeric">{{ linea.precioUnitario | currency:'EUR' }}</td>
+                            <td class="numeric total-cell">{{ linea.precioTotal | currency:'EUR' }}</td>
+                        </tr>
+                    </tbody>
+
+                    <tfoot>
+                        <tr>
+                            <th colspan="5">Totales del inventario</th>
+                            <th class="numeric">{{ inventario.totalUnidades || 0 }}</th>
+                            <th class="numeric">{{ unidadesDiferencia() }}</th>
+                            <th></th>
+                            <th class="numeric">
+                                {{ inventario.totalInventario | currency:'EUR' }}
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <ng-template #sinLineas>
+                <div class="empty-state">
+                    <strong>Este inventario no tiene líneas registradas</strong>
                 </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5>{{ productosConSobrante() }}</h5>
-                        <p class="mb-0">Productos con sobrante</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                Resumen de diferencias
-            </div>
-
-            <div class="card-body">
-                <p><strong>Diferencia total de unidades:</strong> {{ unidadesDiferencia() }}</p>
-                <p><strong>Valor económico de la diferencia:</strong> {{ valorDiferencia() | currency:'EUR' }}</p>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                Líneas del inventario
-            </div>
-
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped align-middle">
-                        <thead>
-                            <tr>
-                                <th>Referencia</th>
-                                <th>Gama</th>
-                                <th>Marca</th>
-                                <th>Modelo</th>
-                                <th>Familia</th>
-                                <th>Subfamilia</th>
-                                <th>Descripción</th>
-                                <th>Stock sistema</th>
-                                <th>Stock contado</th>
-                                <th>Diferencia</th>
-                                <th>Precio unitario</th>
-                                <th>Total contado</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <tr *ngFor="let linea of lineas">
-                                <td>{{ linea.referencia }}</td>
-                                <td>{{ linea.gama }}</td>
-                                <td>{{ linea.marca }}</td>
-                                <td>{{ linea.modelo }}</td>
-                                <td>{{ linea.familia }}</td>
-                                <td>{{ linea.subfamilia }}</td>
-                                <td>{{ linea.descripcion }}</td>
-                                <td>{{ linea.stockSistema }}</td>
-                                <td>{{ linea.stockContado }}</td>
-
-                                <td>
-                                    <span class="badge" [ngClass]="{
-                      'bg-success': (linea.diferencia || 0) > 0,
-                      'bg-danger': (linea.diferencia || 0) < 0,
-                      'bg-secondary': (linea.diferencia || 0) === 0
-                    }">
-                                        {{ linea.diferencia }}
-                                    </span>
-                                </td>
-
-                                <td>{{ linea.precioUnitario | currency:'EUR' }}</td>
-                                <td>{{ linea.precioTotal | currency:'EUR' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
+            </ng-template>
+        </section>
     </div>
-</div>
-
-<div class="container mt-4" *ngIf="cargando">
-    Cargando detalle del inventario...
 </div>

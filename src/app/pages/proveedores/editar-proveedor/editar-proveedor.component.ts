@@ -1,7 +1,7 @@
 import { ProveedorService } from './../../../services/proveedor.service';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Proveedor } from '../../../interfaces/iproveedor';
 import { ProveedorSaveDto } from '../../../interfaces/iproveedor-save';
@@ -105,21 +105,31 @@ export class EditarProveedorComponent implements OnInit {
     };
   }
 
-  guardar() {
+  guardar(formProveedor: NgForm): void {
+    if (formProveedor.invalid || !this.proveedor.nombre?.trim()) {
+      formProveedor.form.markAllAsTouched();
+      return;
+    }
+
     if (!this.proveedor.id) {
       alert('Proveedor no válido');
       return;
     }
 
-    const payload = this.buildProveedorSaveDto();
+    const cuenta = (this.proveedor.numeroCuenta || '').replace(/\D/g, '');
 
-    if (
-      this.proveedor.numeroCuenta &&
-      !/^\d{20}$/.test(this.proveedor.numeroCuenta)
-    ) {
+    if (cuenta && !/^\d{20}$/.test(cuenta)) {
       alert('El número de cuenta debe tener 20 dígitos.');
       return;
     }
+
+    this.proveedor.numeroCuenta = cuenta;
+
+    if (cuenta) {
+      this.proveedor.iban = this.generarIbanEspanol(cuenta);
+    }
+
+    const payload = this.buildProveedorSaveDto();
 
     this.proveedorService
       .actualizarProveedor(this.proveedor.id, payload)
@@ -179,4 +189,6 @@ export class EditarProveedorComponent implements OnInit {
   formatearIbanVisual(iban?: string): string {
     return (iban || '').match(/.{1,4}/g)?.join(' ') || '';
   }
+
+  readonly esEdicion = true;
 }

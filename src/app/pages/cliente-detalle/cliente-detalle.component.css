@@ -1144,3 +1144,112 @@
     margin-left: 0;
   }
 }
+
+/* Datos del cliente en tarjetas */
+.cliente-datos-panel {
+  margin-top: 22px;
+}
+
+.cliente-datos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.cliente-datos-card {
+  min-width: 0;
+  padding: 22px;
+  background: #fff;
+  border: 1px solid #dfe6ef;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(25, 44, 72, 0.04);
+}
+
+.cliente-datos-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 17px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #e9edf3;
+}
+
+.cliente-datos-heading h3 {
+  margin: 0;
+  color: #1a2940;
+  font-size: 17px;
+  font-weight: 750;
+}
+
+.cliente-datos-number {
+  display: flex;
+  flex: 0 0 34px;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  border-radius: 9px;
+  background: #f3f6fa;
+  color: var(--color-primario, #d71920);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.cliente-datos-lista {
+  display: grid;
+  gap: 17px;
+  margin: 0;
+}
+
+.cliente-datos-lista > div {
+  min-width: 0;
+}
+
+.cliente-datos-lista dt {
+  margin-bottom: 5px;
+  color: #8492a5;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cliente-datos-lista dd {
+  margin: 0;
+  color: #40516a;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cliente-datos-wide {
+  grid-column: 1 / -1;
+}
+
+.cliente-banco-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.cliente-bank-value {
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 700px) {
+  .cliente-datos-grid,
+  .cliente-banco-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cliente-datos-grid {
+    gap: 12px;
+  }
+
+  .cliente-datos-card {
+    padding: 18px;
+  }
+
+  .cliente-datos-heading h3 {
+    font-size: 16px;
+  }
+}

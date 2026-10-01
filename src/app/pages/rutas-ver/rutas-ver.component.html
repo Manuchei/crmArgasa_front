@@ -1,90 +1,190 @@
-<div class="container my-4">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h3 class="fw-bold mb-3">Ver ruta #{{ idRuta }}</h3>
+<div class="route-detail-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">NOVEXAPP / LOGÍSTICA</p>
 
-      <div *ngIf="cargando" class="alert alert-info">Cargando...</div>
-      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-
-      <div *ngIf="ruta && !cargando">
-
-        <div class="row g-3">
-          <div class="col-md-6">
-            <div class="fw-bold">Cliente</div>
-            <div>{{ ruta?.cliente?.nombreApellidos || ruta?.clienteNombre || '—' }}</div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="fw-bold">Fecha</div>
-            <div>{{ ruta?.fecha || '—' }}</div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="fw-bold">Estado</div>
-            <div>{{ ruta?.estado || '—' }}</div>
-          </div>
-
-          <div class="col-md-6">
-            <div class="fw-bold">Transportista</div>
-            <div>{{ ruta?.nombreTransportista || '—' }} ({{ ruta?.emailTransportista || '—' }})</div>
-          </div>
-
-          <div class="col-md-6">
-            <div class="fw-bold">Acompañante 1</div>
-            <div>{{ ruta?.acompanante1 || '—' }}</div>
-          </div>
-
-          <div class="col-md-6">
-            <div class="fw-bold">Acompañante 2</div>
-            <div>{{ ruta?.acompanante2 || '—' }}</div>
-          </div>
-
-          <div class="col-md-6">
-            <div class="fw-bold">Destino</div>
-            <div>{{ ruta?.destino || '—' }}</div>
-          </div>
-
-          <div class="col-md-6">
-            <div class="fw-bold">Tarea</div>
-            <div>{{ ruta?.tarea || '—' }}</div>
-          </div>
-
-          <div class="col-12">
-            <div class="fw-bold">Observaciones</div>
-            <div>{{ ruta?.observaciones || '—' }}</div>
-          </div>
-        </div>
-
-        <hr class="my-3">
-
-        <h5 class="fw-bold mb-2">Productos a entregar</h5>
-
-        <div *ngIf="ruta?.lineas?.length > 0; else sinLineas">
-          <table class="table table-sm">
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th style="width:140px;">Cantidad</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let l of ruta.lineas">
-                <td>{{ getNombreProducto(l) }}</td>
-                <td>{{ l?.cantidad || 0 }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <ng-template #sinLineas>
-          <div class="alert alert-warning">Esta ruta no tiene productos asociados.</div>
-        </ng-template>
-
-        <div class="mt-4">
-          <button class="btn btn-secondary" type="button" (click)="volver()">⬅ Volver</button>
-        </div>
-
+      <div class="title-row">
+        <h1>Detalle de ruta</h1>
+        <span class="route-reference">#{{ idRuta }}</span>
       </div>
+
+      <p class="page-description">
+        Consulta la planificación, el equipo asignado y los productos a entregar.
+      </p>
     </div>
+
+    <button class="button button-secondary" type="button" (click)="volver()">
+      ← Volver a rutas
+    </button>
+  </header>
+
+  <div *ngIf="cargando" class="feedback feedback-info" role="status">
+    Cargando los datos de la ruta…
+  </div>
+
+  <div *ngIf="error" class="feedback feedback-error" role="alert">
+    {{ error }}
+  </div>
+
+  <div *ngIf="ruta && !cargando && !error">
+    <section class="surface route-overview">
+      <div class="overview-identity">
+        <span class="overview-symbol" aria-hidden="true">↗</span>
+
+        <div>
+          <p class="overview-label">CLIENTE</p>
+          <h2>
+            {{
+            ruta?.cliente?.nombreApellidos ||
+            ruta?.clienteNombre ||
+            'Cliente no indicado'
+            }}
+          </h2>
+
+          <p class="commercial-name" *ngIf="ruta?.cliente?.nombreComercial">
+            {{ ruta.cliente.nombreComercial }}
+          </p>
+        </div>
+      </div>
+
+      <div class="overview-meta">
+        <div class="overview-date">
+          <span class="overview-label">FECHA DE LA RUTA</span>
+          <strong>{{ ruta?.fecha || '—' }}</strong>
+        </div>
+
+        <span class="status-badge" [class.status-pending]="ruta?.estado === 'pendiente'"
+          [class.status-progress]="ruta?.estado === 'en_curso'" [class.status-closed]="ruta?.estado === 'cerrada'">
+          <span class="status-dot" aria-hidden="true"></span>
+          {{
+          ruta?.estado === 'pendiente'
+          ? 'Pendiente'
+          : ruta?.estado === 'en_curso'
+          ? 'En curso'
+          : ruta?.estado === 'cerrada'
+          ? 'Cerrada'
+          : (ruta?.estado || 'Sin estado')
+          }}
+        </span>
+      </div>
+    </section>
+
+    <div class="detail-grid">
+      <section class="surface detail-section">
+        <div class="section-heading">
+          <span class="section-number" aria-hidden="true">01</span>
+          <div>
+            <h2>Datos de la ruta</h2>
+            <p>Destino y trabajo previsto.</p>
+          </div>
+        </div>
+
+        <dl class="info-list">
+          <div class="info-item">
+            <dt>Destino</dt>
+            <dd>{{ ruta?.destino || 'No indicado' }}</dd>
+          </div>
+
+          <div class="info-item">
+            <dt>Tarea</dt>
+            <dd>{{ ruta?.tarea || 'No indicada' }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="surface detail-section">
+        <div class="section-heading">
+          <span class="section-number" aria-hidden="true">02</span>
+          <div>
+            <h2>Equipo de transporte</h2>
+            <p>Personal asignado a esta ruta.</p>
+          </div>
+        </div>
+
+        <dl class="team-grid">
+          <div class="info-item">
+            <dt>Transportista</dt>
+            <dd>{{ ruta?.nombreTransportista || 'No asignado' }}</dd>
+          </div>
+
+          <div class="info-item">
+            <dt>Correo electrónico</dt>
+            <dd>{{ ruta?.emailTransportista || 'No indicado' }}</dd>
+          </div>
+
+          <div class="info-item">
+            <dt>Acompañante 1</dt>
+            <dd>{{ ruta?.acompanante1 || 'No asignado' }}</dd>
+          </div>
+
+          <div class="info-item">
+            <dt>Acompañante 2</dt>
+            <dd>{{ ruta?.acompanante2 || 'No asignado' }}</dd>
+          </div>
+        </dl>
+      </section>
+    </div>
+
+    <section class="surface detail-section products-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">03</span>
+        <div>
+          <h2>Productos a entregar</h2>
+          <p>Productos y cantidades asociados a la ruta.</p>
+        </div>
+
+        <span class="count-badge">
+          {{ ruta?.lineas?.length || 0 }} líneas
+        </span>
+      </div>
+
+      <div class="table-wrap" *ngIf="ruta?.lineas?.length > 0; else sinLineas">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th class="number-column">N.º</th>
+              <th>Producto</th>
+              <th class="quantity-column">Cantidad</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let l of ruta.lineas; let i = index">
+              <td class="line-number">{{ i + 1 }}</td>
+              <td class="product-name">{{ getNombreProducto(l) }}</td>
+              <td class="quantity-column">
+                <span class="quantity-badge">
+                  {{ l?.cantidad ?? 0 }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #sinLineas>
+        <div class="empty-state">
+          <span class="empty-symbol" aria-hidden="true">—</span>
+          <div>
+            <strong>Sin productos asociados</strong>
+            <p>Esta ruta no tiene productos registrados para entregar.</p>
+          </div>
+        </div>
+      </ng-template>
+    </section>
+
+    <section class="surface detail-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">04</span>
+        <div>
+          <h2>Observaciones</h2>
+          <p>Indicaciones adicionales para el equipo.</p>
+        </div>
+      </div>
+
+      <div class="observations" [class.no-observations]="!ruta?.observaciones">
+        {{ ruta?.observaciones || 'No hay observaciones para esta ruta.' }}
+      </div>
+    </section>
   </div>
 </div>

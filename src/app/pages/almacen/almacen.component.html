@@ -1,153 +1,233 @@
-<div class="container mt-4">
+<div class="warehouse-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">NOVEXAPP / LOGÍSTICA</p>
+      <h1>Almacén</h1>
+      <p class="page-description">
+        Revisa las existencias y registra los inventarios del almacén.
+      </p>
+    </div>
 
-  <h2 class="mb-4">Almacén - Inventario</h2>
+    <span class="heading-badge">Control de inventario</span>
+  </header>
 
-  <div *ngIf="mensaje" class="alert alert-info">
+  <div *ngIf="mensaje" class="feedback" role="status">
     {{ mensaje }}
   </div>
 
-  <div class="card mb-4">
-    <div class="card-header">
-      Nuevo inventario
-    </div>
+  <div class="summary-grid">
+    <article class="summary-card">
+      <span>Productos a inventariar</span>
+      <strong>{{ inventario.lineas.length }}</strong>
+      <small>Líneas del inventario actual</small>
+    </article>
 
-    <div class="card-body">
+    <article class="summary-card">
+      <span>Unidades contadas</span>
+      <strong>{{ calcularTotalUnidades() }}</strong>
+      <small>Total del recuento actual</small>
+    </article>
 
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label class="form-label">Descripción</label>
-          <input type="text" class="form-control" [(ngModel)]="inventario.descripcion"
-            placeholder="Ej: Inventario almacén mayo">
-        </div>
-
-        <div class="col-md-6">
-          <label class="form-label">Realizado por</label>
-          <input type="text" class="form-control" [(ngModel)]="inventario.realizadoPor" placeholder="Ej: Manu">
-        </div>
-      </div>
-
-      <div class="table-responsive">
-        <table class="table table-bordered table-striped align-middle">
-          <thead>
-            <tr>
-              <th>Referencia</th>
-              <th>Gama</th>
-              <th>Marca</th>
-              <th>Modelo</th>
-              <th>Familia</th>
-              <th>Subfamilia</th>
-              <th>Descripción</th>
-              <th>Stock sistema</th>
-              <th>Stock contado</th>
-              <th>Diferencia</th>
-              <th>Precio unitario</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr *ngFor="let linea of inventario.lineas">
-              <td>{{ linea.referencia }}</td>
-              <td>{{ linea.gama }}</td>
-              <td>{{ linea.marca }}</td>
-              <td>{{ linea.modelo }}</td>
-              <td>{{ linea.familia }}</td>
-              <td>{{ linea.subfamilia }}</td>
-              <td>{{ linea.descripcion }}</td>
-
-              <td>
-                <span class="badge bg-success">
-                  {{ linea.stockSistema }}
-                </span>
-              </td>
-
-              <td>
-                <input type="number" class="form-control form-control-sm input-stock" [(ngModel)]="linea.stockContado"
-                  (ngModelChange)="actualizarLinea(linea)">
-              </td>
-
-              <td>
-                <span class="badge" [ngClass]="{
-                    'bg-success': (linea.diferencia || 0) > 0,
-                    'bg-danger': (linea.diferencia || 0) < 0,
-                    'bg-secondary': (linea.diferencia || 0) === 0
-                  }">
-                  {{ linea.diferencia }}
-                </span>
-              </td>
-
-              <td>{{ linea.precioUnitario | currency:'EUR' }}</td>
-              <td>{{ linea.precioTotal | currency:'EUR' }}</td>
-            </tr>
-          </tbody>
-
-          <tfoot>
-            <tr>
-              <th colspan="8">Totales</th>
-              <th>{{ calcularTotalUnidades() }}</th>
-              <th></th>
-              <th></th>
-              <th>{{ calcularTotalInventario() | currency:'EUR' }}</th>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
-      <button class="btn btn-success mt-3" (click)="guardarInventario()">
-        Guardar inventario
-      </button>
-
-    </div>
+    <article class="summary-card summary-value">
+      <span>Valor del inventario</span>
+      <strong>{{ calcularTotalInventario() | currency:'EUR' }}</strong>
+      <small>Valor de las unidades contadas</small>
+    </article>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      Inventarios realizados
+  <section class="surface">
+    <div class="section-heading">
+      <div class="section-identity">
+        <span class="section-number">01</span>
+        <div>
+          <h2>Nuevo inventario</h2>
+          <p>Indica el responsable y completa el recuento de productos.</p>
+        </div>
+      </div>
     </div>
 
-    <div class="card-body">
+    <div class="fields-grid">
+      <label class="field">
+        Descripción <span class="required">*</span>
+        <input type="text" class="form-control" [(ngModel)]="inventario.descripcion"
+          placeholder="Ej. Inventario general de octubre" />
+      </label>
 
-      <div *ngIf="cargando">
-        Cargando inventarios...
+      <label class="field">
+        Realizado por <span class="required">*</span>
+        <input type="text" class="form-control" [(ngModel)]="inventario.realizadoPor"
+          placeholder="Nombre de la persona responsable" />
+      </label>
+    </div>
+
+    <div class="table-heading">
+      <div>
+        <h3>Recuento de existencias</h3>
+        <p>Introduce el stock contado para comparar con el stock del sistema.</p>
       </div>
+      <span class="count-badge">{{ inventario.lineas.length }} productos</span>
+    </div>
 
-      <table class="table table-hover" *ngIf="!cargando && inventarios.length > 0">
+    <div class="table-responsive" *ngIf="inventario.lineas.length; else sinLineas">
+      <table class="inventory-table">
         <thead>
           <tr>
+            <th>Producto</th>
+            <th>Gama</th>
+            <th>Marca / Modelo</th>
+            <th>Familia / Subfamilia</th>
+            <th class="numeric">Stock sistema</th>
+            <th class="numeric">Stock contado</th>
+            <th class="numeric">Diferencia</th>
+            <th class="numeric">Precio unitario</th>
+            <th class="numeric">Total contado</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let linea of inventario.lineas">
+            <td>
+              <div class="product-identity">
+                <strong>{{ linea.descripcion || '—' }}</strong>
+                <small>Ref. {{ linea.referencia || '—' }}</small>
+              </div>
+            </td>
+
+            <td>{{ linea.gama || '—' }}</td>
+
+            <td>
+              <div class="product-identity">
+                <span>{{ linea.marca || '—' }}</span>
+                <small>{{ linea.modelo || '—' }}</small>
+              </div>
+            </td>
+
+            <td>
+              <div class="product-identity">
+                <span>{{ linea.familia || '—' }}</span>
+                <small>{{ linea.subfamilia || '—' }}</small>
+              </div>
+            </td>
+
+            <td class="numeric">
+              <span class="stock-badge">{{ linea.stockSistema || 0 }}</span>
+            </td>
+
+            <td class="numeric">
+              <input type="number" min="0" class="form-control input-stock" [(ngModel)]="linea.stockContado"
+                (ngModelChange)="actualizarLinea(linea)" [attr.aria-label]="'Stock contado de ' + linea.descripcion" />
+            </td>
+
+            <td class="numeric">
+              <span class="difference-badge" [class.difference-positive]="(linea.diferencia || 0) > 0"
+                [class.difference-negative]="(linea.diferencia || 0) < 0">
+                {{ (linea.diferencia || 0) > 0 ? '+' : '' }}{{ linea.diferencia || 0 }}
+              </span>
+            </td>
+
+            <td class="numeric">{{ linea.precioUnitario | currency:'EUR' }}</td>
+            <td class="numeric total-cell">{{ linea.precioTotal | currency:'EUR' }}</td>
+          </tr>
+        </tbody>
+
+        <tfoot>
+          <tr>
+            <th colspan="5">Totales del recuento</th>
+            <th class="numeric">{{ calcularTotalUnidades() }}</th>
+            <th colspan="2"></th>
+            <th class="numeric">{{ calcularTotalInventario() | currency:'EUR' }}</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <ng-template #sinLineas>
+      <div class="empty-state">
+        <strong>No hay productos preparados para inventariar</strong>
+        <p>Las líneas del inventario aparecerán aquí cuando estén disponibles.</p>
+      </div>
+    </ng-template>
+
+    <footer class="card-footer">
+      <p><span class="required">*</span> Descripción y responsable obligatorios.</p>
+
+      <button type="button" class="button button-primary" (click)="guardarInventario()" [disabled]="
+          !inventario.descripcion?.trim() ||
+          !inventario.realizadoPor?.trim() ||
+          inventario.lineas.length === 0
+        ">
+        Guardar inventario
+      </button>
+    </footer>
+  </section>
+
+  <section class="surface">
+    <div class="section-heading">
+      <div class="section-identity">
+        <span class="section-number">02</span>
+        <div>
+          <h2>Inventarios realizados</h2>
+          <p>Consulta el historial de recuentos del almacén.</p>
+        </div>
+      </div>
+
+      <span class="count-badge" *ngIf="!cargando">
+        {{ inventarios.length }} registros
+      </span>
+    </div>
+
+    <div class="loading-state" *ngIf="cargando" role="status">
+      Cargando inventarios…
+    </div>
+
+    <div class="table-responsive" *ngIf="!cargando && inventarios.length > 0">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Inventario</th>
             <th>Fecha</th>
-            <th>Descripción</th>
-            <th>Realizado por</th>
-            <th>Total unidades</th>
-            <th>Total inventario</th>
-            <th></th>
+            <th>Responsable</th>
+            <th class="numeric">Unidades</th>
+            <th class="numeric">Valor inventario</th>
+            <th class="actions-column">Acciones</th>
           </tr>
         </thead>
 
         <tbody>
           <tr *ngFor="let inv of inventarios">
-            <td>{{ inv.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
-            <td>{{ inv.descripcion }}</td>
-            <td>{{ inv.realizadoPor }}</td>
-            <td>{{ inv.totalUnidades }}</td>
-            <td>{{ inv.totalInventario | currency:'EUR' }}</td>
-            <td class="d-flex gap-2">
-              <button class="btn btn-sm btn-primary" (click)="verDetalle(inv.id)">
-                Ver detalle
-              </button>
+            <td>
+              <div class="product-identity">
+                <strong>{{ inv.descripcion }}</strong>
+                <small>Inventario #{{ inv.id }}</small>
+              </div>
+            </td>
 
-              <button class="btn btn-sm btn-danger" (click)="eliminarInventario(inv.id)">
-                Eliminar
-              </button>
+            <td>{{ inv.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ inv.realizadoPor }}</td>
+            <td class="numeric">{{ inv.totalUnidades }}</td>
+            <td class="numeric total-cell">
+              {{ inv.totalInventario | currency:'EUR' }}
+            </td>
+
+            <td>
+              <div class="row-actions">
+                <button type="button" class="button button-secondary button-small" (click)="verDetalle(inv.id)">
+                  Ver detalle
+                </button>
+
+                <button type="button" class="button button-danger button-small" (click)="eliminarInventario(inv.id)">
+                  Eliminar
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
-
-      <p *ngIf="!cargando && inventarios.length === 0">
-        No hay inventarios registrados.
-      </p>
-
     </div>
-  </div>
 
+    <div class="empty-state" *ngIf="!cargando && inventarios.length === 0">
+      <strong>No hay inventarios registrados</strong>
+      <p>Los inventarios guardados aparecerán en este listado.</p>
+    </div>
+  </section>
 </div>

@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, NgFor, NgIf } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { TransportistaService } from '../../services/transportista.service';
 import { Itrasnportista } from '../../interfaces/itrasnportista';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
@@ -10,6 +15,7 @@ import { EmpresaService, Empresa } from '../../services/empresa.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NgIf, NgFor],
   templateUrl: './transportistas.component.html',
+  styleUrl: './transportistas.component.css',
 })
 export class TransportistasComponent implements OnInit {
   transportistas: Itrasnportista[] = [];
@@ -25,13 +31,13 @@ export class TransportistasComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private transportistaService: TransportistaService,
-    private empresaService: EmpresaService
+    private empresaService: EmpresaService,
   ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email]],
     });
 
     this.empresaActual = this.empresaService.getEmpresa();
@@ -51,14 +57,16 @@ export class TransportistasComponent implements OnInit {
     this.transportistaService.getAll().subscribe({
       next: (data) => {
         // Si quieres mostrar solo los de la empresa activa:
-        this.transportistas = data.filter(t => t.empresa === this.empresaActual);
+        this.transportistas = data.filter(
+          (t) => t.empresa === this.empresaActual,
+        );
         this.cargando = false;
       },
       error: (err) => {
         console.error(err);
         this.error = 'Error al cargar transportistas';
         this.cargando = false;
-      }
+      },
     });
   }
 
@@ -78,7 +86,7 @@ export class TransportistasComponent implements OnInit {
     const payload: Itrasnportista = {
       nombre: this.form.value.nombre.trim(),
       email: this.form.value.email.trim(),
-      empresa: this.empresaActual
+      empresa: this.empresaActual,
     };
 
     this.cargando = true;
@@ -93,7 +101,7 @@ export class TransportistasComponent implements OnInit {
           console.error(err);
           this.error = 'Error al crear el transportista';
           this.cargando = false;
-        }
+        },
       });
       return;
     }
@@ -107,7 +115,7 @@ export class TransportistasComponent implements OnInit {
         console.error(err);
         this.error = 'Error al actualizar el transportista';
         this.cargando = false;
-      }
+      },
     });
   }
 
@@ -119,7 +127,7 @@ export class TransportistasComponent implements OnInit {
 
     this.form.patchValue({
       nombre: t.nombre,
-      email: t.email
+      email: t.email,
     });
   }
 
@@ -139,7 +147,7 @@ export class TransportistasComponent implements OnInit {
         console.error(err);
         this.error = 'Error al eliminar el transportista';
         this.cargando = false;
-      }
+      },
     });
   }
 

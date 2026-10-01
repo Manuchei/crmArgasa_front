@@ -1,148 +1,249 @@
-<div class="container py-4">
-  <h2 class="mb-4">Rutas del día</h2>
-
-  <div class="row g-3 mb-3">
-    <div class="col-md-3">
-      <label class="form-label">Fecha</label>
-      <input class="form-control" type="date" [(ngModel)]="fecha" placeholder="dd/MM/yyyy" />
+<div class="routes-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">NOVEXAPP / LOGÍSTICA</p>
+      <h1>Crear rutas del día</h1>
+      <p class="page-description">
+        Organiza el equipo de transporte y prepara las entregas de cada cliente.
+      </p>
     </div>
 
-    <div class="col-md-3">
-      <label class="form-label">Transportista</label>
-      <select class="form-select" [(ngModel)]="transportistaId" (ngModelChange)="onTransportistaChange()">
-        <option [ngValue]="null">-- Selecciona transportista --</option>
-        <option *ngFor="let t of transportistas" [ngValue]="t.id">
-          {{ t.nombre }}
-        </option>
-      </select>
+    <button type="button" class="button button-secondary" (click)="volverAListado()">
+      ← Volver a rutas
+    </button>
+  </header>
+
+  <section class="surface form-section">
+    <div class="section-heading">
+      <span class="section-number" aria-hidden="true">01</span>
+      <div>
+        <h2>Planificación del día</h2>
+        <p>Fecha, transportista y equipo asignado.</p>
+      </div>
+      <span class="section-tag">Datos comunes</span>
     </div>
 
-    <div class="col-md-3">
-      <label class="form-label">Email transportista</label>
-      <input class="form-control" type="email" [(ngModel)]="emailTransportista" placeholder="email@..." readonly />
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Acompañante 1</label>
-      <input class="form-control" type="text" [(ngModel)]="acompanante1" placeholder="Opcional" />
-    </div>
-
-    <div class="col-md-3">
-      <label class="form-label">Acompañante 2</label>
-      <input class="form-control" type="text" [(ngModel)]="acompanante2" placeholder="Opcional" />
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Estado</label>
-      <select class="form-select" [(ngModel)]="estado">
-        <option value="pendiente">pendiente</option>
-        <option value="en_curso">en_curso</option>
-        <option value="cerrada">cerrada</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="d-flex gap-2 mb-3">
-    <button class="btn btn-outline-primary" type="button" (click)="addFila()">+ Añadir fila</button>
-    <button class="btn btn-success" type="button" (click)="guardarTodas()">Guardar todas</button>
-  </div>
-
-  <div *ngFor="let r of rutas; let i = index" class="card mb-3">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5 class="mb-0">Ruta #{{ i + 1 }}</h5>
-        <button class="btn btn-outline-danger btn-sm" type="button" (click)="removeFila(i)">Eliminar</button>
+    <div class="fields-grid three-columns">
+      <div class="field">
+        <label for="fechaDia">Fecha <span class="required">*</span></label>
+        <input id="fechaDia" class="form-control" type="date" [(ngModel)]="fecha" />
       </div>
 
-      <div class="row g-3 align-items-end">
-        <div class="col-md-4">
-          <label class="form-label">Cliente</label>
-          <select class="form-select" [(ngModel)]="r.clienteId" (change)="onClienteChange(i)">
-            <option [ngValue]="null">-- Selecciona cliente --</option>
+      <div class="field">
+        <label for="transportistaDia">
+          Transportista <span class="required">*</span>
+        </label>
+        <select id="transportistaDia" class="form-select" [(ngModel)]="transportistaId"
+          (ngModelChange)="onTransportistaChange()">
+          <option [ngValue]="null">Selecciona un transportista</option>
+          <option *ngFor="let t of transportistas" [ngValue]="t.id">
+            {{ t.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="emailDia">Correo del transportista</label>
+        <input id="emailDia" class="form-control" type="email" [(ngModel)]="emailTransportista"
+          placeholder="Se completa automáticamente" readonly />
+      </div>
+
+      <div class="field">
+        <label for="acompananteDia1">Acompañante 1</label>
+        <input id="acompananteDia1" class="form-control" type="text" [(ngModel)]="acompanante1"
+          placeholder="Opcional" />
+      </div>
+
+      <div class="field">
+        <label for="acompananteDia2">Acompañante 2</label>
+        <input id="acompananteDia2" class="form-control" type="text" [(ngModel)]="acompanante2"
+          placeholder="Opcional" />
+      </div>
+
+      <div class="field">
+        <label for="estadoDia">Estado</label>
+        <select id="estadoDia" class="form-select" [(ngModel)]="estado">
+          <option value="pendiente">Pendiente</option>
+          <option value="en_curso">En curso</option>
+          <option value="cerrada">Cerrada</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <div class="routes-toolbar">
+    <div>
+      <h2>Rutas y entregas</h2>
+      <p>Configura un cliente y sus entregas en cada ruta.</p>
+    </div>
+
+    <button class="button button-secondary" type="button" (click)="addFila()">
+      + Añadir ruta
+    </button>
+  </div>
+
+  <section *ngFor="let r of rutas; let i = index" class="surface route-card">
+    <div class="route-card-heading">
+      <div class="route-identity">
+        <span class="route-number">{{ i + 1 }}</span>
+        <div>
+          <h3>Ruta {{ i + 1 }}</h3>
+          <p>
+            {{
+            r.clienteId
+            ? 'Configura la tarea y los productos de esta ruta.'
+            : 'Selecciona un cliente para empezar.'
+            }}
+          </p>
+        </div>
+      </div>
+
+      <button class="button button-danger button-small" type="button" (click)="removeFila(i)"
+        [attr.aria-label]="'Eliminar ruta ' + (i + 1)">
+        Eliminar ruta
+      </button>
+    </div>
+
+    <div class="route-card-body">
+      <div class="fields-grid">
+        <div class="field">
+          <label [for]="'cliente-' + i">
+            Cliente <span class="required">*</span>
+          </label>
+          <select [id]="'cliente-' + i" class="form-select" [(ngModel)]="r.clienteId"
+            (ngModelChange)="onClienteChange(i)">
+            <option [ngValue]="null">Selecciona un cliente</option>
             <option *ngFor="let c of clientes" [ngValue]="c.id">
               {{ getNombreCliente(c) }}
             </option>
           </select>
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label">Tarea</label>
-          <input class="form-control" type="text" [(ngModel)]="r.tarea" placeholder="Ej. Entrega material" />
+        <div class="field">
+          <label [for]="'tarea-' + i">Tarea</label>
+          <input [id]="'tarea-' + i" class="form-control" type="text" [(ngModel)]="r.tarea"
+            placeholder="Ej. Entrega de material o instalación" />
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label">Observaciones</label>
-          <input class="form-control" type="text" [(ngModel)]="r.observaciones" placeholder="Notas..." />
-        </div>
-      </div>
-
-      <hr class="my-3" />
-
-      <div class="row g-3 align-items-end">
-        <div class="col-md-6">
-          <label class="form-label">Producto</label>
-          <select class="form-select" [(ngModel)]="r.productoSel">
-            <option [ngValue]="null">-- Selecciona producto --</option>
-            <option *ngFor="let p of r.productosCliente" [ngValue]="p.id"
-              [disabled]="getStockDisponibleFormulario(p.id) === 0">
-              {{ p.codigo ? p.codigo + ' - ' : '' }}{{ p.nombre }}
-              — Pendiente: {{ getStockDisponibleFormulario(p.id) }} </option>
-          </select>
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Cantidad</label>
-          <input class="form-control" type="number" min="1" [(ngModel)]="r.cantidadSel" [disabled]="!r.productoSel" />
-
-          <div class="form-text" *ngIf="r.productoSel">
-            Pendiente disponible: <b>{{ getStockDisponibleSeleccion(i) }}</b>
-          </div>
-
-          <div class="text-danger small mt-1" *ngIf="r.productoSel && (r.cantidadSel > getStockDisponibleSeleccion(i))">
-            No puedes superar el pendiente disponible ({{ getStockDisponibleSeleccion(i) }})
-          </div>
-        </div>
-
-        <div class="col-md-3">
-          <button class="btn btn-primary w-100" type="button" (click)="addProducto(i)" [disabled]="!canAddProducto(i)">
-            Añadir
-          </button>
+        <div class="field field-wide">
+          <label [for]="'observaciones-' + i">Observaciones</label>
+          <textarea [id]="'observaciones-' + i" class="form-control" rows="2" [(ngModel)]="r.observaciones"
+            placeholder="Horario, acceso, indicaciones para el transportista..."></textarea>
         </div>
       </div>
 
-      <div class="mt-3">
-        <h6 class="mb-2">Productos añadidos</h6>
-
-        <div class="alert alert-secondary" *ngIf="!r.productos || r.productos.length === 0">
-          Sin productos añadidos para esta ruta.
+      <div class="products-panel">
+        <div class="subsection-heading">
+          <div>
+            <h3>Productos a entregar</h3>
+            <p>Selecciona productos pendientes del cliente.</p>
+          </div>
+          <span class="count-badge">
+            {{ r.productos?.length || 0 }} líneas
+          </span>
         </div>
 
-        <table class="table table-sm" *ngIf="r.productos && r.productos.length > 0">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th style="width: 120px">Cantidad</th>
-              <th style="width: 80px">ID</th>
-              <th class="text-end" style="width: 120px">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let p of r.productos; let j = index">
-              <td>{{ getNombreProductoFila(i, p.producto) }}</td>
-              <td>{{ p.cantidad }}</td>
-              <td>{{ p.producto }}</td>
-              <td class="text-end">
-                <button class="btn btn-outline-danger btn-sm" type="button" (click)="removeProducto(i, j)">
-                  Quitar
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="d-flex justify-content-end mt-4">
-          <button class="btn btn-outline-secondary" type="button" (click)="volverAListado()">
-            ← Volver al listado de rutas
+        <div class="product-picker">
+          <div class="field">
+            <label [for]="'producto-' + i">Producto</label>
+            <select [id]="'producto-' + i" class="form-select" [(ngModel)]="r.productoSel" [disabled]="!r.clienteId">
+              <option [ngValue]="null">Selecciona un producto</option>
+              <option *ngFor="let p of r.productosCliente" [ngValue]="p.id"
+                [disabled]="getStockDisponibleFormulario(p.id) === 0">
+                {{ p.codigo ? p.codigo + ' - ' : '' }}{{ p.nombre }}
+                · Pendiente: {{ getStockDisponibleFormulario(p.id) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label [for]="'cantidad-' + i">Cantidad</label>
+            <input [id]="'cantidad-' + i" class="form-control" type="number" min="1" [(ngModel)]="r.cantidadSel"
+              [disabled]="!r.productoSel" />
+          </div>
+
+          <button class="button button-primary" type="button" (click)="addProducto(i)" [disabled]="!canAddProducto(i)">
+            + Añadir producto
           </button>
+        </div>
+
+        <p class="field-hint" *ngIf="!r.clienteId">
+          Selecciona primero un cliente para consultar sus productos.
+        </p>
+
+        <p class="field-hint" *ngIf="r.productoSel">
+          Pendiente disponible:
+          <strong>{{ getStockDisponibleSeleccion(i) }}</strong>
+        </p>
+
+        <p class="field-error" *ngIf="
+            r.productoSel &&
+            r.cantidadSel > getStockDisponibleSeleccion(i)
+          ">
+          La cantidad no puede superar las
+          {{ getStockDisponibleSeleccion(i) }} unidades disponibles.
+        </p>
+
+        <div class="empty-state" *ngIf="!r.productos || r.productos.length === 0">
+          <span class="empty-symbol" aria-hidden="true">+</span>
+          <div>
+            <strong>Sin productos añadidos</strong>
+            <p>Los productos que añadas aparecerán aquí.</p>
+          </div>
+        </div>
+
+        <div class="table-wrap" *ngIf="r.productos && r.productos.length > 0">
+          <table class="products-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th class="quantity-column">Cantidad</th>
+                <th class="actions-column">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let p of r.productos; let j = index">
+                <td class="product-name">
+                  {{ getNombreProductoFila(i, p.producto) }}
+                </td>
+                <td>
+                  <span class="quantity-badge">{{ p.cantidad }}</span>
+                </td>
+                <td class="actions-column">
+                  <button class="button button-danger button-small" type="button" (click)="removeProducto(i, j)"
+                    [attr.aria-label]="
+                      'Quitar ' + getNombreProductoFila(i, p.producto)
+                    ">
+                    Quitar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <footer class="surface form-footer">
+    <div class="footer-help">
+      <strong>Guardar planificación</strong>
+      <p>
+        Completa la fecha y el transportista.
+        Solo se guardarán las rutas que tengan un cliente seleccionado.
+      </p>
+    </div>
+
+    <div class="form-actions">
+      <button class="button button-secondary" type="button" (click)="volverAListado()">
+        Cancelar
+      </button>
+
+      <button class="button button-primary" type="button" (click)="guardarTodas()"
+        [disabled]="!fecha || !transportistaId">
+        Guardar rutas del día
+      </button>
+    </div>
+  </footer>
 </div>

@@ -1,116 +1,280 @@
-<div class="proveedor-form-page container-fluid mt-4">
-  <h3>Editar proveedor</h3>
+<div class="supplier-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">NOVEXAPP / GESTIÓN COMERCIAL</p>
 
-  <div class="card p-4 shadow-sm">
-    <div class="row g-3">
-      <div class="col-12 col-md-6">
-        <label class="form-label">Nombre</label>
-        <input class="form-control" [(ngModel)]="proveedor.nombre" name="nombre">
-      </div>
+      <h1>{{ esEdicion ? 'Editar proveedor' : 'Nuevo proveedor' }}</h1>
 
-      <div class="col-12 col-md-6">
-        <label class="form-label">CIF</label>
-        <input class="form-control" [(ngModel)]="proveedor.cif" name="cif">
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">Fecha alta proveedor</label>
-        <input type="date" class="form-control" [(ngModel)]="proveedor.fechaAltaProveedor" name="fechaAltaProveedor">
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">Oficio</label>
-        <select class="form-control" [(ngModel)]="proveedor.oficio" name="oficio">
-          <option value="">Seleccione un oficio...</option>
-          <option *ngFor="let o of oficios" [value]="o">{{ o }}</option>
-        </select>
-      </div>
-
-      <div class="col-12">
-        <label class="form-label">Dirección</label>
-        <input class="form-control" [(ngModel)]="proveedor.direccion" name="direccion">
-      </div>
-
-      <div class="col-12 col-md-4">
-        <label class="form-label">Localidad</label>
-        <input class="form-control" [(ngModel)]="proveedor.localidad" name="localidad">
-      </div>
-
-      <div class="col-12 col-md-4">
-        <label class="form-label">Código postal</label>
-        <input class="form-control" [(ngModel)]="proveedor.codigoPostal" name="codigoPostal">
-      </div>
-
-      <div class="col-12 col-md-4">
-        <label class="form-label">Provincia</label>
-        <input class="form-control" [(ngModel)]="proveedor.provincia" name="provincia">
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">País</label>
-        <input class="form-control" [(ngModel)]="proveedor.pais" name="pais">
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">Teléfono</label>
-        <input class="form-control" [(ngModel)]="proveedor.telefono" name="telefono">
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">Email</label>
-        <input type="email" class="form-control" [(ngModel)]="proveedor.email" name="email">
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">Contacto</label>
-        <input class="form-control" [(ngModel)]="proveedor.contacto" name="contacto">
-      </div>
-
-      <div class="col-12">
-  <label class="form-label">Datos bancarios</label>
-  <textarea
-    class="form-control"
-    rows="3"
-    [(ngModel)]="proveedor.datosBancarios"
-    name="datosBancarios">
-  </textarea>
-</div>
-
-<div class="col-12 col-md-6">
-  <label class="form-label">Número de cuenta</label>
-  <input
-    type="text"
-    class="form-control"
-    [(ngModel)]="proveedor.numeroCuenta"
-    name="numeroCuenta"
-    pattern="^\d{20}$"
-    placeholder="Ej: 21000418450200051339"
-    inputmode="numeric"
-    maxlength="20"
-    (ngModelChange)="formatearNumeroCuenta($event)"
-  />
-</div>
-
-<div class="col-12 col-md-6">
-  <label class="form-label">IBAN generado</label>
-  <input
-    type="text"
-    class="form-control"
-    [value]="formatearIbanVisual(proveedor.iban)"
-    readonly
-    placeholder="Se genera automáticamente"
-  />
-</div>
-
-      <div class="col-12">
-        <label class="form-label">Notas</label>
-        <textarea class="form-control" rows="3" [(ngModel)]="proveedor.notas" name="notas"></textarea>
-      </div>
-
-      <div class="mt-4 text-end form-actions d-flex justify-content-end gap-2 flex-wrap">
-        <button class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
-        <button class="btn btn-success" (click)="guardar()">Guardar cambios</button>
-      </div>
+      <p class="page-description">
+        {{
+        esEdicion
+        ? 'Actualiza los datos y la información de contacto del proveedor.'
+        : 'Añade un proveedor y organiza sus datos de contacto y facturación.'
+        }}
+      </p>
     </div>
-  </div>
+
+    <button type="button" class="button button-secondary" (click)="cancelar()">
+      <span aria-hidden="true">←</span>
+      Volver a proveedores
+    </button>
+  </header>
+
+  <form #formProveedor="ngForm" (ngSubmit)="guardar(formProveedor)" novalidate>
+    <section class="surface form-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">01</span>
+
+        <div>
+          <h2>Datos del proveedor</h2>
+          <p>Identificación y actividad profesional.</p>
+        </div>
+
+        <span class="section-tag">Información general</span>
+      </div>
+
+      <div class="fields-grid">
+        <div class="field field-wide">
+          <label for="nombre">
+            Nombre y apellidos o razón social
+            <span class="required">*</span>
+          </label>
+
+          <input id="nombre" type="text" class="form-control" [(ngModel)]="proveedor.nombre" name="nombre"
+            #nombre="ngModel" required pattern=".*\S.*" autocomplete="organization"
+            placeholder="Nombre del proveedor o de la empresa"
+            [class.is-invalid]="nombre.invalid && (nombre.touched || formProveedor.submitted)" />
+
+          <small class="field-error" *ngIf="nombre.invalid && (nombre.touched || formProveedor.submitted)">
+            Introduce el nombre del proveedor.
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="cif">CIF / NIF</label>
+
+          <input id="cif" type="text" class="form-control" [(ngModel)]="proveedor.cif" name="cif"
+            placeholder="Identificación fiscal" />
+        </div>
+
+        <div class="field">
+          <label for="fechaAltaProveedor">Fecha de alta</label>
+
+          <input id="fechaAltaProveedor" type="date" class="form-control" [(ngModel)]="proveedor.fechaAltaProveedor"
+            name="fechaAltaProveedor" />
+        </div>
+
+        <div class="field">
+          <label for="oficio">Oficio / actividad</label>
+
+          <select id="oficio" class="form-control" [(ngModel)]="proveedor.oficio" name="oficio">
+            <option value="">Selecciona un oficio</option>
+
+            <option *ngIf="proveedor.oficio && !oficios.includes(proveedor.oficio)" [value]="proveedor.oficio">
+              {{ proveedor.oficio }}
+            </option>
+
+            <option *ngFor="let oficio of oficios" [value]="oficio">
+              {{ oficio }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="surface form-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">02</span>
+
+        <div>
+          <h2>Contacto</h2>
+          <p>Datos para comunicarte con el proveedor.</p>
+        </div>
+      </div>
+
+      <div class="fields-grid">
+        <div class="field">
+          <label for="telefono">
+            Teléfono
+            <span class="required" *ngIf="!esEdicion">*</span>
+          </label>
+
+          <input id="telefono" type="tel" class="form-control" [(ngModel)]="proveedor.telefono" name="telefono"
+            #telefono="ngModel" [required]="!esEdicion" pattern=".*\S.*" autocomplete="tel"
+            placeholder="Teléfono de contacto"
+            [class.is-invalid]="telefono.invalid && (telefono.touched || formProveedor.submitted)" />
+
+          <small class="field-error" *ngIf="telefono.invalid && (telefono.touched || formProveedor.submitted)">
+            Introduce un teléfono de contacto.
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="email">
+            Correo electrónico
+            <span class="required" *ngIf="!esEdicion">*</span>
+          </label>
+
+          <input id="email" type="email" class="form-control" [(ngModel)]="proveedor.email" name="email"
+            #email="ngModel" [required]="!esEdicion" email autocomplete="email" placeholder="proveedor@empresa.com"
+            [class.is-invalid]="email.invalid && (email.touched || formProveedor.submitted)" />
+
+          <small class="field-error" *ngIf="email.invalid && (email.touched || formProveedor.submitted)">
+            Introduce un correo electrónico válido.
+          </small>
+        </div>
+
+        <div class="field field-wide">
+          <label for="contacto">Persona de contacto</label>
+
+          <input id="contacto" type="text" class="form-control" [(ngModel)]="proveedor.contacto" name="contacto"
+            autocomplete="name" placeholder="Nombre de la persona de contacto" />
+        </div>
+      </div>
+    </section>
+
+    <section class="surface form-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">03</span>
+
+        <div>
+          <h2>Dirección</h2>
+          <p>Domicilio y ubicación del proveedor.</p>
+        </div>
+      </div>
+
+      <div class="fields-grid">
+        <div class="field field-wide">
+          <label for="direccion">Dirección</label>
+
+          <input id="direccion" type="text" class="form-control" [(ngModel)]="proveedor.direccion" name="direccion"
+            autocomplete="street-address" placeholder="Calle, número, piso..." />
+        </div>
+
+        <div class="field">
+          <label for="codigoPostal">Código postal</label>
+
+          <input id="codigoPostal" type="text" class="form-control" [(ngModel)]="proveedor.codigoPostal"
+            name="codigoPostal" autocomplete="postal-code" placeholder="Código postal" />
+        </div>
+
+        <div class="field">
+          <label for="localidad">Localidad</label>
+
+          <input id="localidad" type="text" class="form-control" [(ngModel)]="proveedor.localidad" name="localidad"
+            autocomplete="address-level2" placeholder="Localidad" />
+        </div>
+
+        <div class="field">
+          <label for="provincia">Provincia</label>
+
+          <input id="provincia" type="text" class="form-control" [(ngModel)]="proveedor.provincia" name="provincia"
+            autocomplete="address-level1" placeholder="Provincia" />
+        </div>
+
+        <div class="field">
+          <label for="pais">País</label>
+
+          <input id="pais" type="text" class="form-control" [(ngModel)]="proveedor.pais" name="pais"
+            autocomplete="country-name" placeholder="País" />
+        </div>
+      </div>
+    </section>
+
+    <section class="surface form-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">04</span>
+
+        <div>
+          <h2>Datos bancarios</h2>
+          <p>Información de la cuenta para los pagos al proveedor.</p>
+        </div>
+
+        <span class="section-tag">IBAN automático</span>
+      </div>
+
+      <div class="fields-grid">
+        <div class="field">
+          <label for="numeroCuenta">
+            Número de cuenta
+            <span class="required" *ngIf="!esEdicion">*</span>
+          </label>
+
+          <input id="numeroCuenta" type="text" class="form-control account-input" [(ngModel)]="proveedor.numeroCuenta"
+            name="numeroCuenta" #numeroCuenta="ngModel" [required]="!esEdicion" pattern="^\d{20}$" inputmode="numeric"
+            maxlength="20" placeholder="21000418450200051339" (ngModelChange)="formatearNumeroCuenta($event)"
+            [class.is-invalid]="numeroCuenta.invalid && (numeroCuenta.touched || formProveedor.submitted)" />
+
+          <small class="field-hint">
+            Introduce los 20 dígitos de la cuenta española.
+          </small>
+
+          <small class="field-error" *ngIf="numeroCuenta.invalid && (numeroCuenta.touched || formProveedor.submitted)">
+            {{
+            numeroCuenta.errors?.['required']
+            ? 'El número de cuenta es obligatorio.'
+            : 'La cuenta debe tener exactamente 20 dígitos.'
+            }}
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="iban">IBAN generado</label>
+
+          <input id="iban" type="text" class="form-control account-input" [value]="formatearIbanVisual(proveedor.iban)"
+            readonly placeholder="Se genera automáticamente" />
+
+          <small class="field-hint">
+            Se calcula a partir del número de cuenta.
+          </small>
+        </div>
+
+        <div class="field field-wide" *ngIf="esEdicion">
+          <label for="datosBancarios">Información bancaria adicional</label>
+
+          <textarea id="datosBancarios" class="form-control" rows="3" [(ngModel)]="proveedor.datosBancarios"
+            name="datosBancarios" placeholder="Entidad bancaria u otras indicaciones de pago"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="surface form-section">
+      <div class="section-heading">
+        <span class="section-number" aria-hidden="true">05</span>
+
+        <div>
+          <h2>Observaciones</h2>
+          <p>Información interna que quieras conservar.</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="notas">Notas</label>
+
+        <textarea id="notas" class="form-control" rows="4" [(ngModel)]="proveedor.notas" name="notas"
+          placeholder="Añade observaciones sobre este proveedor..."></textarea>
+      </div>
+    </section>
+
+    <footer class="surface form-footer">
+      <p>
+        <span class="required">*</span>
+        Campos obligatorios
+      </p>
+
+      <div class="form-actions">
+        <button type="button" class="button button-secondary" (click)="cancelar()">
+          Cancelar
+        </button>
+
+        <button type="submit" class="button button-primary" [disabled]="
+            formProveedor.invalid ||
+            !proveedor.nombre?.trim() ||
+            (!esEdicion && !proveedor.iban)
+          ">
+          {{ esEdicion ? 'Guardar cambios' : 'Guardar proveedor' }}
+        </button>
+      </div>
+    </footer>
+  </form>
 </div>

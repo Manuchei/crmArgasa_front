@@ -242,22 +242,44 @@ export class NuevoClienteComponent {
 
     const payload = this.buildClientePayload();
 
-    if (!payload.numeroCuenta || !/^\d{20}$/.test(payload.numeroCuenta)) {
-  alert('El número de cuenta debe tener 20 dígitos.');
-  return;
-}
+    if (!payload.nombreApellidos?.trim()) {
+      alert('Introduce el nombre del cliente o la razón social.');
+      return;
+    }
+
+    if (!payload.telefono?.trim() && !payload.movil?.trim()) {
+      alert('Introduce al menos un teléfono o móvil de contacto.');
+      return;
+    }
+
+    const cuenta = payload.numeroCuenta || '';
+
+    if (cuenta && !/^\d{20}$/.test(cuenta)) {
+      alert('Si introduces una cuenta, debe tener exactamente 20 dígitos.');
+      return;
+    }
+
+    payload.numeroCuenta = cuenta;
+    payload.iban = cuenta ? this.generarIbanEspanol(cuenta) : '';
 
     this.clienteService.crearCliente(payload).subscribe({
       next: () => {
-        alert('✅ Cliente añadido correctamente.');
-        this.router.navigate(['/app/clientes']);
+        alert('Cliente añadido correctamente.');
+        void this.router.navigate(['/app/clientes']);
       },
       error: (err: HttpErrorResponse) => {
         console.error('Error al crear cliente:', err);
-        alert(
-          '❌ ' + this.getErrorMessage(err, 'No se pudo crear el cliente.'),
-        );
+
+        alert(this.getErrorMessage(err, 'No se pudo crear el cliente.'));
       },
     });
+  }
+
+  volver(): void {
+    void this.router.navigate(['/app/clientes']);
+  }
+
+  get tieneContacto(): boolean {
+    return !!(this.cliente.telefono?.trim() || this.cliente.movil?.trim());
   }
 }

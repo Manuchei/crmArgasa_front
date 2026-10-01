@@ -1,18 +1,32 @@
-<div class="container mt-4 calendario-page">
+<div class="calendario-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">NOVEXAPP / ORGANIZACIÓN</p>
+      <h1>Calendario</h1>
+      <p class="page-description">
+        Planifica las llamadas, tareas y visitas de tu equipo.
+      </p>
+    </div>
 
-  <!-- SELECTOR DE TIPO -->
+    <div class="selected-date-badge" *ngIf="selectedDate">
+      <span>DÍA SELECCIONADO</span>
+      <strong>{{ selectedDate | date:'dd/MM/yyyy' }}</strong>
+    </div>
+  </header>
+
+  <!-- TIPO DE ACTIVIDAD -->
   <mat-card class="tipo-calendario-card">
     <div class="tipo-header">
-      <div>
-        <div class="tipo-title">Calendario CRM</div>
-        <div class="tipo-subtitle">Organiza llamadas, tareas y visitas</div>
+      <div class="tipo-title">Tipo de actividad</div>
+      <div class="tipo-subtitle">
+        Selecciona las actividades que quieres consultar y organizar.
       </div>
     </div>
 
     <div class="tipo-grid">
       <button type="button" class="tipo-option tipo-llamadas" [class.active]="tipoCalendario === 'llamadas'"
-        (click)="cambiarTipo('llamadas')">
-        <span class="tipo-icon">📞</span>
+        [attr.aria-pressed]="tipoCalendario === 'llamadas'" (click)="cambiarTipo('llamadas')">
+        <span class="tipo-icon" aria-hidden="true">📞</span>
         <span>
           <strong>Llamadas</strong>
           <small>Seguimiento comercial</small>
@@ -20,8 +34,8 @@
       </button>
 
       <button type="button" class="tipo-option tipo-tareas" [class.active]="tipoCalendario === 'tareas'"
-        (click)="cambiarTipo('tareas')">
-        <span class="tipo-icon">✅</span>
+        [attr.aria-pressed]="tipoCalendario === 'tareas'" (click)="cambiarTipo('tareas')">
+        <span class="tipo-icon" aria-hidden="true">✓</span>
         <span>
           <strong>Tareas</strong>
           <small>Trabajo pendiente</small>
@@ -29,8 +43,8 @@
       </button>
 
       <button type="button" class="tipo-option tipo-visitas" [class.active]="tipoCalendario === 'visitas'"
-        (click)="cambiarTipo('visitas')">
-        <span class="tipo-icon">🚗</span>
+        [attr.aria-pressed]="tipoCalendario === 'visitas'" (click)="cambiarTipo('visitas')">
+        <span class="tipo-icon" aria-hidden="true">↗</span>
         <span>
           <strong>Visitas</strong>
           <small>Citas y desplazamientos</small>
@@ -39,524 +53,440 @@
     </div>
   </mat-card>
 
-  <div class="row g-4">
-
+  <div class="calendar-layout">
     <!-- CALENDARIO -->
-    <div class="col-12 col-lg-5">
+    <div class="calendar-column">
       <mat-card class="calendar-card">
-        <mat-card-title>📅 Calendario</mat-card-title>
-
-        <div class="calendar-wrapper">
-          <mat-calendar [selected]="selectedDate" [dateClass]="dateClass" (selectedChange)="onSelectDate($event)">
-          </mat-calendar>
-        </div>
-      </mat-card>
-    </div>
-
-    <!-- PANEL DERECHO -->
-    <div class="col-12 col-lg-7">
-
-      <!-- ELEMENTOS DEL DÍA -->
-      <mat-card class="panel panel-list mb-4">
         <div class="panel-header">
           <div class="panel-title">
-            <span class="panel-icon">
-              <ng-container [ngSwitch]="tipoCalendario">
-                <span *ngSwitchCase="'llamadas'">📞</span>
-                <span *ngSwitchCase="'tareas'">✅</span>
-                <span *ngSwitchCase="'visitas'">🚗</span>
-              </ng-container>
-            </span>
-
+            <span class="panel-icon" aria-hidden="true">01</span>
             <div>
-              <div class="title">
-                <ng-container [ngSwitch]="tipoCalendario">
-                  <span *ngSwitchCase="'llamadas'">Llamadas del día</span>
-                  <span *ngSwitchCase="'tareas'">Tareas del día</span>
-                  <span *ngSwitchCase="'visitas'">Visitas del día</span>
-                </ng-container>
-              </div>
-
-              <div class="subtitle" *ngIf="selectedDate">
-                {{ selectedDate | date:'fullDate':'':'es-ES' }}
-              </div>
+              <h2 class="title">Seleccionar fecha</h2>
+              <p class="subtitle">
+                Los días marcados tienen actividades registradas.
+              </p>
             </div>
           </div>
         </div>
 
+        <div class="calendar-wrapper">
+          <mat-calendar [selected]="selectedDate" [dateClass]="dateClass"
+            (selectedChange)="onSelectDate($event)"></mat-calendar>
+        </div>
+      </mat-card>
+    </div>
+
+    <div class="agenda-column">
+      <!-- ACTIVIDADES DEL DÍA -->
+      <mat-card class="panel panel-list">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-icon" aria-hidden="true">02</span>
+
+            <div>
+              <h2 class="title">
+                {{
+                tipoCalendario === 'llamadas'
+                ? 'Llamadas del día'
+                : tipoCalendario === 'tareas'
+                ? 'Tareas del día'
+                : 'Visitas del día'
+                }}
+              </h2>
+
+              <p class="subtitle" *ngIf="selectedDate">
+                {{ selectedDate | date:'dd/MM/yyyy' }}
+              </p>
+            </div>
+          </div>
+
+          <span class="count-badge">
+            {{
+            tipoCalendario === 'llamadas'
+            ? llamadasDelDia.length
+            : tipoCalendario === 'tareas'
+            ? tareasDelDia.length
+            : visitasDelDia.length
+            }}
+            actividades
+          </span>
+        </div>
+
         <div class="panel-body">
+          <!--
+            Plantilla común para los tres tipos.
+            $any permite acceder al motivo de llamadas
+            y al título de tareas y visitas.
+          -->
+          <article class="activity-card" *ngFor="
+              let elemento of $any(
+                tipoCalendario === 'llamadas'
+                  ? llamadasDelDia
+                  : tipoCalendario === 'tareas'
+                    ? tareasDelDia
+                    : visitasDelDia
+              );
+              trackBy: trackByLlamadaId
+            ">
+            <div class="activity-top">
+              <span class="activity-time">
+                {{ elemento.fecha | date:'HH:mm' }}
+              </span>
 
-          <!-- LLAMADAS -->
-          <ng-container *ngIf="tipoCalendario === 'llamadas'">
-            <div *ngIf="llamadasDelDia.length > 0; else sinLlamadas">
-              <div class="llamada-card" *ngFor="let l of llamadasDelDia; trackBy: trackByLlamadaId">
+              <div class="activity-info">
+                <h3>
+                  {{
+                  elemento.nombre ||
+                  elemento.motivo ||
+                  elemento.titulo
+                  }}
+                </h3>
 
-                <div class="llamada-card-top">
-                  <div class="llamada-card-title">
-                    {{ l.nombre || l.motivo }}
-                  </div>
+                <p class="activity-address" *ngIf="elemento.direccion">
+                  {{ elemento.direccion }}
+                </p>
 
-                  <div class="llamada-card-address" *ngIf="l.direccion">
-                    📍 {{ l.direccion }}
-                  </div>
-
-                  <div class="llamada-card-motivo" *ngIf="l.nombre && l.motivo">
-                    {{ l.motivo }}
-                  </div>
-                </div>
-
-                <div class="llamada-card-meta">
-                  <span class="meta-pill" [class.meta-pasada]="esPasada(l.fecha)">
-                    📅 {{ l.fecha | date:'dd/MM' }}
-                    · 🕒 {{ l.fecha | date:'HH:mm' }}
-                    <span *ngIf="esPasada(l.fecha)">· atrasada</span>
-                  </span>
-
-                  <span class="estado-pill" [ngClass]="{
-                      'estado-pendiente': l.estado === 'pendiente',
-                      'estado-progreso': l.estado === 'en_progreso',
-                      'estado-realizada': l.estado === 'realizada',
-                      'estado-cancelada': l.estado === 'cancelada'
-                    }">
-                    {{ l.estado === 'en_progreso' ? 'en progreso' : l.estado }}
-                  </span>
-                </div>
-
-                <div class="llamada-card-actions">
-                  <button mat-mini-fab color="primary" type="button" title="Iniciar / finalizar"
-                    [disabled]="l.estado === 'realizada' || l.estado === 'cancelada'" (click)="toggleEstadoLlamada(l)">
-                    ▶
-                  </button>
-
-                  <button mat-mini-fab color="accent" type="button" title="Editar"
-                    (click)="editar(l); $event.stopPropagation()">
-                    ✏️
-                  </button>
-
-                  <button mat-mini-fab color="warn" type="button" title="Cancelar"
-                    (click)="cambiarEstadoLlamada(l, 'cancelada')">
-                    🗑️
-                  </button>
-                </div>
+                <p class="activity-description" *ngIf="elemento.nombre">
+                  {{ elemento.motivo || elemento.titulo }}
+                </p>
               </div>
             </div>
-          </ng-container>
 
-          <!-- TAREAS -->
-          <ng-container *ngIf="tipoCalendario === 'tareas'">
-            <div *ngIf="tareasDelDia.length > 0; else sinTareas">
-              <div class="llamada-card" *ngFor="let t of tareasDelDia; trackBy: trackByTareaId">
+            <div class="activity-meta">
+              <span class="meta-pill" [class.meta-pasada]="esPasada(elemento.fecha)">
+                {{ elemento.fecha | date:'dd/MM/yyyy' }}
+                <span *ngIf="esPasada(elemento.fecha)"> · Atrasada</span>
+              </span>
 
-                <div class="llamada-card-top">
-                  <div class="llamada-card-title">
-                    {{ t.nombre || t.titulo }}
-                  </div>
-
-                  <div class="llamada-card-address" *ngIf="t.direccion">
-                    📍 {{ t.direccion }}
-                  </div>
-
-                  <div class="llamada-card-motivo" *ngIf="t.nombre">
-                    {{ t.titulo }}
-                  </div>
-                </div>
-
-                <div class="llamada-card-meta">
-                  <span class="meta-pill" [class.meta-pasada]="esPasada(t.fecha)">
-                    📅 {{ t.fecha | date:'dd/MM' }}
-                    · 🕒 {{ t.fecha | date:'HH:mm' }}
-                    <span *ngIf="esPasada(t.fecha)">· atrasada</span>
-                  </span>
-
-                  <span class="estado-pill" [ngClass]="{
-                      'estado-pendiente': t.estado === 'pendiente',
-                      'estado-progreso': t.estado === 'en_progreso',
-                      'estado-realizada': t.estado === 'realizada',
-                      'estado-cancelada': t.estado === 'cancelada'
-                    }">
-                    {{ t.estado === 'en_progreso' ? 'en progreso' : t.estado }}
-                  </span>
-                </div>
-
-                <div class="llamada-card-actions">
-                  <button mat-mini-fab color="primary" type="button" title="Iniciar / finalizar"
-                    [disabled]="t.estado === 'realizada' || t.estado === 'cancelada'" (click)="toggleEstadoTarea(t)">
-                    ▶
-                  </button>
-
-                  <button mat-mini-fab color="accent" type="button" title="Editar"
-                    (click)="editarTarea(t); $event.stopPropagation()">
-                    ✏️
-                  </button>
-
-                  <button mat-mini-fab color="warn" type="button" title="Cancelar"
-                    (click)="cambiarEstadoTarea(t, 'cancelada')">
-                    🗑️
-                  </button>
-                </div>
-              </div>
+              <span class="estado-pill" [class.estado-pendiente]="elemento.estado === 'pendiente'"
+                [class.estado-progreso]="elemento.estado === 'en_progreso'"
+                [class.estado-realizada]="elemento.estado === 'realizada'"
+                [class.estado-cancelada]="elemento.estado === 'cancelada'">
+                {{
+                elemento.estado === 'en_progreso'
+                ? 'En progreso'
+                : elemento.estado === 'pendiente'
+                ? 'Pendiente'
+                : elemento.estado === 'realizada'
+                ? 'Realizada'
+                : elemento.estado === 'cancelada'
+                ? 'Cancelada'
+                : elemento.estado
+                }}
+              </span>
             </div>
-          </ng-container>
 
-          <!-- VISITAS -->
-          <ng-container *ngIf="tipoCalendario === 'visitas'">
-            <div *ngIf="visitasDelDia.length > 0; else sinVisitas">
-              <div class="llamada-card" *ngFor="let v of visitasDelDia; trackBy: trackByVisitaId">
+            <p class="activity-notes" *ngIf="elemento.observaciones">
+              {{ elemento.observaciones }}
+            </p>
 
-                <div class="llamada-card-top">
-                  <div class="llamada-card-title">
-                    {{ v.nombre || v.titulo }}
-                  </div>
+            <div class="activity-actions">
+              <button type="button" class="button button-primary button-small" [disabled]="
+                  elemento.estado === 'realizada' ||
+                  elemento.estado === 'cancelada'
+                " (click)="
+                  tipoCalendario === 'llamadas'
+                    ? toggleEstadoLlamada(elemento)
+                    : tipoCalendario === 'tareas'
+                      ? toggleEstadoTarea(elemento)
+                      : toggleEstadoVisita(elemento)
+                ">
+                {{ elemento.estado === 'en_progreso' ? 'Finalizar' : 'Iniciar' }}
+              </button>
 
-                  <div class="llamada-card-address" *ngIf="v.direccion">
-                    📍 {{ v.direccion }}
-                  </div>
+              <button type="button" class="button button-secondary button-small" (click)="
+                  tipoCalendario === 'llamadas'
+                    ? editar(elemento)
+                    : tipoCalendario === 'tareas'
+                      ? editarTarea(elemento)
+                      : editarVisita(elemento)
+                ">
+                Editar
+              </button>
 
-                  <div class="llamada-card-motivo" *ngIf="v.nombre">
-                    {{ v.titulo }}
-                  </div>
-                </div>
-
-                <div class="llamada-card-meta">
-                  <span class="meta-pill" [class.meta-pasada]="esPasada(v.fecha)">
-                    📅 {{ v.fecha | date:'dd/MM' }}
-                    · 🕒 {{ v.fecha | date:'HH:mm' }}
-                    <span *ngIf="esPasada(v.fecha)">· atrasada</span>
-                  </span>
-
-                  <span class="estado-pill" [ngClass]="{
-                      'estado-pendiente': v.estado === 'pendiente',
-                      'estado-progreso': v.estado === 'en_progreso',
-                      'estado-realizada': v.estado === 'realizada',
-                      'estado-cancelada': v.estado === 'cancelada'
-                    }">
-                    {{ v.estado === 'en_progreso' ? 'en progreso' : v.estado }}
-                  </span>
-                </div>
-
-                <div class="llamada-card-actions">
-                  <button mat-mini-fab color="primary" type="button" title="Iniciar / finalizar"
-                    [disabled]="v.estado === 'realizada' || v.estado === 'cancelada'" (click)="toggleEstadoVisita(v)">
-                    ▶
-                  </button>
-
-                  <button mat-mini-fab color="accent" type="button" title="Editar"
-                    (click)="editarVisita(v); $event.stopPropagation()">
-                    ✏️
-                  </button>
-
-                  <button mat-mini-fab color="warn" type="button" title="Cancelar"
-                    (click)="cambiarEstadoVisita(v, 'cancelada')">
-                    🗑️
-                  </button>
-                </div>
-              </div>
+              <button type="button" class="button button-danger button-small" [disabled]="
+                  elemento.estado === 'realizada' ||
+                  elemento.estado === 'cancelada'
+                " (click)="
+                  tipoCalendario === 'llamadas'
+                    ? cambiarEstadoLlamada(elemento, 'cancelada')
+                    : tipoCalendario === 'tareas'
+                      ? cambiarEstadoTarea(elemento, 'cancelada')
+                      : cambiarEstadoVisita(elemento, 'cancelada')
+                ">
+                Cancelar
+              </button>
             </div>
-          </ng-container>
+          </article>
 
-          <!-- MENSAJES SIN ELEMENTOS -->
-          <ng-template #sinLlamadas>
-            <div class="empty-state">
-              <div class="empty-emoji">📭</div>
-              <div class="empty-title">No hay llamadas</div>
-            </div>
-          </ng-template>
-
-          <ng-template #sinTareas>
-            <div class="empty-state">
-              <div class="empty-emoji">📭</div>
-              <div class="empty-title">No hay tareas</div>
-            </div>
-          </ng-template>
-
-          <ng-template #sinVisitas>
-            <div class="empty-state">
-              <div class="empty-emoji">📭</div>
-              <div class="empty-title">No hay visitas</div>
-            </div>
-          </ng-template>
-
+          <div class="empty-state" *ngIf="
+              (tipoCalendario === 'llamadas'
+                ? llamadasDelDia.length
+                : tipoCalendario === 'tareas'
+                  ? tareasDelDia.length
+                  : visitasDelDia.length) === 0
+            ">
+            <span class="empty-symbol" aria-hidden="true">✓</span>
+            <strong>No hay {{ etiquetaTipo }} pendientes</strong>
+            <p>No hay actividades de este tipo para la fecha seleccionada.</p>
+          </div>
         </div>
       </mat-card>
 
-      <!-- NUEVO ELEMENTO -->
+      <!-- NUEVA ACTIVIDAD -->
       <mat-card class="panel panel-form">
         <div class="panel-header">
           <div class="panel-title">
-            <span class="panel-icon">➕</span>
-
-            <div class="title">
-              <ng-container [ngSwitch]="tipoCalendario">
-                <span *ngSwitchCase="'llamadas'">Nueva llamada</span>
-                <span *ngSwitchCase="'tareas'">Nueva tarea</span>
-                <span *ngSwitchCase="'visitas'">Nueva visita</span>
-              </ng-container>
+            <span class="panel-icon" aria-hidden="true">03</span>
+            <div>
+              <h2 class="title">
+                {{
+                tipoCalendario === 'llamadas'
+                ? 'Nueva llamada'
+                : tipoCalendario === 'tareas'
+                ? 'Nueva tarea'
+                : 'Nueva visita'
+                }}
+              </h2>
+              <p class="subtitle">
+                Completa los datos para programar una actividad.
+              </p>
             </div>
           </div>
         </div>
 
         <div class="panel-body">
           <form class="form-grid" (ngSubmit)="guardarElementoCalendario()">
-
-            <!-- CAMPOS DE LLAMADAS -->
+            <!-- LLAMADA -->
             <ng-container *ngIf="tipoCalendario === 'llamadas'">
-              <div class="row g-2">
-                <div class="col-12 col-md-6">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Nombre</mat-label>
-                    <input matInput [(ngModel)]="nuevaLlamada.nombre" name="nombre" placeholder="Nombre" />
-                  </mat-form-field>
-                </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Nombre</mat-label>
+                  <input matInput [(ngModel)]="nuevaLlamada.nombre" name="nombre" placeholder="Nombre de contacto" />
+                </mat-form-field>
 
-                <div class="col-12 col-md-6">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Dirección</mat-label>
-                    <input matInput [(ngModel)]="nuevaLlamada.direccion" name="direccion" placeholder="Dirección" />
-                  </mat-form-field>
-                </div>
+                <mat-form-field appearance="outline">
+                  <mat-label>Dirección</mat-label>
+                  <input matInput [(ngModel)]="nuevaLlamada.direccion" name="direccion"
+                    placeholder="Dirección del contacto" />
+                </mat-form-field>
               </div>
 
-              <mat-form-field appearance="outline" class="w-100">
+              <mat-form-field appearance="outline">
                 <mat-label>Motivo</mat-label>
-                <input matInput [(ngModel)]="nuevaLlamada.motivo" name="motivo" />
+                <input matInput [(ngModel)]="nuevaLlamada.motivo" name="motivo" placeholder="Motivo de la llamada"
+                  required />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Observaciones</mat-label>
+                <textarea matInput rows="3" [(ngModel)]="nuevaLlamada.observaciones" name="observacionesLlamada"
+                  placeholder="Información adicional"></textarea>
               </mat-form-field>
             </ng-container>
 
-            <!-- CAMPOS DE TAREAS Y VISITAS -->
+            <!-- TAREA / VISITA -->
             <ng-container *ngIf="tipoCalendario !== 'llamadas'">
-              <div class="row g-2">
-                <div class="col-12 col-md-6">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Nombre</mat-label>
-                    <input matInput [(ngModel)]="nuevoNombre" name="nuevoNombre" placeholder="Nombre" />
-                  </mat-form-field>
-                </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Nombre</mat-label>
+                  <input matInput [(ngModel)]="nuevoNombre" name="nuevoNombre" placeholder="Nombre de contacto" />
+                </mat-form-field>
 
-                <div class="col-12 col-md-6">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Dirección</mat-label>
-                    <input matInput [(ngModel)]="nuevaDireccion" name="nuevaDireccion" placeholder="Dirección" />
-                  </mat-form-field>
-                </div>
+                <mat-form-field appearance="outline">
+                  <mat-label>Dirección</mat-label>
+                  <input matInput [(ngModel)]="nuevaDireccion" name="nuevaDireccion"
+                    placeholder="Dirección del contacto" />
+                </mat-form-field>
               </div>
 
-              <mat-form-field appearance="outline" class="w-100">
+              <mat-form-field appearance="outline">
                 <mat-label>Título</mat-label>
-                <input matInput [(ngModel)]="nuevoTitulo" name="nuevoTitulo" />
+                <input matInput [(ngModel)]="nuevoTitulo" name="nuevoTitulo" placeholder="Descripción de la actividad"
+                  required />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Observaciones</mat-label>
+                <textarea matInput rows="3" [(ngModel)]="nuevaObservacion" name="observacionesActividad"
+                  placeholder="Información adicional"></textarea>
               </mat-form-field>
             </ng-container>
 
-            <!-- FECHA Y HORA -->
-            <div class="row g-2 fecha-hora-row">
-              <div class="col-12 col-md-7">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Fecha</mat-label>
-                  <input matInput [matDatepicker]="picker" [(ngModel)]="fechaNueva" name="fechaNueva"
-                    (dateChange)="syncFechaHora()" />
+            <!-- FECHA / HORA -->
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Fecha</mat-label>
+                <input matInput [matDatepicker]="picker" [(ngModel)]="fechaNueva" name="fechaNueva"
+                  (dateChange)="syncFechaHora()" required />
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
 
-                  <mat-datepicker-toggle matSuffix [for]="picker">
-                  </mat-datepicker-toggle>
-                  <mat-datepicker #picker></mat-datepicker>
-                </mat-form-field>
-              </div>
-
-              <div class="col-12 col-md-5">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Hora</mat-label>
-                  <mat-select [(ngModel)]="horaNueva" name="horaNueva" (selectionChange)="syncFechaHora()">
-                    <mat-option *ngFor="let hora of horasDisponibles" [value]="hora">
-                      {{ hora }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
+              <mat-form-field appearance="outline">
+                <mat-label>Hora</mat-label>
+                <mat-select [(ngModel)]="horaNueva" name="horaNueva" (selectionChange)="syncFechaHora()" required>
+                  <mat-option *ngFor="let hora of horasDisponibles" [value]="hora">
+                    {{ hora }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
             </div>
 
-            <!-- OBSERVACIONES -->
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Observaciones</mat-label>
-              <textarea matInput rows="3" [(ngModel)]="nuevaObservacion" name="obs">
-              </textarea>
-            </mat-form-field>
-
             <div class="form-actions">
-              <button type="submit" mat-raised-button color="primary" class="btn-save">
-                Guardar
+              <span>La actividad se registra como pendiente.</span>
+
+              <button type="submit" class="button button-primary" [disabled]="
+                  !selectedDate ||
+                  !fechaNueva ||
+                  !horaNueva ||
+                  (tipoCalendario === 'llamadas'
+                    ? !nuevaLlamada.motivo?.trim()
+                    : !nuevoTitulo.trim())
+                ">
+                {{
+                tipoCalendario === 'llamadas'
+                ? 'Guardar llamada'
+                : tipoCalendario === 'tareas'
+                ? 'Guardar tarea'
+                : 'Guardar visita'
+                }}
               </button>
             </div>
           </form>
         </div>
       </mat-card>
-
     </div>
   </div>
 
-  <!-- CONSULTA DE REALIZADAS -->
-  <div class="row mt-4">
-    <div class="col-12">
-      <mat-card class="panel panel-realizadas">
-
-        <div class="panel-header">
-          <div class="panel-title">
-            <span class="panel-icon">🔎</span>
-
-            <div>
-              <div class="title">
-                Consultar {{ etiquetaTipo }} realizadas
-              </div>
-              <div class="subtitle">
-                Busca por nombre, fecha o dirección
-              </div>
-            </div>
-          </div>
+  <!-- HISTORIAL -->
+  <mat-card class="panel panel-realizadas">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="panel-icon" aria-hidden="true">04</span>
+        <div>
+          <h2 class="title">Consultar {{ etiquetaTipo }} realizadas</h2>
+          <p class="subtitle">
+            Busca actividades completadas por nombre, fecha o dirección.
+          </p>
         </div>
-
-        <div class="panel-body">
-          <div class="filtros-realizadas">
-
-            <mat-form-field appearance="outline" class="filtro-field">
-              <mat-label>Nombre</mat-label>
-              <input matInput [(ngModel)]="filtroNombre" placeholder="Buscar por nombre"
-                (keyup.enter)="buscarRealizadas()" />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="filtro-field filtro-fecha">
-              <mat-label>Fecha</mat-label>
-              <input matInput [matDatepicker]="pickerFiltro" [(ngModel)]="filtroFecha" />
-              <mat-datepicker-toggle matSuffix [for]="pickerFiltro">
-              </mat-datepicker-toggle>
-              <mat-datepicker #pickerFiltro></mat-datepicker>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="filtro-field">
-              <mat-label>Dirección</mat-label>
-              <input matInput [(ngModel)]="filtroDireccion" placeholder="Buscar por dirección"
-                (keyup.enter)="buscarRealizadas()" />
-            </mat-form-field>
-
-          </div>
-
-          <div class="acciones-filtros">
-            <button type="button" mat-stroked-button class="btn-limpiar" (click)="limpiarFiltrosRealizadas()">
-              Limpiar
-            </button>
-
-            <button type="button" mat-raised-button color="primary" class="btn-buscar" [disabled]="buscandoRealizadas"
-              (click)="buscarRealizadas()">
-              <span *ngIf="!buscandoRealizadas">🔎 Buscar</span>
-              <span *ngIf="buscandoRealizadas">Buscando...</span>
-            </button>
-          </div>
-
-          <div class="estado-busqueda" *ngIf="buscandoRealizadas">
-            Buscando {{ etiquetaTipo }} realizadas...
-          </div>
-
-          <div class="resultados-realizadas" *ngIf="!buscandoRealizadas && busquedaRealizada">
-
-            <div class="resultado-header">
-              <div>
-                <strong>{{ realizadas.length }}</strong>
-                resultado{{ realizadas.length === 1 ? '' : 's' }}
-              </div>
-            </div>
-
-            <div class="tabla-responsive" *ngIf="realizadas.length > 0">
-
-              <table class="tabla-realizadas">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Nombre</th>
-                    <th>Dirección</th>
-                    <th>
-                      {{ tipoCalendario === 'llamadas' ? 'Motivo' : 'Título' }}
-                    </th>
-                    <th>Observaciones</th>
-                    <th class="th-acciones">Acciones</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  <tr *ngFor="let elemento of realizadas; trackBy: trackByLlamadaId">
-
-                    <td class="fecha-cell">
-                      <strong>
-                        {{ elemento.fecha | date:'dd/MM/yyyy' }}
-                      </strong>
-                      <span>
-                        {{ elemento.fecha | date:'HH:mm' }}
-                      </span>
-                    </td>
-
-                    <td>
-                      <span class="dato-principal" *ngIf="elemento.nombre; else sinNombre">
-                        {{ elemento.nombre }}
-                      </span>
-                      <ng-template #sinNombre>
-                        <span class="dato-vacio">—</span>
-                      </ng-template>
-                    </td>
-
-                    <td>
-                      <span class="direccion-tabla" *ngIf="elemento.direccion; else sinDireccion">
-                        📍 {{ elemento.direccion }}
-                      </span>
-                      <ng-template #sinDireccion>
-                        <span class="dato-vacio">—</span>
-                      </ng-template>
-                    </td>
-
-                    <td>
-                      <span class="motivo-tabla">
-                        {{
-                        tipoCalendario === 'llamadas'
-                        ? $any(elemento).motivo
-                        : $any(elemento).titulo
-                        }}
-                      </span>
-                    </td>
-
-                    <td>
-                      <span *ngIf="elemento.observaciones; else sinObservaciones">
-                        {{ elemento.observaciones }}
-                      </span>
-                      <ng-template #sinObservaciones>
-                        <span class="dato-vacio">—</span>
-                      </ng-template>
-                    </td>
-
-                    <td class="acciones-cell">
-                      <button type="button" mat-stroked-button color="primary" class="btn-editar-tabla" (click)="
-                          tipoCalendario === 'llamadas'
-                            ? editar($any(elemento))
-                            : tipoCalendario === 'tareas'
-                              ? editarTarea($any(elemento))
-                              : editarVisita($any(elemento))
-                        ">
-                        ✏️ Editar
-                      </button>
-                    </td>
-
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="empty-state empty-resultados" *ngIf="realizadas.length === 0">
-              <div class="empty-emoji">🔍</div>
-              <div class="empty-title">
-                No se encontraron {{ etiquetaTipo }} realizadas
-              </div>
-              <div class="empty-subtitle">
-                Prueba modificando los filtros de búsqueda.
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </mat-card>
+      </div>
     </div>
-  </div>
 
+    <div class="panel-body">
+      <div class="filtros-realizadas">
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre</mat-label>
+          <input matInput [(ngModel)]="filtroNombre" placeholder="Buscar por nombre"
+            (keyup.enter)="buscarRealizadas()" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha</mat-label>
+          <input matInput [matDatepicker]="pickerFiltro" [(ngModel)]="filtroFecha" />
+          <mat-datepicker-toggle matSuffix [for]="pickerFiltro"></mat-datepicker-toggle>
+          <mat-datepicker #pickerFiltro></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Dirección</mat-label>
+          <input matInput [(ngModel)]="filtroDireccion" placeholder="Buscar por dirección"
+            (keyup.enter)="buscarRealizadas()" />
+        </mat-form-field>
+      </div>
+
+      <div class="acciones-filtros">
+        <button type="button" class="button button-secondary" (click)="limpiarFiltrosRealizadas()"
+          [disabled]="buscandoRealizadas">
+          Limpiar filtros
+        </button>
+
+        <button type="button" class="button button-primary" (click)="buscarRealizadas()"
+          [disabled]="buscandoRealizadas">
+          {{ buscandoRealizadas ? 'Buscando…' : 'Buscar actividades' }}
+        </button>
+      </div>
+
+      <div class="estado-busqueda" *ngIf="buscandoRealizadas" role="status">
+        Buscando {{ etiquetaTipo }} realizadas…
+      </div>
+
+      <div *ngIf="!buscandoRealizadas && busquedaRealizada">
+        <div class="resultado-header">
+          <span>
+            <strong>{{ realizadas.length }}</strong>
+            resultado{{ realizadas.length === 1 ? '' : 's' }}
+          </span>
+        </div>
+
+        <div class="tabla-responsive" *ngIf="realizadas.length > 0">
+          <table class="tabla-realizadas">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>{{ tipoCalendario === 'llamadas' ? 'Motivo' : 'Título' }}</th>
+                <th>Observaciones</th>
+                <th class="th-acciones">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let elemento of realizadas; trackBy: trackByLlamadaId">
+                <td class="fecha-cell">
+                  <strong>{{ elemento.fecha | date:'dd/MM/yyyy' }}</strong>
+                  <span>{{ elemento.fecha | date:'HH:mm' }}</span>
+                </td>
+
+                <td class="dato-principal">
+                  {{ elemento.nombre || '—' }}
+                </td>
+
+                <td>
+                  <span class="direccion-tabla">
+                    {{ elemento.direccion || '—' }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="motivo-tabla">
+                    {{
+                    tipoCalendario === 'llamadas'
+                    ? $any(elemento).motivo
+                    : $any(elemento).titulo
+                    }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="observaciones-tabla">
+                    {{ elemento.observaciones || '—' }}
+                  </span>
+                </td>
+
+                <td class="acciones-cell">
+                  <button type="button" class="button button-secondary button-small" (click)="
+                      tipoCalendario === 'llamadas'
+                        ? editar($any(elemento))
+                        : tipoCalendario === 'tareas'
+                          ? editarTarea($any(elemento))
+                          : editarVisita($any(elemento))
+                    ">
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state empty-resultados" *ngIf="realizadas.length === 0">
+          <span class="empty-symbol" aria-hidden="true">⌕</span>
+          <strong>No se encontraron {{ etiquetaTipo }} realizadas</strong>
+          <p>Prueba modificando los filtros de búsqueda.</p>
+        </div>
+      </div>
+    </div>
+  </mat-card>
 </div>

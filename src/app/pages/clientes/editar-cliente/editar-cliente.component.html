@@ -1,109 +1,251 @@
-<div class="cliente-form-page container-fluid mt-4" *ngIf="cliente">
-  <h3 class="text-center mb-4">Editar cliente</h3>
+<section class="client-page" aria-labelledby="client-title">
 
-  <form (ngSubmit)="guardarCambios()" #formCliente="ngForm">
-    <div class="row g-3">
-
-      <div class="col-12 col-lg-6">
-        <label class="form-label">Nombre y apellidos *</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.nombreApellidos" name="nombreApellidos" required />
-      </div>
-
-      <div class="col-12 col-lg-6">
-        <label class="form-label">Empresa</label>
-        <input class="form-control" [value]="cliente?.empresa ?? ''" disabled />
-      </div>
-
-      <div class="col-12">
-        <h5 class="mt-3">Dirección de facturación</h5>
-      </div>
-
-      <div class="col-12 col-lg-8">
-        <label class="form-label">Dirección</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.direccion" name="direccion" />
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-4">
-        <label class="form-label">Código Postal</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.codigoPostal" name="codigoPostal" />
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-6">
-        <label class="form-label">Población</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.poblacion" name="poblacion" />
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-6">
-        <label class="form-label">Provincia</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.provincia" name="provincia" />
-      </div>
-
-      <div class="col-12">
-        <h5 class="mt-3">Dirección de entrega</h5>
-      </div>
-
-      <div class="col-12 col-lg-8">
-        <label class="form-label">Dirección de entrega</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.direccionEntrega" name="direccionEntrega" />
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-4">
-        <label class="form-label">Código Postal entrega</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.codigoPostalEntrega" name="codigoPostalEntrega" />
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-6">
-        <label class="form-label">Población entrega</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.poblacionEntrega" name="poblacionEntrega" />
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-6">
-        <label class="form-label">Provincia entrega</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.provinciaEntrega" name="provinciaEntrega" />
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">Número de cuenta</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.numeroCuenta" name="numeroCuenta"
-          pattern="^\d{20}$" placeholder="Ej: 21000418450200051339" inputmode="numeric" maxlength="20"
-          (ngModelChange)="formatearNumeroCuenta($event)" />
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">IBAN generado</label>
-        <input type="text" class="form-control" [value]="formatearIbanVisual(cliente.iban)" readonly
-          placeholder="Se genera automáticamente" />
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">Teléfono</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.telefono" name="telefono" />
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">Móvil</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.movil" name="movil" />
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">CIF / DNI</label>
-        <input type="text" class="form-control" [(ngModel)]="cliente.cifDni" name="cifDni" />
-      </div>
-
-      <div class="col-12 col-md-6">
-        <label class="form-label">Email</label>
-        <input type="email" class="form-control" [(ngModel)]="cliente.email" name="email" />
-      </div>
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">NOVEXAPP / GESTIÓN COMERCIAL</span>
+      <h1 id="client-title">Editar cliente</h1>
+      <p>Actualiza la identificación, el contacto y los datos de su ficha.</p>
     </div>
 
-    <div class="form-actions text-end mt-4 d-flex justify-content-end gap-2 flex-wrap">
-      <button type="button" class="btn btn-secondary" (click)="cancelar()">
-        Cancelar
-      </button>
+    <button type="button" class="action-secondary" (click)="cancelar()" [disabled]="guardando">
+      Volver a clientes
+    </button>
+  </header>
 
-      <button type="submit" class="btn btn-primary">
-        Guardar cambios
-      </button>
-    </div>
-  </form>
-</div>
+  <div *ngIf="cargando" class="surface feedback-panel" role="status">
+    <strong>Cargando ficha del cliente…</strong>
+  </div>
+
+  <div *ngIf="!cargando && errorCarga" class="surface feedback-panel">
+    <p role="alert">{{ errorCarga }}</p>
+
+    <button type="button" class="action-secondary" (click)="reintentarCarga()">
+      Reintentar
+    </button>
+  </div>
+
+  <ng-container *ngIf="!cargando && !errorCarga">
+    <form *ngIf="cliente as c" #formCliente="ngForm" (ngSubmit)="guardarCambios(formCliente)"
+      [attr.aria-busy]="guardando">
+      <fieldset [disabled]="guardando">
+
+        <!-- DATOS DEL CLIENTE -->
+
+        <section class="surface form-section" aria-labelledby="identity-title">
+          <header class="section-heading">
+            <span class="section-number" aria-hidden="true">01</span>
+            <div>
+              <h2 id="identity-title">Datos del cliente</h2>
+              <p>Nombre y al menos un teléfono o móvil son obligatorios.</p>
+            </div>
+          </header>
+
+          <div class="fields-grid">
+            <div class="field full-width">
+              <label for="client-name">Nombre y apellidos o razón social *</label>
+
+              <input id="client-name" class="form-control" [(ngModel)]="c.nombreApellidos" name="nombreApellidos"
+                #nombre="ngModel" required pattern=".*\S.*" placeholder="Nombre del cliente o empresa"
+                [attr.aria-invalid]="
+                  nombre.invalid && (nombre.touched || formCliente.submitted)
+                " aria-describedby="name-error" />
+
+              <span id="name-error" class="field-error" *ngIf="
+                  nombre.invalid && (nombre.touched || formCliente.submitted)
+                ">
+                Introduce el nombre del cliente o la razón social.
+              </span>
+            </div>
+
+            <div class="field">
+              <label for="client-tax-id">CIF / DNI</label>
+              <input id="client-tax-id" class="form-control" [(ngModel)]="c.cifDni" name="cifDni"
+                placeholder="Documento de identificación" />
+            </div>
+
+            <div class="field">
+              <label for="client-company">Empresa</label>
+              <input id="client-company" class="form-control" [value]="c.empresa || '—'" readonly />
+            </div>
+
+            <div class="field full-width">
+              <label for="client-email">Correo electrónico</label>
+
+              <input id="client-email" type="email" class="form-control" [(ngModel)]="c.email" name="email"
+                #correo="ngModel" email placeholder="nombre@empresa.com" [attr.aria-invalid]="
+                  correo.invalid && (correo.touched || formCliente.submitted)
+                " aria-describedby="email-error" />
+
+              <span id="email-error" class="field-error" *ngIf="
+                  correo.invalid && (correo.touched || formCliente.submitted)
+                ">
+                Introduce un correo electrónico válido.
+              </span>
+            </div>
+
+            <div class="field">
+              <label for="client-phone">Teléfono</label>
+              <input id="client-phone" type="tel" class="form-control" [(ngModel)]="c.telefono" name="telefono"
+                #telefono="ngModel" [required]="!c.movil?.trim()" placeholder="Teléfono de contacto"
+                aria-describedby="contact-help" />
+            </div>
+
+            <div class="field">
+              <label for="client-mobile">Móvil</label>
+              <input id="client-mobile" type="tel" class="form-control" [(ngModel)]="c.movil" name="movil"
+                #movil="ngModel" [required]="!c.telefono?.trim()" placeholder="Teléfono móvil"
+                aria-describedby="contact-help" />
+            </div>
+
+            <div class="full-width">
+              <span id="contact-help" class="field-help" [class.field-error]="
+                  !tieneContacto &&
+                  (telefono.touched || movil.touched || formCliente.submitted)
+                ">
+                Introduce al menos un teléfono o móvil de contacto.
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- DIRECCIONES -->
+
+        <section class="surface form-section" aria-labelledby="addresses-title">
+          <header class="section-heading">
+            <span class="section-number" aria-hidden="true">02</span>
+            <div>
+              <h2 id="addresses-title">Direcciones</h2>
+              <p>Datos de facturación y lugar de entrega.</p>
+            </div>
+          </header>
+
+          <div class="addresses-grid">
+            <div class="address-panel">
+              <h3>Dirección de facturación</h3>
+
+              <div class="fields-grid">
+                <div class="field full-width">
+                  <label for="billing-address">Dirección</label>
+                  <input id="billing-address" class="form-control" [(ngModel)]="c.direccion" name="direccion"
+                    placeholder="Calle, número, piso…" />
+                </div>
+
+                <div class="field">
+                  <label for="billing-postcode">Código postal</label>
+                  <input id="billing-postcode" class="form-control" [(ngModel)]="c.codigoPostal" name="codigoPostal" />
+                </div>
+
+                <div class="field">
+                  <label for="billing-city">Población</label>
+                  <input id="billing-city" class="form-control" [(ngModel)]="c.poblacion" name="poblacion" />
+                </div>
+
+                <div class="field full-width">
+                  <label for="billing-province">Provincia</label>
+                  <input id="billing-province" class="form-control" [(ngModel)]="c.provincia" name="provincia" />
+                </div>
+              </div>
+            </div>
+
+            <div class="address-panel">
+              <h3>Dirección de entrega</h3>
+
+              <div class="fields-grid">
+                <div class="field full-width">
+                  <label for="delivery-address">Dirección</label>
+                  <input id="delivery-address" class="form-control" [(ngModel)]="c.direccionEntrega"
+                    name="direccionEntrega" placeholder="Dirección de entrega" />
+                </div>
+
+                <div class="field">
+                  <label for="delivery-postcode">Código postal</label>
+                  <input id="delivery-postcode" class="form-control" [(ngModel)]="c.codigoPostalEntrega"
+                    name="codigoPostalEntrega" />
+                </div>
+
+                <div class="field">
+                  <label for="delivery-city">Población</label>
+                  <input id="delivery-city" class="form-control" [(ngModel)]="c.poblacionEntrega"
+                    name="poblacionEntrega" />
+                </div>
+
+                <div class="field full-width">
+                  <label for="delivery-province">Provincia</label>
+                  <input id="delivery-province" class="form-control" [(ngModel)]="c.provinciaEntrega"
+                    name="provinciaEntrega" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DATOS BANCARIOS -->
+
+        <section class="surface form-section" aria-labelledby="bank-title">
+          <header class="section-heading">
+            <span class="section-number" aria-hidden="true">03</span>
+            <div>
+              <h2 id="bank-title">Datos bancarios</h2>
+              <p>Opcionales. El IBAN español se calcula a partir de la cuenta.</p>
+            </div>
+          </header>
+
+          <div class="fields-grid">
+            <div class="field">
+              <label for="client-account">Número de cuenta (opcional)</label>
+
+              <input id="client-account" type="text" class="form-control account-input" [(ngModel)]="c.numeroCuenta"
+                (ngModelChange)="formatearNumeroCuenta($event)" name="numeroCuenta" #numeroCuenta="ngModel"
+                pattern="^\d{20}$" inputmode="numeric" maxlength="20" placeholder="20 dígitos, si procede"
+                [attr.aria-invalid]="
+                  numeroCuenta.invalid &&
+                  (numeroCuenta.touched || formCliente.submitted)
+                " aria-describedby="account-help account-error" />
+
+              <span id="account-help" class="field-help">
+                Puedes dejarlo vacío. Si lo rellenas, introduce 20 dígitos sin ES.
+              </span>
+
+              <span id="account-error" class="field-error" *ngIf="
+                  numeroCuenta.invalid &&
+                  (numeroCuenta.touched || formCliente.submitted)
+                ">
+                El número de cuenta debe tener exactamente 20 dígitos.
+              </span>
+            </div>
+
+            <div class="field">
+              <label for="client-iban">IBAN generado</label>
+              <input id="client-iban" class="form-control account-input" [value]="formatearIbanVisual(c.iban)" readonly
+                placeholder="Se genera automáticamente" />
+              <span class="field-help">
+                Campo calculado automáticamente.
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <div *ngIf="errorGuardado" class="save-error" role="alert">
+          {{ errorGuardado }}
+        </div>
+
+        <footer class="form-footer">
+          <span>Revisa los datos antes de guardar los cambios.</span>
+
+          <div class="footer-actions">
+            <button type="button" class="action-secondary" (click)="cancelar()">
+              Cancelar
+            </button>
+
+            <button type="submit" class="action-primary"
+              [disabled]="formCliente.invalid || !tieneContacto || guardando">
+              {{ guardando ? 'Guardando…' : 'Guardar cambios' }}
+            </button>
+          </div>
+        </footer>
+
+      </fieldset>
+    </form>
+  </ng-container>
+
+</section>

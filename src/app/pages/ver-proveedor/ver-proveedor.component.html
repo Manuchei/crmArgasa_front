@@ -1,361 +1,519 @@
 <div class="proveedor-detalle-page" *ngIf="proveedor">
   <div class="proveedor-detalle-shell">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4 detalle-header">
-      <div class="header-info">
-        <h1 class="titulo-proveedor mb-1 text-break">
-          {{ proveedor.nombreApellidos || proveedor.nombreComercial || proveedor.nombre }}
+    <header class="ficha-header">
+      <div class="ficha-heading">
+        <button type="button" class="volver-link" (click)="volver()">
+          ← Volver a proveedores
+        </button>
+
+        <span class="ficha-eyebrow">NOVEXAPP / FICHA DE PROVEEDOR</span>
+
+        <h1>
+          {{
+          proveedor.nombre ||
+          proveedor.nombreApellidos ||
+          proveedor.nombreComercial ||
+          'Proveedor'
+          }}
         </h1>
 
-        <p class="subtitulo-proveedor mb-0 text-break">
-          <strong>CIF/DNI:</strong> {{ proveedor.cifDni || proveedor.cif || '-' }}
-        </p>
+        <div class="ficha-meta">
+          <span *ngIf="proveedor.nombreComercial">
+            {{ proveedor.nombreComercial }}
+          </span>
+
+          <span>
+            CIF / NIF: {{ proveedor.cif || proveedor.cifDni || '—' }}
+          </span>
+
+          <span *ngIf="proveedor.telefono">
+            Tel. {{ proveedor.telefono }}
+          </span>
+
+          <span *ngIf="proveedor.oficio">
+            {{ proveedor.oficio }}
+          </span>
+        </div>
       </div>
 
-      <div class="header-actions">
-        <button *ngIf="activeTab === 'albaranes'" class="btn btn-dark w-100 w-sm-auto" (click)="generarAlbaran()"
-          [disabled]="creandoAlbaran">
-          <i class="bi bi-file-earmark-text"></i>
-          {{ creandoAlbaran ? 'Creando...' : 'Crear albarán' }}
-        </button>
-      </div>
+      <button type="button" class="secondary-btn" (click)="irEditar()">
+        Editar proveedor
+      </button>
+    </header>
+
+    <div class="ficha-resumen">
+      <article class="ficha-resumen-card">
+        <span>Total compra</span>
+        <strong>{{ totalImporte | number:'1.2-2' }} €</strong>
+        <small>Productos y trabajos registrados</small>
+      </article>
+
+      <article class="ficha-resumen-card ficha-pagado">
+        <span>Total pagado</span>
+        <strong>{{ totalPagado | number:'1.2-2' }} €</strong>
+        <small>Importe pagado registrado</small>
+      </article>
+
+      <article class="ficha-resumen-card ficha-pendiente">
+        <span>Pendiente de pago</span>
+        <strong>{{ totalPendiente | number:'1.2-2' }} €</strong>
+        <small>Saldo pendiente con el proveedor</small>
+      </article>
     </div>
 
-    <div class="tabs-detalle mb-3">
-      <button type="button" class="tab-btn" [class.active]="activeTab === 'datos'" (click)="setActiveTab('datos')">
+    <nav class="tabs-proveedores" aria-label="Secciones del proveedor">
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'datos'"
+        [attr.aria-current]="activeTab === 'datos' ? 'page' : null" (click)="setActiveTab('datos')">
         Datos
       </button>
 
       <button type="button" class="tab-btn" [class.active]="activeTab === 'albaranes'"
-        (click)="setActiveTab('albaranes')">
+        [attr.aria-current]="activeTab === 'albaranes' ? 'page' : null" (click)="setActiveTab('albaranes')">
         Albaranes
+        <span class="tab-count">{{ albaranes.length }}</span>
       </button>
 
       <button type="button" class="tab-btn" [class.active]="activeTab === 'facturacion'"
-        (click)="setActiveTab('facturacion')">
+        [attr.aria-current]="activeTab === 'facturacion' ? 'page' : null" (click)="setActiveTab('facturacion')">
         Facturas
       </button>
 
       <button type="button" class="tab-btn" [class.active]="activeTab === 'productos'"
-        (click)="setActiveTab('productos')">
+        [attr.aria-current]="activeTab === 'productos' ? 'page' : null" (click)="setActiveTab('productos')">
         Productos / Trabajos
       </button>
-    </div>
+    </nav>
 
-    <hr class="mb-4" />
-
-    <div *ngIf="activeTab === 'datos'">
-      <div class="row g-3">
-        <div class="col-12 col-lg-6">
-          <div class="card-detalle">
-            <h5>Datos generales</h5>
-            <p><strong>Nombre:</strong> {{ proveedor.nombre || '-' }}</p>
-            <p><strong>Oficio:</strong> {{ proveedor.oficio || '-' }}</p>
-            <p><strong>CIF/DNI:</strong> {{ proveedor.cif || proveedor.cifDni || '-' }}</p>
-            <p><strong>Fecha alta:</strong> {{ proveedor.fechaAltaProveedor || '-' }}</p>
-          </div>
-        </div>
-
-        <div class="col-12 col-lg-6">
-          <div class="card-detalle">
-            <h5>Contacto</h5>
-            <p><strong>Teléfono:</strong> {{ proveedor.telefono || '-' }}</p>
-            <p class="text-break"><strong>Email:</strong> {{ proveedor.email || '-' }}</p>
-            <p><strong>Persona de contacto:</strong> {{ proveedor.contacto || '-' }}</p>
-          </div>
-        </div>
-
-        <div class="col-12 col-lg-6">
-          <div class="card-detalle">
-            <h5>Dirección</h5>
-            <p><strong>Dirección:</strong> {{ proveedor.direccion || '-' }}</p>
-            <p>
-              <strong>CP / Localidad:</strong>
-              {{ proveedor.codigoPostal || '-' }} -
-              {{ proveedor.localidad || proveedor.poblacion || '-' }}
-            </p>
-            <p><strong>Provincia:</strong> {{ proveedor.provincia || '-' }}</p>
-            <p><strong>País:</strong> {{ proveedor.pais || '-' }}</p>
-          </div>
-        </div>
-
-        <div class="col-12 col-lg-6">
-          <div class="card-detalle">
-            <h5>Datos bancarios y observaciones</h5>
-            <p class="text-break">
-              <strong>Número de cuenta:</strong>
-              {{ proveedor.numeroCuenta || '-' }}
-            </p>
-
-            <p class="text-break">
-              <strong>IBAN:</strong>
-              {{ formatearIbanVisual(proveedor.iban) || '-' }}
-            </p>
-            <p class="text-break"><strong>Notas:</strong> {{ proveedor.notas || '-' }}</p>
-          </div>
+    <!-- DATOS -->
+    <section *ngIf="activeTab === 'datos'">
+      <div class="seccion-header">
+        <div>
+          <span class="ficha-eyebrow">INFORMACIÓN DEL PROVEEDOR</span>
+          <h2>Datos generales</h2>
+          <p>Información de contacto, domicilio y datos bancarios.</p>
         </div>
       </div>
-    </div>
 
-    <div *ngIf="activeTab === 'albaranes'" class="content-card">
-      <div class="mb-3 d-flex gap-2 align-items-center flex-wrap albaran-toolbar">
-        <input class="form-control input-albaran" [(ngModel)]="numeroAlbaranProveedor" placeholder="Número proveedor" />
+      <div class="datos-grid">
+        <article class="content-card">
+          <div class="card-heading">
+            <span class="card-number">01</span>
+            <h3>Identificación</h3>
+          </div>
 
-        <button class="btn btn-dark" (click)="generarAlbaran()" [disabled]="creandoAlbaran">
-          Crear
-        </button>
+          <dl class="datos-lista">
+            <div>
+              <dt>Nombre o razón social</dt>
+              <dd>{{ proveedor.nombre || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Oficio / actividad</dt>
+              <dd>{{ proveedor.oficio || '—' }}</dd>
+            </div>
+            <div>
+              <dt>CIF / NIF</dt>
+              <dd>{{ proveedor.cif || proveedor.cifDni || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Fecha de alta</dt>
+              <dd>
+                {{
+                proveedor.fechaAltaProveedor
+                ? (proveedor.fechaAltaProveedor | date:'dd/MM/yyyy')
+                : '—'
+                }}
+              </dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="content-card">
+          <div class="card-heading">
+            <span class="card-number">02</span>
+            <h3>Contacto</h3>
+          </div>
+
+          <dl class="datos-lista">
+            <div>
+              <dt>Teléfono</dt>
+              <dd>{{ proveedor.telefono || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Correo electrónico</dt>
+              <dd>{{ proveedor.email || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Persona de contacto</dt>
+              <dd>{{ proveedor.contacto || '—' }}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="content-card">
+          <div class="card-heading">
+            <span class="card-number">03</span>
+            <h3>Dirección</h3>
+          </div>
+
+          <dl class="datos-lista">
+            <div>
+              <dt>Dirección</dt>
+              <dd>{{ proveedor.direccion || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Código postal</dt>
+              <dd>{{ proveedor.codigoPostal || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Localidad</dt>
+              <dd>{{ proveedor.localidad || proveedor.poblacion || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Provincia / País</dt>
+              <dd>
+                {{ proveedor.provincia || '—' }} /
+                {{ proveedor.pais || '—' }}
+              </dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="content-card">
+          <div class="card-heading">
+            <span class="card-number">04</span>
+            <h3>Datos bancarios</h3>
+          </div>
+
+          <dl class="datos-lista">
+            <div>
+              <dt>Número de cuenta</dt>
+              <dd class="bank-value">{{ proveedor.numeroCuenta || '—' }}</dd>
+            </div>
+            <div>
+              <dt>IBAN</dt>
+              <dd class="bank-value">
+                {{ formatearIbanVisual(proveedor.iban) || '—' }}
+              </dd>
+            </div>
+            <div>
+              <dt>Información adicional</dt>
+              <dd>{{ proveedor.datosBancarios || '—' }}</dd>
+            </div>
+          </dl>
+        </article>
       </div>
 
-      <div class="table-responsive" *ngIf="albaranes.length > 0; else sinAlbaranes">
-        <table class="table table-striped table-hover text-center align-middle mb-0 detalle-proveedor-table">
-          <thead class="table-dark">
-            <tr>
-              <th>ID</th>
-              <th>Nº proveedor</th>
-              <th>Fecha</th>
-              <th>Total</th>
-              <th>Confirmado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr *ngFor="let a of albaranes">
-              <td>#{{ a.id }}</td>
-              <td>{{ a.numeroProveedor || '-' }}</td>
-              <td>{{ a.fechaEmision | date:'yyyy-MM-dd' }}</td>
-              <td>{{ (a.totalImporte || 0) | number:'1.2-2' }} €</td>
-              <td>
-                <span class="badge" [ngClass]="a.confirmado ? 'bg-success' : 'bg-secondary'">
-                  {{ a.confirmado ? 'Sí' : 'No' }}
-                </span>
-              </td>
-              <td class="acciones-col">
-                <div class="acciones-wrap">
-                  <button class="btn btn-sm btn-secondary" (click)="verAlbaran(a)">Ver</button>
-                  <button class="btn btn-sm btn-outline-secondary" (click)="editarAlbaran(a)">Editar</button>
-                  <button class="btn btn-sm btn-primary" (click)="generarFacturaDesdeAlbaran(a)"
-                    [disabled]="!a.confirmado || albaranGenerandoFacturaId === a.id">
-                    <span *ngIf="albaranGenerandoFacturaId !== a.id">Facturar</span>
-                    <span *ngIf="albaranGenerandoFacturaId === a.id">Generando...</span>
-                  </button>
-                  <button class="btn btn-sm btn-danger" (click)="eliminarAlbaran(a)">Eliminar</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <ng-template #sinAlbaranes>
-        <p class="text-muted mb-0">No hay albaranes.</p>
-      </ng-template>
-    </div>
-
-    <div *ngIf="activeTab === 'facturacion'" class="content-card">
-      <app-facturar-proveedor [proveedorId]="proveedor.id"></app-facturar-proveedor>
-    </div>
-
-    <div *ngIf="activeTab === 'productos'" class="content-card">
-      <div class="row g-4">
-        <div class="col-12 col-xl-6">
-          <div class="card-detalle">
-            <h5>Nuevo producto</h5>
-
-            <div class="row g-2">
-              <div class="col-md-4">
-                <label class="form-label">Fecha alta</label>
-                <input type="date" class="form-control" [(ngModel)]="nuevoProducto.fechaAlta"
-                  name="fechaAltaProducto" />
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label">Gama</label>
-                <input class="form-control" [(ngModel)]="nuevoProducto.gama" name="gamaProducto" required />
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label">Marca</label>
-                <input class="form-control" [(ngModel)]="nuevoProducto.marca" name="marcaProducto" required />
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label">Modelo</label>
-                <input class="form-control" [(ngModel)]="nuevoProducto.modelo" name="modeloProducto" required />
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label">Familia</label>
-                <input class="form-control" [(ngModel)]="nuevoProducto.familia" name="familiaProducto" required />
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label">Subfamilia</label>
-                <input class="form-control" [(ngModel)]="nuevoProducto.subfamilia" name="subfamiliaProducto" required />
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Descripción</label>
-                <input class="form-control" [(ngModel)]="nuevoProducto.descripcion" name="descripcionProducto"
-                  required />
-              </div>
-
-              <div class="col-md-3">
-                <label class="form-label">Precio sin IVA</label>
-                <input type="number" class="form-control" [(ngModel)]="nuevoProducto.precioSinIva"
-                  name="precioSinIvaProducto" min="0" step="0.01" />
-              </div>
-
-              <div class="col-md-3">
-                <label class="form-label">Unidades</label>
-                <input type="number" class="form-control" [(ngModel)]="nuevoProducto.unidades" name="unidadesProducto"
-                  min="0" />
-              </div>
-
-              <div class="col-12">
-                <button class="btn btn-dark w-100" (click)="guardarProducto()" [disabled]="guardandoProducto">
-                  {{ guardandoProducto ? 'Guardando...' : 'Guardar' }}
-                </button>
-              </div>
-            </div>
-          </div>
+      <article class="content-card notas-card">
+        <div class="card-heading">
+          <h3>Observaciones</h3>
         </div>
+        <p class="notas-texto">
+          {{ proveedor.notas || 'No hay observaciones registradas.' }}
+        </p>
+      </article>
+    </section>
 
-        <div class="col-12 col-xl-6">
-          <div class="card-detalle">
-            <h5>Nuevo trabajo</h5>
-
-            <div class="mb-2">
-              <label class="form-label">Descripción</label>
-              <input class="form-control" [(ngModel)]="nuevoTrabajo.descripcion" />
-            </div>
-
-            <div class="mb-2">
-              <label class="form-label">Importe</label>
-              <input type="number" class="form-control" [(ngModel)]="nuevoTrabajo.importe" />
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Pagado</label>
-              <input type="number" class="form-control" [(ngModel)]="nuevoTrabajo.importePagado" />
-            </div>
-
-            <button class="btn btn-dark w-100 w-md-auto" (click)="guardarTrabajo()" [disabled]="guardandoTrabajo">
-              {{ guardandoTrabajo ? 'Guardando...' : 'Guardar' }}
-            </button>
-          </div>
-        </div>
-
-        <div class="col-12">
-          <div class="card-detalle">
-            <h5 class="mb-3">Productos del proveedor</h5>
-
-            <div class="table-responsive" *ngIf="proveedor?.productos?.length > 0; else sinProductos">
-              <table class="table table-striped table-hover align-middle text-center mb-0 detalle-proveedor-table">
-                <thead class="table-dark">
-                  <tr>
-                    <th>Fecha alta</th>
-                    <th>Referencia</th>
-                    <th>Gama</th>
-                    <th>Marca</th>
-                    <th>Modelo</th>
-                    <th>Familia</th>
-                    <th>Subfamilia</th>
-                    <th>Descripción</th>
-                    <th>Precio sin IVA</th>
-                    <th>Unidades</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  <tr *ngFor="let p of proveedor.productos; let i = index">
-                    <td>{{ p.fechaAlta || '-' }}</td>
-                    <td>{{ p.referencia || '-' }}</td>
-                    <td>{{ p.gama || '-' }}</td>
-                    <td>{{ p.marca || '-' }}</td>
-                    <td>{{ p.modelo || '-' }}</td>
-                    <td>{{ p.familia || '-' }}</td>
-                    <td>{{ p.subfamilia || '-' }}</td>
-                    <td class="text-break">{{ p.descripcion || '-' }}</td>
-                    <td>{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
-                    <td>{{ p.unidades || 0 }}</td>
-                    <td>
-                      <button class="btn btn-sm btn-danger" (click)="eliminarProducto(i)">
-                        Eliminar
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <ng-template #sinProductos>
-              <p class="text-muted mb-0">No hay productos registrados para este proveedor.</p>
-            </ng-template>
-          </div>
-        </div>
-
-        <div class="col-12">
-          <div class="card-detalle">
-            <h5 class="mb-3">Trabajos realizados</h5>
-
-            <div class="table-responsive" *ngIf="trabajos.length > 0; else sinTrabajos">
-              <table class="table table-striped table-hover align-middle text-center mb-0 detalle-proveedor-table">
-                <thead class="table-dark">
-                  <tr>
-                    <th>Descripción</th>
-                    <th>Importe</th>
-                    <th>Pagado</th>
-                    <th>Pendiente</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  <tr *ngFor="let t of trabajos">
-                    <td class="text-break">{{ t.descripcion }}</td>
-                    <td>{{ (t.importe || 0) | number:'1.2-2' }} €</td>
-                    <td>{{ (t.importePagado || 0) | number:'1.2-2' }} €</td>
-                    <td>{{ ((t.importe || 0) - (t.importePagado || 0)) | number:'1.2-2' }} €</td>
-                    <td>
-                      <button class="btn btn-sm btn-danger" (click)="eliminarTrabajo(t.id)">
-                        Eliminar
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <ng-template #sinTrabajos>
-              <p class="text-muted mb-0">No hay trabajos registrados para este proveedor.</p>
-            </ng-template>
-          </div>
-        </div>
-
-        <div class="col-12">
-          <div class="card-detalle">
-            <h5 class="mb-3">Totales</h5>
-            <div class="row g-2">
-              <div class="col-12 col-md-4">
-                <p><strong>Total importe:</strong> {{ totalImporte | number:'1.2-2' }} €</p>
-              </div>
-              <div class="col-12 col-md-4">
-                <p><strong>Total pagado:</strong> {{ totalPagado | number:'1.2-2' }} €</p>
-              </div>
-              <div class="col-12 col-md-4">
-                <p><strong>Total pendiente:</strong> {{ totalPendiente | number:'1.2-2' }} €</p>
-              </div>
-            </div>
-          </div>
+    <!-- ALBARANES -->
+    <section *ngIf="activeTab === 'albaranes'">
+      <div class="seccion-header">
+        <div>
+          <span class="ficha-eyebrow">DOCUMENTOS DEL PROVEEDOR</span>
+          <h2>Albaranes</h2>
+          <p>Consulta los albaranes y genera su factura cuando estén confirmados.</p>
         </div>
       </div>
-    </div>
 
-    <div class="text-end mt-4">
-      <button class="btn btn-secondary w-100 w-sm-auto" (click)="volver()">
-        Volver
-      </button>
-    </div>
+      <article class="content-card albaran-create">
+        <div>
+          <h3>Nuevo albarán</h3>
+          <p>Introduce el número del documento del proveedor.</p>
+        </div>
+
+        <div class="albaran-create-fields">
+          <label class="field">
+            Número de albarán del proveedor
+            <input class="form-control" [(ngModel)]="numeroAlbaranProveedor" placeholder="Ej. ALB-2026-001" />
+          </label>
+
+          <button type="button" class="primary-btn" (click)="generarAlbaran()"
+            [disabled]="creandoAlbaran || !numeroAlbaranProveedor.trim()">
+            {{ creandoAlbaran ? 'Creando…' : 'Crear albarán' }}
+          </button>
+        </div>
+      </article>
+
+      <article class="list-card">
+        <div class="list-heading">
+          <h3>Albaranes registrados</h3>
+          <span class="count-badge">{{ albaranes.length }} documentos</span>
+        </div>
+
+        <div class="table-responsive" *ngIf="albaranes.length; else sinAlbaranes">
+          <table class="detail-table albaranes-table">
+            <thead>
+              <tr>
+                <th>Albarán</th>
+                <th>N.º proveedor</th>
+                <th>Fecha</th>
+                <th class="money">Total</th>
+                <th>Estado</th>
+                <th class="actions-col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of albaranes">
+                <td><strong>#{{ a.id }}</strong></td>
+                <td>{{ a.numeroProveedor || '—' }}</td>
+                <td>{{ a.fechaEmision | date:'dd/MM/yyyy' }}</td>
+                <td class="money">
+                  {{ (a.totalImporte || 0) | number:'1.2-2' }} €
+                </td>
+                <td>
+                  <span class="status" [class.status-ok]="a.confirmado">
+                    {{ a.confirmado ? 'Confirmado' : 'Pendiente' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <button type="button" class="secondary-btn small-btn" (click)="verAlbaran(a)">Ver</button>
+                    <button type="button" class="secondary-btn small-btn" (click)="editarAlbaran(a)">Editar</button>
+                    <button type="button" class="primary-btn small-btn" (click)="generarFacturaDesdeAlbaran(a)"
+                      [disabled]="!a.confirmado || albaranGenerandoFacturaId !== null">
+                      {{ albaranGenerandoFacturaId === a.id ? 'Generando…' : 'Facturar' }}
+                    </button>
+                    <button type="button" class="delete-btn small-btn" (click)="eliminarAlbaran(a)">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #sinAlbaranes>
+          <div class="empty-state">
+            <strong>No hay albaranes registrados</strong>
+            <p>Crea el primer albarán desde el formulario superior.</p>
+          </div>
+        </ng-template>
+      </article>
+    </section>
+
+    <!-- FACTURAS -->
+    <section *ngIf="activeTab === 'facturacion'">
+      <div class="seccion-header">
+        <div>
+          <span class="ficha-eyebrow">FACTURACIÓN DEL PROVEEDOR</span>
+          <h2>Facturas</h2>
+          <p>Gestiona las facturas asociadas a este proveedor.</p>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <app-facturar-proveedor [proveedorId]="proveedor.id"></app-facturar-proveedor>
+      </div>
+    </section>
+
+    <!-- PRODUCTOS Y TRABAJOS -->
+    <section *ngIf="activeTab === 'productos'">
+      <div class="seccion-header">
+        <div>
+          <span class="ficha-eyebrow">COMPRAS Y SERVICIOS</span>
+          <h2>Productos y trabajos</h2>
+          <p>Registra productos suministrados y trabajos del proveedor.</p>
+        </div>
+      </div>
+
+      <article class="list-card">
+        <div class="list-heading">
+          <div>
+            <h3>Nuevo producto</h3>
+            <p>Añade un producto al catálogo vinculado al proveedor.</p>
+          </div>
+        </div>
+
+        <div class="product-form">
+          <label class="field">
+            Fecha de alta
+            <input type="date" class="form-control" [(ngModel)]="nuevoProducto.fechaAlta" />
+          </label>
+          <label class="field">
+            Gama *
+            <input class="form-control" [(ngModel)]="nuevoProducto.gama" />
+          </label>
+          <label class="field">
+            Marca *
+            <input class="form-control" [(ngModel)]="nuevoProducto.marca" />
+          </label>
+          <label class="field">
+            Modelo *
+            <input class="form-control" [(ngModel)]="nuevoProducto.modelo" />
+          </label>
+          <label class="field">
+            Familia *
+            <input class="form-control" [(ngModel)]="nuevoProducto.familia" />
+          </label>
+          <label class="field">
+            Subfamilia *
+            <input class="form-control" [(ngModel)]="nuevoProducto.subfamilia" />
+          </label>
+          <label class="field field-wide">
+            Descripción *
+            <input class="form-control" [(ngModel)]="nuevoProducto.descripcion" />
+          </label>
+          <label class="field">
+            Precio sin IVA (€)
+            <input type="number" min="0" step="0.01" class="form-control" [(ngModel)]="nuevoProducto.precioSinIva" />
+          </label>
+          <label class="field">
+            Unidades
+            <input type="number" min="0" class="form-control" [(ngModel)]="nuevoProducto.unidades" />
+          </label>
+        </div>
+
+        <div class="card-footer">
+          <span>* Campos obligatorios</span>
+          <button type="button" class="primary-btn" (click)="guardarProducto()" [disabled]="guardandoProducto">
+            {{ guardandoProducto ? 'Guardando…' : 'Guardar producto' }}
+          </button>
+        </div>
+      </article>
+
+      <article class="list-card">
+        <div class="list-heading">
+          <div>
+            <h3>Nuevo trabajo</h3>
+            <p>Registra un servicio y el importe pagado al proveedor.</p>
+          </div>
+        </div>
+
+        <div class="work-form">
+          <label class="field">
+            Descripción *
+            <input class="form-control" [(ngModel)]="nuevoTrabajo.descripcion"
+              placeholder="Descripción del trabajo realizado" />
+          </label>
+          <label class="field">
+            Importe (€)
+            <input type="number" min="0" step="0.01" class="form-control" [(ngModel)]="nuevoTrabajo.importe" />
+          </label>
+          <label class="field">
+            Pagado (€)
+            <input type="number" min="0" step="0.01" class="form-control" [(ngModel)]="nuevoTrabajo.importePagado" />
+          </label>
+        </div>
+
+        <div class="card-footer">
+          <span>El importe pagado se incluye en el resumen del proveedor.</span>
+          <button type="button" class="primary-btn" (click)="guardarTrabajo()" [disabled]="guardandoTrabajo">
+            {{ guardandoTrabajo ? 'Guardando…' : 'Guardar trabajo' }}
+          </button>
+        </div>
+      </article>
+
+      <article class="list-card">
+        <div class="list-heading">
+          <h3>Productos del proveedor</h3>
+          <span class="count-badge">
+            {{ proveedor.productos?.length || 0 }} productos
+          </span>
+        </div>
+
+        <div class="table-responsive" *ngIf="proveedor.productos?.length; else sinProductos">
+          <table class="detail-table products-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Fecha de alta</th>
+                <th>Gama</th>
+                <th>Marca / Modelo</th>
+                <th>Familia / Subfamilia</th>
+                <th class="money">Precio sin IVA</th>
+                <th class="money">Unidades</th>
+                <th class="actions-col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of proveedor.productos; let i = index">
+                <td>
+                  <div class="item-identity">
+                    <strong>{{ p.descripcion || '—' }}</strong>
+                    <small>Ref. {{ p.referencia || '—' }}</small>
+                  </div>
+                </td>
+                <td>{{ p.fechaAlta ? (p.fechaAlta | date:'dd/MM/yyyy') : '—' }}</td>
+                <td>{{ p.gama || '—' }}</td>
+                <td>
+                  <div class="item-identity">
+                    <span>{{ p.marca || '—' }}</span>
+                    <small>{{ p.modelo || '—' }}</small>
+                  </div>
+                </td>
+                <td>
+                  <div class="item-identity">
+                    <span>{{ p.familia || '—' }}</span>
+                    <small>{{ p.subfamilia || '—' }}</small>
+                  </div>
+                </td>
+                <td class="money">{{ (p.precioSinIva || 0) | number:'1.2-2' }} €</td>
+                <td class="money">{{ p.unidades || 0 }}</td>
+                <td class="actions-col">
+                  <button type="button" class="delete-btn small-btn" (click)="eliminarProducto(i)">Eliminar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #sinProductos>
+          <div class="empty-state">
+            <strong>No hay productos registrados</strong>
+            <p>Añade productos utilizando el formulario superior.</p>
+          </div>
+        </ng-template>
+      </article>
+
+      <article class="list-card">
+        <div class="list-heading">
+          <h3>Trabajos registrados</h3>
+          <span class="count-badge">{{ trabajos.length }} trabajos</span>
+        </div>
+
+        <div class="table-responsive" *ngIf="trabajos.length; else sinTrabajos">
+          <table class="detail-table work-table">
+            <thead>
+              <tr>
+                <th>Descripción</th>
+                <th class="money">Importe</th>
+                <th class="money">Pagado</th>
+                <th class="money">Pendiente</th>
+                <th class="actions-col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of trabajos">
+                <td><strong>{{ t.descripcion }}</strong></td>
+                <td class="money">{{ (t.importe || 0) | number:'1.2-2' }} €</td>
+                <td class="money paid-value">
+                  {{ (t.importePagado || 0) | number:'1.2-2' }} €
+                </td>
+                <td class="money">
+                  {{ ((t.importe || 0) - (t.importePagado || 0)) | number:'1.2-2' }} €
+                </td>
+                <td class="actions-col">
+                  <button type="button" class="delete-btn small-btn" (click)="eliminarTrabajo(t.id)">Eliminar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #sinTrabajos>
+          <div class="empty-state">
+            <strong>No hay trabajos registrados</strong>
+            <p>Registra los servicios realizados por este proveedor.</p>
+          </div>
+        </ng-template>
+      </article>
+    </section>
   </div>
 </div>

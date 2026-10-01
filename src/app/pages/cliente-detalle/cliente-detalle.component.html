@@ -83,120 +83,154 @@
     </nav>
 
     <!-- DATOS CLIENTE -->
-    <div *ngIf="pestanaActiva === 'datos'" class="tab-content-box">
-
-      <div class="row mt-3 g-3">
-
-        <div class="col-12 col-lg-6">
-          <div class="card h-100 shadow-sm border-0 cliente-card">
-            <div class="card-body">
-
-              <h6 class="card-title mb-3 cliente-titulo">Facturación</h6>
-
-              <div class="dato-linea">
-                <span class="dato-label">Dirección:</span>
-                <span>{{ cliente.direccion || '-' }}</span>
-              </div>
-
-              <div class="dato-linea">
-                <span class="dato-label">CP / Población:</span>
-                <span>
-                  {{ cliente.codigoPostal || '-' }}
-                  -
-                  {{ cliente.poblacion || '-' }}
-                </span>
-              </div>
-
-              <div class="dato-linea">
-                <span class="dato-label">Provincia:</span>
-                <span>{{ cliente.provincia || '-' }}</span>
-              </div>
-
-            </div>
-          </div>
+    <section *ngIf="pestanaActiva === 'datos'" class="cliente-datos-panel">
+      <div class="seccion-header">
+        <div>
+          <span class="ficha-eyebrow">INFORMACIÓN DEL CLIENTE</span>
+          <h2>Datos generales</h2>
+          <p>Identificación, contacto, direcciones y datos bancarios.</p>
         </div>
-
-        <div class="col-12 col-lg-6">
-          <div class="card h-100 shadow-sm border-0 cliente-card">
-            <div class="card-body">
-
-              <h6 class="card-title mb-3 cliente-titulo">Entrega</h6>
-
-              <div class="dato-linea">
-                <span class="dato-label">Dirección:</span>
-                <span>{{ cliente.direccionEntrega || cliente.direccion || '-' }}</span>
-              </div>
-
-              <div class="dato-linea">
-                <span class="dato-label">CP / Población:</span>
-                <span>
-                  {{ cliente.codigoPostalEntrega || cliente.codigoPostal || '-' }}
-                  -
-                  {{ cliente.poblacionEntrega || cliente.poblacion || '-' }}
-                </span>
-              </div>
-
-              <div class="dato-linea">
-                <span class="dato-label">Provincia:</span>
-                <span>{{ cliente.provinciaEntrega || cliente.provincia || '-' }}</span>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div class="col-12 col-lg-6">
-          <div class="card h-100 shadow-sm border-0 cliente-card">
-            <div class="card-body">
-
-              <h6 class="card-title mb-3 cliente-titulo">Contacto</h6>
-
-              <div class="dato-linea">
-                <span class="dato-label">Teléfono:</span>
-                <span>{{ cliente.telefono || '-' }}</span>
-              </div>
-
-              <div class="dato-linea">
-                <span class="dato-label">Móvil:</span>
-                <span>{{ cliente.movil || '-' }}</span>
-              </div>
-
-              <div class="dato-linea">
-                <span class="dato-label">Email:</span>
-                <span class="text-break">{{ cliente.email || '-' }}</span>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div class="col-12 col-lg-6">
-          <div class="card h-100 shadow-sm border-0 cliente-card">
-            <div class="card-body">
-
-              <h6 class="card-title mb-3 cliente-titulo">Datos bancarios</h6>
-
-              <div class="dato-linea align-items-start">
-                <span class="dato-label">Nº cuenta:</span>
-                <span class="text-break iban-text">
-                  {{ cliente.numeroCuenta || '-' }}
-                </span>
-              </div>
-
-              <div class="dato-linea align-items-start">
-                <span class="dato-label">IBAN:</span>
-                <span class="text-break iban-text">
-                  {{ formatearIbanVisual(cliente.iban) || '-' }}
-                </span>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
       </div>
 
-    </div>
+      <div class="cliente-datos-grid">
+        <article class="cliente-datos-card">
+          <div class="cliente-datos-heading">
+            <span class="cliente-datos-number">01</span>
+            <h3>Identificación</h3>
+          </div>
+
+          <dl class="cliente-datos-lista">
+            <div>
+              <dt>Nombre o razón social</dt>
+              <dd>{{ cliente.nombreApellidos || '—' }}</dd>
+            </div>
+
+            <div>
+              <dt>Nombre comercial</dt>
+              <dd>{{ cliente.nombreComercial || '—' }}</dd>
+            </div>
+
+            <div>
+              <dt>CIF / DNI</dt>
+              <dd>{{ cliente.cifDni || '—' }}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="cliente-datos-card">
+          <div class="cliente-datos-heading">
+            <span class="cliente-datos-number">02</span>
+            <h3>Contacto</h3>
+          </div>
+
+          <dl class="cliente-datos-lista">
+            <div>
+              <dt>Teléfono</dt>
+              <dd>{{ cliente.telefono || '—' }}</dd>
+            </div>
+
+            <div>
+              <dt>Móvil</dt>
+              <dd>{{ cliente.movil || '—' }}</dd>
+            </div>
+
+            <div>
+              <dt>Correo electrónico</dt>
+              <dd>{{ cliente.email || '—' }}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="cliente-datos-card">
+          <div class="cliente-datos-heading">
+            <span class="cliente-datos-number">03</span>
+            <h3>Dirección de facturación</h3>
+          </div>
+
+          <dl class="cliente-datos-lista">
+            <div>
+              <dt>Dirección</dt>
+              <dd>{{ cliente.direccion || '—' }}</dd>
+            </div>
+
+            <div>
+              <dt>Código postal</dt>
+              <dd>{{ cliente.codigoPostal || '—' }}</dd>
+            </div>
+
+            <div>
+              <dt>Población</dt>
+              <dd>{{ cliente.poblacion || '—' }}</dd>
+            </div>
+
+            <div>
+              <dt>Provincia</dt>
+              <dd>{{ cliente.provincia || '—' }}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="cliente-datos-card">
+          <div class="cliente-datos-heading">
+            <span class="cliente-datos-number">04</span>
+            <h3>Dirección de entrega</h3>
+          </div>
+
+          <dl class="cliente-datos-lista">
+            <div>
+              <dt>Dirección</dt>
+              <dd>
+                {{ cliente.direccionEntrega || cliente.direccion || '—' }}
+              </dd>
+            </div>
+
+            <div>
+              <dt>Código postal</dt>
+              <dd>
+                {{ cliente.codigoPostalEntrega || cliente.codigoPostal || '—' }}
+              </dd>
+            </div>
+
+            <div>
+              <dt>Población</dt>
+              <dd>
+                {{ cliente.poblacionEntrega || cliente.poblacion || '—' }}
+              </dd>
+            </div>
+
+            <div>
+              <dt>Provincia</dt>
+              <dd>
+                {{ cliente.provinciaEntrega || cliente.provincia || '—' }}
+              </dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="cliente-datos-card cliente-datos-wide">
+          <div class="cliente-datos-heading">
+            <span class="cliente-datos-number">05</span>
+            <h3>Datos bancarios</h3>
+          </div>
+
+          <dl class="cliente-datos-lista cliente-banco-grid">
+            <div>
+              <dt>Número de cuenta</dt>
+              <dd class="cliente-bank-value">
+                {{ cliente.numeroCuenta || '—' }}
+              </dd>
+            </div>
+
+            <div>
+              <dt>IBAN</dt>
+              <dd class="cliente-bank-value">
+                {{ formatearIbanVisual(cliente.iban) || '—' }}
+              </dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+    </section>
 
     <!-- ALBARANES -->
     <div *ngIf="pestanaActiva === 'albaranes'" class="tab-content-box content-card">
