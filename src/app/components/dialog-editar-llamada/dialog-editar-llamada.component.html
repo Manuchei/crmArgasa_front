@@ -1,37 +1,67 @@
-<h2 mat-dialog-title>Editar llamada</h2>
+<div class="edit-dialog">
+  <header class="dialog-header">
+    <span class="dialog-eyebrow">NOVEXAPP / CALENDARIO</span>
 
-<div mat-dialog-content>
-  <mat-form-field appearance="outline" class="w-100 mb-2">
-    <mat-label>Motivo</mat-label>
-    <input matInput [(ngModel)]="llamada.motivo" name="motivoEdit" />
-  </mat-form-field>
+    <h2 mat-dialog-title>Editar llamada</h2>
 
-  <mat-form-field appearance="outline" class="w-100 mb-2">
-    <mat-label>Fecha y hora</mat-label>
-    <input
-      matInput
-      type="datetime-local"
-      [(ngModel)]="llamada.fecha"
-      name="fechaEdit"
-    />
-  </mat-form-field>
+    <p>Actualiza el contacto y la planificación de la llamada.</p>
+  </header>
 
-  <mat-form-field appearance="outline" class="w-100 mb-2">
-    <mat-label>Estado</mat-label>
-    <mat-select [(ngModel)]="llamada.estado" name="estadoEdit">
-      <mat-option value="pendiente">Pendiente</mat-option>
-      <mat-option value="realizada">Realizada</mat-option>
-      <mat-option value="cancelada">Cancelada</mat-option>
-    </mat-select>
-  </mat-form-field>
+  <div mat-dialog-content class="dialog-body">
+    <div class="section-label">DATOS DE LA LLAMADA</div>
 
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Observaciones</mat-label>
-    <textarea matInput rows="3" [(ngModel)]="llamada.observaciones" name="obsEdit"></textarea>
-  </mat-form-field>
-</div>
+    <div class="dialog-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre</mat-label>
+        <input matInput [(ngModel)]="llamada.nombre" name="nombreEdit" placeholder="Nombre de contacto" />
+      </mat-form-field>
 
-<div mat-dialog-actions align="end">
-  <button mat-button type="button" (click)="cancelar()">Cancelar</button>
-  <button mat-raised-button color="primary" type="button" (click)="guardar()">Guardar</button>
+      <mat-form-field appearance="outline">
+        <mat-label>Dirección</mat-label>
+        <input matInput [(ngModel)]="llamada.direccion" name="direccionEdit" placeholder="Dirección del contacto" />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Motivo</mat-label>
+      <input matInput [(ngModel)]="llamada.motivo" name="motivoEdit" required />
+    </mat-form-field>
+
+    <div class="section-label section-separator">PLANIFICACIÓN</div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Fecha y hora</mat-label>
+      <input matInput type="datetime-local" [(ngModel)]="llamada.fecha" name="fechaEdit" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Estado</mat-label>
+      <mat-select [(ngModel)]="llamada.estado" name="estadoEdit">
+        <mat-option value="pendiente">Pendiente</mat-option>
+        <mat-option value="en_progreso">En progreso</mat-option>
+        <mat-option value="realizada">Realizada</mat-option>
+        <mat-option value="cancelada">Cancelada</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Observaciones</mat-label>
+      <textarea matInput rows="3" [(ngModel)]="llamada.observaciones" name="observacionesEdit"
+        placeholder="Indicaciones o información adicional"></textarea>
+    </mat-form-field>
+
+    <div class="dialog-error" *ngIf="error" role="alert">
+      {{ error }}
+    </div>
+  </div>
+
+  <div mat-dialog-actions class="dialog-actions">
+    <button type="button" class="dialog-button secondary-button" (click)="cancelar()">
+      Cancelar
+    </button>
+
+    <button type="button" class="dialog-button primary-button" (click)="guardar()">
+      Guardar cambios
+    </button>
+  </div>
 </div>

@@ -1,119 +1,203 @@
 <div class="informe-page">
-  <div class="informe-shell informe-saldos-container">
-    <h2 class="mb-4">Informe de historial de saldos</h2>
+  <div class="informe-shell">
 
-    <div class="card shadow-sm mb-4 no-print">
-      <div class="card-body">
-        <div class="row g-3 align-items-end">
-          <div class="col-12 col-md-6">
-            <label for="cliente" class="form-label">Cliente</label>
-            <select id="cliente" class="form-select" [(ngModel)]="clienteSeleccionadoId">
-              <option [ngValue]="null">-- Selecciona un cliente --</option>
+    <header class="page-header no-print">
+      <div>
+        <span class="page-eyebrow">NOVEXAPP · INFORMES</span>
+        <h1>Historial de saldos</h1>
+        <p>Consulta los cargos, abonos y el saldo acumulado de cada cliente.</p>
+      </div>
+    </header>
+
+    <!-- CONSULTA -->
+    <section class="report-card filter-card no-print">
+      <div class="section-header">
+        <span class="section-number">01</span>
+
+        <div>
+          <h2>Seleccionar cliente</h2>
+          <p>Elige el cliente cuyo historial quieres consultar.</p>
+        </div>
+      </div>
+
+      <div class="filter-body">
+        <div class="filter-layout">
+          <div class="client-field">
+            <label for="cliente">Cliente</label>
+
+            <select id="cliente" class="form-select" [(ngModel)]="clienteSeleccionadoId" [disabled]="cargando">
+              <option [ngValue]="null">Selecciona un cliente</option>
+
               <option *ngFor="let cliente of clientes" [ngValue]="cliente.id">
-                {{ cliente.nombreApellidos || cliente.nombre }} - {{ cliente.empresa }}
+                {{ cliente.nombreApellidos || cliente.nombre }}
+                {{ cliente.empresa ? ' · ' + cliente.empresa : '' }}
               </option>
             </select>
           </div>
 
-          <div class="col-12 col-md-6 d-flex gap-2 informe-actions">
-            <button class="btn btn-primary" (click)="buscarInforme()">
-              Buscar
+          <div class="informe-actions">
+            <button type="button" class="report-button button-secondary" (click)="imprimir()"
+              [disabled]="!informe || cargando">
+              Imprimir informe
             </button>
 
-            <button class="btn btn-outline-secondary" (click)="imprimir()" [disabled]="!informe">
-              Imprimir
+            <button type="button" class="report-button button-primary" (click)="buscarInforme()" [disabled]="cargando">
+              {{ cargando ? 'Consultando…' : 'Consultar historial' }}
             </button>
           </div>
         </div>
 
-        <div *ngIf="error" class="alert alert-danger mt-3 mb-0">
+        <div *ngIf="error" class="error-message" role="alert">
           {{ error }}
         </div>
       </div>
+    </section>
+
+    <!-- CARGA -->
+    <div *ngIf="cargando" class="loading-state no-print" role="status" aria-live="polite">
+      <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+      <span>Cargando historial de saldos…</span>
     </div>
 
-    <div *ngIf="cargando" class="text-center my-4">
-      <div class="spinner-border" role="status"></div>
+    <!-- ESTADO INICIAL -->
+    <div *ngIf="!informe && !cargando && !error" class="empty-state no-print">
+      <span class="empty-symbol" aria-hidden="true">≡</span>
+      <h2>Consulta el historial de un cliente</h2>
+      <p>Selecciona un cliente y pulsa «Consultar historial».</p>
     </div>
 
-    <div *ngIf="informe" class="print-area">
-      <div class="card shadow-sm mb-4">
-        <div class="card-body">
-          <div class="d-flex justify-content-between flex-wrap gap-3">
+    <!-- INFORME -->
+    <div *ngIf="informe && !cargando" class="print-area">
+
+      <div class="print-heading">
+        <span>INFORME</span>
+        <h2>Historial de saldos</h2>
+      </div>
+
+      <section class="report-card client-summary">
+        <div class="client-information">
+          <span class="section-eyebrow">INFORMACIÓN DEL CLIENTE</span>
+          <h2>{{ informe.clienteNombre }}</h2>
+
+          <div class="client-meta">
+            <span class="company-label">{{ informe.empresa }}</span>
+
+            <span class="balance-status" [class.status-pending]="informe.estadoSaldo === 'PENDIENTE'"
+              [class.status-credit]="informe.estadoSaldo === 'A_FAVOR'"
+              [class.status-settled]="informe.estadoSaldo === 'SALDADO'">
+              <span class="status-dot" aria-hidden="true"></span>
+              {{
+              informe.estadoSaldo === 'PENDIENTE'
+              ? 'Saldo pendiente'
+              : informe.estadoSaldo === 'A_FAVOR'
+              ? 'Saldo a favor'
+              : informe.estadoSaldo === 'SALDADO'
+              ? 'Saldado'
+              : informe.estadoSaldo
+              }}
+            </span>
+          </div>
+        </div>
+
+        <div class="balance-box" [class.balance-pending]="informe.estadoSaldo === 'PENDIENTE'"
+          [class.balance-credit]="informe.estadoSaldo === 'A_FAVOR'">
+          <span>Saldo final</span>
+          <strong>{{ formatearImporte(informe.saldoFinal) }}</strong>
+          <small>Saldo acumulado del historial</small>
+        </div>
+      </section>
+
+      <!-- MOVIMIENTOS -->
+      <section class="report-card movements-card">
+        <div class="section-header movements-header">
+          <div class="section-title">
+            <span class="section-number">02</span>
+
             <div>
-              <h4 class="mb-1">{{ informe.clienteNombre }}</h4>
-              <p class="mb-1"><strong>Empresa:</strong> {{ informe.empresa }}</p>
-              <p class="mb-0">
-                <strong>Estado:</strong>
-                <span [ngClass]="getClaseEstado(informe.estadoSaldo)">
-                  {{ informe.estadoSaldo }}
-                </span>
-              </p>
-            </div>
-
-            <div class="text-md-end">
-              <h5 class="mb-1">Saldo final</h5>
-              <p class="mb-0 fs-4 fw-bold">
-                {{ formatearImporte(informe.saldoFinal) }}
-              </p>
+              <h2>Movimientos</h2>
+              <p>Detalle de cargos y abonos registrados.</p>
             </div>
           </div>
+
+          <span class="movement-count">
+            {{ informe.movimientos.length }}
+            {{ informe.movimientos.length === 1 ? 'movimiento' : 'movimientos' }}
+          </span>
         </div>
-      </div>
 
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="mb-3">Movimientos</h5>
+        <div class="table-responsive">
+          <table class="table movements-table">
+            <caption class="visually-hidden">
+              Historial de saldos de {{ informe.clienteNombre }}
+            </caption>
 
-          <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Fecha</th>
-                  <th>Tipo</th>
-                  <th>Concepto</th>
-                  <th class="text-end">Cargo</th>
-                  <th class="text-end">Abono</th>
-                  <th class="text-end">Saldo acumulado</th>
-                </tr>
-              </thead>
+            <thead>
+              <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Concepto</th>
+                <th scope="col" class="amount-column">Cargo</th>
+                <th scope="col" class="amount-column">Abono</th>
+                <th scope="col" class="amount-column">Saldo acumulado</th>
+              </tr>
+            </thead>
 
-              <tbody>
-                <tr *ngFor="let mov of informe.movimientos">
-                  <td>{{ mov.fecha | date:'dd/MM/yyyy' }}</td>
-                  <td>
-                    <span
-                      class="badge"
-                      [ngClass]="mov.tipo === 'CARGO' ? 'text-bg-danger' : 'text-bg-success'"
-                    >
-                      {{ mov.tipo }}
-                    </span>
-                  </td>
-                  <td>{{ mov.concepto }}</td>
-                  <td class="text-end">{{ formatearImporte(mov.cargo) }}</td>
-                  <td class="text-end">{{ formatearImporte(mov.abono) }}</td>
-                  <td class="text-end fw-semibold">
-                    {{ formatearImporte(mov.saldoAcumulado) }}
-                  </td>
-                </tr>
+            <tbody>
+              <tr *ngFor="let mov of informe.movimientos">
+                <td class="date-column">
+                  {{ mov.fecha | date:'dd/MM/yyyy' }}
+                </td>
 
-                <tr *ngIf="informe.movimientos.length === 0">
-                  <td colspan="6" class="text-center">
-                    No hay movimientos para este cliente
-                  </td>
-                </tr>
-              </tbody>
+                <td>
+                  <span class="movement-type" [class.type-charge]="mov.tipo === 'CARGO'"
+                    [class.type-payment]="mov.tipo === 'ABONO'">
+                    {{ mov.tipo }}
+                  </span>
+                </td>
 
-              <tfoot class="table-light">
-                <tr>
-                  <th colspan="5" class="text-end">Saldo final</th>
-                  <th class="text-end">{{ formatearImporte(informe.saldoFinal) }}</th>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+                <td class="concept-column">
+                  {{ mov.concepto }}
+                </td>
+
+                <td class="amount-column charge-amount">
+                  {{ formatearImporte(mov.cargo) }}
+                </td>
+
+                <td class="amount-column payment-amount">
+                  {{ formatearImporte(mov.abono) }}
+                </td>
+
+                <td class="amount-column accumulated-amount">
+                  {{ formatearImporte(mov.saldoAcumulado) }}
+                </td>
+              </tr>
+
+              <tr *ngIf="informe.movimientos.length === 0">
+                <td colspan="6" class="empty-table">
+                  No hay movimientos registrados para este cliente.
+                </td>
+              </tr>
+            </tbody>
+
+            <tfoot>
+              <tr>
+                <th colspan="5" scope="row" class="total-label">
+                  Saldo final
+                </th>
+                <td class="amount-column total-amount">
+                  {{ formatearImporte(informe.saldoFinal) }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
-      </div>
+
+        <div class="movements-footer no-print">
+          <span>Importes expresados en euros.</span>
+          <span>El saldo acumulado se muestra después de cada movimiento.</span>
+        </div>
+      </section>
+
     </div>
   </div>
 </div>

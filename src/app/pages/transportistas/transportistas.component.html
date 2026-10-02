@@ -8,15 +8,7 @@
       </p>
     </div>
 
-    <div class="company-badge" *ngIf="empresaActual">
-      <span class="company-dot" aria-hidden="true"></span>
-      <div>
-        <span class="company-label">EMPRESA ACTIVA</span>
-        <strong>
-          {{ empresaActual === 'ELECTROLUGA' ? 'Electroluga' : 'Argasa' }}
-        </strong>
-      </div>
-    </div>
+
   </header>
 
   <div *ngIf="error" class="feedback feedback-error" role="alert">

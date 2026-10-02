@@ -27,7 +27,7 @@ export class ImprimirFacturaComponent implements OnInit {
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
-    if (!id) {
+    if (!Number.isInteger(id) || id <= 0) {
       this.error = 'ID de factura inválido';
       return;
     }
@@ -38,6 +38,7 @@ export class ImprimirFacturaComponent implements OnInit {
   cargarFactura(id: number): void {
     this.loading = true;
     this.error = null;
+    this.factura = null;
     this.cargarFacturaCliente(id);
   }
 
@@ -49,19 +50,10 @@ export class ImprimirFacturaComponent implements OnInit {
       .subscribe({
         next: (raw) => {
           try {
-            const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
-            this.factura = data;
-
-            if (this.factura?.empresa) {
-              localStorage.setItem('empresa', String(this.factura.empresa));
-            }
-
+            this.factura = JSON.parse(raw);
+            this.guardarEmpresa();
             this.loading = false;
-          } catch (e) {
-            console.error(
-              'Respuesta no válida al cargar factura cliente:',
-              raw,
-            );
+          } catch {
             this.cargarFacturaProveedor(id);
           }
         },
@@ -79,26 +71,16 @@ export class ImprimirFacturaComponent implements OnInit {
       .subscribe({
         next: (raw) => {
           try {
-            const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
-            this.factura = data;
-
-            if (this.factura?.empresa) {
-              localStorage.setItem('empresa', String(this.factura.empresa));
-            }
-
+            this.factura = JSON.parse(raw);
+            this.guardarEmpresa();
             this.loading = false;
-          } catch (e) {
-            console.error(
-              'Respuesta no válida al cargar factura proveedor:',
-              raw,
-            );
+          } catch {
             this.loading = false;
             this.error =
               'La respuesta de la factura no tiene un formato JSON válido.';
           }
         },
         error: (err) => {
-          console.error('Error cargando factura proveedor', err);
           this.loading = false;
 
           const backendText = typeof err?.error === 'string' ? err.error : null;
@@ -111,6 +93,16 @@ export class ImprimirFacturaComponent implements OnInit {
       });
   }
 
+  private guardarEmpresa(): void {
+    if (this.factura?.empresa) {
+      localStorage.setItem('empresa', String(this.factura.empresa));
+    }
+  }
+
+  private redondearImporte(valor: number): number {
+    return Math.round((valor + Number.EPSILON) * 100) / 100;
+  }
+
   imprimirManual(): void {
     window.print();
   }
@@ -119,23 +111,24 @@ export class ImprimirFacturaComponent implements OnInit {
     return !!this.factura?.albaranProveedor || !!this.factura?.numeroInterno;
   }
 
-getEmisorVisualFactura(): any {
-  const emp = String(this.factura?.empresa || '')
-    .trim()
-    .toLowerCase();
+  getEmisorVisualFactura(): any {
+    const empresa = String(this.factura?.empresa || '')
+      .trim()
+      .toLowerCase();
 
-  return EMPRESAS[emp as keyof typeof EMPRESAS] || null;
-}
+    return EMPRESAS[empresa as keyof typeof EMPRESAS] || null;
+  }
 
   getNumeroDocumento(): string {
-    if (!this.factura) return '';
+    if (!this.factura) {
+      return '';
+    }
 
     if (this.esFacturaProveedor()) {
-      return this.factura?.numeroInterno || '-';
+      return this.factura.numeroInterno || '-';
     }
 
     const numero = this.factura.numero ?? this.factura.id;
-
     const fecha = this.factura.fechaEmision
       ? new Date(this.factura.fechaEmision)
       : new Date();
@@ -151,37 +144,21 @@ getEmisorVisualFactura(): any {
   }
 
   getFechaVencimientoDocumento(): string {
-    if (this.esFacturaProveedor()) {
-      return this.factura?.fechaVencimiento || '-';
-    }
-
-    return '-';
+    return this.factura?.fechaVencimiento || '-';
   }
 
   getEstadoDocumento(): string {
-    if (this.esFacturaProveedor()) {
-      return this.factura?.pagada ? 'PAGADA' : 'PENDIENTE';
-    }
-
-    const estado = String(this.factura?.estado || '').toUpperCase();
-
-    if (estado === 'PAGADA') {
+    if (this.esFacturaProveedor() && this.factura?.pagada) {
       return 'PAGADA';
     }
 
-    if (estado === 'EMITIDA') {
-      return 'PENDIENTE';
-    }
+    const estado = String(
+      this.factura?.estado || this.factura?.estadoFactura || '',
+    )
+      .trim()
+      .toUpperCase();
 
-    if (estado === 'BORRADOR') {
-      return 'BORRADOR';
-    }
-
-    if (estado === 'ANULADA') {
-      return 'ANULADA';
-    }
-
-    return estado || '-';
+    return estado || 'PENDIENTE';
   }
 
   documentoPagado(): boolean {
@@ -195,132 +172,188 @@ getEmisorVisualFactura(): any {
   getNombreReceptor(): string {
     if (this.esFacturaProveedor()) {
       const proveedor = this.factura?.proveedor || {};
+
       return (
-        `${proveedor?.nombre || ''} ${proveedor?.apellido || ''}`.trim() || '—'
+        `${proveedor.nombre || ''} ${proveedor.apellido || ''}`.trim() || '—'
       );
     }
 
     return (
-      this.factura?.cliente?.nombreComercial ??
-      this.factura?.cliente?.nombreApellidos ??
+      this.factura?.cliente?.nombreComercial ||
+      this.factura?.cliente?.nombreApellidos ||
       '—'
     );
   }
 
   getCifDniReceptor(): string | null {
-    if (this.esFacturaProveedor()) {
-      return this.factura?.proveedor?.cif || null;
-    }
-
-    return this.factura?.cliente?.cifDni || null;
+    return this.esFacturaProveedor()
+      ? this.factura?.proveedor?.cif || null
+      : this.factura?.cliente?.cifDni || null;
   }
 
   getDireccionReceptor(): string | null {
-    if (this.esFacturaProveedor()) {
-      return this.factura?.proveedor?.direccion || null;
-    }
-
-    return this.factura?.cliente?.direccion || null;
+    return this.esFacturaProveedor()
+      ? this.factura?.proveedor?.direccion || null
+      : this.factura?.cliente?.direccion || null;
   }
 
   getLocalidadReceptor(): string {
-    if (this.esFacturaProveedor()) {
-      const p = this.factura?.proveedor || {};
-      return `${p?.codigoPostal || ''} ${p?.localidad || ''} ${p?.provincia ? `(${p.provincia})` : ''}`.trim();
-    }
+    const receptor = this.esFacturaProveedor()
+      ? this.factura?.proveedor || {}
+      : this.factura?.cliente || {};
 
-    const c = this.factura?.cliente || {};
-    return `${c?.codigoPostal || ''} ${c?.poblacion || ''} ${c?.provincia ? `(${c.provincia})` : ''}`.trim();
+    const poblacion = this.esFacturaProveedor()
+      ? receptor.localidad
+      : receptor.poblacion;
+
+    return [
+      receptor.codigoPostal || '',
+      poblacion || '',
+      receptor.provincia ? `(${receptor.provincia})` : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
   }
 
   getTelefonoReceptor(): string | null {
-    if (this.esFacturaProveedor()) {
-      return this.factura?.proveedor?.telefono || null;
-    }
-
-    return this.factura?.cliente?.telefono || null;
+    return this.esFacturaProveedor()
+      ? this.factura?.proveedor?.telefono || null
+      : this.factura?.cliente?.telefono || null;
   }
 
   getEmailReceptor(): string | null {
-    if (this.esFacturaProveedor()) {
-      return this.factura?.proveedor?.email || null;
-    }
-
-    return this.factura?.cliente?.email || null;
+    return this.esFacturaProveedor()
+      ? this.factura?.proveedor?.email || null
+      : this.factura?.cliente?.email || null;
   }
 
   getLineasDocumento(): any[] {
-    if (this.esFacturaProveedor()) {
-      return (
-        this.factura?.albaranProveedor?.lineas || this.factura?.lineas || []
-      );
-    }
+    const lineas = this.esFacturaProveedor()
+      ? (this.factura?.albaranProveedor?.lineas ?? this.factura?.lineas)
+      : this.factura?.lineas;
 
-    return this.factura?.lineas || [];
+    return Array.isArray(lineas) ? lineas : [];
   }
 
   getCantidadLinea(linea: any): number {
-    if (this.esFacturaProveedor()) {
-      return Number(linea?.unidades ?? linea?.cantidad ?? 0);
-    }
-
-    return Number(linea?.cantidad || 0);
+    return Number(
+      this.esFacturaProveedor()
+        ? (linea?.unidades ?? linea?.cantidad ?? 0)
+        : (linea?.cantidad ?? linea?.unidades ?? 0),
+    );
   }
 
   getPrecioLinea(linea: any): number {
-    if (this.esFacturaProveedor()) {
-      return Number(linea?.precio ?? linea?.precioUnitario ?? 0);
-    }
-
-    return Number(linea?.precioUnitario || 0);
+    return Number(
+      this.esFacturaProveedor()
+        ? (linea?.precio ?? linea?.precioUnitario ?? 0)
+        : (linea?.precioUnitario ?? linea?.precio ?? 0),
+    );
   }
 
-  getSubtotalLinea(linea: any): number {
-    if (this.esFacturaProveedor()) {
-      return Number(linea?.baseLinea ?? linea?.subtotal ?? 0);
-    }
+  getDescuentoLinea(linea: any): number {
+    return Number(linea?.descuentoPct ?? linea?.dtoPct ?? 0);
+  }
 
-    return Number(linea?.subtotal || 0);
+  getIvaPorcentajeLinea(linea: any): number {
+    return Number(linea?.ivaPct ?? (this.esFacturaProveedor() ? 21 : 0));
   }
 
   getIvaLinea(linea: any): string {
-    if (this.esFacturaProveedor()) {
-      return `${linea?.ivaPct ?? 21}%`;
+    return `${this.getIvaPorcentajeLinea(linea)}%`;
+  }
+
+  getSubtotalLinea(linea: any): number {
+    const subtotal = linea?.baseLinea ?? linea?.subtotal;
+
+    if (subtotal !== null && subtotal !== undefined) {
+      return Number(subtotal);
     }
 
-    return `${linea?.ivaPct ?? 0}%`;
+    const bruto = this.getCantidadLinea(linea) * this.getPrecioLinea(linea);
+
+    return this.redondearImporte(
+      bruto * (1 - this.getDescuentoLinea(linea) / 100),
+    );
   }
 
   getTotalLinea(linea: any): number {
-    return Number(linea?.totalLinea || 0);
-  }
-
-  getBaseImponible(): number {
-    if (this.esFacturaProveedor()) {
-      return Number(
-        this.factura?.baseImponible ??
-          this.factura?.albaranProveedor?.subtotal ??
-          this.factura?.totalImporte ??
-          0,
-      );
+    if (linea?.totalLinea !== null && linea?.totalLinea !== undefined) {
+      return Number(linea.totalLinea);
     }
 
-    return Number(this.factura?.baseImponible || 0);
+    return this.redondearImporte(
+      this.getSubtotalLinea(linea) *
+        (1 + this.getIvaPorcentajeLinea(linea) / 100),
+    );
+  }
+
+  getTotalUnidades(): number {
+    return this.getLineasDocumento().reduce(
+      (total: number, linea: any) => total + this.getCantidadLinea(linea),
+      0,
+    );
+  }
+
+    getDescuentoTotal(): number {
+    const descuento = this.getLineasDocumento().reduce(
+      (total: number, linea: any) => {
+        const bruto =
+          this.getCantidadLinea(linea) * this.getPrecioLinea(linea);
+
+        return total +
+          (bruto * this.getDescuentoLinea(linea)) / 100;
+      },
+      0
+    );
+
+    return Math.round((descuento + Number.EPSILON) * 100) / 100;
+  }
+  getBaseImponible(): number {
+    if (
+      this.factura?.baseImponible !== null &&
+      this.factura?.baseImponible !== undefined
+    ) {
+      return Number(this.factura.baseImponible);
+    }
+
+    return this.redondearImporte(
+      this.getLineasDocumento().reduce(
+        (total: number, linea: any) => total + this.getSubtotalLinea(linea),
+        0,
+      ),
+    );
   }
 
   getIvaTotal(): number {
-    if (this.esFacturaProveedor()) {
-      return Number(this.factura?.ivaTotal || 0);
+    const iva = this.factura?.ivaTotal ?? this.factura?.totalIva;
+
+    if (iva !== null && iva !== undefined) {
+      return Number(iva);
     }
 
-    return Number(this.factura?.ivaTotal || 0);
+    return this.redondearImporte(
+      this.getLineasDocumento().reduce(
+        (total: number, linea: any) =>
+          total +
+          this.redondearImporte(
+            (this.getSubtotalLinea(linea) * this.getIvaPorcentajeLinea(linea)) /
+              100,
+          ),
+        0,
+      ),
+    );
   }
 
   getTotalDocumento(): number {
-    if (this.esFacturaProveedor()) {
-      return Number(this.factura?.totalImporte || this.factura?.total || 0);
+    const total = this.esFacturaProveedor()
+      ? (this.factura?.totalImporte ?? this.factura?.total)
+      : this.factura?.total;
+
+    if (total !== null && total !== undefined) {
+      return Number(total);
     }
 
-    return Number(this.factura?.total || 0);
+    return this.redondearImporte(this.getBaseImponible() + this.getIvaTotal());
   }
 }

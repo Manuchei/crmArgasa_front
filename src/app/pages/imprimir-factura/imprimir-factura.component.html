@@ -1,14 +1,21 @@
 <div class="print-toolbar no-print">
-  <button type="button" (click)="imprimirManual()">Imprimir</button>
+  <button type="button" (click)="imprimirManual()">
+    Imprimir
+  </button>
 </div>
 
-<div *ngIf="loading" class="estado-carga no-print">Cargando…</div>
-<div *ngIf="error" class="estado-error no-print">{{ error }}</div>
+<div *ngIf="loading" class="estado-carga no-print">
+  Cargando…
+</div>
+
+<div *ngIf="error" class="estado-error no-print">
+  {{ error }}
+</div>
 
 <main *ngIf="factura && !loading" class="documento-a4">
   <ng-container *ngIf="getEmisorVisualFactura() as emisor">
 
-    <!-- CABECERA CLASSICGES -->
+    <!-- CABECERA -->
     <div class="cabecera-documento">
       <section class="bloque-emisor">
         <img *ngIf="emisor.logoUrl" class="logo-argasa" [src]="emisor.logoUrl" alt="Logo de la empresa" />
@@ -16,10 +23,23 @@
         <div class="datos-emisor">
           <strong>{{ emisor.nombre | uppercase }}</strong>
           <span>{{ emisor.direccion | uppercase }}</span>
-          <span>{{ emisor.codigoPostal }} {{ emisor.poblacion | uppercase }}</span>
-          <span *ngIf="emisor.telefono">Tel. {{ emisor.telefono }}</span>
-          <span *ngIf="emisor.email">e-Mail {{ emisor.email }}</span>
-          <span *ngIf="emisor.cif">C.I.F. {{ emisor.cif }}</span>
+
+          <span>
+            {{ emisor.codigoPostal }}
+            {{ emisor.poblacion | uppercase }}
+          </span>
+
+          <span *ngIf="emisor.telefono">
+            Tel. {{ emisor.telefono }}
+          </span>
+
+          <span *ngIf="emisor.email">
+            e-Mail {{ emisor.email }}
+          </span>
+
+          <span *ngIf="emisor.cif">
+            C.I.F. {{ emisor.cif }}
+          </span>
         </div>
       </section>
 
@@ -30,42 +50,58 @@
 
         <div class="datos-receptor">
           <strong>{{ getNombreReceptor() | uppercase }}</strong>
-          <span *ngIf="getDireccionReceptor()">{{ getDireccionReceptor() | uppercase }}</span>
-          <span *ngIf="getLocalidadReceptor()">{{ getLocalidadReceptor() | uppercase }}</span>
-          <span *ngIf="getCifDniReceptor()">{{ getCifDniReceptor() | uppercase }}</span>
+
+          <span *ngIf="getDireccionReceptor()">
+            {{ getDireccionReceptor() | uppercase }}
+          </span>
+
+          <span *ngIf="getLocalidadReceptor()">
+            {{ getLocalidadReceptor() | uppercase }}
+          </span>
+
+          <span *ngIf="getCifDniReceptor()">
+            {{ getCifDniReceptor() | uppercase }}
+          </span>
         </div>
       </section>
     </div>
 
     <!-- DATOS PRINCIPALES -->
     <section class="franja-documento">
-      <div class="dato-franja dato-numero">
+      <div class="dato-franja">
         <strong>Nº Factura</strong>
         <span>{{ getNumeroDocumento() }}</span>
       </div>
 
-      <div class="dato-franja dato-fecha">
+      <div class="dato-franja">
         <strong>Fecha</strong>
-        <span>{{ getFechaDocumento() | date:'dd/MM/yyyy' }}</span>
-      </div>
-
-      <div class="dato-franja dato-fecha-valor">
-        <strong>Fecha Valor</strong>
-        <span>{{ getFechaVencimientoDocumento() !== '-' ? (getFechaVencimientoDocumento() | date:'dd/MM/yyyy') :
-          (getFechaDocumento() | date:'dd/MM/yyyy') }}</span>
-      </div>
-
-      <div class="dato-franja dato-referencia">
-        <strong>Estado Factura</strong>
         <span>
-          {{ factura?.estado || factura?.estadoFactura || 'PENDIENTE' }}
+          {{ getFechaDocumento() | date:'dd/MM/yyyy' }}
         </span>
+      </div>
+
+      <div class="dato-franja">
+        <strong>Fecha Valor</strong>
+        <span>
+          {{
+          getFechaVencimientoDocumento() !== '-'
+          ? (getFechaVencimientoDocumento() | date:'dd/MM/yyyy')
+          : (getFechaDocumento() | date:'dd/MM/yyyy')
+          }}
+        </span>
+      </div>
+
+      <div class="dato-franja">
+        <strong>Estado Factura</strong>
+        <span>{{ getEstadoDocumento() }}</span>
       </div>
     </section>
 
-    <div class="rotulo-descripcion">Descripción</div>
+    <div class="rotulo-descripcion">
+      Descripción
+    </div>
 
-    <!-- TABLA DE LÍNEAS -->
+    <!-- PRODUCTOS Y SUBTOTAL -->
     <section class="tabla-contenedor">
       <img *ngIf="emisor.marcaAguaUrl || emisor.logoUrl" class="marca-agua"
         [src]="emisor.marcaAguaUrl || emisor.logoUrl" alt="" />
@@ -76,6 +112,7 @@
           <col class="col-codigo" />
           <col class="col-articulo" />
           <col class="col-precio" />
+          <col class="col-descuento" />
           <col class="col-iva" />
           <col class="col-subtotal" />
         </colgroup>
@@ -86,6 +123,7 @@
             <th>Código</th>
             <th>Artículo</th>
             <th>Precio</th>
+            <th>Dto %</th>
             <th>IVA</th>
             <th>Subtotal</th>
           </tr>
@@ -93,79 +131,113 @@
 
         <tbody>
           <tr *ngFor="let linea of getLineasDocumento()">
-            <td class="numero">{{ getCantidadLinea(linea) | number:'1.3-3' }}</td>
-            <td>{{ linea?.codigo || linea?.codigoArticulo || linea?.referencia || '' }}</td>
-            <td class="articulo">{{ linea?.descripcion || linea?.articulo || linea?.nombre || '' }}</td>
-            <td class="numero">{{ getPrecioLinea(linea) | number:'1.3-3' }}</td>
-            <td class="numero">{{ (linea?.ivaPct ?? 21) | number:'1.2-2' }}</td>
-            <td class="numero">{{ getSubtotalLinea(linea) | number:'1.3-3' }}</td>
-          </tr>
+            <td class="numero">
+              {{ getCantidadLinea(linea) | number:'1.3-3' }}
+            </td>
 
-          <tr class="fila-relleno" *ngIf="getLineasDocumento().length > 0">
-            <td colspan="6"></td>
+            <td>
+              {{
+              linea?.codigo ||
+              linea?.codigoArticulo ||
+              linea?.referencia ||
+              ''
+              }}
+            </td>
+
+            <td class="articulo">
+              {{ linea?.descripcion || linea?.articulo || linea?.nombre || '' }}
+            </td>
+
+            <td class="numero">
+              {{ getPrecioLinea(linea) | number:'1.3-3' }}
+            </td>
+
+            <td class="numero">
+              {{ getDescuentoLinea(linea) | number:'1.0-2' }}
+            </td>
+
+            <td class="numero">
+              {{ getIvaPorcentajeLinea(linea) | number:'1.2-2' }}
+            </td>
+
+            <td class="numero">
+              {{ getSubtotalLinea(linea) | number:'1.3-3' }}
+            </td>
           </tr>
 
           <tr *ngIf="getLineasDocumento().length === 0">
-            <td colspan="6" class="sin-lineas">Sin líneas</td>
+            <td colspan="7" class="sin-lineas">
+              Sin líneas
+            </td>
           </tr>
         </tbody>
-
-        <tfoot>
-          <tr>
-            <td class="numero total-unidades">{{ getLineasDocumento().length ? (getLineasDocumento().length |
-              number:'1.3-3') : '' }}</td>
-            <td colspan="3"></td>
-            <td class="etiqueta-subtotal">Subtotal</td>
-            <td class="numero">{{ getBaseImponible() | number:'1.3-3' }}</td>
-          </tr>
-        </tfoot>
       </table>
+
+      <!-- FRANJA AL FONDO DEL RECUADRO -->
+      <div class="subtotal-inferior">
+        <span class="subtotal-cantidad">
+          {{ getTotalUnidades() | number:'1.3-3' }}
+        </span>
+
+        <span class="subtotal-espacio"></span>
+
+        <strong>Subtotal</strong>
+
+        <span class="subtotal-importe">
+          {{ getBaseImponible() | number:'1.3-3' }}
+        </span>
+      </div>
     </section>
 
     <!-- TOTALES -->
     <section class="resumen-totales">
-      <div class="caja-total caja-descuento">
+      <div class="caja-total">
         <strong>Descuento</strong>
-        <span>{{ factura?.descuentoPct || 0 | number:'1.2-2' }} %</span>
+        <span>
+          {{ getDescuentoTotal() | number:'1.2-2' }} €
+        </span>
       </div>
-
-
 
       <div class="caja-total">
         <strong>Base Imponible</strong>
-        <span>{{ getBaseImponible() | number:'1.3-3' }}</span>
+        <span>
+          {{ getBaseImponible() | number:'1.3-3' }} €
+        </span>
       </div>
 
       <div class="caja-total">
         <strong>Importe IVA</strong>
-        <span>{{ getIvaTotal() | number:'1.3-3' }}</span>
+        <span>
+          {{ getIvaTotal() | number:'1.3-3' }} €
+        </span>
       </div>
-
-
 
       <div class="caja-total total-documento">
         <strong>TOTAL FACTURA</strong>
-        <span>{{ getTotalDocumento() | number:'1.3-3' }} €</span>
+        <span>
+          {{ getTotalDocumento() | number:'1.3-3' }} €
+        </span>
       </div>
     </section>
-
-
 
     <!-- PIE -->
     <footer class="pie-documento">
       <div class="pie-superior">
         <span>Documento generado por Novex.</span>
-        <span>Página 1 / 1</span>
       </div>
 
       <p>
-        De conformidad con lo establecido en la normativa vigente en Protección de Datos de Carácter Personal,
-        le informamos que sus datos serán incorporados al sistema de tratamiento titularidad de
-        {{ emisor.nombre }} con C.I.F. {{ emisor.cif }} y domicilio social en {{ emisor.direccion }},
-        con la finalidad de poder remitirle la correspondiente factura. Los datos serán conservados durante
-        los plazos legalmente establecidos. Puede contactar con el responsable de seguridad y privacidad
-        mediante el teléfono {{ emisor.telefono }} o el correo {{ emisor.email }}.
+        De conformidad con lo establecido en la normativa vigente en
+        Protección de Datos de Carácter Personal, le informamos que sus
+        datos serán incorporados al sistema de tratamiento titularidad de
+        {{ emisor.nombre }} con C.I.F. {{ emisor.cif }} y domicilio social
+        en {{ emisor.direccion }}, con la finalidad de poder remitirle la
+        correspondiente factura. Los datos serán conservados durante los
+        plazos legalmente establecidos. Puede contactar con el responsable
+        de seguridad y privacidad mediante el teléfono
+        {{ emisor.telefono }} o el correo {{ emisor.email }}.
       </p>
     </footer>
+
   </ng-container>
 </main>

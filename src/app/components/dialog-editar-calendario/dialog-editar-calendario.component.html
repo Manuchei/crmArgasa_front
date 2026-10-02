@@ -1,84 +1,78 @@
-<h2 mat-dialog-title>
-  Editar
-  <ng-container [ngSwitch]="tipo">
-    <span *ngSwitchCase="'llamadas'">llamada</span>
-    <span *ngSwitchCase="'tareas'">tarea</span>
-    <span *ngSwitchCase="'visitas'">visita</span>
-  </ng-container>
-</h2>
+<div class="edit-dialog">
+  <header class="dialog-header">
+    <span class="dialog-eyebrow">NOVEXAPP / CALENDARIO</span>
 
-<div mat-dialog-content class="dialog-body">
+    <h2 mat-dialog-title>Editar {{ etiqueta }}</h2>
 
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>
-      <ng-container [ngSwitch]="tipo">
-        <span *ngSwitchCase="'llamadas'">Motivo</span>
-        <span *ngSwitchDefault>Título</span>
-      </ng-container>
-    </mat-label>
+    <p>Actualiza los datos y la planificación de esta actividad.</p>
+  </header>
 
-    <input
-      matInput
-      [(ngModel)]="titulo" />
-  </mat-form-field>
+  <div mat-dialog-content class="dialog-body">
+    <div class="section-label">DATOS DE LA ACTIVIDAD</div>
 
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Fecha</mat-label>
+    <div class="dialog-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre</mat-label>
+        <input matInput [(ngModel)]="nombre" name="nombreEdit" placeholder="Nombre de contacto" />
+      </mat-form-field>
 
-    <input
-      matInput
-      type="date"
-      [(ngModel)]="fecha" />
-  </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Dirección</mat-label>
+        <input matInput [(ngModel)]="direccion" name="direccionEdit" placeholder="Dirección del contacto" />
+      </mat-form-field>
+    </div>
 
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Hora</mat-label>
+    <mat-form-field appearance="outline">
+      <mat-label>Motivo</mat-label>
+      <input matInput [(ngModel)]="titulo" name="tituloEdit" required />
+    </mat-form-field>
 
-    <mat-select [(ngModel)]="hora">
-      <mat-option
-        *ngFor="let h of horasDisponibles"
-        [value]="h">
-        {{ h }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+    <div class="section-label section-separator">PLANIFICACIÓN</div>
 
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Estado</mat-label>
+    <div class="dialog-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha</mat-label>
+        <input matInput type="date" [(ngModel)]="fecha" name="fechaEdit" required />
+      </mat-form-field>
 
-    <mat-select [(ngModel)]="estado">
-      <mat-option value="pendiente">Pendiente</mat-option>
-      <mat-option value="en_progreso">En progreso</mat-option>
-      <mat-option value="realizada">Realizada</mat-option>
-      <mat-option value="cancelada">Cancelada</mat-option>
-    </mat-select>
-  </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Hora</mat-label>
+        <mat-select [(ngModel)]="hora" name="horaEdit" required>
+          <mat-option *ngFor="let h of horasDisponibles" [value]="h">
+            {{ h }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
 
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Observaciones</mat-label>
+    <mat-form-field appearance="outline">
+      <mat-label>Estado</mat-label>
+      <mat-select [(ngModel)]="estado" name="estadoEdit">
+        <mat-option value="pendiente">Pendiente</mat-option>
+        <mat-option value="en_progreso">En progreso</mat-option>
+        <mat-option value="realizada">Realizada</mat-option>
+        <mat-option value="cancelada">Cancelada</mat-option>
+      </mat-select>
+    </mat-form-field>
 
-    <textarea
-      matInput
-      rows="3"
-      [(ngModel)]="observaciones">
-    </textarea>
-  </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Observaciones</mat-label>
+      <textarea matInput rows="3" [(ngModel)]="observaciones" name="observacionesEdit"
+        placeholder="Indicaciones o información adicional"></textarea>
+    </mat-form-field>
 
-</div>
+    <div class="dialog-error" *ngIf="error" role="alert">
+      {{ error }}
+    </div>
+  </div>
 
-<div mat-dialog-actions align="end">
-  <button
-    mat-button
-    type="button"
-    (click)="cancelar()">
-    Cancelar
-  </button>
+  <div mat-dialog-actions class="dialog-actions">
+    <button type="button" class="dialog-button secondary-button" (click)="cancelar()">
+      Cancelar
+    </button>
 
-  <button
-    mat-raised-button
-    color="primary"
-    type="button"
-    (click)="guardar()">
-    Guardar
-  </button>
+    <button type="button" class="dialog-button primary-button" (click)="guardar()">
+      Guardar cambios
+    </button>
+  </div>
 </div>

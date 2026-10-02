@@ -1,257 +1,358 @@
-<div class="albaran-proveedor-page container-fluid mt-4" *ngIf="albaran">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 detalle-header">
-                <div class="header-info">
-                    <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
-                        <h2 class="mb-0">Albarán de proveedor</h2>
-                        <span class="badge fs-6" [ngClass]="getEstadoBadgeClass()">
-                            {{ getEstadoLabel() }}
+<div class="albaran-page" *ngIf="albaran">
+    <div class="albaran-shell">
+
+        <!-- CABECERA -->
+        <header class="albaran-header">
+            <div class="albaran-heading">
+                <button type="button" class="volver-link" (click)="volverAProveedor()">
+                    ← Volver al proveedor
+                </button>
+
+                <span class="eyebrow">NOVEXAPP / ALBARÁN DE PROVEEDOR</span>
+
+                <div class="albaran-title-row">
+                    <h1>{{ albaran.numeroInterno || ('Albarán #' + albaran.id) }}</h1>
+
+                    <span class="estado" [class.estado-confirmado]="albaran.confirmado">
+                        {{ albaran.confirmado ? 'Confirmado' : 'Pendiente de confirmar' }}
+                    </span>
+                </div>
+
+                <div class="albaran-meta">
+                    <span>{{ albaran.empresa || '—' }}</span>
+
+                    <span>
+                        Fecha:
+                        {{ albaran.fechaEmision
+                        ? (albaran.fechaEmision | date:'dd/MM/yyyy')
+                        : '—' }}
+                    </span>
+
+                    <span>Nº proveedor: {{ albaran.numeroProveedor || '—' }}</span>
+                </div>
+
+                <p class="numero-generado" *ngIf="albaran.numeroGenerado">
+                    Referencia completa: {{ albaran.numeroGenerado }}
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <button type="button" class="action-btn secondary-btn" (click)="editarAlbaran()"
+                    [disabled]="!canEdit() || isConfirming">
+                    Editar albarán
+                </button>
+
+                <button type="button" class="action-btn secondary-btn" (click)="imprimirAlbaran()">
+                    Imprimir
+                </button>
+
+                <button type="button" class="action-btn primary-btn" (click)="confirmar()"
+                    [disabled]="albaran.confirmado || isConfirming">
+                    {{ isConfirming
+                    ? 'Confirmando…'
+                    : (albaran.confirmado ? 'Albarán confirmado' : 'Confirmar albarán') }}
+                </button>
+            </div>
+        </header>
+
+        <!-- PROVEEDOR -->
+        <section class="proveedor-card">
+            <div class="proveedor-heading">
+                <div class="proveedor-icon" aria-hidden="true">PR</div>
+
+                <div class="proveedor-info">
+                    <span class="eyebrow">PROVEEDOR</span>
+                    <h2>{{ getNombreProveedor() }}</h2>
+
+                    <div class="proveedor-meta">
+                        <span *ngIf="albaran.cif">CIF/NIF: {{ albaran.cif }}</span>
+                        <span *ngIf="albaran.oficio">{{ albaran.oficio }}</span>
+                    </div>
+                </div>
+
+                <button type="button" class="action-btn secondary-btn" (click)="volverAProveedor()">
+                    Ver ficha del proveedor
+                </button>
+            </div>
+
+            <dl class="proveedor-datos">
+                <div>
+                    <dt>Teléfono</dt>
+                    <dd>{{ albaran.telefono || '—' }}</dd>
+                </div>
+
+                <div>
+                    <dt>Email</dt>
+                    <dd>{{ albaran.email || '—' }}</dd>
+                </div>
+
+                <div>
+                    <dt>Persona de contacto</dt>
+                    <dd>{{ albaran.contacto || '—' }}</dd>
+                </div>
+
+                <div>
+                    <dt>Dirección</dt>
+                    <dd>
+                        {{ albaran.direccion || '—' }}
+                        <span class="dato-secundario">
+                            {{ albaran.codigoPostal || '' }}
+                            {{ albaran.localidad || '' }}
+                            <ng-container *ngIf="albaran.provincia">
+                                ({{ albaran.provincia }})
+                            </ng-container>
+                            <ng-container *ngIf="albaran.pais">
+                                · {{ albaran.pais }}
+                            </ng-container>
                         </span>
-                    </div>
-
-                    <div class="text-muted mb-2">
-                        <div><b>ID:</b> #{{ albaran.id }}</div>
-                        <div><b>Fecha:</b> {{ albaran.fechaEmision || '-' }}</div>
-                        <div><b>Empresa:</b> {{ albaran.empresa || '-' }}</div>
-                    </div>
-
-                    <div class="fw-semibold fs-5 text-break">
-                        {{ getNombreProveedor() }}
-                    </div>
-
-                    <div class="text-muted numeros-albaran">
-                        <span class="d-inline-block me-3 mb-1"><b>Nº interno:</b> {{ albaran.numeroInterno || '-'
-                            }}</span>
-                        <span class="d-inline-block me-3 mb-1"><b>Nº proveedor:</b> {{ albaran.numeroProveedor || '-'
-                            }}</span>
-                        <span class="d-inline-block mb-1" *ngIf="albaran.numeroGenerado"><b>Nº generado:</b> {{
-                            albaran.numeroGenerado }}</span>
-                    </div>
+                    </dd>
                 </div>
+            </dl>
 
-                <div class="d-flex gap-2 flex-wrap header-actions">
-                    <button class="btn btn-outline-secondary" (click)="volverAProveedor()">
-                        ⬅ Volver
-                    </button>
+            <details class="proveedor-adicional">
+                <summary>Datos bancarios, notas y contactos adicionales</summary>
 
-                    <button class="btn btn-warning" (click)="editarAlbaran()" [disabled]="!canEdit()">
-                        ✏️ Editar
-                    </button>
-
-                    <button class="btn btn-dark" (click)="imprimirAlbaran()">
-                        🖨️ Imprimir
-                    </button>
-
-                    <button class="btn btn-success" (click)="confirmar()"
-                        [disabled]="albaran.confirmado || isConfirming">
-                        <span *ngIf="!isConfirming">✅ Confirmar</span>
-                        <span *ngIf="isConfirming">Confirmando...</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-4">
-        <div class="col-12 col-xl-7">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body p-4">
-                    <h5 class="mb-3">Datos del proveedor</h5>
-
-                    <div class="row g-2">
-                        <div class="col-12 col-md-6"><b>Nombre:</b> {{ getNombreProveedor() }}</div>
-                        <div class="col-12 col-md-6"><b>Contacto:</b> {{ albaran.contacto || '-' }}</div>
-
-                        <div class="col-12 col-md-6"><b>CIF:</b> {{ albaran.cif || '-' }}</div>
-                        <div class="col-12 col-md-6"><b>Oficio:</b> {{ albaran.oficio || '-' }}</div>
-
-                        <div class="col-12 col-md-6"><b>Teléfono:</b> {{ albaran.telefono || '-' }}</div>
-                        <div class="col-12 col-md-6 text-break"><b>Email:</b> {{ albaran.email || '-' }}</div>
-
-                        <div class="col-12"><b>Dirección:</b> {{ albaran.direccion || '-' }}</div>
-
-                        <div class="col-12 col-md-4"><b>CP:</b> {{ albaran.codigoPostal || '-' }}</div>
-                        <div class="col-12 col-md-4"><b>Localidad:</b> {{ albaran.localidad || '-' }}</div>
-                        <div class="col-12 col-md-4"><b>Provincia:</b> {{ albaran.provincia || '-' }}</div>
-
-                        <div class="col-12 col-md-6"><b>País:</b> {{ albaran.pais || '-' }}</div>
-                        <div class="col-12 col-md-6 text-break"><b>Datos bancarios:</b> {{ albaran.datosBancarios || '-'
-                            }}</div>
-
-                        <div class="col-12 text-break"><b>Notas:</b> {{ albaran.notas || '-' }}</div>
-                        <div class="col-12 text-break"><b>Contactos adicionales:</b> {{ albaran.contactos || '-' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-xl-5">
-            <div class="card shadow-sm border-0 mb-3">
-                <div class="card-body p-4">
-                    <h5 class="mb-3">Resumen económico</h5>
-
-                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                        <span>Total compra</span>
-                        <strong>{{ getTotalCompra() | number:'1.2-2' }} €</strong>
+                <dl class="proveedor-datos datos-adicionales">
+                    <div>
+                        <dt>Datos bancarios</dt>
+                        <dd>{{ albaran.datosBancarios || '—' }}</dd>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom"
-                        *ngIf="hasResumenPago()">
-                        <span>Total pagado</span>
-                        <strong class="text-success">{{ getTotalPagado() | number:'1.2-2' }} €</strong>
+                    <div>
+                        <dt>Notas</dt>
+                        <dd>{{ albaran.notas || '—' }}</dd>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center py-2" *ngIf="hasResumenPago()">
-                        <span>Pendiente de pago</span>
-                        <strong [ngClass]="getPendientePago() > 0 ? 'text-danger' : 'text-success'">
-                            {{ getPendientePago() | number:'1.2-2' }} €
-                        </strong>
+                    <div>
+                        <dt>Contactos adicionales</dt>
+                        <dd>{{ albaran.contactos || '—' }}</dd>
                     </div>
+                </dl>
+            </details>
+        </section>
 
-                    <div class="small text-muted mt-3">
-                        En proveedores se recomienda trabajar con
-                        <b>compra, pagado y pendiente de pago</b>,
-                        no con "debe" como en clientes.
-                    </div>
-                </div>
+        <!-- RESUMEN DEL DOCUMENTO -->
+        <section class="resumen-grid" aria-label="Resumen del albarán">
+            <article class="resumen-card">
+                <span>Subtotal</span>
+                <strong>{{ (albaran.subtotal ?? 0) | number:'1.2-2' }} €</strong>
+                <small>Importe antes del descuento</small>
+            </article>
+
+            <article class="resumen-card">
+                <span>Descuento total</span>
+                <strong>{{ (albaran.totalDescuento ?? 0) | number:'1.2-2' }} €</strong>
+                <small>Descuentos aplicados a las líneas</small>
+            </article>
+
+            <article class="resumen-card resumen-total">
+                <span>Total del albarán</span>
+                <strong>{{ (albaran.totalImporte ?? 0) | number:'1.2-2' }} €</strong>
+                <small>{{ (albaran.lineas || []).length }} líneas registradas</small>
+            </article>
+        </section>
+
+        <!-- PAGOS: SOLO SI EXISTEN DATOS -->
+        <section class="pagos-resumen" *ngIf="hasResumenPago()">
+            <div>
+                <span>Total compra</span>
+                <strong>{{ getTotalCompra() | number:'1.2-2' }} €</strong>
             </div>
 
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <h5 class="mb-3">Totales del albarán</h5>
-
-                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                        <span>Subtotal</span>
-                        <strong>{{ (albaran.subtotal ?? 0) | number:'1.2-2' }} €</strong>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                        <span>Descuento</span>
-                        <strong>{{ (albaran.totalDescuento ?? 0) | number:'1.2-2' }} €</strong>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center py-2">
-                        <span>Total albarán</span>
-                        <strong>{{ (albaran.totalImporte ?? 0) | number:'1.2-2' }} €</strong>
-                    </div>
-                </div>
+            <div>
+                <span>Total pagado</span>
+                <strong class="importe-pagado">
+                    {{ getTotalPagado() | number:'1.2-2' }} €
+                </strong>
             </div>
-        </div>
-    </div>
 
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body p-4">
-            <h5 class="mb-3">Líneas del albarán</h5>
+            <div>
+                <span>Pendiente de pago</span>
+                <strong class="importe-pendiente">
+                    {{ getPendientePago() | number:'1.2-2' }} €
+                </strong>
+            </div>
+        </section>
+
+        <!-- LÍNEAS -->
+        <section class="panel">
+            <header class="panel-header">
+                <div>
+                    <span class="eyebrow">DETALLE DEL DOCUMENTO</span>
+                    <h2>Productos y conceptos</h2>
+                    <p>Unidades, precios y descuentos de cada línea.</p>
+                </div>
+
+                <span class="contador">
+                    {{ (albaran.lineas || []).length }} líneas
+                </span>
+            </header>
 
             <div class="table-responsive">
-                <table class="table table-hover align-middle albaran-proveedor-table">
-                    <thead class="table-dark">
+                <table class="lineas-table">
+                    <thead>
                         <tr>
                             <th>Tipo</th>
                             <th>Código</th>
                             <th>Descripción</th>
-                            <th class="text-end">Uds</th>
-                            <th class="text-end">Precio</th>
-                            <th class="text-end">Dto %</th>
-                            <th class="text-end">Base</th>
-                            <th class="text-end">Descuento</th>
-                            <th class="text-end">Total</th>
-                            <th class="text-center">Acciones</th>
+                            <th class="numero-col">Unidades</th>
+                            <th class="numero-col">Precio</th>
+                            <th class="numero-col">Dto.</th>
+                            <th class="numero-col">Base</th>
+                            <th class="numero-col">Descuento</th>
+                            <th class="numero-col">Total</th>
+                            <th class="numero-col" *ngIf="canEdit()">Acciones</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         <tr *ngFor="let l of (albaran.lineas || [])">
-                            <td>{{ l.tipo || '-' }}</td>
-                            <td>{{ l.codigo || '-' }}</td>
-                            <td class="text-start col-descripcion">{{ l.descripcion || '-' }}</td>
-                            <td class="text-end">{{ l.unidades ?? 0 }}</td>
-                            <td class="text-end">{{ (l.precio ?? 0) | number:'1.2-2' }} €</td>
-                            <td class="text-end">{{ (l.dtoPct ?? 0) | number:'1.0-2' }}</td>
-                            <td class="text-end">{{ (l.baseLinea ?? 0) | number:'1.2-2' }} €</td>
-                            <td class="text-end">{{ (l.descuentoImporte ?? 0) | number:'1.2-2' }} €</td>
-                            <td class="text-end fw-semibold">{{ (l.totalLinea ?? 0) | number:'1.2-2' }} €</td>
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-outline-danger" (click)="eliminarLinea(l.id)"
-                                    [disabled]="albaran.confirmado">
-                                    🗑️
+                            <td>
+                                <span class="tipo-linea">{{ l.tipo || '—' }}</span>
+                            </td>
+
+                            <td>
+                                <span class="codigo">{{ l.codigo || '—' }}</span>
+                            </td>
+
+                            <td class="descripcion-col">
+                                <strong>{{ l.descripcion || '—' }}</strong>
+                            </td>
+
+                            <td class="numero-col">{{ l.unidades ?? 0 }}</td>
+
+                            <td class="numero-col">
+                                {{ (l.precio ?? 0) | number:'1.2-2' }} €
+                            </td>
+
+                            <td class="numero-col">
+                                <span class="descuento">
+                                    {{ (l.dtoPct ?? 0) | number:'1.0-2' }} %
+                                </span>
+                            </td>
+
+                            <td class="numero-col">
+                                {{ (l.baseLinea ?? 0) | number:'1.2-2' }} €
+                            </td>
+
+                            <td class="numero-col">
+                                {{ (l.descuentoImporte ?? 0) | number:'1.2-2' }} €
+                            </td>
+
+                            <td class="numero-col importe-linea">
+                                {{ (l.totalLinea ?? 0) | number:'1.2-2' }} €
+                            </td>
+
+                            <td class="numero-col" *ngIf="canEdit()">
+                                <button type="button" class="action-btn delete-btn" (click)="eliminarLinea(l.id)"
+                                    [disabled]="isConfirming">
+                                    Eliminar
                                 </button>
                             </td>
                         </tr>
 
                         <tr *ngIf="(albaran.lineas || []).length === 0">
-                            <td colspan="10" class="text-center text-muted">
-                                Este albarán todavía no tiene líneas.
+                            <td [attr.colspan]="canEdit() ? 10 : 9" class="empty-state">
+                                <strong>Este albarán todavía no tiene líneas</strong>
+
+                                <p *ngIf="canEdit()">
+                                    Añade un producto, trabajo o concepto desde el formulario inferior.
+                                </p>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
 
-    <div class="card shadow-sm border-0" *ngIf="canEdit()">
-        <div class="card-body p-4">
-            <h5 class="mb-3">Añadir línea</h5>
+            <footer class="panel-total">
+                <span>Total del documento</span>
+                <strong>{{ (albaran.totalImporte ?? 0) | number:'1.2-2' }} €</strong>
+            </footer>
+        </section>
 
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle nueva-linea-proveedor-table">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Tipo</th>
-                            <th>Código</th>
-                            <th>Descripción</th>
-                            <th>Uds</th>
-                            <th>Precio</th>
-                            <th>Dto %</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <select class="form-select" [(ngModel)]="nuevaLinea.tipo">
-                                    <option value="MANUAL">Manual</option>
-                                    <option value="PRODUCTO">Producto</option>
-                                    <option value="TRABAJO">Trabajo</option>
-                                </select>
-                            </td>
+        <!-- AÑADIR LÍNEA -->
+        <section class="panel" *ngIf="canEdit()">
+            <header class="panel-header">
+                <div>
+                    <span class="eyebrow">NUEVO CONCEPTO</span>
+                    <h2>Añadir línea</h2>
+                    <p>Selecciona el tipo e indica la descripción, unidades y precio.</p>
+                </div>
+            </header>
 
-                            <td>
-                                <input class="form-control" placeholder="Código" [(ngModel)]="nuevaLinea.codigo" />
-                            </td>
+            <form #lineaForm="ngForm" (ngSubmit)="agregarLinea()">
+                <fieldset class="linea-fields" [disabled]="isConfirming">
+                    <label class="field">
+                        <span>Tipo</span>
+                        <select class="form-select" name="tipo" [(ngModel)]="nuevaLinea.tipo" required>
+                            <option value="MANUAL">Manual</option>
+                            <option value="PRODUCTO">Producto</option>
+                            <option value="TRABAJO">Trabajo</option>
+                        </select>
+                    </label>
 
-                            <td>
-                                <input class="form-control" placeholder="Descripción"
-                                    [(ngModel)]="nuevaLinea.descripcion" />
-                            </td>
+                    <label class="field">
+                        <span>Código <small>Opcional</small></span>
+                        <input type="text" class="form-control" name="codigo" placeholder="Referencia"
+                            [(ngModel)]="nuevaLinea.codigo" />
+                    </label>
 
-                            <td>
-                                <input type="number" class="form-control" placeholder="Uds"
-                                    [(ngModel)]="nuevaLinea.unidades" min="1" step="0.01" />
-                            </td>
+                    <label class="field field-descripcion">
+                        <span>Descripción</span>
+                        <input type="text" class="form-control" name="descripcion"
+                            placeholder="Producto, trabajo o concepto" [(ngModel)]="nuevaLinea.descripcion" required />
+                    </label>
 
-                            <td>
-                                <input type="number" class="form-control" placeholder="Precio"
-                                    [(ngModel)]="nuevaLinea.precio" min="0" step="0.01" />
-                            </td>
+                    <label class="field">
+                        <span>Unidades</span>
+                        <input type="number" class="form-control" name="unidades" [(ngModel)]="nuevaLinea.unidades"
+                            min="0.01" step="0.01" required />
+                    </label>
 
-                            <td>
-                                <input type="number" class="form-control" placeholder="Dto"
-                                    [ngModel]="nuevaLinea.dtoPct ?? 0"
-                                    (ngModelChange)="nuevaLinea.dtoPct = ($event ?? 0)" min="0" max="100" step="0.01" />
-                            </td>
+                    <label class="field">
+                        <span>Precio (€)</span>
+                        <input type="number" class="form-control" name="precio" [(ngModel)]="nuevaLinea.precio"
+                            min="0.01" step="0.01" required />
+                    </label>
 
-                            <td>
-                                <button class="btn btn-primary w-100" (click)="agregarLinea()">
-                                    +
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <label class="field">
+                        <span>Descuento (%)</span>
+                        <input type="number" class="form-control" name="descuento" [ngModel]="nuevaLinea.dtoPct ?? 0"
+                            (ngModelChange)="nuevaLinea.dtoPct = ($event ?? 0)" min="0" max="100" step="0.01"
+                            required />
+                    </label>
+                </fieldset>
+
+                <footer class="form-footer">
+                    <div class="linea-preview">
+                        <span>Importe de la nueva línea</span>
+                        <strong>
+                            {{
+                            ((nuevaLinea.unidades || 0) * (nuevaLinea.precio || 0)
+                            * (1 - (nuevaLinea.dtoPct || 0) / 100))
+                            | number:'1.2-2'
+                            }} €
+                        </strong>
+                    </div>
+
+                    <button type="submit" class="action-btn primary-btn" [disabled]="
+              lineaForm.invalid ||
+              !nuevaLinea.descripcion?.trim() ||
+              isConfirming
+            ">
+                        + Añadir línea
+                    </button>
+                </footer>
+            </form>
+        </section>
+
+        <!-- CONFIRMADO -->
+        <div class="confirmado-info" *ngIf="albaran.confirmado">
+            <span class="confirmado-icon" aria-hidden="true">✓</span>
+
+            <div>
+                <strong>Albarán confirmado</strong>
+                <p>Las líneas de este documento ya no se pueden modificar.</p>
             </div>
         </div>
     </div>

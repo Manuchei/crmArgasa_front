@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-
 import { ILlamada } from '../../interfaces/illamda';
 
 @Component({
@@ -19,19 +21,22 @@ import { ILlamada } from '../../interfaces/illamda';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatButtonModule,
   ],
   templateUrl: './dialog-editar-llamada.component.html',
+  styleUrls: ['./dialog-editar-llamada.component.css'],
 })
 export class DialogEditarLlamadaComponent {
   llamada: ILlamada;
+  error = '';
 
   constructor(
     private dialogRef: MatDialogRef<DialogEditarLlamadaComponent>,
-    @Inject(MAT_DIALOG_DATA) data: ILlamada
+    @Inject(MAT_DIALOG_DATA) data: ILlamada,
   ) {
-    // copia para no mutar la lista si cancelas
-    this.llamada = { ...data };
+    this.llamada = {
+      ...data,
+      fecha: data.fecha?.substring(0, 16) || '',
+    };
   }
 
   cancelar(): void {
@@ -39,8 +44,25 @@ export class DialogEditarLlamadaComponent {
   }
 
   guardar(): void {
-    // ✅ normaliza yyyy-MM-ddTHH:mm
-    this.llamada.fecha = this.llamada.fecha?.substring(0, 16);
-    this.dialogRef.close(this.llamada);
+    this.error = '';
+
+    if (!this.llamada.motivo?.trim()) {
+      this.error = 'Indica el motivo de la llamada.';
+      return;
+    }
+
+    if (!this.llamada.fecha) {
+      this.error = 'Selecciona la fecha y la hora.';
+      return;
+    }
+
+    this.dialogRef.close({
+      ...this.llamada,
+      nombre: this.llamada.nombre?.trim() || '',
+      direccion: this.llamada.direccion?.trim() || '',
+      motivo: this.llamada.motivo.trim(),
+      fecha: this.llamada.fecha.substring(0, 16),
+      observaciones: this.llamada.observaciones?.trim() || '',
+    });
   }
 }

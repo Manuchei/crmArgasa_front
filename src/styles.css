@@ -165,3 +165,22 @@ body.tema-electroluga {
     background: #f8fafd;
   }
 }
+
+/* Fondo de las pantallas de Electroluga */
+@media screen {
+  body.tema-electroluga {
+    --fondo-app: #fff0f1;
+    background-color: var(--fondo-app) !important;
+  }
+
+  body.tema-electroluga
+    :is(
+      .dashboard,
+      .dashboard-page,
+      .cliente-detalle-page,
+      .proveedor-detalle-page,
+      .albaran-page
+    ) {
+    background-color: var(--fondo-app) !important;
+  }
+}

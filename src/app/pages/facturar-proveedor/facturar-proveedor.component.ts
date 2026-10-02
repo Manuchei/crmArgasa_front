@@ -6,6 +6,7 @@ import {
   IfacturaProveedor,
   ILineaFacturaProveedor,
 } from '../../interfaces/ifactura-proveedor';
+import { EMPRESAS } from '../../shared/config/empresa-config';
 
 @Component({
   selector: 'app-facturar-proveedor',
@@ -401,5 +402,50 @@ export class FacturarProveedorComponent implements OnChanges {
   private toInputDate(value: any): string {
     if (!value) return '';
     return String(value).slice(0, 10);
+  }
+  get empresaDocumento() {
+    const empresa = String(this.factura?.empresa || '')
+      .trim()
+      .toUpperCase();
+
+    return empresa === 'ELECTROLUGA' || empresa === 'LUGA'
+      ? EMPRESAS.electroluga
+      : EMPRESAS.argasa;
+  }
+
+  get proveedorDocumento(): any {
+    return this.factura?.proveedor ?? {};
+  }
+
+  get nombreProveedorDocumento(): string {
+    const p = this.proveedorDocumento;
+
+    return (
+      p.nombreApellidos ||
+      p.nombreComercial ||
+      [p.nombre, p.apellido].filter(Boolean).join(' ') ||
+      'Proveedor'
+    );
+  }
+
+  editarDesdeListado(f: IfacturaProveedor): void {
+    if (this.loading || f.estado !== 'BORRADOR') return;
+
+    this.loading = true;
+    this.error = null;
+    this.resetVistaFactura();
+
+    this.facturasService.getById(f.id).subscribe({
+      next: (full) => {
+        this.factura = full;
+        this.loading = false;
+        this.iniciarEdicion();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error =
+          err?.error?.message || 'No se pudo cargar la factura para editar.';
+      },
+    });
   }
 }

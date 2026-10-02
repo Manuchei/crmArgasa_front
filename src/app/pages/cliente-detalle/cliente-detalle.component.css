@@ -1253,3 +1253,250 @@
     font-size: 16px;
   }
 }
+/* ALBARANES DE CLIENTES: DISEÑO COMO PROVEEDORES */
+.albaranes-cliente-panel {
+  --albaranes-accent: var(--color-primario, #2563eb);
+  margin-top: 10px;
+  color: #1a2940;
+}
+
+.albaranes-cliente-panel .seccion-header {
+  margin-bottom: 20px;
+}
+
+.albaranes-cliente-panel .seccion-header h2 {
+  margin: 5px 0 7px;
+  font-size: 25px;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+.albaranes-cliente-panel .ficha-eyebrow {
+  color: var(--albaranes-accent);
+}
+
+.albaranes-cliente-panel .seccion-header p,
+.albaranes-create-card p {
+  margin: 0;
+  color: #718096;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.albaranes-create-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 18px;
+  padding: 20px 22px;
+  background: #fff;
+  border: 1px solid #dfe6ef;
+  border-radius: 11px;
+  box-shadow: 0 3px 14px rgb(25 44 72 / 4%);
+}
+
+.albaranes-create-card h3,
+.albaranes-list-heading h3 {
+  margin: 0;
+  color: #1a2940;
+  font-size: 17px;
+  font-weight: 750;
+}
+
+.albaranes-create-card p {
+  margin-top: 6px;
+}
+
+.albaranes-list-card {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #dfe6ef;
+  border-radius: 11px;
+  box-shadow: 0 3px 14px rgb(25 44 72 / 4%);
+}
+
+.albaranes-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #e9edf3;
+}
+
+.albaranes-count {
+  padding: 6px 10px;
+  border-radius: 7px;
+  color: #607188;
+  background: #f3f6fa;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.albaranes-clientes-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+}
+
+.albaranes-clientes-table th {
+  padding: 13px 16px;
+  color: #718096;
+  background: #f8fafd;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.albaranes-clientes-table td {
+  padding: 15px 16px;
+  border-top: 1px solid #edf0f5;
+  color: #53647b;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.albaranes-clientes-table tbody tr:hover {
+  background: #fafbfd;
+}
+
+.albaranes-clientes-table td strong {
+  color: #26384f;
+}
+
+.albaranes-clientes-table .money {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.albaranes-clientes-table .actions-col {
+  text-align: right;
+}
+
+.albaranes-status {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 6px;
+  color: #9a6a19;
+  background: #fff5df;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.albaranes-status.albaranes-status-ok {
+  color: #26734e;
+  background: #eaf7ef;
+}
+
+.albaranes-row-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.albaranes-primary-btn,
+.albaranes-secondary-btn,
+.albaranes-delete-btn {
+  border: 1px solid;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.albaranes-primary-btn {
+  flex-shrink: 0;
+  min-height: 42px;
+  padding: 10px 16px;
+  color: #fff;
+  background: var(--albaranes-accent);
+  border-color: var(--albaranes-accent);
+}
+
+.albaranes-primary-btn:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.albaranes-secondary-btn,
+.albaranes-delete-btn {
+  min-height: 33px;
+  padding: 7px 10px;
+  background: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.albaranes-secondary-btn {
+  color: #53647b;
+  border-color: #dfe6ef;
+}
+
+.albaranes-secondary-btn:hover {
+  background: #f6f8fb;
+  border-color: #b9c5d4;
+}
+
+.albaranes-delete-btn {
+  color: #aa3d46;
+  border-color: #e5eaf1;
+}
+
+.albaranes-delete-btn:hover {
+  background: #fff5f5;
+  border-color: #efb6bd;
+}
+
+.albaranes-cliente-panel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.albaranes-cliente-panel button:focus-visible {
+  outline: 3px solid #8c9bb0;
+  outline-offset: 3px;
+}
+
+.albaranes-empty {
+  padding: 35px 22px;
+  text-align: center;
+}
+
+.albaranes-empty strong {
+  color: #40516a;
+  font-size: 14px;
+}
+
+.albaranes-empty p {
+  margin: 8px 0 0;
+  color: #8492a5;
+  font-size: 12px;
+}
+
+@media (max-width: 650px) {
+  .albaranes-create-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 18px;
+  }
+
+  .albaranes-list-heading {
+    flex-wrap: wrap;
+    padding: 18px;
+  }
+
+  .albaranes-primary-btn {
+    width: 100%;
+  }
+}

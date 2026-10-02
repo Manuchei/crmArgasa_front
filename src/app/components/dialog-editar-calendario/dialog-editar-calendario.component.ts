@@ -1,17 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
 
 export type TipoCalendarioDialog = 'llamadas' | 'tareas' | 'visitas';
 
@@ -36,25 +33,24 @@ export interface DialogEditarCalendarioData {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatButtonModule,
   ],
   templateUrl: './dialog-editar-calendario.component.html',
   styleUrls: ['./dialog-editar-calendario.component.css'],
 })
 export class DialogEditarCalendarioComponent {
   tipo: TipoCalendarioDialog;
-
   id = 0;
 
+  nombre = '';
+  direccion = '';
   titulo = '';
   fecha = '';
   hora = '12:00';
-
   estado: EstadoCalendario = 'pendiente';
-
   observaciones = '';
 
   horasDisponibles: string[] = [];
+  error = '';
 
   constructor(
     private dialogRef: MatDialogRef<DialogEditarCalendarioComponent>,
@@ -66,18 +62,21 @@ export class DialogEditarCalendarioComponent {
     const item = data.item;
 
     this.id = item.id;
-
-    this.titulo = this.tipo === 'llamadas' ? item.motivo : item.titulo;
-
+    this.nombre = item.nombre || '';
+    this.direccion = item.direccion || '';
+    this.titulo = (this.tipo === 'llamadas' ? item.motivo : item.titulo) || '';
     this.fecha = item.fecha?.substring(0, 10) || '';
-
     this.hora = item.fecha?.substring(11, 16) || '12:00';
-
     this.estado = item.estado || 'pendiente';
-
     this.observaciones = item.observaciones || '';
 
     this.generarHoras();
+  }
+
+  get etiqueta(): string {
+    if (this.tipo === 'llamadas') return 'llamada';
+    if (this.tipo === 'tareas') return 'tarea';
+    return 'visita';
   }
 
   private generarHoras(): void {
@@ -91,33 +90,50 @@ export class DialogEditarCalendarioComponent {
       }
     }
 
+    // Conserva también una hora existente fuera de los intervalos habituales.
+    if (/^\d{2}:\d{2}$/.test(this.hora) && !horas.includes(this.hora)) {
+      horas.push(this.hora);
+      horas.sort();
+    }
+
     this.horasDisponibles = horas;
   }
 
   guardar(): void {
-    const fechaCompleta = `${this.fecha}T${this.hora}`;
+    this.error = '';
 
-    // LLAMADAS
-    if (this.tipo === 'llamadas') {
-      this.dialogRef.close({
-        id: this.id,
-        motivo: this.titulo,
-        fecha: fechaCompleta,
-        estado: this.estado,
-        observaciones: this.observaciones,
-        clienteId: this.data.item.clienteId ?? null,
-      });
-
+    if (!this.titulo.trim()) {
+      this.error = 'Indica el motivo de la actividad.';
       return;
     }
 
-    // TAREAS / VISITAS
-    this.dialogRef.close({
+    if (!this.fecha || !this.hora) {
+      this.error = 'Selecciona la fecha y la hora.';
+      return;
+    }
+
+    const resultado = {
+      ...this.data.item,
       id: this.id,
-      titulo: this.titulo,
-      fecha: fechaCompleta,
+      nombre: this.nombre.trim(),
+      direccion: this.direccion.trim(),
+      fecha: `${this.fecha}T${this.hora}`,
       estado: this.estado,
-      observaciones: this.observaciones,
+      observaciones: this.observaciones.trim(),
+    };
+
+    if (this.tipo === 'llamadas') {
+      this.dialogRef.close({
+        ...resultado,
+        motivo: this.titulo.trim(),
+        clienteId: this.data.item.clienteId ?? null,
+      });
+      return;
+    }
+
+    this.dialogRef.close({
+      ...resultado,
+      titulo: this.titulo.trim(),
     });
   }
 

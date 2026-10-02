@@ -12,7 +12,6 @@
 }
 
 /* BOTÓN DE IMPRESIÓN */
-
 .print-toolbar {
   width: 210mm;
   margin: 0 auto 12px;
@@ -23,7 +22,7 @@
   border: 0;
   border-radius: 4px;
   background: #242424;
-  color: #ffffff;
+  color: #fff;
   cursor: pointer;
 }
 
@@ -32,7 +31,7 @@
   width: 210mm;
   margin: 10px auto;
   padding: 12px;
-  background: #ffffff;
+  background: #fff;
 }
 
 .estado-error {
@@ -40,65 +39,59 @@
   color: #9f1919;
 }
 
-/* DOCUMENTO A4 */
-
+/* DOCUMENTO */
 .documento-a4 {
   position: relative;
   width: 210mm;
   min-height: 297mm;
   margin: 0 auto;
   padding: 5mm 13mm 9mm;
-  overflow: visible;
-  background: #ffffff;
+  background: #fff;
   box-shadow: 0 1px 8px rgb(0 0 0 / 20%);
   font-size: 10.5pt;
 }
 
 /* CABECERA */
-
-/* ===========================
-   CABECERA
-=========================== */
-
 .cabecera-documento {
   display: grid;
-  grid-template-columns: 42% 16% 42%;
+  grid-template-columns: minmax(0, 1fr) 28mm minmax(0, 1fr);
   align-items: start;
-  column-gap: 8mm;
-
+  column-gap: 4mm;
   min-height: 65mm;
   margin-bottom: 4mm;
 }
 
 .bloque-emisor,
 .bloque-receptor {
-  position: static;
-  width: 100%;
+  position: relative;
+  min-width: 0;
 }
 
 .logo-argasa {
   display: block;
   width: 64mm;
+  max-width: 100%;
   max-height: 25mm;
-  object-fit: contain;
   margin-bottom: 5mm;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .logo-mielectro {
-  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 47mm;
+  max-width: 100%;
   max-height: 19mm;
   object-fit: contain;
-  margin: 0 0 8mm auto;
+  object-position: right center;
 }
 
 .titulo-documento {
-  position: static;
-  transform: none;
-  margin-top: 6mm;
-
+  margin: 6mm 0 0;
   text-align: center;
-
+  white-space: nowrap;
   font-size: 17pt;
   font-weight: 500;
   letter-spacing: 0.3px;
@@ -110,6 +103,7 @@
   flex-direction: column;
   gap: 1mm;
   line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .datos-receptor {
@@ -123,7 +117,6 @@
 }
 
 /* FRANJA DE DATOS */
-
 .franja-documento {
   display: grid;
   grid-template-columns: 15% 14% 14% 1fr;
@@ -141,7 +134,7 @@
 }
 
 .dato-franja + .dato-franja {
-  border-left: 1px solid rgba(255, 255, 255, 0.65);
+  border-left: 1px solid rgb(255 255 255 / 65%);
 }
 
 .dato-franja strong {
@@ -150,28 +143,28 @@
 
 .dato-franja span {
   margin-top: 1mm;
-  white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip;
   font-size: 9pt;
+  overflow-wrap: anywhere;
 }
+
 .rotulo-descripcion {
-  height: 8mm;
+  min-height: 8mm;
   padding: 2mm 2.5mm 1mm;
-  border-bottom: 1px solid #d96b62;
+  border-bottom: 1px solid #dc776e;
   font-weight: 700;
 }
 
-/* TABLA PRINCIPAL */
-
+/* RECUADRO DE PRODUCTOS */
 .tabla-contenedor {
   position: relative;
-  height: 145mm;
+  display: flex;
+  flex-direction: column;
+  min-height: 125mm;
   margin-top: 6mm;
-  overflow: hidden;
   border: 1px solid #dc776e;
 }
 
+/* MARCA DE AGUA */
 .marca-agua {
   position: absolute;
   z-index: 0;
@@ -186,11 +179,13 @@
   pointer-events: none;
 }
 
+/* TABLA CON FILAS COMPACTAS */
 .tabla-lineas {
   position: relative;
   z-index: 1;
+  flex: 0 0 auto;
   width: 100%;
-  height: 100%;
+  height: auto;
   border-collapse: collapse;
   table-layout: fixed;
   background: transparent;
@@ -223,6 +218,7 @@
 .tabla-lineas th,
 .tabla-lineas td {
   border-right: 1px solid #dc776e;
+  border-bottom: 1px solid #dc776e;
 }
 
 .tabla-lineas th:last-child,
@@ -230,32 +226,20 @@
   border-right: 0;
 }
 
-.tabla-lineas thead {
-  height: 8mm;
-}
-
 .tabla-lineas thead th {
-  padding: 1.5mm 2mm;
-  border-bottom: 1px solid #dc776e;
+  padding: 2mm 1mm;
   text-align: center;
   vertical-align: middle;
   font-size: 10pt;
-}
-
-.tabla-lineas tbody {
-  height: calc(100% - 16mm);
-}
-
-.tabla-lineas tbody tr {
-  height: 8mm;
+  line-height: 1.2;
 }
 
 .tabla-lineas tbody td {
-  padding: 2mm 2mm 1mm;
+  padding: 2mm;
   vertical-align: top;
   background: transparent;
-  line-height: 1.5;
-  border-bottom: 1px solid #dc776e;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .tabla-lineas td.numero {
@@ -265,46 +249,55 @@
 
 .tabla-lineas td.articulo {
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .tabla-lineas .sin-lineas {
-  color: #777777;
+  padding: 3mm;
+  color: #777;
   text-align: center;
 }
 
-.tabla-lineas tfoot {
-  height: 8mm;
-}
-
-.tabla-lineas tbody tr:not(.fila-relleno) {
-  height: 8mm;
-}
-
-.tabla-lineas tbody tr.fila-relleno {
-  height: auto;
-}
-
-.tabla-lineas tbody td {
-  border-bottom: 1px solid #dc776e;
-}
-
-.tabla-lineas tfoot td {
-  padding: 1.5mm 2mm;
+/* FRANJA AL FONDO */
+.subtotal-inferior {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 15% 63% 9% 13%;
+  flex: 0 0 auto;
+  margin-top: auto;
   border-top: 1px solid #dc776e;
-  vertical-align: middle;
+  font-size: 10pt;
+  line-height: 1.25;
 }
 
-.etiqueta-subtotal {
-  text-align: right;
-  font-weight: 700;
+.subtotal-inferior > span,
+.subtotal-inferior > strong {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  padding: 2mm;
+}
+
+.subtotal-unidades {
+  border-right: 1px solid #dc776e;
+  white-space: nowrap;
+}
+
+.subtotal-inferior strong {
+  border-left: 1px solid #dc776e;
+  border-right: 1px solid #dc776e;
+}
+
+.subtotal-importe {
+  white-space: nowrap;
 }
 
 /* TOTALES */
-
 .resumen-totales {
   display: grid;
   grid-template-columns: 1fr 1fr 1.15fr;
-  min-height: 17mm;
   border: 1px solid #dc776e;
   border-top: 0;
 }
@@ -313,6 +306,9 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  gap: 2mm;
+  min-width: 0;
+  min-height: 17mm;
   padding: 2.5mm 2mm 2mm;
   border-right: 1px solid #dc776e;
   text-align: center;
@@ -327,7 +323,10 @@
 }
 
 .caja-total span {
+  display: block;
+  width: 100%;
   text-align: right;
+  white-space: nowrap;
   font-size: 10.5pt;
 }
 
@@ -343,29 +342,7 @@
   font-size: 13pt;
 }
 
-/* DATOS LOGÍSTICOS */
-
-.datos-logisticos {
-  display: grid;
-  grid-template-columns: 21% 29% 10% 10%;
-  column-gap: 7mm;
-  margin-top: 5mm;
-  padding: 0 2mm 2mm;
-  border-bottom: 1px solid #dc776e;
-}
-
-.datos-logisticos > div {
-  display: flex;
-  flex-direction: column;
-  gap: 2mm;
-}
-
-.datos-logisticos strong {
-  font-size: 10pt;
-}
-
 /* PIE */
-
 .pie-documento {
   margin-top: 6mm;
   font-family: "Courier New", Courier, monospace;
@@ -387,7 +364,6 @@
 }
 
 /* IMPRESIÓN */
-
 @media print {
   @page {
     size: A4 portrait;
@@ -395,8 +371,9 @@
   }
 
   :host {
+    min-height: 0;
     padding: 0;
-    background: #ffffff;
+    background: #fff;
   }
 
   .no-print {
@@ -414,21 +391,15 @@
     -webkit-print-color-adjust: exact;
   }
 
-  .tabla-contenedor {
-    height: 125mm;
-
-    overflow: hidden;
+  .tabla-lineas thead {
+    display: table-header-group;
   }
 
-  .tabla-lineas {
-    height: 100%;
-  }
-
-  .tabla-lineas tbody {
-    height: calc(100% - 16mm);
-  }
-
-  .tabla-lineas tbody tr.fila-relleno {
-    height: auto;
+  .tabla-lineas tbody tr,
+  .subtotal-inferior,
+  .resumen-totales,
+  .pie-documento {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

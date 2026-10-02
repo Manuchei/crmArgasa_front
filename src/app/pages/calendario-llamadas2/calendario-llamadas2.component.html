@@ -1,7 +1,7 @@
 <div class="calendario-page">
   <header class="page-heading">
     <div>
-      <p class="eyebrow">NOVEXAPP / ORGANIZACIÓN</p>
+      <p class="eyebrow">NOVEXAPP / CALENDARIO</p>
       <h1>Calendario</h1>
       <p class="page-description">
         Planifica las llamadas, tareas y visitas de tu equipo.
@@ -301,7 +301,7 @@
               </div>
 
               <mat-form-field appearance="outline">
-                <mat-label>Título</mat-label>
+                <mat-label>Motivo</mat-label>
                 <input matInput [(ngModel)]="nuevoTitulo" name="nuevoTitulo" placeholder="Descripción de la actividad"
                   required />
               </mat-form-field>
@@ -426,7 +426,7 @@
                 <th>Fecha</th>
                 <th>Nombre</th>
                 <th>Dirección</th>
-                <th>{{ tipoCalendario === 'llamadas' ? 'Motivo' : 'Título' }}</th>
+                <th>Motivo</th>
                 <th>Observaciones</th>
                 <th class="th-acciones">Acciones</th>
               </tr>

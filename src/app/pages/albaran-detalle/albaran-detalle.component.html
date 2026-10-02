@@ -1,119 +1,231 @@
-<div class="albaran-cliente-page container-fluid mt-4" *ngIf="albaran">
-  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 detalle-header">
-    <div class="header-info">
-      <h3 class="mb-1 text-break">Albarán #{{ albaran.id }} - {{ albaran.empresa }}</h3>
-      <p class="mb-1"><b>Fecha:</b> {{ albaran.fechaEmision }}</p>
-      <p class="mb-0 text-break">
-        <b>Cliente:</b> {{ albaran.nombreApellidos }}
-        <span *ngIf="albaran.nombreComercial"> ({{ albaran.nombreComercial }})</span>
-      </p>
-    </div>
+<div class="albaran-page" *ngIf="albaran">
+  <div class="albaran-shell">
 
-    <div class="header-actions d-flex gap-2 flex-wrap">
-      <button class="btn btn-secondary" (click)="volverACliente()">
-        ⬅ Volver al cliente
+    <!-- CABECERA -->
+    <header class="albaran-header">
+      <div class="albaran-heading">
+        <button type="button" class="volver-link" (click)="volverACliente()">
+          ← Volver al cliente
+        </button>
+
+        <span class="eyebrow">NOVEXAPP / ALBARÁN DE CLIENTE</span>
+
+        <div class="albaran-title-row">
+          <h1>Albarán #{{ albaran.id }}</h1>
+
+          <span class="estado" [class.estado-confirmado]="albaran.confirmado">
+            {{ albaran.confirmado ? 'Confirmado' : 'Pendiente de confirmar' }}
+          </span>
+        </div>
+
+        <div class="albaran-meta">
+          <span>{{ albaran.empresa }}</span>
+
+          <span>
+            Fecha:
+            {{ albaran.fechaEmision
+            ? (albaran.fechaEmision | date:'dd/MM/yyyy')
+            : '—' }}
+          </span>
+        </div>
+      </div>
+
+      <button type="button" class="action-btn primary-btn confirmar-btn" (click)="confirmar()"
+        [disabled]="albaran.confirmado || isConfirming">
+        {{ isConfirming
+        ? 'Confirmando…'
+        : (albaran.confirmado ? 'Albarán confirmado' : 'Confirmar albarán') }}
       </button>
+    </header>
 
-      <button class="btn btn-success" (click)="confirmar()" [disabled]="albaran.confirmado || isConfirming">
-        ✅ Confirmar
+    <!-- CLIENTE -->
+    <section class="cliente-card">
+      <div class="cliente-icon" aria-hidden="true">CL</div>
+
+      <div class="cliente-info">
+        <span class="eyebrow">CLIENTE</span>
+        <h2>{{ albaran.nombreApellidos || 'Cliente' }}</h2>
+        <p *ngIf="albaran.nombreComercial">
+          {{ albaran.nombreComercial }}
+        </p>
+      </div>
+
+      <button type="button" class="action-btn secondary-btn" (click)="volverACliente()">
+        Ver ficha del cliente
       </button>
+    </section>
+
+    <!-- RESUMEN -->
+    <section class="resumen-grid" aria-label="Resumen del albarán">
+      <article class="resumen-card">
+        <span>Subtotal</span>
+        <strong>{{ (albaran.subtotal ?? 0) | number:'1.2-2' }} €</strong>
+        <small>Importe antes del descuento</small>
+      </article>
+
+      <article class="resumen-card">
+        <span>Descuento total</span>
+        <strong>{{ (albaran.totalDescuento ?? 0) | number:'1.2-2' }} €</strong>
+        <small>Descuentos aplicados a las líneas</small>
+      </article>
+
+      <article class="resumen-card resumen-total">
+        <span>Total del albarán</span>
+        <strong>{{ (albaran.totalImporte ?? 0) | number:'1.2-2' }} €</strong>
+        <small>{{ (albaran.lineas || []).length }} líneas registradas</small>
+      </article>
+    </section>
+
+    <!-- LÍNEAS -->
+    <section class="panel">
+      <header class="panel-header">
+        <div>
+          <span class="eyebrow">DETALLE DEL DOCUMENTO</span>
+          <h2>Productos y conceptos</h2>
+          <p>Unidades, precios y descuentos de cada línea.</p>
+        </div>
+
+        <span class="contador">
+          {{ (albaran.lineas || []).length }} líneas
+        </span>
+      </header>
+
+      <div class="table-responsive">
+        <table class="lineas-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Descripción</th>
+              <th class="numero-col">Unidades</th>
+              <th class="numero-col">Precio</th>
+              <th class="numero-col">Dto.</th>
+              <th class="numero-col">Total</th>
+              <th class="numero-col" *ngIf="!albaran.confirmado">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let l of (albaran.lineas || [])">
+              <td>
+                <span class="codigo">{{ l.codigo || '—' }}</span>
+              </td>
+
+              <td class="descripcion-col">
+                <strong>{{ l.descripcion }}</strong>
+              </td>
+
+              <td class="numero-col">{{ l.unidades ?? 0 }}</td>
+
+              <td class="numero-col">
+                {{ (l.precio ?? 0) | number:'1.2-2' }} €
+              </td>
+
+              <td class="numero-col">
+                <span class="descuento">
+                  {{ (l.dtoPct ?? 0) | number:'1.0-2' }} %
+                </span>
+              </td>
+
+              <td class="numero-col importe-linea">
+                {{ (l.totalLinea ?? 0) | number:'1.2-2' }} €
+              </td>
+
+              <td class="numero-col" *ngIf="!albaran.confirmado">
+                <button type="button" class="action-btn delete-btn" (click)="eliminarLinea(l.id)"
+                  [disabled]="isConfirming">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="(albaran.lineas || []).length === 0">
+              <td [attr.colspan]="albaran.confirmado ? 6 : 7" class="empty-state">
+                <strong>Este albarán todavía no tiene líneas</strong>
+                <p>Añade un producto o concepto desde el formulario inferior.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="panel-total">
+        <span>Total del documento</span>
+        <strong>{{ (albaran.totalImporte ?? 0) | number:'1.2-2' }} €</strong>
+      </footer>
+    </section>
+
+    <!-- AÑADIR LÍNEA -->
+    <section class="panel" *ngIf="!albaran.confirmado">
+      <header class="panel-header">
+        <div>
+          <span class="eyebrow">NUEVO CONCEPTO</span>
+          <h2>Añadir línea</h2>
+          <p>Indica la descripción, las unidades y el precio.</p>
+        </div>
+      </header>
+
+      <form #lineaForm="ngForm" (ngSubmit)="agregarLinea()">
+        <fieldset class="linea-fields" [disabled]="isConfirming">
+          <label class="field">
+            <span>Código <small>Opcional</small></span>
+            <input type="text" class="form-control" name="codigo" placeholder="Referencia"
+              [(ngModel)]="nuevaLinea.codigo" />
+          </label>
+
+          <label class="field field-descripcion">
+            <span>Descripción</span>
+            <input type="text" class="form-control" name="descripcion" placeholder="Producto o concepto del albarán"
+              [(ngModel)]="nuevaLinea.descripcion" required />
+          </label>
+
+          <label class="field">
+            <span>Unidades</span>
+            <input type="number" class="form-control" name="unidades" [(ngModel)]="nuevaLinea.unidades" min="0.01"
+              step="0.01" required />
+          </label>
+
+          <label class="field">
+            <span>Precio (€)</span>
+            <input type="number" class="form-control" name="precio" [(ngModel)]="nuevaLinea.precio" min="0.01"
+              step="0.01" required />
+          </label>
+
+          <label class="field">
+            <span>Descuento (%)</span>
+            <input type="number" class="form-control" name="descuento" [ngModel]="nuevaLinea.dtoPct ?? 0"
+              (ngModelChange)="nuevaLinea.dtoPct = ($event ?? 0)" min="0" max="100" step="0.01" required />
+          </label>
+        </fieldset>
+
+        <footer class="form-footer">
+          <div class="linea-preview">
+            <span>Importe de la nueva línea</span>
+            <strong>
+              {{
+              ((nuevaLinea.unidades || 0) * (nuevaLinea.precio || 0)
+              * (1 - (nuevaLinea.dtoPct || 0) / 100))
+              | number:'1.2-2'
+              }} €
+            </strong>
+          </div>
+
+          <button type="submit" class="action-btn primary-btn" [disabled]="
+              lineaForm.invalid ||
+              !nuevaLinea.descripcion?.trim() ||
+              isConfirming
+            ">
+            + Añadir línea
+          </button>
+        </footer>
+      </form>
+    </section>
+
+    <div class="confirmado-info" *ngIf="albaran.confirmado">
+      <span class="confirmado-icon" aria-hidden="true">✓</span>
+      <div>
+        <strong>Albarán confirmado</strong>
+        <p>Las líneas de este documento ya no se pueden modificar.</p>
+      </div>
     </div>
-  </div>
-
-  <hr class="my-4" />
-
-  <h5>Líneas</h5>
-
-  <div class="table-responsive">
-    <table class="table table-striped text-center align-middle shadow-sm albaran-table">
-      <thead class="table-dark">
-        <tr>
-          <th>Código</th>
-          <th>Descripción</th>
-          <th>Uds</th>
-          <th>Precio</th>
-          <th>Dto %</th>
-          <th>Total</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let l of (albaran.lineas || [])">
-          <td>{{ l.codigo || '-' }}</td>
-          <td class="text-start col-descripcion">{{ l.descripcion }}</td>
-          <td>{{ l.unidades ?? 0 }}</td>
-          <td>{{ (l.precio ?? 0) | number:'1.2-2' }} €</td>
-          <td>{{ (l.dtoPct ?? 0) | number:'1.0-2' }}</td>
-          <td>{{ (l.totalLinea ?? 0) | number:'1.2-2' }} €</td>
-          <td>
-            <button class="btn btn-sm btn-danger" (click)="eliminarLinea(l.id)" [disabled]="albaran.confirmado">
-              🗑️
-            </button>
-          </td>
-        </tr>
-
-        <tr *ngIf="(albaran.lineas || []).length === 0">
-          <td colspan="7" class="text-muted">Sin líneas todavía.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="text-end fw-bold mt-3 totales-box">
-    <p>Subtotal: {{ (albaran.subtotal ?? 0) | number:'1.2-2' }} €</p>
-    <p>Descuento: {{ (albaran.totalDescuento ?? 0) | number:'1.2-2' }} €</p>
-    <p>Total: {{ (albaran.totalImporte ?? 0) | number:'1.2-2' }} €</p>
-  </div>
-
-  <hr class="my-4" />
-
-  <h6>Añadir línea</h6>
-
-  <div class="table-responsive">
-    <table class="table table-bordered align-middle nueva-linea-table">
-      <thead class="table-light">
-        <tr>
-          <th>Código</th>
-          <th>Descripción</th>
-          <th>Uds</th>
-          <th>Precio</th>
-          <th>Dto %</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>
-            <input class="form-control" placeholder="Código" [(ngModel)]="nuevaLinea.codigo" />
-          </td>
-
-          <td>
-            <input class="form-control" placeholder="Descripción" [(ngModel)]="nuevaLinea.descripcion" />
-          </td>
-
-          <td>
-            <input type="number" class="form-control" placeholder="Uds" [(ngModel)]="nuevaLinea.unidades" min="0"
-              step="0.01" />
-          </td>
-
-          <td>
-            <input type="number" class="form-control" placeholder="Precio" [(ngModel)]="nuevaLinea.precio" min="0"
-              step="0.01" />
-          </td>
-
-          <td>
-            <input type="number" class="form-control" placeholder="Dto" [ngModel]="nuevaLinea.dtoPct ?? 0"
-              (ngModelChange)="nuevaLinea.dtoPct = ($event ?? 0)" min="0" max="100" step="0.01" />
-          </td>
-
-          <td>
-            <button class="btn btn-primary w-100" (click)="agregarLinea()" [disabled]="albaran.confirmado">
-              +
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </div>
