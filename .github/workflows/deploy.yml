@@ -2,56 +2,119 @@ name: Deploy Frontend
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: novexapp-frontend-production
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Descargar código
+        uses: actions/checkout@v5
         with:
-          node-version: 20
+          persist-credentials: false
+
+      - name: Preparar Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
           cache: npm
 
-      - name: Install dependencies
+      - name: Instalar dependencias
         run: npm ci
 
-      - name: Build Angular
+      - name: Compilar Angular
         run: npm run build -- --configuration production
 
-      - name: Clean remote browser folder
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            mkdir -p /var/www/crm/frontend/browser
-            rm -rf /var/www/crm/frontend/browser/*
+      - name: Preparar paquete
+        run: |
+          set -euo pipefail
+          test -s dist/empresa.crm/browser/index.html
+          test -s dist/empresa.crm/browser/custom-sw.js
+          tar -czf frontend.tar.gz -C dist/empresa.crm/browser .
 
-      - name: Copy browser build to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "dist/empresa.crm/browser/*"
-          target: "/var/www/crm/frontend/browser"
-          strip_components: 3
+      - name: Configurar SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy_key ~/.ssh/known_hosts
 
-      - name: Fix permissions and reload Apache
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            sudo chown -R www-data:www-data /var/www/crm/frontend
-            sudo chmod -R 755 /var/www/crm/frontend
-            sudo systemctl reload apache2
+      - name: Subir y activar versión
+        env:
+          DEPLOY_HOST: ${{ secrets.HOST }}
+          DEPLOY_USER: ${{ secrets.USERNAME }}
+        run: |
+          set -euo pipefail
+          version="frontend-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          destino="${DEPLOY_USER}@${DEPLOY_HOST}"
+
+          scp -i ~/.ssh/deploy_key \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 \
+            frontend.tar.gz \
+            "${destino}:/var/www/novexapp-releases/${version}.tar.gz"
+
+          ssh -i ~/.ssh/deploy_key \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 \
+            "$destino" "bash -s -- $version" <<'REMOTE'
+          set -Eeuo pipefail
+          base=/var/www/novexapp-releases
+          version="$1"
+
+          exec 9>"$base/.deploy.lock"
+          flock -n 9
+
+          anterior=$(readlink -f "$base/current")
+          test -s "$anterior/index.html"
+          test ! -e "$base/$version"
+          mkdir "$base/$version"
+          tar -xzf "$base/$version.tar.gz" -C "$base/$version"
+          chmod -R a+rX "$base/$version"
+          test -s "$base/$version/index.html"
+          test -s "$base/$version/custom-sw.js"
+
+          activar() {
+            ln -sfn "$1" "$base/current.next"
+            mv -Tf "$base/current.next" "$base/current"
+          }
+
+          recuperar() {
+            trap - ERR
+            activar "$anterior"
+            echo "Comprobación fallida: versión anterior restaurada"
+            exit 1
+          }
+
+          trap recuperar ERR
+          activar "$base/$version"
+
+          respuesta=$(mktemp)
+          curl --fail --silent --show-error --max-time 15 \
+            --resolve novexapp.es:443:127.0.0.1 \
+            https://novexapp.es/index.html -o "$respuesta"
+          cmp "$base/$version/index.html" "$respuesta"
+
+          trap - ERR
+          rm -f "$respuesta" "$base/$version.tar.gz"
+          echo "Despliegue correcto: $version"
+          REMOTE
+
+      - name: Eliminar clave temporal
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
