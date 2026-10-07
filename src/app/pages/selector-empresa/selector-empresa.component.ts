@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+
+import { EmpresaService, Empresa } from '../../services/empresa.service';
 
 @Component({
   selector: 'app-selector-empresa',
@@ -17,13 +18,15 @@ export class SelectorEmpresaComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Limpia solo el estado en memoria
+    // Limpia la empresa anterior en memoria y almacenamiento.
     this.empresaService.clearEmpresa();
   }
 
-  seleccionarEmpresa(empresa: Empresa) {
-  console.log('Empresa seleccionada:', empresa);
-  this.empresaService.setEmpresa(empresa);
-  this.router.navigateByUrl('/app/dashboard');
-}
+  seleccionarEmpresa(empresa: Empresa): void {
+    this.empresaService.setEmpresa(empresa);
+
+    // El guard del dashboard resuelve el destino según el rol.
+    // ADMIN y DEVELOPER permanecen en el dashboard normal.
+    this.router.navigateByUrl('/app/dashboard');
+  }
 }

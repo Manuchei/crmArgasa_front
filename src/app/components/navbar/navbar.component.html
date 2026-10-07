@@ -2,19 +2,16 @@
   <nav class="novex-nav" aria-label="Navegación principal">
 
     <span class="novex-brand" aria-label="NovexApp">
-  <img
-    src="assets/logos/novexapp-icon.png"
-    alt=""
-    class="novex-icon"
-  />
+      <img src="assets/logos/novexapp-icon.png" alt="" class="novex-icon" />
 
-  <span class="novex-wordmark">
-    Novex<span class="brand-app">App</span>
-  </span>
-</span>
+      <span class="novex-wordmark">
+        Novex<span class="brand-app">App</span>
+      </span>
+    </span>
 
     <button class="mobile-toggle" type="button" aria-controls="novex-navigation" [attr.aria-expanded]="menuOpen"
       [attr.aria-label]="menuOpen ? 'Cerrar navegación' : 'Abrir navegación'" (click)="toggleMenu($event)">
+
       <span class="hamburger" aria-hidden="true">
         <span></span>
         <span></span>
@@ -23,6 +20,7 @@
     </button>
 
     <div id="novex-navigation" class="navigation-content" [class.is-open]="menuOpen">
+
       <div class="navigation-links">
 
         <a *ngIf="canInicio()" class="nav-link" [routerLink]="rutaInicio" routerLinkActive="is-active"
@@ -31,13 +29,16 @@
         </a>
 
         <div *ngFor="let grupo of grupos; trackBy: trackGrupo" class="nav-dropdown" routerLinkActive="is-active-group">
+
           <button class="nav-link dropdown-trigger" type="button" [attr.aria-expanded]="desplegable === grupo.id"
             [attr.aria-controls]="'panel-' + grupo.id" (click)="toggleDesplegable(grupo.id, $event)">
+
             {{ grupo.texto }}
             <span class="chevron" aria-hidden="true"></span>
           </button>
 
           <div *ngIf="desplegable === grupo.id" class="dropdown-panel" [id]="'panel-' + grupo.id">
+
             <span class="panel-label">{{ grupo.texto }}</span>
 
             <a *ngFor="let enlace of grupo.enlaces; trackBy: trackEnlace" class="dropdown-link"
@@ -54,13 +55,16 @@
         </a>
 
         <div *ngIf="canInformes()" class="nav-dropdown" routerLinkActive="is-active-group">
+
           <button class="nav-link dropdown-trigger" type="button" aria-controls="panel-analisis"
             [attr.aria-expanded]="desplegable === 'analisis'" (click)="toggleDesplegable('analisis', $event)">
+
             Análisis
             <span class="chevron" aria-hidden="true"></span>
           </button>
 
           <div *ngIf="desplegable === 'analisis'" id="panel-analisis" class="dropdown-panel">
+
             <span class="panel-label">Análisis</span>
 
             <a class="dropdown-link" routerLink="/app/informes" routerLinkActive="is-active"
@@ -69,6 +73,13 @@
             </a>
           </div>
         </div>
+
+        <!-- Exclusivo para DEVELOPER -->
+        <a *ngIf="auth.hasRole('DEVELOPER')" class="nav-link" routerLink="/app/usuarios" routerLinkActive="is-active"
+          ariaCurrentWhenActive="page" (click)="closeMenu()">
+          Usuarios
+        </a>
+
       </div>
 
       <div class="navigation-actions">
@@ -76,6 +87,7 @@
         <div class="nav-dropdown company-dropdown">
           <button class="company-button" type="button" aria-controls="panel-empresa"
             [attr.aria-expanded]="desplegable === 'empresa'" (click)="toggleDesplegable('empresa', $event)">
+
             <span class="company-dot" aria-hidden="true"></span>
 
             <span class="company-text">
@@ -87,6 +99,7 @@
           </button>
 
           <div *ngIf="desplegable === 'empresa'" id="panel-empresa" class="dropdown-panel align-right">
+
             <span class="panel-label">Entorno de trabajo</span>
 
             <div class="company-summary">
@@ -107,18 +120,23 @@
           <button class="account-button" type="button" aria-controls="panel-cuenta"
             [attr.aria-expanded]="desplegable === 'cuenta'" aria-label="Abrir opciones de mi cuenta"
             (click)="toggleDesplegable('cuenta', $event)">
+
             <span class="user-avatar" aria-hidden="true">
               {{ inicialUsuario }}
             </span>
+
             <span class="chevron" aria-hidden="true"></span>
           </button>
 
           <div *ngIf="desplegable === 'cuenta'" id="panel-cuenta" class="dropdown-panel account-panel align-right">
+
             <div class="account-summary">
               <span class="panel-label">Mi cuenta</span>
+
               <strong class="account-email">
                 {{ usuario?.email || 'Usuario' }}
               </strong>
+
               <span class="account-role">{{ nombreRol }}</span>
             </div>
 

@@ -153,12 +153,23 @@ export class AuthService {
   }
 
   hasRole(...roles: string[]): boolean {
-    const rol = (this.getRol() ?? '').toUpperCase().trim();
+    const rolActual = (this.getRol() ?? '')
+      .trim()
+      .toUpperCase()
+      .replace(/^ROLE_/, '');
 
     return roles.some((role) => {
-      const normalizado = role.toUpperCase().trim();
+      const requerido = role
+        .trim()
+        .toUpperCase()
+        .replace(/^ROLE_/, '');
 
-      return rol === normalizado || rol === `ROLE_${normalizado}`;
+      // Developer también cumple cualquier permiso de ADMIN.
+      if (rolActual === 'DEVELOPER' && requerido === 'ADMIN') {
+        return true;
+      }
+
+      return rolActual === requerido;
     });
   }
 

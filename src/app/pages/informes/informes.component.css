@@ -1,6 +1,7 @@
 :host {
   display: block;
   --report-accent: var(--color-primario, #d71920);
+  background: transparent;
   color: #24334b;
 }
 
@@ -8,7 +9,7 @@
   width: 100%;
   min-height: 100%;
   padding: 30px 28px 42px;
-  background: #f5f7fb;
+  background: transparent;
 }
 
 .informes-shell {

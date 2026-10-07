@@ -6,16 +6,18 @@ export const dashboardRedirectGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  // TRANSPORTISTA -> rutas
-  if (auth.hasRole('TRANSPORTISTA') && !auth.hasRole('ADMIN')) {
+  // ADMIN y DEVELOPER entran al dashboard normal.
+  if (auth.hasRole('ADMIN')) {
+    return true;
+  }
+
+  if (auth.hasRole('TRANSPORTISTA')) {
     return router.parseUrl('/app/rutas');
   }
 
-  // USER -> dashboard user
-  if (auth.hasRole('USER') && !auth.hasRole('ADMIN')) {
+  if (auth.hasRole('USER')) {
     return router.parseUrl('/app/dashboard-user');
   }
 
-  // ADMIN -> dashboard normal
-  return true;
+  return router.parseUrl('/login');
 };

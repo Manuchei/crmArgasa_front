@@ -838,3 +838,15 @@
     width: 100%;
   }
 }
+/* Dejar visible el fondo de la empresa, igual que en Clientes */
+:host {
+  display: block;
+  background: transparent !important;
+}
+
+.calendario-page {
+  background: transparent !important;
+  background-image: none !important;
+  border: none;
+  box-shadow: none;
+}

@@ -361,3 +361,11 @@ textarea.form-control {
     width: 100%;
   }
 }
+
+@media screen {
+  :host,
+  :host > :first-child,
+  .proveedor-form-page {
+    background: transparent !important;
+  }
+}

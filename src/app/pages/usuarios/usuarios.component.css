@@ -1,0 +1,258 @@
+:host {
+  display: block;
+}
+
+.usuarios-page {
+  max-width: 1280px;
+  margin: 24px auto;
+  padding: 0 24px;
+  color: #243247;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  color: #64748b;
+}
+
+h1 {
+  margin: 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+h2 {
+  margin: 0 0 20px;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.page-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tabs button {
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 12px 18px;
+  background: transparent;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.tabs button.active {
+  color: #243247;
+  border-bottom-color: #243247;
+}
+
+.tabs button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.panel,
+.usuario-form {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+.usuario-form {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.form-description {
+  margin: 0 0 20px;
+  color: #64748b;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.form-description strong {
+  color: #243247;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.password-full-width {
+  grid-column: 1 / -1;
+  max-width: 640px;
+}
+
+label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+small {
+  display: block;
+  margin-top: 7px;
+  color: #64748b;
+}
+
+.password-field {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.password-field .form-control {
+  flex: 1;
+  min-width: 0;
+}
+
+.password-field button {
+  flex-shrink: 0;
+  min-width: 84px;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.table th,
+.table td {
+  padding: 16px;
+  vertical-align: middle;
+}
+
+.table td {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.rol-badge {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: #eef2f7;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mi-cuenta {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.row-actions button {
+  white-space: nowrap;
+}
+
+.panel-description {
+  margin: 0;
+  padding: 20px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.fecha {
+  white-space: nowrap;
+}
+
+.detalle {
+  min-width: 240px;
+  max-width: 480px;
+}
+
+.empty-state {
+  padding: 32px !important;
+  text-align: center;
+  color: #64748b;
+}
+
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .usuarios-page {
+    margin: 16px auto;
+    padding: 0 12px;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .usuario-form {
+    padding: 18px;
+  }
+
+  .pagination-bar {
+    justify-content: center;
+  }
+}
+
+/* Argasa: azul */
+:host-context(.tema-argasa) .eyebrow {
+  color: #1765c1;
+}
+
+/* Electroluga: rojo corporativo */
+:host-context(.tema-electroluga) .eyebrow {
+  color: #e30613;
+}

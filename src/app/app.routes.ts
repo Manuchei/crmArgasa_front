@@ -59,6 +59,7 @@ export const routes: Routes = [
   // =========================
   // 🧾 ALBARÁN ARGASA
   // =========================
+
   {
     path: 'imprimir/albaran/:id',
     loadComponent: () =>
@@ -141,6 +142,15 @@ export const routes: Routes = [
     canActivateChild: [authGuard, empresaChildGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+      {
+        path: 'usuarios',
+        loadComponent: () =>
+          import('./pages/usuarios/usuarios.component').then(
+            (m) => m.UsuariosComponent,
+          ),
+        canActivate: [roleGuard(['DEVELOPER'])],
+      },
 
       {
         path: 'dashboard',

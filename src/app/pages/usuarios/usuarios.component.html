@@ -1,0 +1,250 @@
+<main class="usuarios-page">
+
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">NOVEXAPP / USUARIOS</span>
+      <h1>Gestión de usuarios</h1>
+      <p>Administra las cuentas y consulta la actividad del CRM.</p>
+    </div>
+
+    <button class="btn btn-primary" type="button" [disabled]="guardando || cargando" (click)="abrirFormulario()">
+      Crear usuario
+    </button>
+  </header>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+
+  <div *ngIf="mensaje" class="alert alert-success" role="status">
+    {{ mensaje }}
+  </div>
+
+  <nav class="tabs" aria-label="Gestión de usuarios">
+    <button type="button" [class.active]="tab === 'usuarios'" [disabled]="guardando || cargando"
+      (click)="cambiarTab('usuarios')">
+      Usuarios
+    </button>
+
+    <button type="button" [class.active]="tab === 'actividad'" [disabled]="guardando || cargando"
+      (click)="cambiarTab('actividad')">
+      Registro de cambios y uso
+    </button>
+  </nav>
+
+  <form *ngIf="formularioAbierto && tab === 'usuarios'" class="usuario-form" #usuarioForm="ngForm"
+    (ngSubmit)="guardar()">
+
+    <h2>
+      {{
+      soloPassword
+      ? 'Restablecer contraseña'
+      : editandoId === null
+      ? 'Crear usuario'
+      : 'Modificar usuario'
+      }}
+    </h2>
+
+    <p *ngIf="soloPassword" class="form-description">
+      Establece una nueva contraseña para
+      <strong>{{ datos.nombre }}</strong>
+      ({{ datos.email }}).
+      El cambio quedará registrado en el historial.
+    </p>
+
+    <div class="form-grid">
+
+      <ng-container *ngIf="!soloPassword">
+
+        <div>
+          <label for="nombre">Nombre</label>
+
+          <input id="nombre" name="nombre" class="form-control" [(ngModel)]="datos.nombre" [readonly]="guardando"
+            required maxlength="120">
+        </div>
+
+        <div>
+          <label for="email">Email</label>
+
+          <input id="email" name="email" class="form-control" type="email" [(ngModel)]="datos.email"
+            [readonly]="editandoMiCuenta() || guardando" required email maxlength="254">
+        </div>
+
+        <div>
+          <label for="rol">Rol</label>
+
+          <select id="rol" name="rol" class="form-select" [(ngModel)]="datos.rol"
+            [disabled]="editandoMiCuenta() || guardando" required>
+            <option value="USER">Usuario</option>
+            <option value="ADMIN">Administrador</option>
+            <option value="TRANSPORTISTA">Transportista</option>
+            <option value="DEVELOPER">Developer</option>
+          </select>
+        </div>
+
+      </ng-container>
+
+      <div [class.password-full-width]="soloPassword">
+        <label for="password">
+          {{ editandoId === null ? 'Contraseña' : 'Nueva contraseña' }}
+        </label>
+
+        <div class="password-field">
+          <input id="password" name="password" class="form-control" [type]="mostrarPassword ? 'text' : 'password'"
+            autocomplete="new-password" [(ngModel)]="datos.password" [readonly]="guardando"
+            [required]="editandoId === null || soloPassword" minlength="12" maxlength="72"
+            aria-describedby="password-ayuda">
+
+          <button class="btn btn-outline-secondary" type="button" aria-controls="password" [attr.aria-label]="
+              mostrarPassword
+                ? 'Ocultar contraseña'
+                : 'Mostrar contraseña'
+            " [attr.aria-pressed]="mostrarPassword" (click)="mostrarPassword = !mostrarPassword">
+            {{ mostrarPassword ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
+
+        <small id="password-ayuda">
+          Mínimo 12 caracteres y máximo 72 bytes.
+          <span *ngIf="editandoId !== null && !soloPassword">
+            Déjala vacía para conservar la contraseña actual.
+          </span>
+        </small>
+      </div>
+
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit" [disabled]="!usuarioForm.valid || guardando || cargando">
+        {{
+        guardando
+        ? 'Guardando…'
+        : soloPassword
+        ? 'Restablecer contraseña'
+        : 'Guardar usuario'
+        }}
+      </button>
+
+      <button class="btn btn-outline-secondary" type="button" [disabled]="guardando" (click)="cancelar()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+
+  <p *ngIf="cargando" role="status">Cargando…</p>
+
+  <section *ngIf="tab === 'usuarios'" class="panel">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Email</th>
+            <th scope="col">Rol</th>
+            <th scope="col" class="text-end">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let usuario of usuarios">
+            <td>
+              <strong>{{ usuario.nombre }}</strong>
+
+              <span *ngIf="esMiCuenta(usuario)" class="mi-cuenta">
+                Tu cuenta
+              </span>
+            </td>
+
+            <td>{{ usuario.email }}</td>
+
+            <td>
+              <span class="rol-badge">{{ usuario.rol }}</span>
+            </td>
+
+            <td class="text-end">
+              <div class="row-actions">
+                <button class="btn btn-sm btn-outline-primary" type="button" [disabled]="guardando || cargando"
+                  (click)="abrirFormulario(usuario)">
+                  Editar
+                </button>
+
+                <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="guardando || cargando"
+                  (click)="restablecerPassword(usuario)">
+                  Restablecer contraseña
+                </button>
+
+                <button class="btn btn-sm btn-outline-danger" type="button"
+                  [disabled]="guardando || cargando || esMiCuenta(usuario)" (click)="eliminar(usuario)">
+                  Eliminar
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="!usuarios.length && !cargando">
+            <td colspan="4" class="empty-state">
+              No hay usuarios que mostrar.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section *ngIf="tab === 'actividad'" class="panel">
+    <p class="panel-description">
+      Cambios de cuentas, inicios de sesión y peticiones al CRM.
+      El historial se conserva al eliminar una cuenta.
+    </p>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Fecha</th>
+            <th scope="col">Usuario</th>
+            <th scope="col">Acción</th>
+            <th scope="col">Empresa</th>
+            <th scope="col">Detalle</th>
+            <th scope="col">Estado HTTP</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let registro of registros">
+            <td class="fecha">
+              {{ registro.fecha | date:'dd/MM/yyyy HH:mm:ss' }}
+            </td>
+
+            <td>{{ registro.actor }}</td>
+            <td>{{ registro.accion }}</td>
+            <td>{{ registro.empresa || '—' }}</td>
+            <td class="detalle">{{ registro.detalle }}</td>
+            <td>{{ registro.estado }}</td>
+          </tr>
+
+          <tr *ngIf="!registros.length && !cargando">
+            <td colspan="6" class="empty-state">
+              Todavía no hay registros.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <button class="btn btn-outline-secondary btn-sm" type="button" [disabled]="pagina === 0 || cargando"
+        (click)="cargarActividad(pagina - 1)">
+        Anterior
+      </button>
+
+      <span>Página {{ pagina + 1 }}</span>
+
+      <button class="btn btn-outline-secondary btn-sm" type="button" [disabled]="ultimaPagina || cargando"
+        (click)="cargarActividad(pagina + 1)">
+        Siguiente
+      </button>
+    </div>
+  </section>
+
+</main>

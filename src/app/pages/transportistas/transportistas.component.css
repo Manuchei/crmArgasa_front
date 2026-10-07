@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100%;
-  background: #f5f7fb;
+  background: transparent;
   color: #1a2940;
 }
 

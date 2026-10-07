@@ -653,4 +653,10 @@ textarea.form-control {
     width: 100%;
   }
 }
+@media screen {
+  :host,
+  :host > :first-child {
+    background: transparent !important;
+  }
+}
 
