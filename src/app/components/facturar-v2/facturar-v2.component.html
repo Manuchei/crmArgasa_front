@@ -7,7 +7,8 @@
     </div>
     <div class="serie-control">
       <label for="serie-factura">Serie</label>
-      <select id="serie-factura" class="form-select" [(ngModel)]="serie" (ngModelChange)="onSerieChange()">
+      <select id="serie-factura" class="form-select" [(ngModel)]="serie" (ngModelChange)="onSerieChange()"
+        [disabled]="loading || preparandoFacturaDirecta">
         <option value="A">A</option>
         <option value="B">B</option>
       </select>
@@ -19,49 +20,72 @@
 
   <section class="facturacion-panel" *ngIf="pendientes as p">
     <div class="panel-title">
-      <div><span class="eyebrow">PASO 1</span>
+      <div>
+        <span class="eyebrow">PASO 1</span>
         <h3>Selecciona qué facturar</h3>
         <p>Servicios y líneas de albarán pendientes.</p>
       </div>
       <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cargarPendientes()"
-        [disabled]="loading || !clienteId">Actualizar</button>
+        [disabled]="loading || preparandoFacturaDirecta || !clienteId">
+        Actualizar
+      </button>
     </div>
+
     <div class="pendientes-content">
-      <div class="empty-copy" *ngIf="!serviciosPendientes.length && !lineasPendientes.length">No hay servicios ni líneas
-        de albarán pendientes de facturar.</div>
+      <div class="empty-copy" *ngIf="!serviciosPendientes.length && !lineasPendientes.length">
+        No hay servicios ni líneas de albarán pendientes de facturar.
+      </div>
+
       <div class="pendientes-group" *ngIf="serviciosPendientes.length">
         <h4>Servicios</h4>
         <label class="pendiente-row" *ngFor="let s of serviciosPendientes">
-          <input type="checkbox" [checked]="selectedServicios.has(s.id)" (change)="onServicioChange(s.id,$event)" />
+          <input type="checkbox" [checked]="selectedServicios.has(s.id)" (change)="onServicioChange(s.id, $event)"
+            [disabled]="loading || preparandoFacturaDirecta" />
           <span>{{ s.descripcion || s.nombre || ('Servicio #' + s.id) }}</span>
           <strong *ngIf="s.importe">{{ s.importe | number:'1.2-2' }} €</strong>
         </label>
       </div>
+
       <div class="pendientes-group" *ngIf="lineasPendientes.length">
         <h4>Líneas de albarán</h4>
         <label class="pendiente-row" *ngFor="let l of lineasPendientes">
-          <input type="checkbox" [checked]="selectedLineas.has(l.id)" (change)="onLineaChange(l.id,$event)" />
-          <span>{{ l.descripcion || l.concepto || ('Línea #' + l.id) }} <small *ngIf="l.albaranId">· Albarán #{{
-              l.albaranId }}</small></span>
-          <strong>{{ (l.totalLinea || l.baseLinea || 0) | number:'1.2-2' }} €</strong>
+          <input type="checkbox" [checked]="selectedLineas.has(l.id)" (change)="onLineaChange(l.id, $event)"
+            [disabled]="loading || preparandoFacturaDirecta" />
+          <span>
+            {{ l.descripcion || l.concepto || ('Línea #' + l.id) }}
+            <small *ngIf="l.albaranId">· Albarán #{{ l.albaranId }}</small>
+          </span>
+          <strong>
+            {{ (l.totalLinea || l.baseLinea || 0) | number:'1.2-2' }} €
+          </strong>
         </label>
       </div>
+
       <div class="selection-actions" *ngIf="serviciosPendientes.length || lineasPendientes.length">
         <button type="button" class="btn btn-link btn-sm" (click)="limpiarSeleccion()"
-          [disabled]="!haySeleccion">Limpiar selección</button>
+          [disabled]="loading || preparandoFacturaDirecta || !haySeleccion">
+          Limpiar selección
+        </button>
         <button type="button" class="btn btn-primary" (click)="crearBorrador()"
-          [disabled]="loading || !haySeleccion">Crear borrador y revisar →</button>
+          [disabled]="loading || preparandoFacturaDirecta || !haySeleccion">
+          Crear borrador y revisar →
+        </button>
       </div>
     </div>
   </section>
 
   <section class="facturacion-panel listado-panel">
     <div class="panel-title">
-      <div><span class="eyebrow">HISTORIAL</span>
-        <h3>Facturas del cliente <span class="count">{{ facturasCliente.length }}</span></h3>
+      <div>
+        <span class="eyebrow">HISTORIAL</span>
+        <h3>
+          Facturas del cliente
+          <span class="count">{{ facturasCliente.length }}</span>
+        </h3>
         <p>Abre una factura para consultar su documento y estado.</p>
       </div>
     </div>
+
     <div class="table-responsive" *ngIf="facturasCliente.length; else sinFacturas">
       <table class="table invoice-list mb-0">
         <thead>
@@ -75,25 +99,48 @@
         </thead>
         <tbody>
           <tr *ngFor="let f of facturasCliente">
-            <td><strong>{{ getNumeroFacturaCliente(f) }}</strong></td>
+            <td>
+              <strong>
+                {{ f.facturaDirectaNumero || getNumeroFacturaCliente(f) }}
+              </strong>
+
+              <small class="d-block text-muted" *ngIf="f.facturaDirectaNumero">
+                Referencia NovexApp: {{ getNumeroFacturaCliente(f) }}
+              </small>
+
+              <small class="d-block text-warning" *ngIf="esFacturaDePrueba(f)">
+                PRUEBAS
+              </small>
+            </td>
             <td>{{ f.fechaEmision | date:'dd/MM/yyyy' }}</td>
-            <td><span class="estado" [class.borrador]="f.estado === 'BORRADOR'" [class.emitida]="f.estado === 'EMITIDA'"
-                [class.pagada]="f.estado === 'PAGADA'">{{ f.estado }}</span></td>
+            <td>
+              <span class="estado" [class.borrador]="f.estado === 'BORRADOR'" [class.emitida]="f.estado === 'EMITIDA'"
+                [class.pagada]="f.estado === 'PAGADA'">
+                {{ f.estado }}
+              </span>
+            </td>
             <td class="text-end amount">{{ f.total | number:'1.2-2' }} €</td>
             <td class="text-end">
               <div class="list-actions">
-                <button type="button" class="btn btn-sm btn-outline-primary" (click)="verFactura(f)">Ver
-                  factura</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" (click)="verFactura(f)"
+                  [disabled]="loading || preparandoFacturaDirecta">
+                  Ver factura
+                </button>
                 <button type="button" class="btn btn-sm btn-outline-secondary" *ngIf="f.estado === 'BORRADOR'"
-                  (click)="editarFacturaDesdeListado(f)" [disabled]="loading">Editar</button>
+                  (click)="editarFacturaDesdeListado(f)" [disabled]="loading || preparandoFacturaDirecta">
+                  Editar
+                </button>
                 <button type="button" class="btn btn-sm btn-outline-danger" *ngIf="f.estado === 'BORRADOR'"
-                  (click)="eliminarFactura(f)" [disabled]="loading">Eliminar</button>
+                  (click)="eliminarFactura(f)" [disabled]="loading || preparandoFacturaDirecta">
+                  Eliminar
+                </button>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
     <ng-template #sinFacturas>
       <div class="empty-copy">Este cliente todavía no tiene facturas.</div>
     </ng-template>
@@ -101,44 +148,109 @@
 </div>
 
 <!-- Vista previa del borrador o factura emitida -->
-<div class="invoice-overlay no-print" *ngIf="factura" (click)="resetVistaFactura()">
+<div class="invoice-overlay no-print" *ngIf="factura" (click)="!preparandoFacturaDirecta && resetVistaFactura()">
   <section class="invoice-dialog" role="dialog" aria-modal="true" aria-labelledby="invoice-dialog-title"
     (click)="$event.stopPropagation()" id="factura-print">
+
     <header class="dialog-header">
-      <div><span class="eyebrow">NOVEXAPP · FACTURACIÓN</span>
-        <h2 id="invoice-dialog-title">{{ modoEdicion ? 'Editar borrador' : 'Vista previa de factura' }}</h2>
+      <div>
+        <span class="eyebrow">NOVEXAPP · FACTURACIÓN</span>
+        <h2 id="invoice-dialog-title">
+          {{ modoEdicion ? 'Editar borrador' : 'Vista previa de factura' }}
+        </h2>
       </div>
-      <button type="button" class="dialog-close" aria-label="Cerrar vista de factura"
-        (click)="resetVistaFactura()">×</button>
+      <button type="button" class="dialog-close" aria-label="Cerrar vista de factura" (click)="resetVistaFactura()"
+        [disabled]="preparandoFacturaDirecta">
+        ×
+      </button>
     </header>
+
     <div class="dialog-scroll">
-      <div class="alert alert-danger" role="alert" *ngIf="error">{{ error }}</div>
-      <div class="review-alert" *ngIf="factura.estado === 'BORRADOR' && !modoEdicion"><strong>Esta factura es un
-          borrador.</strong> Revísala y edítala antes de confirmar su emisión.</div>
-      <div class="review-alert edit-alert" *ngIf="modoEdicion">Estás modificando un borrador. Guarda los cambios para
-        volver a la vista previa.</div>
+      <div class="alert alert-danger" role="alert" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <div class="loading-note" role="status" *ngIf="preparandoFacturaDirecta">
+        Preparando el borrador en FacturaDirecta…
+      </div>
+
+      <div class="review-alert" *ngIf="factura.estado === 'BORRADOR' && !modoEdicion">
+        <strong>Esta factura es un borrador.</strong>
+        Revísala y edítala antes de confirmar su emisión.
+      </div>
+
+      <div class="review-alert edit-alert" *ngIf="modoEdicion">
+        Estás modificando un borrador. Guarda los cambios para volver a la vista previa.
+      </div>
+      <section class="alert alert-info" *ngIf="factura.facturaDirectaId && !modoEdicion">
+        <strong>
+          {{ esFacturaDePrueba(factura)
+          ? 'VeriFactu · entorno de pruebas'
+          : 'VeriFactu' }}
+        </strong>
+
+        <p class="mb-1" *ngIf="factura.facturaDirectaNumero">
+          Número FacturaDirecta:
+          <strong>{{ factura.facturaDirectaNumero }}</strong>
+        </p>
+
+        <p class="mb-1">
+          {{ getEstadoVerifactu(factura) }}
+        </p>
+
+        <p class="mb-2" *ngIf="esFacturaDePrueba(factura)">
+          Documento de prueba generado en el sandbox de FacturaDirecta correspondiente a {{ factura.empresa }}. Los
+          datos fiscales del emisor del registro son los configurados en ese sandbox.
+        </p>
+
+        <a *ngIf="factura.verifactuQrUrl" [href]="factura.verifactuQrUrl" target="_blank" rel="noopener noreferrer"
+          class="btn btn-sm btn-outline-primary">
+          Abrir verificación en AEAT
+        </a>
+      </section>
+
       <article class="invoice-sheet" [class.is-draft]="factura.estado === 'BORRADOR'" *ngIf="!modoEdicion">
-        <div class="draft-watermark" *ngIf="factura.estado === 'BORRADOR'">BORRADOR</div>
+        <div class="draft-watermark" *ngIf="factura.estado === 'BORRADOR'">
+          BORRADOR
+        </div>
+
         <div class="invoice-parties">
           <div class="issuer">
             <img [src]="empresaVisual.logoUrl" [alt]="empresaVisual.nombre" />
             <strong>{{ empresaVisual.nombre }}</strong>
             <span>{{ empresaVisual.direccion }}</span>
-            <span>{{ empresaVisual.codigoPostal }} {{ empresaVisual.poblacion }} ({{ empresaVisual.provincia }})</span>
+            <span>
+              {{ empresaVisual.codigoPostal }} {{ empresaVisual.poblacion }}
+              ({{ empresaVisual.provincia }})
+            </span>
             <span>CIF: {{ empresaVisual.cif }}</span>
             <span>{{ empresaVisual.email }}</span>
           </div>
+
           <div class="recipient">
-            <span class="document-label">{{ factura.estado === 'BORRADOR' ? 'BORRADOR DE FACTURA' : 'FACTURA' }}</span>
-            <strong class="document-number">{{ getNumeroFacturaCliente(factura) }}</strong>
+            <span class="document-label">
+              {{ factura.estado === 'BORRADOR' ? 'BORRADOR DE FACTURA' : 'FACTURA' }}
+            </span>
+            <strong class="document-number">
+              {{ factura.facturaDirectaNumero || getNumeroFacturaCliente(factura) }} </strong>
             <span>Fecha: {{ factura.fechaEmision | date:'dd/MM/yyyy' }}</span>
-            <div class="recipient-data"><small>CLIENTE</small><strong>{{ clienteFactura?.nombreApellidos || 'Cliente'
-                }}</strong><span *ngIf="clienteFactura?.cifDni">CIF/DNI: {{ clienteFactura?.cifDni }}</span><span
-                *ngIf="clienteFactura?.direccion">{{ clienteFactura?.direccion }}</span><span
-                *ngIf="clienteFactura?.codigoPostal || clienteFactura?.poblacion">{{ clienteFactura?.codigoPostal }} {{
-                clienteFactura?.poblacion }}</span></div>
+
+            <div class="recipient-data">
+              <small>CLIENTE</small>
+              <strong>{{ clienteFactura?.nombreApellidos || 'Cliente' }}</strong>
+              <span *ngIf="clienteFactura?.cifDni">
+                CIF/DNI: {{ clienteFactura?.cifDni }}
+              </span>
+              <span *ngIf="clienteFactura?.direccion">
+                {{ clienteFactura?.direccion }}
+              </span>
+              <span *ngIf="clienteFactura?.codigoPostal || clienteFactura?.poblacion">
+                {{ clienteFactura?.codigoPostal }} {{ clienteFactura?.poblacion }}
+              </span>
+            </div>
           </div>
         </div>
+
         <div class="invoice-lines table-responsive">
           <table class="table mb-0">
             <thead>
@@ -160,62 +272,143 @@
                 <td class="text-end">{{ (l.descuentoPct || 0) | number:'1.2-2' }} %</td>
                 <td class="text-end">{{ l.subtotal | number:'1.2-2' }} €</td>
                 <td class="text-end">{{ l.ivaPct }} %</td>
-                <td class="text-end"><strong>{{ l.totalLinea | number:'1.2-2' }} €</strong></td>
+                <td class="text-end">
+                  <strong>{{ l.totalLinea | number:'1.2-2' }} €</strong>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
+
         <div class="invoice-summary">
-          <div><span>Base imponible</span><strong>{{ factura.baseImponible | number:'1.2-2' }} €</strong></div>
-          <div><span>IVA</span><strong>{{ factura.ivaTotal | number:'1.2-2' }} €</strong></div>
-          <div class="grand-total"><span>Total factura</span><strong>{{ factura.total | number:'1.2-2' }} €</strong>
+          <div>
+            <span>Base imponible</span>
+            <strong>{{ factura.baseImponible | number:'1.2-2' }} €</strong>
+          </div>
+          <div>
+            <span>IVA</span>
+            <strong>{{ factura.ivaTotal | number:'1.2-2' }} €</strong>
+          </div>
+          <div class="grand-total">
+            <span>Total factura</span>
+            <strong>{{ factura.total | number:'1.2-2' }} €</strong>
           </div>
         </div>
       </article>
+
       <div class="editor-content" *ngIf="modoEdicion && facturaEdit">
-        <label class="edit-date">Fecha de emisión<input type="date" class="form-control"
-            [(ngModel)]="facturaEdit.fechaEmision" /></label>
+        <label class="edit-date">
+          Fecha de emisión
+          <input type="date" class="form-control" [(ngModel)]="facturaEdit.fechaEmision" />
+        </label>
+
         <div class="editor-linea" *ngFor="let l of facturaEdit.lineas; let i = index">
-          <div class="editor-linea-header"><strong>Línea {{ i + 1 }}</strong><span *ngIf="l.tipoOrigen">{{ l.tipoOrigen
-              }} #{{ l.origenId }}</span></div>
-          <div class="editor-campos">
-            <label class="campo-concepto">Concepto<input type="text" class="form-control"
-                [(ngModel)]="l.descripcion" /></label>
-            <label>Cantidad<input type="number" class="form-control" [(ngModel)]="l.cantidad"
-                (ngModelChange)="onLineaEditChange()" min="0.01" step="0.01" /></label>
-            <label>Precio unitario (€)<input type="number" class="form-control" [(ngModel)]="l.precioUnitario"
-                (ngModelChange)="onLineaEditChange()" min="0" step="0.01" /></label>
-            <label>Descuento (%)<input type="number" class="form-control" [(ngModel)]="l.descuentoPct"
-                (ngModelChange)="onLineaEditChange()" min="0" max="100" step="0.01" /></label>
-            <label>IVA (%)<input type="number" class="form-control" [(ngModel)]="l.ivaPct"
-                (ngModelChange)="onLineaEditChange()" min="0" step="0.01" /></label>
+          <div class="editor-linea-header">
+            <strong>Línea {{ i + 1 }}</strong>
+            <span *ngIf="l.tipoOrigen">{{ l.tipoOrigen }} #{{ l.origenId }}</span>
           </div>
-          <div class="editor-linea-totales"><span>Base <strong>{{ l.subtotal | number:'1.2-2' }}
-                €</strong></span><span>Total con IVA <strong>{{ l.totalLinea | number:'1.2-2' }} €</strong></span></div>
+
+          <div class="editor-campos">
+            <label class="campo-concepto">
+              Concepto
+              <input type="text" class="form-control" [(ngModel)]="l.descripcion" />
+            </label>
+            <label>
+              Cantidad
+              <input type="number" class="form-control" [(ngModel)]="l.cantidad" (ngModelChange)="onLineaEditChange()"
+                min="0.01" step="0.01" />
+            </label>
+            <label>
+              Precio unitario (€)
+              <input type="number" class="form-control" [(ngModel)]="l.precioUnitario"
+                (ngModelChange)="onLineaEditChange()" min="0" step="0.01" />
+            </label>
+            <label>
+              Descuento (%)
+              <input type="number" class="form-control" [(ngModel)]="l.descuentoPct"
+                (ngModelChange)="onLineaEditChange()" min="0" max="100" step="0.01" />
+            </label>
+            <label>
+              IVA (%)
+              <input type="number" class="form-control" [(ngModel)]="l.ivaPct" (ngModelChange)="onLineaEditChange()"
+                min="0" step="0.01" />
+            </label>
+          </div>
+
+          <div class="editor-linea-totales">
+            <span>Base <strong>{{ l.subtotal | number:'1.2-2' }} €</strong></span>
+            <span>
+              Total con IVA <strong>{{ l.totalLinea | number:'1.2-2' }} €</strong>
+            </span>
+          </div>
         </div>
+
         <div class="invoice-summary edit-summary">
-          <div><span>Base imponible</span><strong>{{ baseImponibleEdit | number:'1.2-2' }} €</strong></div>
-          <div><span>IVA</span><strong>{{ ivaTotalEdit | number:'1.2-2' }} €</strong></div>
-          <div class="grand-total"><span>Total factura</span><strong>{{ totalEdit | number:'1.2-2' }} €</strong></div>
+          <div>
+            <span>Base imponible</span>
+            <strong>{{ baseImponibleEdit | number:'1.2-2' }} €</strong>
+          </div>
+          <div>
+            <span>IVA</span>
+            <strong>{{ ivaTotalEdit | number:'1.2-2' }} €</strong>
+          </div>
+          <div class="grand-total">
+            <span>Total factura</span>
+            <strong>{{ totalEdit | number:'1.2-2' }} €</strong>
+          </div>
         </div>
       </div>
     </div>
+
     <footer class="dialog-footer">
-      <span class="footer-status">{{ factura.estado === 'BORRADOR' ? 'Borrador sin emitir' : factura.estado }}</span>
-      <div class="footer-buttons" *ngIf="modoEdicion"><button type="button" class="btn btn-outline-secondary"
-          (click)="cancelarEdicion()" [disabled]="loading">Cancelar</button><button type="button"
-          class="btn btn-primary" (click)="guardarEdicion()" [disabled]="loading">{{ loading ? 'Guardando...' : 'Guardar
-          cambios' }}</button></div>
+      <span class="footer-status">
+        {{ factura.estado === 'BORRADOR' ? 'Borrador sin emitir' : factura.estado }}
+      </span>
+
+      <div class="footer-buttons" *ngIf="modoEdicion">
+        <button type="button" class="btn btn-outline-secondary" (click)="cancelarEdicion()"
+          [disabled]="loading || preparandoFacturaDirecta">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="guardarEdicion()"
+          [disabled]="loading || preparandoFacturaDirecta">
+          {{ loading ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+
       <div class="footer-buttons" *ngIf="!modoEdicion">
-        <button type="button" class="btn btn-outline-secondary" (click)="imprimir($event)">Imprimir</button>
+        <button type="button" class="btn btn-outline-secondary" (click)="imprimir($event)"
+          [disabled]="loading || preparandoFacturaDirecta">
+          Imprimir
+        </button>
+
         <button type="button" class="btn btn-outline-primary" *ngIf="factura.estado === 'BORRADOR'"
-          (click)="iniciarEdicion()" [disabled]="loading">Editar</button>
+          (click)="iniciarEdicion()" [disabled]="loading || preparandoFacturaDirecta">
+          Editar
+        </button>
+
+        <button type="button" class="btn btn-outline-primary"
+          *ngIf="factura.estado === 'BORRADOR' && usaFacturaDirecta(factura)" (click)="prepararFacturaDirecta()"
+          [disabled]="loading || preparandoFacturaDirecta">
+          {{ preparandoFacturaDirecta
+          ? 'Preparando…'
+          : 'Preparar en FacturaDirecta (prueba)' }}
+        </button>
+
         <button type="button" class="btn btn-primary" *ngIf="factura.estado === 'BORRADOR'" (click)="confirmarEmision()"
-          [disabled]="loading">Confirmar y emitir factura</button>
+          [disabled]="loading || preparandoFacturaDirecta">
+          Confirmar y emitir factura
+        </button>
+
         <button type="button" class="btn btn-outline-danger" *ngIf="factura.estado === 'BORRADOR'"
-          (click)="eliminarFacturaActual()" [disabled]="loading">Eliminar borrador</button>
+          (click)="eliminarFacturaActual()" [disabled]="loading || preparandoFacturaDirecta">
+          Eliminar borrador
+        </button>
+
         <button type="button" class="btn btn-success" *ngIf="factura.estado === 'EMITIDA'" (click)="marcarComoPagada()"
-          [disabled]="loading">Marcar como pagada</button>
+          [disabled]="loading || preparandoFacturaDirecta">
+          Marcar como pagada
+        </button>
       </div>
     </footer>
   </section>

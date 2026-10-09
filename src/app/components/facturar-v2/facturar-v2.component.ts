@@ -5,13 +5,13 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+
 import { FacturacionV2Service } from '../../services/facturacion-v2.service';
 import { ClientesService } from '../../services/cliente.service';
 import { ICliente } from '../../interfaces/icliente';
 import { EMPRESAS } from '../../shared/config/empresa-config';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-
 import {
   PendientesFacturacionDTO,
   FacturaV2Response,
@@ -32,8 +32,9 @@ export class FacturarV2Component implements OnInit, OnChanges {
   selectedServicios = new Set<number>();
   selectedLineas = new Set<number>();
 
-  serie: string = 'A';
+  serie = 'A';
   loading = false;
+  preparandoFacturaDirecta = false;
   error: string | null = null;
 
   factura: FacturaV2Response | null = null;
@@ -65,25 +66,6 @@ export class FacturarV2Component implements OnInit, OnChanges {
       : EMPRESAS.argasa;
   }
 
-  private cargarClienteFactura(): void {
-    this.clientesService.getCliente(this.clienteId).subscribe({
-      next: (cliente) => (this.clienteFactura = cliente),
-      error: () => (this.clienteFactura = null),
-    });
-  }
-
-  confirmarEmision(): void {
-    if (!this.factura || this.factura.estado !== 'BORRADOR' || this.modoEdicion)
-      return;
-    if (
-      confirm(
-        `¿Confirmar y emitir la factura ${this.getNumeroFacturaCliente(this.factura)}?`,
-      )
-    ) {
-      this.emitir();
-    }
-  }
-
   get haySeleccion(): boolean {
     return this.selectedServicios.size > 0 || this.selectedLineas.size > 0;
   }
@@ -105,12 +87,25 @@ export class FacturarV2Component implements OnInit, OnChanges {
     );
   }
 
+  private cargarClienteFactura(): void {
+    this.clientesService.getCliente(this.clienteId).subscribe({
+      next: (cliente) => {
+        this.clienteFactura = cliente;
+      },
+      error: () => {
+        this.clienteFactura = null;
+      },
+    });
+  }
+
   limpiarSeleccion(): void {
     this.selectedServicios.clear();
     this.selectedLineas.clear();
   }
 
   onSerieChange(): void {
+    if (this.loading || this.preparandoFacturaDirecta) return;
+
     this.resetVistaFactura();
     this.cargarPendientes();
     this.cargarFacturasCliente();
@@ -130,14 +125,22 @@ export class FacturarV2Component implements OnInit, OnChanges {
 
   onServicioChange(id: number, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
-    checked
-      ? this.selectedServicios.add(id)
-      : this.selectedServicios.delete(id);
+
+    if (checked) {
+      this.selectedServicios.add(id);
+    } else {
+      this.selectedServicios.delete(id);
+    }
   }
 
   onLineaChange(id: number, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
-    checked ? this.selectedLineas.add(id) : this.selectedLineas.delete(id);
+
+    if (checked) {
+      this.selectedLineas.add(id);
+    } else {
+      this.selectedLineas.delete(id);
+    }
   }
 
   cargarPendientes(): void {
@@ -154,7 +157,7 @@ export class FacturarV2Component implements OnInit, OnChanges {
       },
       error: (err) => {
         this.loading = false;
-        this.error = err?.error?.message ?? 'Error cargando pendientes';
+        this.error = this.mensajeError(err, 'Error cargando pendientes');
       },
     });
   }
@@ -173,6 +176,8 @@ export class FacturarV2Component implements OnInit, OnChanges {
   }
 
   crearBorrador(): void {
+    if (this.loading || this.preparandoFacturaDirecta) return;
+
     if (!this.haySeleccion) {
       this.error =
         'Debes seleccionar al menos un servicio o una línea de albarán';
@@ -200,13 +205,15 @@ export class FacturarV2Component implements OnInit, OnChanges {
       },
       error: (err) => {
         this.loading = false;
-        this.error = err?.error?.message ?? 'Error creando factura borrador';
+        this.error = this.mensajeError(err, 'Error creando factura borrador');
       },
     });
   }
 
   iniciarEdicion(): void {
-    if (!this.factura) return;
+    if (!this.factura || this.loading || this.preparandoFacturaDirecta) {
+      return;
+    }
 
     if (this.factura.estado !== 'BORRADOR') {
       this.error = 'Solo se puede modificar una factura en borrador';
@@ -215,6 +222,7 @@ export class FacturarV2Component implements OnInit, OnChanges {
 
     this.error = null;
     this.modoEdicion = true;
+
     this.facturaEdit = {
       fechaEmision: this.toInputDate(this.factura.fechaEmision),
       lineas: (this.factura.lineas ?? []).map((l: any) => ({
@@ -235,13 +243,22 @@ export class FacturarV2Component implements OnInit, OnChanges {
   }
 
   cancelarEdicion(): void {
+    if (this.loading || this.preparandoFacturaDirecta) return;
+
     this.modoEdicion = false;
     this.facturaEdit = null;
     this.error = null;
   }
 
   guardarEdicion(): void {
-    if (!this.factura?.id || !this.facturaEdit) return;
+    if (
+      !this.factura?.id ||
+      !this.facturaEdit ||
+      this.loading ||
+      this.preparandoFacturaDirecta
+    ) {
+      return;
+    }
 
     if (this.factura.estado !== 'BORRADOR') {
       this.error = 'Solo se puede modificar una factura en borrador';
@@ -255,25 +272,39 @@ export class FacturarV2Component implements OnInit, OnChanges {
       return;
     }
 
+    if (!this.facturaEdit.fechaEmision) {
+      this.error = 'Debes indicar la fecha de la factura';
+      return;
+    }
+
     for (const l of lineas) {
       if (!String(l.descripcion ?? '').trim()) {
         this.error = 'La descripción no puede estar vacía';
         return;
       }
-      if (Number(l.cantidad) <= 0) {
-        this.error = 'La cantidad debe ser mayor que 0';
+
+      const cantidad = Number(l.cantidad);
+      const precio = Number(l.precioUnitario);
+      const descuento = Number(l.descuentoPct);
+      const iva = Number(l.ivaPct);
+
+      if (!Number.isFinite(cantidad) || cantidad <= 0) {
+        this.error = 'La cantidad debe ser un número mayor que 0';
         return;
       }
-      if (Number(l.precioUnitario) < 0) {
-        this.error = 'El precio unitario no puede ser negativo';
+
+      if (!Number.isFinite(precio) || precio < 0) {
+        this.error = 'El precio unitario debe ser un número no negativo';
         return;
       }
-      if (Number(l.descuentoPct) < 0 || Number(l.descuentoPct) > 100) {
+
+      if (!Number.isFinite(descuento) || descuento < 0 || descuento > 100) {
         this.error = 'El descuento debe estar entre 0 y 100';
         return;
       }
-      if (Number(l.ivaPct) < 0) {
-        this.error = 'El IVA no puede ser negativo';
+
+      if (!Number.isFinite(iva) || iva < 0) {
+        this.error = 'El IVA debe ser un número no negativo';
         return;
       }
     }
@@ -294,8 +325,8 @@ export class FacturarV2Component implements OnInit, OnChanges {
     this.error = null;
 
     this.factService.actualizarFactura(this.factura.id, payload).subscribe({
-      next: (factActualizada) => {
-        this.factura = factActualizada;
+      next: (actualizada) => {
+        this.factura = actualizada;
         this.modoEdicion = false;
         this.facturaEdit = null;
         this.loading = false;
@@ -303,8 +334,10 @@ export class FacturarV2Component implements OnInit, OnChanges {
       },
       error: (err) => {
         this.loading = false;
-        this.error =
-          err?.error?.message ?? 'Error guardando cambios en la factura';
+        this.error = this.mensajeError(
+          err,
+          'Error guardando cambios en la factura',
+        );
       },
     });
   }
@@ -327,17 +360,18 @@ export class FacturarV2Component implements OnInit, OnChanges {
 
       const bruto = cantidad * precioUnitario;
       const descuento = bruto * (descuentoPct / 100);
-      const subtotal = bruto - descuento;
+      const subtotal = this.round2(bruto - descuento);
       const totalLinea = subtotal + subtotal * (ivaPct / 100);
 
       l.descuentoPct = descuentoPct;
-      l.subtotal = this.round2(subtotal);
+      l.subtotal = subtotal;
       l.totalLinea = this.round2(totalLinea);
     }
   }
 
   get baseImponibleEdit(): number {
     const lineas = this.facturaEdit?.lineas ?? [];
+
     return this.round2(
       lineas.reduce(
         (acc: number, l: any) => acc + (Number(l.subtotal) || 0),
@@ -348,6 +382,7 @@ export class FacturarV2Component implements OnInit, OnChanges {
 
   get ivaTotalEdit(): number {
     const lineas = this.facturaEdit?.lineas ?? [];
+
     return this.round2(
       lineas.reduce((acc: number, l: any) => {
         const subtotal = Number(l.subtotal) || 0;
@@ -358,46 +393,28 @@ export class FacturarV2Component implements OnInit, OnChanges {
   }
 
   get totalEdit(): number {
-    return this.round2(this.baseImponibleEdit + this.ivaTotalEdit);
+    const lineas = this.facturaEdit?.lineas ?? [];
+
+    return this.round2(
+      lineas.reduce(
+        (acc: number, l: any) => acc + (Number(l.totalLinea) || 0),
+        0,
+      ),
+    );
   }
 
   eliminarFacturaActual(): void {
-    if (!this.factura?.id) return;
-
-    if (this.factura.estado !== 'BORRADOR') {
-      this.error = 'Solo se puede eliminar una factura en borrador';
+    if (!this.factura?.id || this.loading || this.preparandoFacturaDirecta) {
       return;
     }
 
-    if (
-      !confirm(
-        `¿Seguro que deseas eliminar la factura ${this.factura.serie}-${this.factura.numero}?`,
-      )
-    ) {
-      return;
-    }
-
-    this.loading = true;
-    this.error = null;
-
-    this.factService.cancelarBorrador(this.factura.id).subscribe({
-      next: () => {
-        this.factura = null;
-        this.loading = false;
-        this.modoEdicion = false;
-        this.facturaEdit = null;
-        this.cargarPendientes();
-        this.cargarFacturasCliente();
-      },
-      error: (err) => {
-        this.loading = false;
-        this.error = err?.error?.message ?? 'Error eliminando factura';
-      },
-    });
+    this.eliminarFactura(this.factura);
   }
 
   eliminarFactura(f: FacturaV2Response): void {
-    if (!f?.id) return;
+    if (!f?.id || this.loading || this.preparandoFacturaDirecta) {
+      return;
+    }
 
     if (f.estado !== 'BORRADOR') {
       this.error = 'Solo se puede eliminar una factura en borrador';
@@ -405,7 +422,9 @@ export class FacturarV2Component implements OnInit, OnChanges {
     }
 
     if (
-      !confirm(`¿Seguro que deseas eliminar la factura ${f.serie}-${f.numero}?`)
+      !confirm(
+        `¿Seguro que deseas eliminar la factura ${this.getNumeroFacturaCliente(f)}?`,
+      )
     ) {
       return;
     }
@@ -427,39 +446,126 @@ export class FacturarV2Component implements OnInit, OnChanges {
       },
       error: (err) => {
         this.loading = false;
-        this.error = err?.error?.message ?? 'Error eliminando factura';
+        this.error = this.mensajeError(err, 'Error eliminando factura');
       },
     });
   }
 
-  emitir(): void {
-    if (!this.factura) return;
-
-    if (this.modoEdicion) {
-      this.error = 'Guarda o cancela la edición antes de emitir la factura';
+  confirmarEmision(): void {
+    if (
+      !this.factura ||
+      this.factura.estado !== 'BORRADOR' ||
+      this.loading ||
+      this.preparandoFacturaDirecta
+    ) {
       return;
     }
+
+    if (this.modoEdicion) {
+      this.error = 'Guarda o cancela la edición antes de emitir';
+      return;
+    }
+
+    if (confirm(this.mensajeConfirmacionEmision(this.factura))) {
+      this.emitir();
+    }
+  }
+
+  emitir(): void {
+    if (
+      !this.factura?.id ||
+      this.factura.estado !== 'BORRADOR' ||
+      this.loading ||
+      this.preparandoFacturaDirecta
+    ) {
+      return;
+    }
+
+    if (this.modoEdicion) {
+      this.error = 'Guarda o cancela la edición antes de emitir';
+      return;
+    }
+
+    this.ejecutarEmision(this.factura);
+  }
+
+  emitirDesdeListado(f: FacturaV2Response): void {
+    if (
+      !f?.id ||
+      f.estado !== 'BORRADOR' ||
+      this.loading ||
+      this.preparandoFacturaDirecta
+    ) {
+      return;
+    }
+
+    if (this.modoEdicion) {
+      this.error = 'Guarda o cancela la edición antes de emitir';
+      return;
+    }
+
+    if (confirm(this.mensajeConfirmacionEmision(f))) {
+      this.ejecutarEmision(f);
+    }
+  }
+
+  private mensajeConfirmacionEmision(f: FacturaV2Response): string {
+    return this.usaFacturaDirecta(f)
+      ? '¿Emitir esta factura en FacturaDirecta, en el entorno de PRUEBAS?'
+      : `¿Confirmar y emitir la factura ${this.getNumeroFacturaCliente(f)}?`;
+  }
+
+  usaFacturaDirecta(f: FacturaV2Response): boolean {
+    const empresa = String(f.empresa ?? '')
+      .trim()
+      .toUpperCase();
+    return empresa === 'ARGASA' || empresa === 'ELECTROLUGA';
+  }
+
+  private ejecutarEmision(f: FacturaV2Response): void {
+    const usaIntegracion = this.usaFacturaDirecta(f);
 
     this.loading = true;
     this.error = null;
 
-    this.factService.emitirFactura(this.factura.id).subscribe({
-      next: (factEmitida) => {
-        this.factura = factEmitida;
+    const peticion = usaIntegracion
+      ? this.factService.emitirFacturaDirecta(f.id)
+      : this.factService.emitirFactura(f.id);
+
+    peticion.subscribe({
+      next: (emitida) => {
+        if (this.factura?.id === f.id) {
+          this.factura = emitida;
+          this.modoEdicion = false;
+          this.facturaEdit = null;
+        }
+
         this.loading = false;
-        this.modoEdicion = false;
-        this.facturaEdit = null;
         this.cargarPendientes();
         this.cargarFacturasCliente();
+
+        if (usaIntegracion) {
+          alert(
+            'Emisión de prueba completada en FacturaDirecta. ' +
+              'La aceptación de la AEAT se actualizará mediante el webhook.',
+          );
+        }
       },
       error: (err) => {
         this.loading = false;
-        this.error = err?.error?.message ?? 'Error emitiendo factura';
+        this.error = this.mensajeError(
+          err,
+          usaIntegracion
+            ? 'No se pudo confirmar la emisión en FacturaDirecta. Comprueba el backend y el estado remoto antes de repetir.'
+            : 'No se pudo emitir la factura',
+        );
       },
     });
   }
 
   resetVistaFactura(): void {
+    if (this.loading || this.preparandoFacturaDirecta) return;
+
     this.factura = null;
     this.modoEdicion = false;
     this.facturaEdit = null;
@@ -467,17 +573,25 @@ export class FacturarV2Component implements OnInit, OnChanges {
   }
 
   verFactura(f: FacturaV2Response): void {
+    if (!f?.id || this.loading || this.preparandoFacturaDirecta) {
+      return;
+    }
+
+    this.error = null;
     this.modoEdicion = false;
     this.facturaEdit = null;
 
-    if ((f as any)?.lineas?.length) {
+    if (f.lineas?.length) {
       this.factura = f;
       return;
     }
+
     this.abrirFacturaDetalle(f.id);
   }
 
   editarFacturaDesdeListado(f: FacturaV2Response): void {
+    if (this.loading || this.preparandoFacturaDirecta) return;
+
     if (!f?.id || f.estado !== 'BORRADOR') {
       this.error = 'Solo se puede modificar una factura en borrador';
       return;
@@ -489,12 +603,11 @@ export class FacturarV2Component implements OnInit, OnChanges {
     this.facturaEdit = null;
 
     this.factService.getFacturaById(f.id).subscribe({
-      next: (facturaCompleta) => {
-        this.factura = facturaCompleta;
+      next: (completa) => {
+        this.factura = completa;
         this.loading = false;
         this.iniciarEdicion();
 
-        // Lleva al usuario al editor después de cargar la factura.
         setTimeout(() => {
           document
             .getElementById('factura-print')
@@ -503,8 +616,10 @@ export class FacturarV2Component implements OnInit, OnChanges {
       },
       error: (err) => {
         this.loading = false;
-        this.error =
-          err?.error?.message ?? 'No se pudo cargar la factura para editar';
+        this.error = this.mensajeError(
+          err,
+          'No se pudo cargar la factura para editar',
+        );
       },
     });
   }
@@ -522,32 +637,10 @@ export class FacturarV2Component implements OnInit, OnChanges {
       },
       error: (err) => {
         this.loading = false;
-        this.error =
-          err?.error?.message ?? 'No se pudo cargar el detalle de la factura';
-      },
-    });
-  }
-
-  emitirDesdeListado(f: FacturaV2Response): void {
-    if (!f?.id) return;
-
-    this.loading = true;
-    this.error = null;
-
-    this.factService.emitirFactura(f.id).subscribe({
-      next: (emitida) => {
-        if (this.factura?.id === f.id) {
-          this.factura = emitida;
-          this.modoEdicion = false;
-          this.facturaEdit = null;
-        }
-        this.loading = false;
-        this.cargarPendientes();
-        this.cargarFacturasCliente();
-      },
-      error: (err) => {
-        this.loading = false;
-        this.error = err?.error?.message ?? 'Error emitiendo factura';
+        this.error = this.mensajeError(
+          err,
+          'No se pudo cargar el detalle de la factura',
+        );
       },
     });
   }
@@ -556,15 +649,19 @@ export class FacturarV2Component implements OnInit, OnChanges {
     event?.preventDefault();
     event?.stopPropagation();
 
-    if (!this.factura?.id) return;
+    if (!this.factura?.id || this.loading || this.preparandoFacturaDirecta) {
+      return;
+    }
 
-    const emp = String(this.factura?.empresa || '').toUpperCase();
+    const emp = String(this.factura.empresa || '').toUpperCase();
+
     if (emp === 'ARGASA' || emp === 'ELECTROLUGA') {
       localStorage.setItem('empresa_activa', emp);
       localStorage.setItem('empresa', emp);
     }
 
     const url = `${window.location.origin}/imprimir/factura/${this.factura.id}`;
+
     window.open(url, '_blank', 'noopener');
   }
 
@@ -576,13 +673,11 @@ export class FacturarV2Component implements OnInit, OnChanges {
     if (!value) return '';
     return String(value).slice(0, 10);
   }
+
   getNumeroFacturaCliente(factura: any): string {
-    if (!factura) {
-      return '';
-    }
+    if (!factura) return '';
 
     const numero = factura.numero ?? factura.id;
-
     const fecha = factura.fechaEmision
       ? new Date(factura.fechaEmision)
       : new Date();
@@ -594,22 +689,122 @@ export class FacturarV2Component implements OnInit, OnChanges {
   }
 
   marcarComoPagada(): void {
-    if (!this.factura?.id) return;
+    if (!this.factura?.id || this.loading || this.preparandoFacturaDirecta) {
+      return;
+    }
+
+    if (this.factura.estado !== 'EMITIDA') {
+      this.error = 'Solo se puede marcar como pagada una factura emitida';
+      return;
+    }
 
     this.loading = true;
     this.error = null;
 
     this.factService.marcarComoPagada(this.factura.id).subscribe({
-      next: (factPagada) => {
-        this.factura = factPagada;
+      next: (pagada) => {
+        this.factura = pagada;
         this.loading = false;
         this.cargarFacturasCliente();
       },
       error: (err) => {
         this.loading = false;
-        this.error =
-          err?.error?.message ?? 'Error marcando factura como pagada';
+        this.error = this.mensajeError(
+          err,
+          'Error marcando factura como pagada',
+        );
       },
     });
+  }
+
+  prepararFacturaDirecta(): void {
+    if (!this.factura?.id || this.loading || this.preparandoFacturaDirecta) {
+      return;
+    }
+
+    if (this.factura.estado !== 'BORRADOR') {
+      this.error = 'La factura debe estar en borrador';
+      return;
+    }
+
+    if (!this.usaFacturaDirecta(this.factura)) {
+      this.error = 'FacturaDirecta no está habilitado para esta empresa';
+      return;
+    }
+
+    if (this.modoEdicion) {
+      this.error = 'Guarda o cancela la edición antes de continuar';
+      return;
+    }
+
+    const facturaId = this.factura.id;
+
+    this.preparandoFacturaDirecta = true;
+    this.error = null;
+
+    this.factService.prepararBorradorFacturaDirecta(facturaId).subscribe({
+      next: (respuesta) => {
+        this.preparandoFacturaDirecta = false;
+
+        const id = respuesta?.content?.uuid;
+        const borrador = respuesta?.content?.main?.draft;
+
+        alert(
+          `FacturaDirecta: ${id ?? 'ID no recibido'}\nBorrador: ${borrador}`,
+        );
+
+        this.cargarFacturasCliente();
+      },
+      error: (err) => {
+        this.preparandoFacturaDirecta = false;
+        this.error = this.mensajeError(
+          err,
+          'No se pudo confirmar el borrador. Revisa la consola del backend.',
+        );
+      },
+    });
+  }
+
+  private mensajeError(err: any, defecto: string): string {
+    if (typeof err?.error === 'string' && err.error.trim()) {
+      return err.error;
+    }
+
+    if (typeof err?.error?.message === 'string' && err.error.message.trim()) {
+      return err.error.message;
+    }
+
+    return defecto;
+  }
+  esFacturaDePrueba(f: FacturaV2Response): boolean {
+    return f.facturaDirectaCompanyId?.startsWith('com_sandbox_') === true;
+  }
+
+  getEstadoVerifactu(f: FacturaV2Response): string {
+    switch (f.verifactuEstado) {
+      case 'CREACION_EN_CURSO':
+        return 'Preparación pendiente de confirmar';
+
+      case 'BORRADOR_REMOTO':
+        return 'Borrador preparado en FacturaDirecta';
+
+      case 'EMISION_EN_CURSO':
+        return 'Emisión pendiente de confirmar';
+
+      case 'PENDIENTE_CONFIRMACION_AEAT':
+        return 'Emitida · aceptación AEAT pendiente de sincronizar';
+
+      case 'ACEPTADA_AEAT':
+        return 'Aceptada por la AEAT';
+
+      case 'ACEPTADA_AEAT_CON_ERRORES':
+        return 'Aceptada por la AEAT con errores · revisar en FacturaDirecta';
+
+      case 'RECHAZADA_AEAT':
+        return 'Rechazada por la AEAT · revisar en FacturaDirecta';
+
+      default:
+        return f.verifactuEstado || 'Sin estado disponible';
+    }
   }
 }

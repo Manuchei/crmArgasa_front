@@ -52,6 +52,12 @@ export interface FacturaV2Response {
   ivaTotal: number;
   total: number;
   lineas: LineaFacturaV2Response[];
+
+  facturaDirectaCompanyId?: string | null;
+  facturaDirectaId?: string | null;
+  facturaDirectaNumero?: string | null;
+  verifactuEstado?: string | null;
+  verifactuQrUrl?: string | null;
 }
 
 export interface LineaFacturaV2UpdateRequest {

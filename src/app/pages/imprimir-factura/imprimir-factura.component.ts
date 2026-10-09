@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { toDataURL } from 'qrcode';
+
 import { environment } from '../../../environments/environment';
 import { EMPRESAS } from '../../shared/config/empresa-config';
 
@@ -17,7 +19,13 @@ export class ImprimirFacturaComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
+  qrImagen: string | null = null;
+  qrUrl: string | null = null;
+  generandoQr = false;
+  errorQr: string | null = null;
+
   private baseUrl = environment.apiUrl;
+  private cargaActual = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -36,44 +44,31 @@ export class ImprimirFacturaComponent implements OnInit {
   }
 
   cargarFactura(id: number): void {
+    const carga = ++this.cargaActual;
+
     this.loading = true;
     this.error = null;
     this.factura = null;
-    this.cargarFacturaCliente(id);
+    this.qrImagen = null;
+    this.qrUrl = null;
+    this.errorQr = null;
+    this.generandoQr = false;
+
+    this.cargarFacturaCliente(id, carga);
   }
 
-  private cargarFacturaCliente(id: number): void {
+  private cargarFacturaCliente(id: number, carga: number): void {
     this.http
       .get(`${this.baseUrl}/facturacion-v2/facturas/${id}`, {
         responseType: 'text',
       })
       .subscribe({
         next: (raw) => {
-          try {
-            this.factura = JSON.parse(raw);
-            this.guardarEmpresa();
-            this.loading = false;
-          } catch {
-            this.cargarFacturaProveedor(id);
-          }
-        },
-        error: () => {
-          this.cargarFacturaProveedor(id);
-        },
-      });
-  }
+          if (carga !== this.cargaActual) return;
 
-  private cargarFacturaProveedor(id: number): void {
-    this.http
-      .get(`${this.baseUrl}/facturas/${id}`, {
-        responseType: 'text',
-      })
-      .subscribe({
-        next: (raw) => {
           try {
-            this.factura = JSON.parse(raw);
-            this.guardarEmpresa();
-            this.loading = false;
+            const factura = JSON.parse(raw);
+            this.recibirFactura(factura, carga);
           } catch {
             this.loading = false;
             this.error =
@@ -81,16 +76,74 @@ export class ImprimirFacturaComponent implements OnInit {
           }
         },
         error: (err) => {
+          if (carga !== this.cargaActual) return;
+
+          if (err?.status === 404) {
+            this.cargarFacturaProveedor(id, carga);
+            return;
+          }
+
           this.loading = false;
-
-          const backendText = typeof err?.error === 'string' ? err.error : null;
-
-          this.error =
-            err?.error?.message ??
-            backendText ??
-            `No se pudo cargar la factura (HTTP ${err?.status ?? '?'})`;
+          this.error = this.getMensajeError(err);
         },
       });
+  }
+
+  private cargarFacturaProveedor(id: number, carga: number): void {
+    this.http
+      .get(`${this.baseUrl}/facturas/${id}`, {
+        responseType: 'text',
+      })
+      .subscribe({
+        next: (raw) => {
+          if (carga !== this.cargaActual) return;
+
+          try {
+            const factura = JSON.parse(raw);
+            this.recibirFactura(factura, carga);
+          } catch {
+            this.loading = false;
+            this.error =
+              'La respuesta de la factura no tiene un formato JSON válido.';
+          }
+        },
+        error: (err) => {
+          if (carga !== this.cargaActual) return;
+
+          this.loading = false;
+          this.error = this.getMensajeError(err);
+        },
+      });
+  }
+
+  private recibirFactura(factura: any, carga: number): void {
+    if (!factura || typeof factura !== 'object' || Array.isArray(factura)) {
+      this.loading = false;
+      this.error = 'La respuesta no contiene una factura válida.';
+      return;
+    }
+
+    this.factura = factura;
+    this.guardarEmpresa();
+    this.loading = false;
+
+    void this.generarQr(carga);
+  }
+
+  private getMensajeError(err: any): string {
+    if (typeof err?.error === 'string') {
+      try {
+        const respuesta = JSON.parse(err.error);
+        return respuesta.message || respuesta.error || err.error;
+      } catch {
+        return err.error;
+      }
+    }
+
+    return (
+      err?.error?.message ||
+      `No se pudo cargar la factura (HTTP ${err?.status ?? '?'})`
+    );
   }
 
   private guardarEmpresa(): void {
@@ -99,11 +152,67 @@ export class ImprimirFacturaComponent implements OnInit {
     }
   }
 
+  private async generarQr(carga: number): Promise<void> {
+    if (
+      this.esFacturaProveedor() ||
+      this.esBorrador() ||
+      !this.factura?.facturaDirectaId
+    ) {
+      return;
+    }
+
+    const valor = String(this.factura?.verifactuQrUrl || '').trim();
+
+    if (!valor) {
+      this.errorQr = 'La factura no tiene una URL de verificación guardada.';
+      return;
+    }
+
+    try {
+      const url = new URL(valor);
+
+      if (
+        url.protocol !== 'https:' ||
+        !(url.hostname === 'aeat.es' || url.hostname.endsWith('.aeat.es'))
+      ) {
+        throw new Error('URL de verificación no válida');
+      }
+
+      this.qrUrl = valor;
+      this.generandoQr = true;
+
+      const imagen = await toDataURL(valor, {
+        errorCorrectionLevel: 'M',
+        margin: 4,
+        width: 300,
+        color: {
+          dark: '#000000',
+          light: '#ffffff',
+        },
+      });
+
+      if (carga !== this.cargaActual) return;
+
+      this.qrImagen = imagen;
+    } catch {
+      if (carga !== this.cargaActual) return;
+
+      this.qrUrl = null;
+      this.errorQr = 'No se pudo generar el QR de verificación.';
+    } finally {
+      if (carga === this.cargaActual) {
+        this.generandoQr = false;
+      }
+    }
+  }
+
   private redondearImporte(valor: number): number {
     return Math.round((valor + Number.EPSILON) * 100) / 100;
   }
 
   imprimirManual(): void {
+    if (!this.factura || this.loading || this.generandoQr) return;
+
     window.print();
   }
 
@@ -111,40 +220,66 @@ export class ImprimirFacturaComponent implements OnInit {
     return !!this.factura?.albaranProveedor || !!this.factura?.numeroInterno;
   }
 
+  esBorrador(): boolean {
+    return (
+      !this.esFacturaProveedor() && this.getEstadoDocumento() === 'BORRADOR'
+    );
+  }
+
+  esFacturaDePrueba(): boolean {
+    return (
+      !this.esFacturaProveedor() &&
+      String(this.factura?.facturaDirectaCompanyId || '').startsWith(
+        'com_sandbox_',
+      )
+    );
+  }
+
   getEmisorVisualFactura(): any {
     const empresa = String(this.factura?.empresa || '')
       .trim()
       .toLowerCase();
 
-    return EMPRESAS[empresa as keyof typeof EMPRESAS] || null;
+    return (
+      EMPRESAS[empresa as keyof typeof EMPRESAS] ||
+      this.factura?.emisor || {
+        nombre: this.factura?.empresa || 'Empresa emisora',
+      }
+    );
   }
 
   getNumeroDocumento(): string {
-    if (!this.factura) {
-      return '';
-    }
+    if (!this.factura) return '';
 
     if (this.esFacturaProveedor()) {
       return this.factura.numeroInterno || '-';
     }
 
+    const remoto = String(this.factura.facturaDirectaNumero || '').trim();
+
+    return remoto || this.getReferenciaLocal();
+  }
+
+  getReferenciaLocal(): string {
+    if (!this.factura) return '';
+
     const numero = this.factura.numero ?? this.factura.id;
-    const fecha = this.factura.fechaEmision
-      ? new Date(this.factura.fechaEmision)
-      : new Date();
+    const fecha = String(this.factura.fechaEmision || '');
+    const partes = /^(\d{4})-(\d{2})-\d{2}/.exec(fecha);
 
-    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-    const anio = fecha.getFullYear();
+    if (!partes) {
+      return `FC-${numero}`;
+    }
 
-    return `FC-${numero}-${mes}-${anio}`;
+    return `FC-${numero}-${partes[2]}-${partes[1]}`;
   }
 
   getFechaDocumento(): string {
-    return this.factura?.fechaEmision || '-';
+    return this.factura?.fechaEmision || '';
   }
 
   getFechaVencimientoDocumento(): string {
-    return this.factura?.fechaVencimiento || '-';
+    return this.factura?.fechaVencimiento || this.getFechaDocumento();
   }
 
   getEstadoDocumento(): string {
@@ -159,6 +294,25 @@ export class ImprimirFacturaComponent implements OnInit {
       .toUpperCase();
 
     return estado || 'PENDIENTE';
+  }
+
+  getEstadoVerifactu(): string {
+    switch (this.factura?.verifactuEstado) {
+      case 'CREACION_EN_CURSO':
+        return 'Preparación pendiente de confirmar';
+
+      case 'BORRADOR_REMOTO':
+        return 'Borrador preparado en FacturaDirecta';
+
+      case 'EMISION_EN_CURSO':
+        return 'Emisión pendiente de confirmar';
+
+      case 'PENDIENTE_CONFIRMACION_AEAT':
+        return 'Emitida · aceptación AEAT pendiente de sincronizar';
+
+      default:
+        return this.factura?.verifactuEstado || 'Sin estado sincronizado';
+    }
   }
 
   documentoPagado(): boolean {
@@ -295,20 +449,16 @@ export class ImprimirFacturaComponent implements OnInit {
     );
   }
 
-    getDescuentoTotal(): number {
-    const descuento = this.getLineasDocumento().reduce(
-      (total: number, linea: any) => {
-        const bruto =
-          this.getCantidadLinea(linea) * this.getPrecioLinea(linea);
+  getDescuentoTotal(): number {
+    return this.redondearImporte(
+      this.getLineasDocumento().reduce((total: number, linea: any) => {
+        const bruto = this.getCantidadLinea(linea) * this.getPrecioLinea(linea);
 
-        return total +
-          (bruto * this.getDescuentoLinea(linea)) / 100;
-      },
-      0
+        return total + (bruto * this.getDescuentoLinea(linea)) / 100;
+      }, 0),
     );
-
-    return Math.round((descuento + Number.EPSILON) * 100) / 100;
   }
+
   getBaseImponible(): number {
     if (
       this.factura?.baseImponible !== null &&
