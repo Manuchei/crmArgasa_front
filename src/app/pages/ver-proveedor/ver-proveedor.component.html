@@ -80,7 +80,7 @@
 
       <button type="button" class="tab-btn" [class.active]="activeTab === 'productos'"
         [attr.aria-current]="activeTab === 'productos' ? 'page' : null" (click)="setActiveTab('productos')">
-        Productos / Trabajos
+        Productos / Obras
       </button>
     </nav>
 
@@ -231,12 +231,12 @@
 
         <div class="albaran-create-fields">
           <label class="field">
-            Número de albarán del proveedor
-            <input class="form-control" [(ngModel)]="numeroAlbaranProveedor" placeholder="Ej. ALB-2026-001" />
+            Número de albarán del proveedor (opcional)
+            <input class="form-control" [(ngModel)]="numeroAlbaranProveedor"
+              placeholder="Déjalo vacío si no tienes número" />
           </label>
 
-          <button type="button" class="primary-btn" (click)="generarAlbaran()"
-            [disabled]="creandoAlbaran || !numeroAlbaranProveedor.trim()">
+          <button type="button" class="primary-btn" (click)="generarAlbaran()" [disabled]="creandoAlbaran">
             {{ creandoAlbaran ? 'Creando…' : 'Crear albarán' }}
           </button>
         </div>
@@ -318,8 +318,8 @@
       <div class="seccion-header">
         <div>
           <span class="ficha-eyebrow">COMPRAS Y SERVICIOS</span>
-          <h2>Productos y trabajos</h2>
-          <p>Registra productos suministrados y trabajos del proveedor.</p>
+          <h2>Productos y obras</h2>
+          <p>Gestiona productos suministrados, obras y pagos del proveedor.</p>
         </div>
       </div>
 
@@ -381,31 +381,29 @@
       <article class="list-card">
         <div class="list-heading">
           <div>
-            <h3>Nuevo trabajo</h3>
-            <p>Registra un servicio y el importe pagado al proveedor.</p>
+            <h3>Nueva obra</h3>
+            <p>Registra la obra y añade sus artículos y pagos a medida que avance.</p>
           </div>
+          <span class="status">Pendiente</span>
         </div>
-
-        <div class="work-form">
-          <label class="field">
-            Descripción *
-            <input class="form-control" [(ngModel)]="nuevoTrabajo.descripcion"
-              placeholder="Descripción del trabajo realizado" />
+        <div class="work-form obra-create-form">
+          <label class="field field-wide">Nombre de la obra *
+            <input class="form-control" [(ngModel)]="nuevoTrabajo.descripcion" maxlength="500"
+              placeholder="Reforma obra López Mora" required />
           </label>
-          <label class="field">
-            Importe (€)
-            <input type="number" min="0" step="0.01" class="form-control" [(ngModel)]="nuevoTrabajo.importe" />
-          </label>
-          <label class="field">
-            Pagado (€)
-            <input type="number" min="0" step="0.01" class="form-control" [(ngModel)]="nuevoTrabajo.importePagado" />
-          </label>
+          <label class="field">Fecha *<input type="date" class="form-control" [(ngModel)]="nuevoTrabajo.fecha"
+              required /></label>
+          <label class="field">Nombre del contacto *<input class="form-control"
+              [(ngModel)]="nuevoTrabajo.nombreContacto" maxlength="150" required /></label>
+          <label class="field field-wide">Dirección de la obra *<input class="form-control"
+              [(ngModel)]="nuevoTrabajo.direccionObra" maxlength="500" required /></label>
+          <label class="field">Teléfono *<input type="tel" class="form-control" [(ngModel)]="nuevoTrabajo.telefonoObra"
+              maxlength="50" required /></label>
         </div>
-
         <div class="card-footer">
-          <span>El importe pagado se incluye en el resumen del proveedor.</span>
+          <span>El total se calcula sumando los artículos. Puedes registrar anticipos desde el inicio.</span>
           <button type="button" class="primary-btn" (click)="guardarTrabajo()" [disabled]="guardandoTrabajo">
-            {{ guardandoTrabajo ? 'Guardando…' : 'Guardar trabajo' }}
+            {{ guardandoTrabajo ? 'Guardando…' : 'Crear obra' }}
           </button>
         </div>
       </article>
@@ -474,7 +472,7 @@
 
       <article class="list-card">
         <div class="list-heading">
-          <h3>Trabajos registrados</h3>
+          <h3>Obras y trabajos registrados</h3>
           <span class="count-badge">{{ trabajos.length }} trabajos</span>
         </div>
 
@@ -491,16 +489,33 @@
             </thead>
             <tbody>
               <tr *ngFor="let t of trabajos">
-                <td><strong>{{ t.descripcion }}</strong></td>
+                <td>
+                  <div class="item-identity"><strong>{{ t.descripcion }}</strong><small>{{ t.fecha | date:'dd/MM/yyyy'
+                      }}</small>
+                    <span class="status obra-status" *ngIf="t.obra"
+                      [class.status-progress]="t.estadoObra === 'EN_CURSO'"
+                      [class.status-ok]="t.estadoObra === 'FINALIZADA'"
+                      [class.status-cancelled]="t.estadoObra === 'CANCELADA'">
+                      {{ t.estadoObra === 'EN_CURSO' ? 'En curso' : t.estadoObra === 'FINALIZADA' ? 'Finalizada' :
+                      t.estadoObra === 'CANCELADA' ? 'Cancelada' : 'Pendiente' }}
+                    </span>
+                  </div>
+                </td>
                 <td class="money">{{ (t.importe || 0) | number:'1.2-2' }} €</td>
                 <td class="money paid-value">
                   {{ (t.importePagado || 0) | number:'1.2-2' }} €
                 </td>
                 <td class="money">
-                  {{ ((t.importe || 0) - (t.importePagado || 0)) | number:'1.2-2' }} €
+                  {{ ((t.importe || 0) > (t.importePagado || 0) ? (t.importe || 0) - (t.importePagado || 0) : 0) |
+                  number:'1.2-2' }} €
+                  <small class="anticipo-label" *ngIf="(t.importePagado || 0) > (t.importe || 0)">Anticipo: {{
+                    ((t.importePagado || 0) - (t.importe || 0)) | number:'1.2-2' }} €</small>
                 </td>
                 <td class="actions-col">
-                  <button type="button" class="delete-btn small-btn" (click)="eliminarTrabajo(t.id)">Eliminar</button>
+                  <button type="button" class="primary-btn small-btn" *ngIf="t.obra" (click)="abrirObra(t)"
+                    [disabled]="cargandoObra || guardandoObraDetalle">Gestionar obra</button>
+                  <button type="button" class="delete-btn small-btn" *ngIf="!t.obra"
+                    (click)="eliminarTrabajo(t.id)">Eliminar</button>
                 </td>
               </tr>
             </tbody>
@@ -513,6 +528,128 @@
             <p>Registra los servicios realizados por este proveedor.</p>
           </div>
         </ng-template>
+      </article>
+
+      <p class="obra-loading" role="status" *ngIf="cargandoObra">Cargando obra…</p>
+      <article class="list-card obra-detail" *ngIf="obraDetalle as d" [attr.aria-busy]="guardandoObraDetalle">
+        <div class="list-heading">
+          <div><span class="ficha-eyebrow">DETALLE DE LA OBRA</span>
+            <h3>{{ d.trabajo.descripcion }}</h3>
+            <p>{{ d.trabajo.fecha | date:'dd/MM/yyyy' }} · {{ d.trabajo.nombreContacto }}</p>
+            <p>{{ d.trabajo.direccionObra }} · {{ d.trabajo.telefonoObra }}</p>
+          </div>
+          <button type="button" class="secondary-btn" (click)="cerrarObra()" [disabled]="guardandoObraDetalle">Cerrar
+            detalle</button>
+        </div>
+        <div class="obra-state-bar">
+          <label class="field">Estado de la obra<select class="form-control" [(ngModel)]="estadoSeleccionado"
+              [disabled]="guardandoObraDetalle">
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="EN_CURSO">En curso</option>
+              <option value="FINALIZADA">Finalizada</option>
+              <option value="CANCELADA">Cancelada</option>
+            </select></label>
+          <button type="button" class="primary-btn" (click)="guardarEstadoObra()"
+            [disabled]="guardandoObraDetalle || estadoSeleccionado === d.trabajo.estadoObra">Guardar estado</button>
+        </div>
+        <div class="obra-resumen" aria-live="polite">
+          <div><span>Total de artículos</span><strong>{{ d.trabajo.importe | number:'1.2-2' }} €</strong></div>
+          <div class="obra-paid"><span>Pagado</span><strong>{{ d.trabajo.importePagado | number:'1.2-2' }} €</strong>
+          </div>
+          <div><span>Pendiente</span><strong>{{ d.pendiente | number:'1.2-2' }} €</strong></div>
+          <div class="obra-advance" *ngIf="d.anticipo > 0"><span>Anticipo a cuenta</span><strong>{{ d.anticipo |
+              number:'1.2-2' }} €</strong></div>
+        </div>
+        <div class="obra-section-heading">
+          <h4>Artículos de la obra</h4><span class="count-badge">{{ d.articulos.length }} artículos</span>
+        </div>
+        <div class="table-responsive">
+          <table class="detail-table obra-items-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Artículo</th>
+                <th class="money">Cantidad</th>
+                <th class="money">Precio unitario</th>
+                <th class="money">Importe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of d.articulos">
+                <td>{{ a.fecha | date:'dd/MM/yyyy' }}</td>
+                <td>{{ a.descripcion }}</td>
+                <td class="money">{{ a.cantidad | number:'1.0-3' }}</td>
+                <td class="money">{{ a.precioUnitario | number:'1.2-2' }} €</td>
+                <td class="money">{{ a.importe | number:'1.2-2' }} €</td>
+              </tr>
+              <tr *ngIf="!d.articulos.length">
+                <td colspan="5" class="obra-empty">Todavía no hay artículos. Añádelos a medida que avance la obra.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="d.trabajo.estadoObra === 'PENDIENTE' || d.trabajo.estadoObra === 'EN_CURSO'">
+          <fieldset class="obra-fieldset" [disabled]="guardandoObraDetalle">
+            <legend>Añadir artículo</legend>
+            <div class="work-form obra-item-form">
+              <label class="field">Fecha *<input type="date" class="form-control" [(ngModel)]="nuevoArticuloObra.fecha"
+                  required /></label>
+              <label class="field">Artículo *<input class="form-control" [(ngModel)]="nuevoArticuloObra.descripcion"
+                  maxlength="500" placeholder="Material o servicio" required /></label>
+              <label class="field">Cantidad *<input type="number" min="0.001" step="0.001" class="form-control"
+                  [(ngModel)]="nuevoArticuloObra.cantidad" required /></label>
+              <label class="field">Precio unitario (€) *<input type="number" min="0" step="0.01" class="form-control"
+                  [(ngModel)]="nuevoArticuloObra.precioUnitario" required /></label>
+            </div>
+            <div class="card-footer"><span>El artículo se añadirá al total de la obra.</span><button type="button"
+                class="primary-btn" (click)="guardarArticuloObra()" [disabled]="guardandoObraDetalle">Añadir
+                artículo</button></div>
+          </fieldset>
+        </div>
+        <p class="obra-notice" *ngIf="d.trabajo.estadoObra === 'FINALIZADA' || d.trabajo.estadoObra === 'CANCELADA'">
+          Para añadir artículos, cambia el estado a Pendiente o En curso.</p>
+        <div class="obra-section-heading">
+          <h4>Historial de pagos</h4><span class="count-badge">{{ d.pagos.length }} pagos</span>
+        </div>
+        <div class="table-responsive">
+          <table class="detail-table obra-payments-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th class="money">Importe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of d.pagos">
+                <td>{{ p.fecha | date:'dd/MM/yyyy' }}</td>
+                <td>{{ p.concepto || 'Pago de la obra' }}</td>
+                <td class="money paid-value">{{ p.importe | number:'1.2-2' }} €</td>
+              </tr>
+              <tr *ngIf="!d.pagos.length">
+                <td colspan="3" class="obra-empty">Todavía no hay pagos registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="d.trabajo.estadoObra !== 'CANCELADA'">
+          <fieldset class="obra-fieldset" [disabled]="guardandoObraDetalle">
+            <legend>Registrar pago</legend>
+            <div class="work-form obra-payment-form">
+              <label class="field">Fecha del pago *<input type="date" class="form-control"
+                  [(ngModel)]="nuevoPagoObra.fecha" required /></label>
+              <label class="field">Importe (€) *<input type="number" min="0.01" step="0.01" class="form-control"
+                  [(ngModel)]="nuevoPagoObra.importe" required /></label>
+              <label class="field">Concepto<input class="form-control" [(ngModel)]="nuevoPagoObra.concepto"
+                  maxlength="500" placeholder="Adelanto, segundo pago…" /></label>
+            </div>
+            <div class="card-footer"><span>Cada pago conserva su fecha e importe. Los adelantos se muestran como
+                anticipo a cuenta.</span><button type="button" class="primary-btn" (click)="guardarPagoObra()"
+                [disabled]="guardandoObraDetalle">Registrar pago</button></div>
+          </fieldset>
+        </div>
+        <p class="obra-notice" *ngIf="d.trabajo.estadoObra === 'CANCELADA'">Obra cancelada. Se conserva el historial de
+          artículos y pagos.</p>
       </article>
     </section>
   </div>

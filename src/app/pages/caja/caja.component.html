@@ -1,0 +1,302 @@
+<main class="caja-page">
+    <header class="page-header">
+        <div>
+            <span class="eyebrow">{{ empresa }}</span>
+            <h1>Caja</h1>
+        </div>
+
+        <nav class="caja-tabs" aria-label="Secciones de caja">
+            <button type="button" [class.active]="vistaCaja === 'actual'" (click)="vistaCaja = 'actual'"
+                [disabled]="ocupado">
+                Caja actual
+            </button>
+
+            <button type="button" [class.active]="vistaCaja === 'historial'"
+                (click)="vistaCaja = 'historial'; historial()" [disabled]="ocupado">
+                Historial
+            </button>
+        </nav>
+    </header>
+
+    <p class="error" role="alert" *ngIf="error">
+        {{ error }}
+    </p>
+
+    <p class="success" role="status" *ngIf="aviso">
+        {{ aviso }}
+    </p>
+
+    <p *ngIf="cargando" role="status">
+        Consultando caja…
+    </p>
+
+    <!-- CAJA ACTUAL -->
+    <ng-container *ngIf="vistaCaja === 'actual'">
+        <section class="card caja-cerrada" *ngIf="!actual && !cargando">
+            <span class="estado">Caja cerrada</span>
+            <h2>No hay una caja abierta</h2>
+
+            <button type="button" (click)="abrir()" [disabled]="ocupado || !empresa">
+                {{ ocupado ? 'Abriendo…' : 'Abrir caja' }}
+            </button>
+        </section>
+
+        <ng-container *ngIf="actual as c">
+            <section class="card">
+                <div class="heading">
+                    <div>
+                        <span class="estado abierta">Caja abierta</span>
+                        <h2>Caja #{{ c.id }}</h2>
+                        <p>Abierta el {{ fecha(c.apertura) }}</p>
+                    </div>
+
+                    <button type="button" class="secondary" (click)="cargarActual()" [disabled]="ocupado || cargando">
+                        Actualizar
+                    </button>
+                </div>
+
+                <div class="cobros-grid">
+                    <article class="cobro efectivo">
+                        <span>Efectivo</span>
+                        <strong>{{ c.efectivo | number:'1.2-2' }} €</strong>
+                    </article>
+
+                    <article class="cobro tpv">
+                        <span>TPV / Tarjeta</span>
+                        <strong>{{ c.tpv | number:'1.2-2' }} €</strong>
+                    </article>
+
+                    <article class="cobro transferencia">
+                        <span>Transferencia</span>
+                        <strong>{{ c.transferencia | number:'1.2-2' }} €</strong>
+                    </article>
+                </div>
+
+                <p *ngIf="c.otros !== 0">
+                    Otros métodos: {{ c.otros | number:'1.2-2' }} €
+                </p>
+
+                <div class="total-caja">
+                    <span>Total cobrado</span>
+                    <strong>{{ c.totalCobrado | number:'1.2-2' }} €</strong>
+                </div>
+
+                <button type="button" class="secondary" (click)="ver(c.id)" [disabled]="ocupado">
+                    Ver movimientos
+                </button>
+            </section>
+
+            <section class="card">
+                <h2>Cerrar caja</h2>
+
+                <p>
+                    Cuenta el efectivo disponible e introduce el importe.
+                </p>
+
+                <form class="fields" (ngSubmit)="cerrar()">
+                    <label>
+                        Efectivo contado (€)
+                        <input type="number" name="efectivoContado" min="0" step="0.01" [(ngModel)]="efectivoContado"
+                            required />
+                    </label>
+
+                    <label>
+                        Observaciones (opcional)
+                        <input name="observaciones" [(ngModel)]="observaciones" maxlength="500" />
+                    </label>
+
+                    <button type="submit" [disabled]="ocupado || cargando">
+                        {{ ocupado ? 'Cerrando…' : 'Cerrar caja' }}
+                    </button>
+                </form>
+            </section>
+        </ng-container>
+    </ng-container>
+
+    <!-- HISTORIAL -->
+    <section class="card" *ngIf="vistaCaja === 'historial'">
+        <h2>Cajas guardadas</h2>
+
+        <form class="fields" (ngSubmit)="filtrar()">
+            <label>
+                Desde
+                <input type="date" name="desde" [(ngModel)]="desde" required />
+            </label>
+
+            <label>
+                Hasta
+                <input type="date" name="hasta" [(ngModel)]="hasta" required />
+            </label>
+
+            <button type="submit" [disabled]="ocupado">
+                Buscar
+            </button>
+        </form>
+
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Caja</th>
+                        <th>Apertura</th>
+                        <th>Cierre</th>
+                        <th>Total cobrado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let c of cajas">
+                        <td>#{{ c.id }}</td>
+                        <td>{{ fecha(c.apertura) }}</td>
+                        <td>{{ c.cierre ? fecha(c.cierre) : 'Abierta' }}</td>
+                        <td>{{ c.totalCobrado | number:'1.2-2' }} €</td>
+
+                        <td>
+                            <button type="button" class="secondary" (click)="ver(c.id)" [disabled]="ocupado">
+                                Ver detalle
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p *ngIf="!cajas.length">
+            No hay cajas en estas fechas.
+        </p>
+
+        <div class="actions">
+            <button type="button" class="secondary" (click)="paginar(-1)" [disabled]="pagina === 0 || ocupado">
+                Anterior
+            </button>
+
+            <span>Página {{ pagina + 1 }}</span>
+
+            <button type="button" class="secondary" (click)="paginar(1)"
+                [disabled]="(pagina + 1) * 30 >= total || ocupado">
+                Siguiente
+            </button>
+        </div>
+    </section>
+
+    <!-- DETALLE -->
+    <section class="card" *ngIf="detalle && (
+      vistaCaja === 'historial' ||
+      (actual && detalle.caja.id === actual.id)
+    )">
+        <div class="heading">
+            <div>
+                <span class="estado" [class.abierta]="!detalle.caja.cierre">
+                    {{ detalle.caja.cierre ? 'Caja cerrada' : 'Caja abierta' }}
+                </span>
+
+                <h2>Detalle de caja #{{ detalle.caja.id }}</h2>
+            </div>
+
+            <button type="button" class="secondary" (click)="detalle = null">
+                Cerrar detalle
+            </button>
+        </div>
+
+        <p>
+            Apertura: {{ fecha(detalle.caja.apertura) }} ·
+            {{ detalle.caja.abiertaPor }}
+        </p>
+
+        <p *ngIf="detalle.caja.cierre">
+            Cierre: {{ fecha(detalle.caja.cierre) }} ·
+            {{ detalle.caja.cerradaPor }}
+        </p>
+
+        <div class="cobros-grid" *ngIf="vistaCaja === 'historial'">
+            <article class="cobro efectivo">
+                <span>Efectivo</span>
+                <strong>
+                    {{ detalle.caja.efectivo | number:'1.2-2' }} €
+                </strong>
+            </article>
+
+            <article class="cobro tpv">
+                <span>TPV / Tarjeta</span>
+                <strong>
+                    {{ detalle.caja.tpv | number:'1.2-2' }} €
+                </strong>
+            </article>
+
+            <article class="cobro transferencia">
+                <span>Transferencia</span>
+                <strong>
+                    {{ detalle.caja.transferencia | number:'1.2-2' }} €
+                </strong>
+            </article>
+        </div>
+
+        <p *ngIf="detalle.caja.otros !== 0">
+            Otros métodos: {{ detalle.caja.otros | number:'1.2-2' }} €
+        </p>
+
+        <div class="arqueo" *ngIf="detalle.caja.cierre">
+            <span>
+                Efectivo esperado:
+                <strong>
+                    {{ detalle.caja.efectivoEsperado | number:'1.2-2' }} €
+                </strong>
+            </span>
+
+            <span>
+                Efectivo contado:
+                <strong>
+                    {{ detalle.caja.efectivoContado | number:'1.2-2' }} €
+                </strong>
+            </span>
+
+            <span [class.desajuste]="detalle.caja.diferencia !== 0">
+                Diferencia:
+                <strong>
+                    {{ detalle.caja.diferencia | number:'1.2-2' }} €
+                </strong>
+            </span>
+        </div>
+
+        <p *ngIf="detalle.caja.observaciones">
+            {{ detalle.caja.observaciones }}
+        </p>
+
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha y hora</th>
+                        <th>Concepto</th>
+                        <th>Método</th>
+                        <th>Importe</th>
+                        <th>Usuario</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let m of detalle.movimientos">
+                        <td>{{ fecha(m.fecha) }}</td>
+                        <td>{{ m.concepto }}</td>
+
+                        <td>
+                            <span class="metodo" [class.metodo-efectivo]="m.metodo === 'EFECTIVO'"
+                                [class.metodo-tpv]="m.metodo === 'TPV'"
+                                [class.metodo-transferencia]="m.metodo === 'TRANSFERENCIA'">
+                                {{ m.metodo }}
+                            </span>
+                        </td>
+
+                        <td>{{ m.importe | number:'1.2-2' }} €</td>
+                        <td>{{ m.actor }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p *ngIf="!detalle.movimientos.length">
+            Sin movimientos.
+        </p>
+    </section>
+</main>

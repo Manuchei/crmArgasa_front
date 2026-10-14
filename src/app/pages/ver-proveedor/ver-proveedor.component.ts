@@ -26,10 +26,24 @@ export class VerProveedorComponent implements OnInit {
 
   activeTab: 'datos' | 'albaranes' | 'facturacion' | 'productos' = 'datos';
 
-  nuevoTrabajo = {
+  nuevoTrabajo = this.obraVacia();
+
+  obraDetalle: any = null;
+  cargandoObra = false;
+  guardandoObraDetalle = false;
+  estadoSeleccionado = '';
+
+  nuevoArticuloObra = {
+    fecha: this.fechaHoy(),
     descripcion: '',
+    cantidad: 1,
+    precioUnitario: 0,
+  };
+
+  nuevoPagoObra = {
+    fecha: this.fechaHoy(),
     importe: 0,
-    importePagado: 0,
+    concepto: '',
   };
 
   nuevoProducto: IProducto = this.getNuevoProductoVacio();
@@ -148,47 +162,44 @@ export class VerProveedorComponent implements OnInit {
   }
 
   guardarTrabajo(): void {
-    if (!this.proveedor?.id) {
-      alert('Proveedor no cargado');
+    if (!this.proveedor?.id || this.guardandoTrabajo) return;
+
+    const t = this.nuevoTrabajo;
+
+    if (
+      !t.descripcion.trim() ||
+      !t.fecha ||
+      !t.nombreContacto.trim() ||
+      !t.direccionObra.trim() ||
+      !t.telefonoObra.trim()
+    ) {
+      alert('Completa nombre de obra, fecha, contacto, dirección y teléfono.');
       return;
     }
-
-    if (!this.nuevoTrabajo.descripcion.trim()) {
-      alert('La descripción es obligatoria');
-      return;
-    }
-
-    const payload = {
-      descripcion: this.nuevoTrabajo.descripcion.trim(),
-      importe: this.normalizarNumero(this.nuevoTrabajo.importe),
-      importePagado: this.normalizarNumero(this.nuevoTrabajo.importePagado),
-    };
 
     this.guardandoTrabajo = true;
 
     this.proveedorService
-      .crearTrabajoProveedor(this.proveedor.id, payload)
+      .crearObra(this.proveedor.id, {
+        descripcion: t.descripcion.trim(),
+        fecha: t.fecha,
+        nombreContacto: t.nombreContacto.trim(),
+        direccionObra: t.direccionObra.trim(),
+        telefonoObra: t.telefonoObra.trim(),
+      })
       .subscribe({
-        next: () => {
-          this.nuevoTrabajo = {
-            descripcion: '',
-            importe: 0,
-            importePagado: 0,
-          };
-
+        next: (obra) => {
           this.guardandoTrabajo = false;
+          this.nuevoTrabajo = this.obraVacia();
           this.cargarTrabajos();
+          this.abrirObra(obra);
         },
         error: (err) => {
-          console.error('Error al guardar trabajo', err);
           this.guardandoTrabajo = false;
-          alert(
-            err?.error?.message || err?.error || 'Error al guardar el trabajo',
-          );
+          this.errorObra(err);
         },
       });
   }
-
   eliminarTrabajo(id: number): void {
     this.proveedorService.eliminarTrabajo(id).subscribe({
       next: () => {
@@ -292,16 +303,11 @@ export class VerProveedorComponent implements OnInit {
       return;
     }
 
-    if (!this.numeroAlbaranProveedor.trim()) {
-      alert('Introduce el nº de albarán del proveedor');
-      return;
-    }
-
     this.creandoAlbaran = true;
 
     const payload = {
-      numeroProveedor: this.numeroAlbaranProveedor.trim(),
-      fechaEmision: new Date().toISOString().slice(0, 10),
+      numeroProveedor: this.numeroAlbaranProveedor?.trim() || null,
+      fechaEmision: this.fechaHoy(),
     };
 
     this.proveedorService
@@ -455,5 +461,160 @@ export class VerProveedorComponent implements OnInit {
 
   formatearIbanVisual(iban?: string): string {
     return (iban || '').match(/.{1,4}/g)?.join(' ') || '';
+  }
+
+  private fechaHoy(): string {
+    const fecha = new Date();
+    const anio = fecha.getFullYear();
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    return `${anio}-${mes}-${dia}`;
+  }
+
+  private obraVacia() {
+    return {
+      descripcion: '',
+      fecha: this.fechaHoy(),
+      nombreContacto: '',
+      direccionObra: '',
+      telefonoObra: '',
+    };
+  }
+
+  private errorObra(err: any): void {
+    const mensaje = err?.error?.message;
+
+    alert(
+      mensaje && mensaje !== 'No message available'
+        ? mensaje
+        : 'No se pudo completar la operación. Revisa la respuesta del backend.',
+    );
+  }
+
+  abrirObra(t: any): void {
+    if (this.cargandoObra || this.guardandoObraDetalle) return;
+
+    this.cargandoObra = true;
+    this.obraDetalle = null;
+
+    this.proveedorService.getObra(t.id).subscribe({
+      next: (detalle) => {
+        this.obraDetalle = detalle;
+        this.estadoSeleccionado = detalle.trabajo.estadoObra;
+        this.cargandoObra = false;
+      },
+      error: (err) => {
+        this.cargandoObra = false;
+        this.errorObra(err);
+      },
+    });
+  }
+
+  cerrarObra(): void {
+    if (this.guardandoObraDetalle) return;
+    this.obraDetalle = null;
+  }
+
+  private actualizarDetalleObra(detalle: any): void {
+    this.obraDetalle = detalle;
+    this.estadoSeleccionado = detalle.trabajo.estadoObra;
+    this.guardandoObraDetalle = false;
+    this.cargarTrabajos();
+  }
+
+  guardarArticuloObra(): void {
+    if (!this.obraDetalle || this.guardandoObraDetalle) return;
+
+    const a = this.nuevoArticuloObra;
+    const cantidad = Number(a.cantidad);
+    const precio = Number(a.precioUnitario);
+
+    if (
+      !a.fecha ||
+      !a.descripcion.trim() ||
+      !Number.isFinite(cantidad) ||
+      cantidad <= 0 ||
+      !Number.isFinite(precio) ||
+      precio < 0
+    ) {
+      alert('Introduce fecha, artículo, cantidad válida y precio.');
+      return;
+    }
+
+    this.guardandoObraDetalle = true;
+
+    this.proveedorService
+      .agregarArticuloObra(this.obraDetalle.trabajo.id, {
+        fecha: a.fecha,
+        descripcion: a.descripcion.trim(),
+        cantidad,
+        precioUnitario: precio,
+      })
+      .subscribe({
+        next: (detalle) => {
+          this.nuevoArticuloObra = {
+            fecha: this.fechaHoy(),
+            descripcion: '',
+            cantidad: 1,
+            precioUnitario: 0,
+          };
+          this.actualizarDetalleObra(detalle);
+        },
+        error: (err) => {
+          this.guardandoObraDetalle = false;
+          this.errorObra(err);
+        },
+      });
+  }
+
+  guardarPagoObra(): void {
+    if (!this.obraDetalle || this.guardandoObraDetalle) return;
+
+    const p = this.nuevoPagoObra;
+    const importe = Number(p.importe);
+
+    if (!p.fecha || !Number.isFinite(importe) || importe <= 0) {
+      alert('Introduce una fecha y un pago mayor que cero.');
+      return;
+    }
+
+    this.guardandoObraDetalle = true;
+
+    this.proveedorService
+      .agregarPagoObra(this.obraDetalle.trabajo.id, {
+        fecha: p.fecha,
+        importe,
+        concepto: p.concepto.trim(),
+      })
+      .subscribe({
+        next: (detalle) => {
+          this.nuevoPagoObra = {
+            fecha: this.fechaHoy(),
+            importe: 0,
+            concepto: '',
+          };
+          this.actualizarDetalleObra(detalle);
+        },
+        error: (err) => {
+          this.guardandoObraDetalle = false;
+          this.errorObra(err);
+        },
+      });
+  }
+
+  guardarEstadoObra(): void {
+    if (!this.obraDetalle || this.guardandoObraDetalle) return;
+
+    this.guardandoObraDetalle = true;
+
+    this.proveedorService
+      .cambiarEstadoObra(this.obraDetalle.trabajo.id, this.estadoSeleccionado)
+      .subscribe({
+        next: (detalle) => this.actualizarDetalleObra(detalle),
+        error: (err) => {
+          this.guardandoObraDetalle = false;
+          this.errorObra(err);
+        },
+      });
   }
 }

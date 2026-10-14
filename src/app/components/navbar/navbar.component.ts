@@ -69,6 +69,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
+  get accesoGeneral(): boolean {
+    return this.auth.hasRole('USER', 'ADMIN', 'DEVELOPER');
+  }
+
+  get gestionaEquipo(): boolean {
+    return this.auth.hasRole('ADMIN', 'DEVELOPER');
+  }
+
   get nombreEmpresa(): string {
     if (this.empresa === 'ARGASA') return 'Argasa';
     if (this.empresa === 'ELECTROLUGA') return 'Electroluga';
@@ -80,65 +88,91 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   get nombreRol(): string {
+    if (this.auth.hasRole('DEVELOPER')) return 'Developer';
     if (this.auth.hasRole('ADMIN')) return 'Administrador';
-    if (this.auth.hasRole('TRANSPORTISTA')) return 'Transportista';
     if (this.auth.hasRole('USER')) return 'Usuario';
+    if (this.auth.hasRole('TRANSPORTISTA')) return 'Transportista';
     return 'Cuenta';
   }
 
   get rutaInicio(): string {
-    return this.auth.hasRole('USER') ? '/app/dashboard-user' : '/app/dashboard';
+    return this.accesoGeneral ? '/app/dashboard' : '/app/rutas';
   }
 
   get grupos(): GrupoNavbar[] {
-    const grupos: GrupoNavbar[] = [];
-
-    if (this.auth.hasRole('ADMIN', 'USER')) {
-      grupos.push({
-        id: 'gestion',
-        texto: 'Gestión',
-        enlaces: [
-          { texto: 'Clientes', ruta: '/app/clientes' },
-          { texto: 'Proveedores', ruta: '/app/proveedores' },
-          { texto: 'Productos', ruta: '/app/productos' },
-        ],
-      });
-    }
-
-    const logistica: EnlaceNavbar[] = [];
-
-    if (this.auth.hasRole('ADMIN', 'TRANSPORTISTA')) {
-      logistica.push({ texto: 'Rutas', ruta: '/app/rutas' });
-    }
-
-    if (this.auth.hasRole('ADMIN')) {
-      logistica.push(
-        { texto: 'Transportistas', ruta: '/app/transportistas' },
-        { texto: 'Almacén', ruta: '/app/almacen' },
-      );
-    }
-
-    if (logistica.length) {
-      grupos.push({
-        id: 'logistica',
-        texto: 'Logística',
-        enlaces: logistica,
-      });
-    }
-
-    return grupos;
+  if (!this.accesoGeneral) {
+    return this.auth.hasRole('TRANSPORTISTA')
+      ? [
+          {
+            id: 'logistica',
+            texto: 'Rutas',
+            enlaces: [
+              { texto: 'Ver rutas', ruta: '/app/rutas' },
+              { texto: 'Nueva ruta', ruta: '/app/rutas/nueva' },
+              { texto: 'Rutas del día', ruta: '/app/rutas/dia' },
+            ],
+          },
+        ]
+      : [];
   }
 
+  return [
+    {
+      id: 'gestion',
+      texto: 'Gestión',
+      enlaces: [
+        { texto: 'Clientes', ruta: '/app/clientes' },
+        { texto: 'Proveedores', ruta: '/app/proveedores' },
+        { texto: 'Productos', ruta: '/app/productos' },
+        { texto: 'Caja', ruta: '/app/caja' },
+      ],
+    },
+    {
+      id: 'logistica',
+      texto: 'Logística',
+      enlaces: [
+        { texto: 'Rutas', ruta: '/app/rutas' },
+        { texto: 'Transportistas', ruta: '/app/transportistas' },
+        { texto: 'Almacén', ruta: '/app/almacen' },
+      ],
+    },
+    {
+      id: 'organizacion',
+      texto: 'Organización',
+      enlaces: [
+        { texto: 'Calendario', ruta: '/app/calendario' },
+        { texto: 'Mi jornada', ruta: '/app/mi-jornada' },
+        ...(this.gestionaEquipo
+          ? [
+              {
+                texto: 'Fichajes del equipo y empleados',
+                ruta: '/app/control-fichajes',
+              },
+            ]
+          : []),
+      ],
+    },
+  ];
+}
+
   canInicio(): boolean {
-    return !(this.auth.hasRole('TRANSPORTISTA') && !this.auth.hasRole('ADMIN'));
+    return this.accesoGeneral;
   }
 
   canCalendario(): boolean {
-    return this.auth.hasRole('ADMIN');
+    return this.accesoGeneral;
   }
 
   canInformes(): boolean {
-    return this.auth.hasRole('ADMIN');
+    return this.accesoGeneral;
+  }
+
+  canCaja(): boolean {
+    return this.accesoGeneral;
+  }
+
+  canUsuarios(): boolean {
+    return this.auth.hasRole('DEVELOPER');
   }
 
   trackGrupo(_: number, grupo: GrupoNavbar): string {

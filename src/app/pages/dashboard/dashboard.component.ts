@@ -11,6 +11,8 @@ import { LlamadasService } from '../../services/llamadas.service';
 import { TareasService } from '../../services/tareas.service';
 import { VisitasService } from '../../services/visitas.service';
 import { PushNotificationsService } from '../../services/push-notifications.service';
+import { AccionesInicioComponent } from
+  '../../components/acciones-inicio/acciones-inicio.component';
 
 interface ElementoAgenda {
   id: number;
@@ -24,7 +26,7 @@ interface ElementoAgenda {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AccionesInicioComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })

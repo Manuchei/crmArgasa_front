@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { StatsService } from '../../services/stats-service.service';
 import { Router } from '@angular/router';
+import { AccionesInicioComponent } from '../../components/acciones-inicio/acciones-inicio.component';
 
 @Component({
   selector: 'app-dashboard-user',
   standalone: true,
   templateUrl: './dashboard-user.component.html',
+  imports: [AccionesInicioComponent],
 })
 export class DashboardUserComponent implements OnInit {
   clientes = 0;

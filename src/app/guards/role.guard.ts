@@ -15,6 +15,14 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
       return true;
     }
 
-    return router.parseUrl('/app/dashboard');
+    if (auth.hasRole('USER', 'ADMIN', 'DEVELOPER')) {
+      return router.parseUrl('/app/dashboard');
+    }
+
+    if (auth.hasRole('TRANSPORTISTA')) {
+      return router.parseUrl('/app/rutas');
+    }
+
+    return router.parseUrl('/login');
   };
 };

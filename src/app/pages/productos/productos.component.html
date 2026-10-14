@@ -76,6 +76,12 @@
           </div>
 
           <div class="field">
+            <label for="product-serial">Número de serie</label>
+            <input id="product-serial" type="text" class="form-control" [(ngModel)]="form.numeroSerie"
+              name="numeroSerie" maxlength="100" placeholder="Ej.: SN2026000123" />
+          </div>
+
+          <div class="field">
             <label for="product-family">Familia *</label>
             <input id="product-family" class="form-control" [(ngModel)]="form.familia" name="familia" required />
           </div>

@@ -88,4 +88,36 @@ export class ProveedorService {
   eliminarAlbaranProveedor(albaranId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiAlbaranesProveedor}/${albaranId}`);
   }
+
+  crearObra(proveedorId: number, payload: any): Observable<any> {
+    return this.http.post<any>(
+      `${environment.apiUrl}/obras-proveedor/proveedor/${proveedorId}`,
+      payload,
+    );
+  }
+
+  getObra(id: number): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/obras-proveedor/${id}`);
+  }
+
+  agregarArticuloObra(id: number, payload: any): Observable<any> {
+    return this.http.post<any>(
+      `${environment.apiUrl}/obras-proveedor/${id}/articulos`,
+      payload,
+    );
+  }
+
+  agregarPagoObra(id: number, payload: any): Observable<any> {
+    return this.http.post<any>(
+      `${environment.apiUrl}/obras-proveedor/${id}/pagos`,
+      payload,
+    );
+  }
+
+  cambiarEstadoObra(id: number, estado: string): Observable<any> {
+    return this.http.patch<any>(
+      `${environment.apiUrl}/obras-proveedor/${id}/estado`,
+      { estado },
+    );
+  }
 }

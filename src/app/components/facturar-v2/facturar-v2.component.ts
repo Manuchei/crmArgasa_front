@@ -510,9 +510,9 @@ export class FacturarV2Component implements OnInit, OnChanges {
   }
 
   private mensajeConfirmacionEmision(f: FacturaV2Response): string {
-    return this.usaFacturaDirecta(f)
+    return this.tieneOperacionFacturaDirecta(f)
       ? '¿Emitir esta factura en FacturaDirecta, en el entorno de PRUEBAS?'
-      : `¿Confirmar y emitir la factura ${this.getNumeroFacturaCliente(f)}?`;
+      : `¿Confirmar y emitir la factura ${this.getNumeroFacturaCliente(f)} sin QR?`;
   }
 
   usaFacturaDirecta(f: FacturaV2Response): boolean {
@@ -523,8 +523,7 @@ export class FacturarV2Component implements OnInit, OnChanges {
   }
 
   private ejecutarEmision(f: FacturaV2Response): void {
-    const usaIntegracion = this.usaFacturaDirecta(f);
-
+    const usaIntegracion = this.tieneOperacionFacturaDirecta(f);
     this.loading = true;
     this.error = null;
 
@@ -743,17 +742,25 @@ export class FacturarV2Component implements OnInit, OnChanges {
     this.error = null;
 
     this.factService.prepararBorradorFacturaDirecta(facturaId).subscribe({
-      next: (respuesta) => {
-        this.preparandoFacturaDirecta = false;
+      next: () => {
+        this.factService.getFacturaById(facturaId).subscribe({
+          next: (actualizada) => {
+            this.factura = actualizada;
+            this.preparandoFacturaDirecta = false;
+            this.cargarFacturasCliente();
 
-        const id = respuesta?.content?.uuid;
-        const borrador = respuesta?.content?.main?.draft;
-
-        alert(
-          `FacturaDirecta: ${id ?? 'ID no recibido'}\nBorrador: ${borrador}`,
-        );
-
-        this.cargarFacturasCliente();
+            alert('Factura preparada correctamente en FacturaDirecta.');
+          },
+          error: (err) => {
+            this.preparandoFacturaDirecta = false;
+            this.error = this.mensajeError(
+              err,
+              'La preparación terminó, pero no se pudo actualizar la factura. Vuelve a abrirla antes de emitir.',
+            );
+            this.factura = null;
+            this.cargarFacturasCliente();
+          },
+        });
       },
       error: (err) => {
         this.preparandoFacturaDirecta = false;
@@ -806,5 +813,13 @@ export class FacturarV2Component implements OnInit, OnChanges {
       default:
         return f.verifactuEstado || 'Sin estado disponible';
     }
+  }
+
+  private tieneOperacionFacturaDirecta(f: FacturaV2Response): boolean {
+    return Boolean(
+      f.facturaDirectaId?.trim() ||
+      f.facturaDirectaCompanyId?.trim() ||
+      f.verifactuEstado?.trim(),
+    );
   }
 }

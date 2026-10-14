@@ -6,6 +6,7 @@ export interface IProducto {
   referencia: string;
   marca: string;
   modelo: string;
+  numeroSerie?: string;
   familia: string;
   subfamilia: string;
   descripcion: string;

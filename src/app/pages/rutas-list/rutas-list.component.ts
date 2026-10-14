@@ -5,6 +5,7 @@ import { Ruta } from '../../interfaces/iruta';
 import { FormsModule } from '@angular/forms';
 import { NgIf, NgFor } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { AccionesInicioComponent } from '../../components/acciones-inicio/acciones-inicio.component';
 
 interface GrupoTransportista {
   nombre: string;
@@ -24,7 +25,7 @@ interface GrupoFecha {
   standalone: true,
   templateUrl: './rutas-list.component.html',
   styleUrls: ['./rutas-list.component.scss'],
-  imports: [FormsModule, NgIf, NgFor],
+  imports: [FormsModule, NgIf, NgFor, AccionesInicioComponent],
 })
 export class RutasListComponent implements OnInit {
   rutas: Ruta[] = [];

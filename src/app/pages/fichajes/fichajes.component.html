@@ -1,0 +1,399 @@
+<main class="fichajes-page">
+    <header class="page-heading">
+        <span class="eyebrow">NOVEXAPP / JORNADA LABORAL</span>
+
+        <h1>
+            {{
+            vista === 'mi'
+            ? 'Mi jornada'
+            : vista === 'control'
+            ? 'Fichajes del equipo'
+            : 'Empleados'
+            }}
+        </h1>
+
+        <p>
+            {{
+            vista === 'mi'
+            ? 'Registra tu entrada y salida.'
+            : 'Gestiona los empleados y sus jornadas.'
+            }}
+        </p>
+    </header>
+
+    <nav class="tabs" aria-label="Secciones de fichajes" *ngIf="admin">
+        <button type="button" [class.active]="vista === 'mi'" (click)="cambiarVista('mi')" [disabled]="bloqueado">
+            Mi jornada
+        </button>
+
+        <button type="button" [class.active]="vista === 'control'" (click)="cambiarVista('control')"
+            [disabled]="bloqueado">
+            Fichajes del equipo
+        </button>
+
+        <button type="button" [class.active]="vista === 'empleados'" (click)="cambiarVista('empleados')"
+            [disabled]="bloqueado">
+            Empleados
+        </button>
+    </nav>
+
+    <p class="error" role="alert" *ngIf="error">
+        {{ error }}
+    </p>
+
+    <p class="success" role="status" *ngIf="aviso">
+        {{ aviso }}
+    </p>
+
+    <section class="card jornada jornada-simple" *ngIf="vista === 'mi'">
+        <p *ngIf="cargandoEstado" role="status">
+            Consultando tu jornada…
+        </p>
+
+        <div class="notice" *ngIf="errorEstado">
+            {{ errorEstado }}
+
+            <button type="button" class="secondary small" (click)="cargarEstado()"
+                [disabled]="cargandoEstado || ocupado">
+                Reintentar
+            </button>
+        </div>
+
+        <ng-container *ngIf="estado as e">
+            <div class="jornada-heading">
+                <div>
+                    <span class="eyebrow">{{ e.empleado.nombre }}</span>
+
+                    <h2>
+                        {{ e.abierta ? 'Estás trabajando' : 'Fuera de jornada' }}
+                    </h2>
+
+                    <p *ngIf="e.abierta">
+                        Entrada: {{ fecha(e.abierta.entrada) }}
+                    </p>
+
+                    <p *ngIf="!e.abierta && e.empleado.activo">
+                        Pulsa el botón cuando empieces a trabajar.
+                    </p>
+
+                    <p *ngIf="!e.empleado.activo">
+                        Tu ficha está inactiva. Contacta con el administrador.
+                    </p>
+                </div>
+
+                <button type="button" class="primary boton-fichaje" (click)="fichar(e.abierta ? 'salida' : 'entrada')"
+                    [disabled]="bloqueado || !e.empleado.activo || !!pendiente">
+                    {{
+                    ocupado
+                    ? 'Registrando…'
+                    : e.abierta
+                    ? 'Fichar salida'
+                    : 'Fichar entrada'
+                    }}
+                </button>
+            </div>
+
+            <p class="jornada-note">
+                Tu fichaje es común a Argasa y Electroluga.
+            </p>
+        </ng-container>
+
+        <div class="notice" *ngIf="pendiente">
+            Tu fichaje de {{ pendiente.tipo }} está pendiente de confirmar.
+
+            <button type="button" class="secondary small" (click)="enviarPendiente()" [disabled]="bloqueado">
+                {{ ocupado ? 'Confirmando…' : 'Reintentar fichaje' }}
+            </button>
+        </div>
+
+        <button type="button" class="enlace-fichajes" (click)="alternarMisFichajes()" [disabled]="bloqueado"
+            [attr.aria-expanded]="mostrarMisFichajes" aria-controls="registros-fichajes">
+            {{
+            mostrarMisFichajes
+            ? 'Ocultar mis fichajes ↑'
+            : 'Ver mis fichajes →'
+            }}
+        </button>
+    </section>
+
+    <section id="registros-fichajes" *ngIf="
+      (vista === 'mi' && mostrarMisFichajes) ||
+      (vista === 'control' && admin)
+    ">
+        <form class="card filters" (ngSubmit)="filtrar()">
+            <label>
+                Desde
+                <input type="date" name="desde" [(ngModel)]="desde" required [disabled]="bloqueado" />
+            </label>
+
+            <label>
+                Hasta
+                <input type="date" name="hasta" [(ngModel)]="hasta" required [disabled]="bloqueado" />
+            </label>
+
+            <label *ngIf="vista === 'control' && admin">
+                Empleado
+                <select name="empleadoId" [(ngModel)]="empleadoId" [disabled]="bloqueado">
+                    <option value="">Todos los empleados</option>
+
+                    <option *ngFor="let e of empleados" [value]="e.id">
+                        {{ e.nombre }}{{ e.activo ? '' : ' (inactivo)' }}
+                    </option>
+                </select>
+            </label>
+
+            <button type="submit" class="primary" [disabled]="bloqueado">
+                Consultar
+            </button>
+        </form>
+
+        <section class="card records">
+            <div class="section-heading">
+                <h2>
+                    {{ vista === 'mi' ? 'Mis fichajes' : 'Fichajes del equipo' }}
+                </h2>
+
+                <span class="muted">
+                    {{ total }} registros ·
+                    {{ duracion(segundosPagina) }} completadas en esta página
+                </span>
+            </div>
+
+            <p class="note">
+                Se muestran las jornadas que coinciden con las fechas
+                seleccionadas. La duración corresponde a cada jornada completa.
+            </p>
+
+            <p class="notice" role="status" *ngIf="cargando">
+                Cargando fichajes…
+            </p>
+
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th *ngIf="vista === 'control' && admin">Empleado</th>
+                            <th>Entrada</th>
+                            <th>Salida</th>
+                            <th>Tiempo trabajado</th>
+                            <th>Estado</th>
+                            <th *ngIf="vista === 'control' && admin">Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let j of registros">
+                            <td *ngIf="vista === 'control' && admin">
+                                {{ j.nombre }}
+                            </td>
+
+                            <td>{{ fecha(j.entrada) }}</td>
+                            <td>{{ fecha(j.salida) }}</td>
+                            <td>{{ duracion(j.segundos) }}</td>
+
+                            <td>
+                                <span class="badge" [class.open]="!j.salida">
+                                    {{ j.salida ? 'Finalizada' : 'En curso' }}
+                                </span>
+                            </td>
+
+                            <td *ngIf="vista === 'control' && admin">
+                                <div class="actions">
+                                    <button type="button" class="secondary small" (click)="editar(j)"
+                                        [disabled]="bloqueado">
+                                        Corregir
+                                    </button>
+
+                                    <button type="button" class="secondary small" (click)="verCorrecciones(j)"
+                                        [disabled]="bloqueado || cargandoAuditoria">
+                                        Historial
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="empty" *ngIf="!registros.length && !cargando">
+                No hay fichajes en estas fechas.
+            </p>
+
+            <footer class="pagination" *ngIf="total > 50">
+                <button type="button" class="secondary small" (click)="paginaAnterior()"
+                    [disabled]="bloqueado || pagina === 0">
+                    Anterior
+                </button>
+
+                <span>Página {{ pagina + 1 }}</span>
+
+                <button type="button" class="secondary small" (click)="paginaSiguiente()"
+                    [disabled]="bloqueado || (pagina + 1) * 50 >= total">
+                    Siguiente
+                </button>
+            </footer>
+        </section>
+
+        <ng-container *ngIf="admin && vista === 'control'">
+            <section class="card" *ngIf="editando as j">
+                <h2>Corregir fichaje de {{ j.nombre }}</h2>
+
+                <p class="note">
+                    Usa fecha y hora con zona:
+                    2026-10-13T08:00:00+02:00.
+                    En invierno, +01:00. El registro original se conserva.
+                </p>
+
+                <p class="note">
+                    Original: {{ fecha(j.entradaOriginal) }} →
+                    {{ fecha(j.salidaOriginal) }}
+                </p>
+
+                <form (ngSubmit)="guardarCorreccion()" class="edit-form">
+                    <label>
+                        Entrada
+                        <input name="entradaEdit" [(ngModel)]="entradaEdit" required [disabled]="ocupado" />
+                    </label>
+
+                    <label>
+                        Salida (vacía para jornada abierta)
+                        <input name="salidaEdit" [(ngModel)]="salidaEdit" [disabled]="ocupado" />
+                    </label>
+
+                    <label class="wide">
+                        Motivo obligatorio
+                        <textarea name="motivo" [(ngModel)]="motivo" required maxlength="500"
+                            [disabled]="ocupado"></textarea>
+                    </label>
+
+                    <div class="actions wide">
+                        <button type="submit" class="primary" [disabled]="bloqueado">
+                            Guardar corrección
+                        </button>
+
+                        <button type="button" class="secondary" (click)="editando = null" [disabled]="ocupado">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card" *ngIf="auditoriaId !== null">
+                <div class="section-heading">
+                    <h2>Historial de correcciones · #{{ auditoriaId }}</h2>
+
+                    <button type="button" class="secondary small" (click)="cerrarAuditoria()">
+                        Cerrar
+                    </button>
+                </div>
+
+                <p *ngIf="cargandoAuditoria" role="status">
+                    Cargando historial…
+                </p>
+
+                <p class="empty" *ngIf="!correcciones.length && !cargandoAuditoria">
+                    Este fichaje no tiene correcciones.
+                </p>
+
+                <article class="audit" *ngFor="let c of correcciones">
+                    <strong>{{ fecha(c.fecha) }} · {{ c.actor }}</strong>
+                    <p>{{ c.motivo }}</p>
+
+                    <p>
+                        Anterior: {{ fecha(c.entradaAnterior) }} →
+                        {{ fecha(c.salidaAnterior) }}
+                    </p>
+
+                    <p>
+                        Corregido: {{ fecha(c.entradaNueva) }} →
+                        {{ fecha(c.salidaNueva) }}
+                    </p>
+                </article>
+            </section>
+        </ng-container>
+    </section>
+
+    <section *ngIf="vista === 'empleados' && admin">
+        <section class="card">
+            <h2>Dar de alta un empleado</h2>
+
+            <p class="note">
+                Selecciona su cuenta de NovexApp.
+                La ficha será común a Argasa y Electroluga.
+            </p>
+
+            <form class="filters inline" (ngSubmit)="alta()">
+                <label>
+                    Usuario
+                    <select name="usuarioId" [(ngModel)]="usuarioId" required [disabled]="bloqueado">
+                        <option value="">Seleccionar usuario</option>
+
+                        <option *ngFor="let u of usuarios" [value]="u.id">
+                            {{ u.nombre }} · {{ u.email }}
+                        </option>
+                    </select>
+                </label>
+
+                <button type="submit" class="primary" [disabled]="bloqueado || !usuarioId">
+                    Dar de alta
+                </button>
+            </form>
+
+            <p class="note" *ngIf="!usuarios.length && !cargandoEmpleados">
+                No hay cuentas pendientes de alta.
+                Las cuentas se crean desde Usuarios.
+            </p>
+        </section>
+
+        <section class="card records">
+            <div class="section-heading">
+                <h2>Empleados registrados</h2>
+
+                <button type="button" class="secondary small" (click)="cargarEmpleados()" [disabled]="bloqueado">
+                    Actualizar
+                </button>
+            </div>
+
+            <p *ngIf="cargandoEmpleados" class="notice" role="status">
+                Cargando empleados…
+            </p>
+
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let e of empleados">
+                            <td>{{ e.nombre }}</td>
+                            <td>{{ e.email }}</td>
+
+                            <td>
+                                <span class="badge" [class.inactive]="!e.activo">
+                                    {{ e.activo ? 'Activo' : 'Inactivo' }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <button type="button" class="secondary small" (click)="activar(e)"
+                                    [disabled]="bloqueado">
+                                    {{ e.activo ? 'Desactivar' : 'Activar' }}
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="empty" *ngIf="!empleados.length && !cargandoEmpleados">
+                Da de alta el primer empleado para comenzar.
+            </p>
+        </section>
+    </section>
+</main>

@@ -661,3 +661,184 @@ button:focus-visible {
     align-self: flex-start;
   }
 }
+
+/* Obras: creación, seguimiento y pagos */
+.obra-create-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.obra-create-form .field-wide {
+  grid-column: 1 / -1;
+}
+.obra-detail .ficha-eyebrow {
+  margin-bottom: 8px;
+}
+.obra-status {
+  align-self: flex-start;
+  width: fit-content;
+}
+.status-progress {
+  color: #285fa4;
+  background: #eaf2fd;
+}
+.status-cancelled {
+  color: #6b7280;
+  background: #edf0f3;
+}
+.anticipo-label {
+  display: block;
+  margin-top: 5px;
+  color: #285fa4;
+  font-size: 11px;
+}
+.obra-state-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 20px 22px;
+}
+.obra-state-bar .field {
+  width: 240px;
+}
+.obra-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 0 22px 22px;
+}
+.obra-resumen > div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 16px;
+  background: #f8fafd;
+  border: 1px solid #dfe6ef;
+  border-radius: 10px;
+  min-width: 0;
+}
+.obra-resumen span {
+  color: #61728a;
+  font-size: 12px;
+}
+.obra-resumen strong {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.obra-resumen .obra-paid {
+  background: #fbfefc;
+  border-color: #adddca;
+}
+.obra-paid strong {
+  color: #237457;
+}
+.obra-resumen .obra-advance {
+  background: #f4f8ff;
+  border-color: #c9ddf7;
+}
+.obra-advance strong {
+  color: #285fa4;
+}
+.obra-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  border-top: 1px solid #e9edf3;
+}
+.obra-section-heading h4 {
+  margin: 0;
+  font-size: 16px;
+}
+.obra-items-table {
+  min-width: 720px;
+}
+.obra-payments-table {
+  min-width: 450px;
+}
+.obra-empty {
+  text-align: center;
+  padding: 26px 18px !important;
+  color: #8492a5 !important;
+}
+.obra-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.obra-fieldset legend {
+  float: none;
+  width: auto;
+  padding: 20px 22px 0;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 750;
+  color: #53647b;
+}
+.obra-item-form {
+  grid-template-columns: minmax(130px, 1fr) minmax(180px, 2fr) repeat(
+      2,
+      minmax(110px, 1fr)
+    );
+}
+.obra-payment-form {
+  grid-template-columns: minmax(130px, 1fr) minmax(130px, 1fr) minmax(
+      180px,
+      2fr
+    );
+}
+.obra-notice,
+.obra-loading {
+  margin: 0;
+  padding: 18px 22px;
+  color: #61728a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.obra-detail .form-control:disabled,
+.obra-detail fieldset:disabled .form-control {
+  background: #f5f7fa;
+  color: #8492a5;
+}
+@media (max-width: 900px) {
+  .obra-item-form,
+  .obra-payment-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .obra-state-bar,
+  .obra-section-heading {
+    padding: 18px;
+  }
+  .obra-resumen {
+    padding: 0 18px 18px;
+  }
+  .obra-item-form .field:first-child,
+  .obra-payment-form .field:first-child {
+    grid-column: auto;
+  }
+}
+@media (max-width: 500px) {
+  .obra-create-form,
+  .obra-item-form,
+  .obra-payment-form {
+    grid-template-columns: 1fr;
+  }
+  .obra-state-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .obra-state-bar .field {
+    width: 100%;
+  }
+  .obra-section-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .obra-resumen {
+    grid-template-columns: 1fr;
+  }
+}
