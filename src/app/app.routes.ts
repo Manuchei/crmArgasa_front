@@ -17,30 +17,28 @@ import { EditarProveedorComponent } from './pages/proveedores/editar-proveedor/e
 import { RutasListComponent } from './pages/rutas-list/rutas-list.component';
 import { RutasFormComponent } from './pages/rutas-form/rutas-form.component';
 import { RutasDiaComponent } from './pages/rutas-dia/rutas-dia.component';
+import { RutasVerComponent } from './pages/rutas-ver/rutas-ver.component';
 
 import { CalendarioLlamadas2Component } from './pages/calendario-llamadas2/calendario-llamadas2.component';
 import { TransportistasComponent } from './pages/transportistas/transportistas.component';
 
 import { AlbaranDetalleComponent } from './pages/albaran-detalle/albaran-detalle.component';
-
-// ✅ NUEVO
 import { AlbaranProveedorDetalleComponent } from './pages/albaran-proveedor-detalle/albaran-proveedor-detalle.component';
 
 import { FacturasListComponent } from './pages/facturas/facturas-list/facturas-list.component';
+import { ImprimirFacturaComponent } from './pages/imprimir-factura/imprimir-factura.component';
+import { FacturaProveedorComponent } from './pages/factura-proveedor/factura-proveedor.component';
+
+import { ProductosComponent } from './pages/productos/productos.component';
+import { AlmacenComponent } from './pages/almacen/almacen.component';
+
+import { PagoComprobanteImprimirComponent } from './pages/pago-comprobante-imprimir/pago-comprobante-imprimir.component';
+import { InformeSaldosComponent } from './pages/informe-saldos/informe-saldos.component';
+import { InformesComponent } from './pages/informes/informes.component';
 
 import { empresaGuard, empresaChildGuard } from './guards/empresa.guard';
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
-
-import { ImprimirFacturaComponent } from './pages/imprimir-factura/imprimir-factura.component';
-import { ProductosComponent } from './pages/productos/productos.component';
-import { RutasVerComponent } from './pages/rutas-ver/rutas-ver.component';
-import { PagoComprobanteImprimirComponent } from './pages/pago-comprobante-imprimir/pago-comprobante-imprimir.component';
-import { InformeSaldosComponent } from './pages/informe-saldos/informe-saldos.component';
-import { InformesComponent } from './pages/informes/informes.component';
-import { FacturaProveedorComponent } from './pages/factura-proveedor/factura-proveedor.component';
-
-import { AlmacenComponent } from './pages/almacen/almacen.component';
 
 const generales = ['USER', 'ADMIN', 'DEVELOPER'];
 const equipo = ['ADMIN', 'DEVELOPER'];
@@ -133,13 +131,23 @@ export const routes: Routes = [
         redirectTo: 'dashboard',
         pathMatch: 'full',
       },
+
+      {
+        path: 'venta-rapida',
+        loadComponent: () =>
+          import('./pages/venta-rapida/venta-rapida.component').then(
+            (m) => m.VentaRapidaComponent,
+          ),
+        canActivate: [roleGuard(generales)],
+      },
+
       {
         path: 'mi-jornada',
         loadComponent: () =>
           import('./pages/fichajes/fichajes.component').then(
             (m) => m.FichajesComponent,
           ),
-        canActivate: [roleGuard(['USER', 'ADMIN', 'DEVELOPER', 'TRANSPORTISTA'])],
+        canActivate: [roleGuard(rutasPermitidas)],
       },
       {
         path: 'control-fichajes',
@@ -295,6 +303,13 @@ export const routes: Routes = [
     ],
   },
 
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: '**', redirectTo: 'login' },
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full',
+  },
+  {
+    path: '**',
+    redirectTo: 'login',
+  },
 ];

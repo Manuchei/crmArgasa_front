@@ -184,3 +184,21 @@ body.tema-electroluga {
     background-color: var(--fondo-app) !important;
   }
 }
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+@media print {
+  .no-print,
+  app-navbar {
+    display: none !important;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+}

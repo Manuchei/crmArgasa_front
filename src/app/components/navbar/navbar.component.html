@@ -24,6 +24,10 @@
           Inicio
         </a>
 
+        <a *ngIf="auth.hasRole('USER', 'ADMIN', 'DEVELOPER')" class="nav-link" routerLink="/app/venta-rapida"
+          routerLinkActive="is-active" ariaCurrentWhenActive="page" (click)="closeMenu()">
+          Ticket </a>
+
         <div *ngFor="let grupo of grupos; trackBy: trackGrupo" class="nav-dropdown" routerLinkActive="is-active-group">
           <button class="nav-link dropdown-trigger" type="button" [attr.aria-expanded]="desplegable === grupo.id"
             [attr.aria-controls]="'panel-' + grupo.id" (click)="toggleDesplegable(grupo.id, $event)">

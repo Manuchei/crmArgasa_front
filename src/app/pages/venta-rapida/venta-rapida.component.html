@@ -1,0 +1,349 @@
+<main class="venta-page">
+    <header class="cabecera pantalla">
+        <div>
+            <span class="etiqueta">NOVEXAPP · {{ empresa.nombre }}</span>
+            <h1>Ticket</h1>
+            <p>Selecciona los artículos y prepara el ticket.</p>
+        </div>
+    </header>
+
+    <p class="error pantalla" role="alert" *ngIf="error">
+        {{ error }}
+    </p>
+
+    <section class="editor pantalla" *ngIf="!vistaPrevia">
+        <div class="tarjeta">
+            <h2>Datos del ticket</h2>
+
+            <div class="campos">
+                <label>
+                    Número del ticket
+                    <input [value]="numero || 'Se asignará al generar el ticket'" readonly />
+                </label>
+
+                <label>
+                    Fecha y hora
+                    <input type="datetime-local" [(ngModel)]="fecha" [disabled]="generando" />
+                </label>
+
+                <label>
+                    Cliente
+                    <input [(ngModel)]="cliente" [disabled]="generando" />
+                </label>
+
+                <label>
+                    Le atendió
+                    <input [value]="empleado"
+                        [placeholder]="cargandoUsuario ? 'Cargando usuario…' : 'Nombre no disponible'" readonly />
+                </label>
+            </div>
+
+            <div class="error" role="alert" *ngIf="errorUsuario">
+                <p>{{ errorUsuario }}</p>
+
+                <button type="button" class="secundario" [disabled]="cargandoUsuario" (click)="cargarUsuario()">
+                    Reintentar
+                </button>
+            </div>
+        </div>
+
+        <fieldset class="bloque-editor" [disabled]="generando">
+            <div class="tarjeta">
+                <h2>Seleccionar productos</h2>
+
+                <div class="campos">
+                    <label>
+                        Buscar artículo
+                        <input [(ngModel)]="busqueda" placeholder="Descripción, modelo, marca…" />
+                    </label>
+
+                    <label>
+                        Referencia
+                        <input [(ngModel)]="filtroReferencia" placeholder="Referencia completa o parcial" />
+                    </label>
+
+                    <label>
+                        Marca
+                        <select [(ngModel)]="filtroMarca">
+                            <option value="">Todas las marcas</option>
+
+                            <option *ngFor="let marca of marcas" [value]="marca">
+                                {{ marca }}
+                            </option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Familia
+                        <select [(ngModel)]="filtroFamilia">
+                            <option value="">Todas las familias</option>
+
+                            <option *ngFor="let familia of familias" [value]="familia">
+                                {{ familia }}
+                            </option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="filtros-acciones">
+                    <label class="check-stock">
+                        <input type="checkbox" [(ngModel)]="soloDisponibles" />
+                        Solo productos con stock
+                    </label>
+
+                    <button type="button" class="secundario" (click)="limpiarFiltros()">
+                        Limpiar filtros
+                    </button>
+                </div>
+
+                <p class="ayuda">
+                    Puedes combinar filtros y escribir varias palabras, en cualquier orden.
+                </p>
+
+                <p *ngIf="cargando" role="status">Cargando productos…</p>
+
+                <div class="error" role="alert" *ngIf="errorProductos">
+                    <p>{{ errorProductos }}</p>
+
+                    <button type="button" class="secundario" [disabled]="cargando" (click)="cargarProductos()">
+                        Reintentar
+                    </button>
+                </div>
+
+                <ng-container *ngIf="!cargando && !errorProductos">
+                    <p class="contador-resultados" aria-live="polite">
+                        {{ resultados.length }} productos encontrados
+                    </p>
+
+                    <div class="resultados">
+                        <button type="button" class="producto" *ngFor="let producto of resultados"
+                            (click)="agregar(producto)">
+                            <span class="producto-info">
+                                <strong>
+                                    {{ producto.descripcion || producto.modelo }}
+                                </strong>
+
+                                <small>
+                                    Ref. {{ producto.referencia }} · {{ producto.marca }}
+                                </small>
+
+                                <small>
+                                    {{ producto.familia }} · Stock: {{ producto.unidades }}
+                                </small>
+                            </span>
+
+                            <span class="producto-precio">
+                                <strong>
+                                    {{ dinero(precioProducto(producto)) }} €
+                                </strong>
+                                <small>IVA 21 % incluido</small>
+                                <span>Añadir +</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <p *ngIf="!resultados.length" class="ayuda">
+                        No hay productos que coincidan con los filtros.
+                    </p>
+                </ng-container>
+
+                <button type="button" class="secundario" (click)="agregarManual()">
+                    + Añadir artículo manual
+                </button>
+            </div>
+
+            <div class="tarjeta">
+                <h2>Artículos del ticket</h2>
+
+                <p *ngIf="!lineas.length" class="ayuda">
+                    Todavía no has añadido artículos.
+                </p>
+
+                <div class="tabla-scroll" *ngIf="lineas.length">
+                    <table class="tabla-editor">
+                        <thead>
+                            <tr>
+                                <th>Artículo</th>
+                                <th>Cantidad</th>
+                                <th>Precio con IVA</th>
+                                <th>IVA %</th>
+                                <th>Importe</th>
+                                <th>
+                                    <span class="sr-only">Acciones</span>
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr *ngFor="let linea of lineas; let i = index">
+                                <td>
+                                    <input [(ngModel)]="linea.articulo" aria-label="Artículo" />
+                                </td>
+
+                                <td>
+                                    <input type="number" min="1" step="1" [(ngModel)]="linea.cantidad"
+                                        aria-label="Cantidad" />
+                                </td>
+
+                                <td>
+                                    <input type="number" min="0" step="0.01" [(ngModel)]="linea.precio"
+                                        aria-label="Precio con IVA" />
+                                </td>
+
+                                <td>
+                                    <input type="number" min="0" max="100" step="0.01" [(ngModel)]="linea.iva"
+                                        aria-label="Porcentaje de IVA" />
+                                </td>
+
+                                <td class="importe">
+                                    {{ dinero(importe(linea)) }} €
+                                </td>
+
+                                <td>
+                                    <button type="button" class="quitar" (click)="eliminar(i)"
+                                        aria-label="Eliminar artículo">
+                                        ×
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tarjeta">
+                <h2>Pago</h2>
+
+                <div class="campos">
+                    <label>
+                        Forma de pago
+                        <select [(ngModel)]="formaPago">
+                            <option value="EFECTIVO">Efectivo</option>
+                            <option value="TPV">Tarjeta / TPV</option>
+                            <option value="TRANSFERENCIA">Transferencia</option>
+                        </select>
+                    </label>
+
+                    <label *ngIf="formaPago === 'EFECTIVO'">
+                        Efectivo entregado
+                        <input type="number" min="0" step="0.01" [(ngModel)]="entregado" />
+                    </label>
+                </div>
+
+                <div class="resumen">
+                    <span>Total</span>
+                    <strong>{{ dinero(total) }} €</strong>
+                </div>
+
+                <p *ngIf="formaPago === 'EFECTIVO'">
+                    Cambio: <strong>{{ dinero(cambio) }} €</strong>
+                </p>
+
+                <button type="button" class="principal" [disabled]="generando || !empleado || !lineas.length"
+                    (click)="generar()">
+                    {{ generando ? 'Registrando cobro…' : 'Cobrar y generar ticket' }}
+                </button>
+            </div>
+        </fieldset>
+    </section>
+
+    <div class="acciones pantalla" *ngIf="vistaPrevia">
+        <button type="button" class="secundario" (click)="vistaPrevia = false">
+            Volver a editar
+        </button>
+
+        <button type="button" class="secundario" (click)="nuevoTicket()">
+            Nueva venta
+        </button>
+
+        <button type="button" class="principal" (click)="imprimir()">
+            Imprimir ticket
+        </button>
+    </div>
+
+    <div class="zona-ticket" *ngIf="vistaPrevia">
+        <article class="ticket">
+            <header class="empresa-ticket">
+                <img [src]="empresa.logoUrl" [alt]="empresa.nombre" />
+
+                <h2>{{ empresa.nombre }}</h2>
+                <p>{{ empresa.direccion }}</p>
+                <p>{{ empresa.codigoPostal }} · {{ empresa.poblacion }}</p>
+                <p>{{ empresa.provincia }}</p>
+                <p>CIF: {{ empresa.cif }}</p>
+            </header>
+
+            <section class="datos-ticket">
+                <small>CLIENTE</small>
+                <strong>{{ cliente }}</strong>
+
+                <p>{{ fechaTexto }}</p>
+                <p class="numero-ticket">Ticket n.º {{ numero }}</p>
+                <p>IVA incluido</p>
+                <p>Le atendió: {{ empleado }}</p>
+            </section>
+
+            <table class="articulos-ticket">
+                <thead>
+                    <tr>
+                        <th>Cant.</th>
+                        <th>Artículo</th>
+                        <th>Importe</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let linea of lineas">
+                        <td>{{ linea.cantidad }}</td>
+                        <td>{{ linea.articulo }}</td>
+                        <td>{{ dinero(importe(linea)) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="total-ticket fila">
+                <strong>TOTAL IMPORTE</strong>
+                <strong>{{ dinero(total) }} €</strong>
+            </div>
+
+            <div class="pago-ticket">
+                <div class="fila">
+                    <span>Forma de pago</span>
+                    <strong>{{ nombreFormaPago }}</strong>
+                </div>
+
+                <ng-container *ngIf="formaPago === 'EFECTIVO'">
+                    <div class="fila">
+                        <span>Entregado</span>
+                        <span>{{ dinero(entregado || 0) }} €</span>
+                    </div>
+
+                    <div class="fila">
+                        <span>Cambio</span>
+                        <strong>{{ dinero(cambio) }} €</strong>
+                    </div>
+                </ng-container>
+            </div>
+
+            <table class="iva-ticket">
+                <thead>
+                    <tr>
+                        <th>% IVA</th>
+                        <th>Base imponible</th>
+                        <th>Importe IVA</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let grupo of desglose">
+                        <td>{{ dinero(grupo.iva) }} %</td>
+                        <td>{{ dinero(grupo.base) }}</td>
+                        <td>{{ dinero(grupo.cuota) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <footer>GRACIAS POR SU VISITA</footer>
+        </article>
+    </div>
+</main>
