@@ -37,12 +37,16 @@ import { InformeSaldosComponent } from './pages/informe-saldos/informe-saldos.co
 import { InformesComponent } from './pages/informes/informes.component';
 
 import { empresaGuard, empresaChildGuard } from './guards/empresa.guard';
+
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
 
 const generales = ['USER', 'ADMIN', 'DEVELOPER'];
 const equipo = ['ADMIN', 'DEVELOPER'];
+
 const rutasPermitidas = ['USER', 'ADMIN', 'DEVELOPER', 'TRANSPORTISTA'];
+
+const fichajesPropios = ['USER', 'ADMIN', 'DEVELOPER', 'TRANSPORTISTA'];
 
 export const routes: Routes = [
   {
@@ -147,7 +151,7 @@ export const routes: Routes = [
           import('./pages/fichajes/fichajes.component').then(
             (m) => m.FichajesComponent,
           ),
-        canActivate: [roleGuard(rutasPermitidas)],
+        canActivate: [roleGuard(fichajesPropios)],
       },
       {
         path: 'control-fichajes',

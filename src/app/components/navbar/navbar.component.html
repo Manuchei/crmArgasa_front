@@ -9,7 +9,9 @@
     </span>
 
     <button class="mobile-toggle" type="button" aria-controls="novex-navigation" [attr.aria-expanded]="menuOpen"
-      [attr.aria-label]="menuOpen ? 'Cerrar navegación' : 'Abrir navegación'" (click)="toggleMenu($event)">
+      [attr.aria-label]="
+        menuOpen ? 'Cerrar navegación' : 'Abrir navegación'
+      " (click)="toggleMenu($event)">
       <span class="hamburger" aria-hidden="true">
         <span></span>
         <span></span>
@@ -24,10 +26,6 @@
           Inicio
         </a>
 
-        <a *ngIf="auth.hasRole('USER', 'ADMIN', 'DEVELOPER')" class="nav-link" routerLink="/app/venta-rapida"
-          routerLinkActive="is-active" ariaCurrentWhenActive="page" (click)="closeMenu()">
-          Ticket </a>
-
         <div *ngFor="let grupo of grupos; trackBy: trackGrupo" class="nav-dropdown" routerLinkActive="is-active-group">
           <button class="nav-link dropdown-trigger" type="button" [attr.aria-expanded]="desplegable === grupo.id"
             [attr.aria-controls]="'panel-' + grupo.id" (click)="toggleDesplegable(grupo.id, $event)">
@@ -38,10 +36,25 @@
           <div *ngIf="desplegable === grupo.id" class="dropdown-panel" [id]="'panel-' + grupo.id">
             <span class="panel-label">{{ grupo.texto }}</span>
 
-            <a *ngFor="let enlace of grupo.enlaces; trackBy: trackEnlace" class="dropdown-link"
-              [routerLink]="enlace.ruta" routerLinkActive="is-active" ariaCurrentWhenActive="page"
-              (click)="closeMenu()">
-              {{ enlace.texto }}
+            <ng-container *ngFor="let enlace of grupo.enlaces; trackBy: trackEnlace">
+              <a *ngIf="
+                  !(
+                    auth.hasRole('TRANSPORTISTA') &&
+                    grupo.texto === 'Rutas' &&
+                    enlace.ruta === '/app/mi-jornada'
+                  )
+                " class="dropdown-link" [routerLink]="enlace.ruta" routerLinkActive="is-active"
+                ariaCurrentWhenActive="page" (click)="closeMenu()">
+                {{ enlace.texto }}
+              </a>
+            </ng-container>
+
+            <a *ngIf="
+                grupo.texto === 'Rutas' &&
+                auth.hasRole('TRANSPORTISTA')
+              " class="dropdown-link" routerLink="/app/mi-jornada" routerLinkActive="is-active"
+              ariaCurrentWhenActive="page" (click)="closeMenu()">
+              Mis fichajes
             </a>
           </div>
         </div>

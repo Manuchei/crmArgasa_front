@@ -1348,3 +1348,95 @@
 .dialog-scroll .documento-a4 * {
   box-sizing: border-box;
 }
+.cobro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgb(15 23 42 / 45%);
+}
+
+.cobro-dialogo {
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 28px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgb(15 23 42 / 20%);
+}
+
+.cobro-dialogo h2 {
+  margin: 0 0 12px;
+  color: #172033;
+}
+
+.cobro-dialogo p {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.cobro-dialogo label {
+  display: block;
+  margin: 20px 0 8px;
+  font-weight: 700;
+}
+
+.cobro-dialogo select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+}
+
+.cobro-dialogo .cobro-aviso {
+  padding: 12px;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 13px;
+}
+
+.cobro-dialogo .cobro-error {
+  color: #b91c1c;
+}
+
+.cobro-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.cobro-botones button {
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cobro-cancelar {
+  background: #fff;
+  color: #172033;
+}
+
+.cobro-botones .cobro-confirmar {
+  border-color: transparent;
+  background: var(--color-primario, #1565c0);
+  color: #fff;
+}
+
+.cobro-botones button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

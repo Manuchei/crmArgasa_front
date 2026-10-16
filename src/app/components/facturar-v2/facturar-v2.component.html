@@ -387,13 +387,13 @@
           Editar
         </button>
 
-        <button type="button" class="btn btn-outline-primary"
+        <!-- <button type="button" class="btn btn-outline-primary"
           *ngIf="factura.estado === 'BORRADOR' && usaFacturaDirecta(factura)" (click)="prepararFacturaDirecta()"
           [disabled]="loading || preparandoFacturaDirecta">
           {{ preparandoFacturaDirecta
           ? 'Preparando…'
           : 'Preparar en FacturaDirecta (prueba)' }}
-        </button>
+        </button> -->
 
         <button type="button" class="btn btn-primary" *ngIf="factura.estado === 'BORRADOR'" (click)="confirmarEmision()"
           [disabled]="loading || preparandoFacturaDirecta">
@@ -409,6 +409,46 @@
           [disabled]="loading || preparandoFacturaDirecta">
           Marcar como pagada
         </button>
+
+        <div class="cobro-overlay" *ngIf="dialogoCobro">
+          <section class="cobro-dialogo" role="dialog" aria-modal="true" aria-labelledby="titulo-cobro-factura"
+            [attr.aria-busy]="loading">
+            <h2 id="titulo-cobro-factura">Cobrar factura</h2>
+
+            <p>
+              Selecciona cómo se ha recibido el pago.
+              El cobro se registrará en Pagos y en la caja abierta.
+            </p>
+
+            <label for="metodo-cobro-factura">Método de pago</label>
+
+            <select id="metodo-cobro-factura" [(ngModel)]="metodoCobro" [disabled]="loading">
+              <option value="TPV">Tarjeta / TPV</option>
+              <option value="EFECTIVO">Metálico</option>
+              <option value="TRANSFERENCIA">Transferencia</option>
+            </select>
+
+            <p class="cobro-aviso">
+              Si ya registraste anticipos por el sistema anterior,
+              vincúlalos a esta factura antes de confirmar para no
+              duplicar el cobro.
+            </p>
+
+            <p *ngIf="error" class="cobro-error" role="alert">
+              {{ error }}
+            </p>
+
+            <div class="cobro-botones">
+              <button type="button" class="cobro-cancelar" [disabled]="loading" (click)="cancelarCobro()">
+                Cancelar
+              </button>
+
+              <button type="button" class="cobro-confirmar" [disabled]="loading" (click)="confirmarCobro()">
+                {{ loading ? 'Registrando…' : 'Confirmar cobro' }}
+              </button>
+            </div>
+          </section>
+        </div>
       </div>
     </footer>
   </section>

@@ -125,6 +125,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         { texto: 'Proveedores', ruta: '/app/proveedores' },
         { texto: 'Productos', ruta: '/app/productos' },
         { texto: 'Caja', ruta: '/app/caja' },
+        { texto: 'Ticket', ruta: '/app/venta-rapida' },
       ],
     },
     {

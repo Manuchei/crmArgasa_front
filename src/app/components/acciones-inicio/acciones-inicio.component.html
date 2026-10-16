@@ -1,1 +1,107 @@
-<p>acciones-inicio works!</p>
+<section class="acciones-inicio">
+    <article class="accion-card" *ngIf="puedeFichar">
+        <div class="accion-info">
+            <span class="etiqueta">MI JORNADA</span>
+
+            <strong>
+                {{
+                cargandoFichaje
+                ? 'Consultando…'
+                : estado?.abierta
+                ? 'Estás trabajando'
+                : estado
+                ? 'Fuera de jornada'
+                : 'Mi jornada'
+                }}
+            </strong>
+
+            <small *ngIf="estado?.abierta as jornada">
+                Entrada: {{ horaEntrada(jornada.entrada) }}
+            </small>
+
+            <small *ngIf="estado && !estado.empleado.activo">
+                Tu ficha de empleado está inactiva.
+            </small>
+
+            <small *ngIf="pendiente"> Fichaje pendiente de confirmar. </small>
+
+            <small *ngIf="errorFichaje" class="texto-error" role="alert">
+                {{ errorFichaje }}
+            </small>
+        </div>
+
+        <div class="accion-botones">
+            <button type="button" class="boton" *ngIf="pendiente; else botonFichaje" (click)="enviarFichaje()"
+                [disabled]="fichando || cargandoFichaje">
+                {{ fichando ? 'Registrando…' : 'Reintentar fichaje' }}
+            </button>
+
+            <ng-template #botonFichaje>
+                <button *ngIf="estado" type="button" class="boton" (click)="fichar()" [disabled]="
+                cargandoFichaje || fichando || !estado.empleado.activo
+              ">
+                    {{
+                    fichando
+                    ? 'Registrando…'
+                    : estado.abierta
+                    ? 'Fichar salida'
+                    : 'Fichar entrada'
+                    }}
+                </button>
+
+                <button *ngIf="!estado" type="button" class="boton" (click)="cargarFichaje()"
+                    [disabled]="cargandoFichaje || fichando">
+                    {{ cargandoFichaje ? 'Consultando…' : 'Consultar jornada' }}
+                </button>
+            </ng-template>
+
+            <a routerLink="/app/mi-jornada">Ver mis fichajes</a>
+        </div>
+    </article>
+
+    <article class="accion-card" *ngIf="puedeCaja">
+        <div class="accion-info">
+            <span class="etiqueta">CAJA · {{ nombreEmpresa }}</span>
+
+            <strong>
+                {{
+                cargandoCaja
+                ? 'Consultando…'
+                : caja
+                ? 'Caja abierta'
+                : errorCaja
+                ? 'Revisar caja'
+                : 'Caja cerrada'
+                }}
+            </strong>
+
+            <small *ngIf="caja">
+                Cobrado: {{ caja.totalCobrado | number: '1.2-2' }} €
+            </small>
+
+            <small *ngIf="errorCaja" class="texto-error" role="alert">
+                {{ errorCaja }}
+            </small>
+        </div>
+
+        <div class="accion-botones">
+            <button *ngIf="errorCaja" type="button" class="boton" (click)="cargarCaja()"
+                [disabled]="cargandoCaja || abriendoCaja || !empresa">
+                {{ cargandoCaja ? 'Consultando…' : 'Reintentar consulta' }}
+            </button>
+
+            <button *ngIf="!caja && !errorCaja" type="button" class="boton" (click)="abrirCaja()"
+                [disabled]="cargandoCaja || abriendoCaja || !empresa">
+                {{ abriendoCaja ? 'Abriendo…' : 'Abrir caja' }}
+            </button>
+
+            <a *ngIf="caja" class="boton" routerLink="/app/caja"> Cerrar caja </a>
+
+            <a routerLink="/app/caja">Ver caja e historial</a>
+        </div>
+    </article>
+</section>
+
+<p class="aviso" role="status" *ngIf="aviso">
+    {{ aviso }}
+</p>

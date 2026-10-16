@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -15,272 +15,12 @@ import {
   selector: 'app-acciones-inicio',
   standalone: true,
   imports: [CommonModule, RouterModule],
-
-  template: `
-    <section class="acciones-inicio">
-      <article class="accion-card" *ngIf="puedeFichar">
-        <div class="accion-info">
-          <span class="etiqueta">MI JORNADA</span>
-
-          <strong>
-            {{
-              cargandoFichaje
-                ? 'Consultando…'
-                : estado?.abierta
-                  ? 'Estás trabajando'
-                  : estado
-                    ? 'Fuera de jornada'
-                    : 'Mi jornada'
-            }}
-          </strong>
-
-          <small *ngIf="estado?.abierta as jornada">
-            Entrada: {{ horaEntrada(jornada.entrada) }}
-          </small>
-
-          <small *ngIf="estado && !estado.empleado.activo">
-            Tu ficha de empleado está inactiva.
-          </small>
-
-          <small *ngIf="pendiente"> Fichaje pendiente de confirmar. </small>
-
-          <small *ngIf="errorFichaje" class="texto-error" role="alert">
-            {{ errorFichaje }}
-          </small>
-        </div>
-
-        <div class="accion-botones">
-          <button
-            type="button"
-            class="boton"
-            *ngIf="pendiente; else botonFichaje"
-            (click)="enviarFichaje()"
-            [disabled]="fichando || cargandoFichaje"
-          >
-            {{ fichando ? 'Registrando…' : 'Reintentar fichaje' }}
-          </button>
-
-          <ng-template #botonFichaje>
-            <button
-              *ngIf="estado"
-              type="button"
-              class="boton"
-              (click)="fichar()"
-              [disabled]="
-                cargandoFichaje || fichando || !estado.empleado.activo
-              "
-            >
-              {{
-                fichando
-                  ? 'Registrando…'
-                  : estado.abierta
-                    ? 'Fichar salida'
-                    : 'Fichar entrada'
-              }}
-            </button>
-
-            <button
-              *ngIf="!estado"
-              type="button"
-              class="boton"
-              (click)="cargarFichaje()"
-              [disabled]="cargandoFichaje || fichando"
-            >
-              {{ cargandoFichaje ? 'Consultando…' : 'Consultar jornada' }}
-            </button>
-          </ng-template>
-
-          <a routerLink="/app/mi-jornada">Ver mis fichajes</a>
-        </div>
-      </article>
-
-      <article class="accion-card" *ngIf="puedeCaja">
-        <div class="accion-info">
-          <span class="etiqueta">CAJA · {{ nombreEmpresa }}</span>
-
-          <strong>
-            {{
-              cargandoCaja
-                ? 'Consultando…'
-                : caja
-                  ? 'Caja abierta'
-                  : errorCaja
-                    ? 'Revisar caja'
-                    : 'Caja cerrada'
-            }}
-          </strong>
-
-          <small *ngIf="caja">
-            Cobrado: {{ caja.totalCobrado | number: '1.2-2' }} €
-          </small>
-
-          <small *ngIf="errorCaja" class="texto-error" role="alert">
-            {{ errorCaja }}
-          </small>
-        </div>
-
-        <div class="accion-botones">
-          <button
-            *ngIf="errorCaja"
-            type="button"
-            class="boton"
-            (click)="cargarCaja()"
-            [disabled]="cargandoCaja || abriendoCaja || !empresa"
-          >
-            {{ cargandoCaja ? 'Consultando…' : 'Reintentar consulta' }}
-          </button>
-
-          <button
-            *ngIf="!caja && !errorCaja"
-            type="button"
-            class="boton"
-            (click)="abrirCaja()"
-            [disabled]="cargandoCaja || abriendoCaja || !empresa"
-          >
-            {{ abriendoCaja ? 'Abriendo…' : 'Abrir caja' }}
-          </button>
-
-          <a *ngIf="caja" class="boton" routerLink="/app/caja"> Cerrar caja </a>
-
-          <a routerLink="/app/caja">Ver caja e historial</a>
-        </div>
-      </article>
-    </section>
-
-    <p class="aviso" role="status" *ngIf="aviso">
-      {{ aviso }}
-    </p>
-  `,
-
-  styles: [
-    `
-      :host {
-        display: block;
-        margin-bottom: 24px;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      .acciones-inicio {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 16px;
-      }
-
-      .accion-card {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        padding: 22px;
-        background: #fff;
-        border: 1px solid #dfe6ef;
-        border-radius: 12px;
-      }
-
-      .accion-info,
-      .accion-botones {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .accion-info {
-        min-width: 0;
-      }
-
-      .etiqueta {
-        color: #718096;
-        font-size: 10px;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-      }
-
-      strong {
-        color: #1a2940;
-        font-size: 20px;
-      }
-
-      small {
-        color: #718096;
-        font-size: 12px;
-        line-height: 1.5;
-        overflow-wrap: anywhere;
-      }
-
-      .texto-error {
-        color: #9f2534;
-      }
-
-      .accion-botones {
-        align-items: center;
-        flex-shrink: 0;
-      }
-
-      .boton {
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 44px;
-        padding: 11px 18px;
-        border: 0;
-        border-radius: 8px;
-        background: var(--color-primario, #d71920);
-        color: #fff;
-        font: inherit;
-        font-size: 13px;
-        font-weight: 750;
-        text-decoration: none;
-        cursor: pointer;
-      }
-
-      .boton:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      a:not(.boton) {
-        color: #61728a;
-        font-size: 11px;
-        text-decoration: none;
-      }
-
-      a:not(.boton):hover {
-        text-decoration: underline;
-      }
-
-      .aviso {
-        color: #237457;
-        font-size: 13px;
-      }
-
-      button:focus-visible,
-      a:focus-visible {
-        outline: 3px solid #94a3b8;
-        outline-offset: 3px;
-      }
-
-      @media (max-width: 600px) {
-        .acciones-inicio {
-          grid-template-columns: 1fr;
-        }
-
-        .accion-card {
-          align-items: flex-start;
-          flex-direction: column;
-        }
-
-        .accion-botones {
-          align-items: stretch;
-          width: 100%;
-        }
-      }
-    `,
-  ],
+  templateUrl: './acciones-inicio.component.html',
+  styleUrl: './acciones-inicio.component.css',
 })
 export class AccionesInicioComponent implements OnInit, OnDestroy {
+  @Input() soloFichaje = false;
+
   estado: MiEstadoFichaje | null = null;
   caja: any = null;
 
@@ -314,6 +54,7 @@ export class AccionesInicioComponent implements OnInit, OnDestroy {
   get nombreEmpresa(): string {
     if (this.empresa === 'ARGASA') return 'Argasa';
     if (this.empresa === 'ELECTROLUGA') return 'Electroluga';
+
     return 'Seleccionar empresa';
   }
 
@@ -332,7 +73,10 @@ export class AccionesInicioComponent implements OnInit, OnDestroy {
       'TRANSPORTISTA',
     );
 
-    this.puedeCaja = this.auth.hasRole('USER', 'ADMIN', 'DEVELOPER');
+    this.puedeCaja =
+      !this.soloFichaje &&
+      !this.auth.hasRole('TRANSPORTISTA') &&
+      this.auth.hasRole('USER', 'ADMIN', 'DEVELOPER');
 
     if (this.puedeFichar) {
       this.recuperarPendiente();
@@ -343,6 +87,7 @@ export class AccionesInicioComponent implements OnInit, OnDestroy {
       this.contextoCaja++;
       this.secuenciaCaja++;
       this.empresa = empresa || '';
+
       this.caja = null;
       this.errorCaja = '';
       this.cargandoCaja = false;
@@ -411,7 +156,9 @@ export class AccionesInicioComponent implements OnInit, OnDestroy {
   }
 
   cargarFichaje(): void {
-    if (!this.puedeFichar || this.cargandoFichaje) return;
+    if (this.destruido || !this.puedeFichar || this.cargandoFichaje) {
+      return;
+    }
 
     this.cargandoFichaje = true;
 
@@ -420,6 +167,7 @@ export class AccionesInicioComponent implements OnInit, OnDestroy {
         if (this.destruido) return;
 
         this.estado = estado;
+        this.errorFichaje = '';
         this.cargandoFichaje = false;
       },
       error: (err) => {
@@ -434,6 +182,7 @@ export class AccionesInicioComponent implements OnInit, OnDestroy {
 
   fichar(): void {
     if (
+      this.destruido ||
       !this.puedeFichar ||
       this.fichando ||
       this.cargandoFichaje ||
@@ -455,6 +204,7 @@ export class AccionesInicioComponent implements OnInit, OnDestroy {
 
   enviarFichaje(): void {
     if (
+      this.destruido ||
       !this.puedeFichar ||
       !this.pendiente ||
       this.fichando ||
@@ -487,17 +237,19 @@ export class AccionesInicioComponent implements OnInit, OnDestroy {
         this.cargarFichaje();
       },
       error: (err) => {
-        if (err.status >= 400 && err.status < 500) {
+        const errorCliente = err?.status >= 400 && err?.status < 500;
+
+        if (errorCliente) {
           sessionStorage.removeItem(almacenamientoKey);
         }
 
         if (this.destruido) return;
 
-        if (err.status >= 400 && err.status < 500) {
+        if (errorCliente) {
           this.pendiente = null;
         }
 
-        // Los errores de red o servidor conservan la misma clave.
+        // Conserva la clave ante errores de red o servidor.
         this.fichando = false;
         this.errorFichaje = this.mensaje(err);
         this.cargarFichaje();
@@ -507,6 +259,7 @@ export class AccionesInicioComponent implements OnInit, OnDestroy {
 
   cargarCaja(): void {
     if (
+      this.destruido ||
       !this.puedeCaja ||
       !this.empresa ||
       this.cargandoCaja ||
@@ -551,6 +304,7 @@ export class AccionesInicioComponent implements OnInit, OnDestroy {
 
   abrirCaja(): void {
     if (
+      this.destruido ||
       !this.puedeCaja ||
       this.abriendoCaja ||
       this.cargandoCaja ||

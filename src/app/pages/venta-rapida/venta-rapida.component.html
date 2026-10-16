@@ -1,7 +1,9 @@
 <main class="venta-page">
     <header class="cabecera pantalla">
         <div>
-            <span class="etiqueta">NOVEXAPP · {{ empresa.nombre }}</span>
+            <span class="etiqueta">
+                NOVEXAPP · {{ empresa.nombre }}
+            </span>
             <h1>Ticket</h1>
             <p>Selecciona los artículos y prepara el ticket.</p>
         </div>
@@ -10,6 +12,17 @@
     <p class="error pantalla" role="alert" *ngIf="error">
         {{ error }}
     </p>
+
+    <div class="error pantalla" *ngIf="cobroPendiente">
+        <p>
+            El cobro está pendiente de confirmar.
+            Reintenta la misma venta antes de continuar.
+        </p>
+
+        <button type="button" class="principal" [disabled]="generando" (click)="generar()">
+            {{ generando ? 'Confirmando…' : 'Reintentar cobro' }}
+        </button>
+    </div>
 
     <section class="editor pantalla" *ngIf="!vistaPrevia">
         <div class="tarjeta">
@@ -23,31 +36,35 @@
 
                 <label>
                     Fecha y hora
-                    <input type="datetime-local" [(ngModel)]="fecha" [disabled]="generando" />
+                    <input type="datetime-local" [(ngModel)]="fecha" [disabled]="editorBloqueado" />
                 </label>
 
                 <label>
                     Cliente
-                    <input [(ngModel)]="cliente" [disabled]="generando" />
+                    <input [(ngModel)]="cliente" maxlength="250" [disabled]="editorBloqueado" />
                 </label>
 
                 <label>
                     Le atendió
-                    <input [value]="empleado"
-                        [placeholder]="cargandoUsuario ? 'Cargando usuario…' : 'Nombre no disponible'" readonly />
+                    <input [value]="empleado" [placeholder]="
+              cargandoUsuario
+                ? 'Cargando usuario…'
+                : 'Nombre no disponible'
+            " readonly />
                 </label>
             </div>
 
             <div class="error" role="alert" *ngIf="errorUsuario">
                 <p>{{ errorUsuario }}</p>
 
-                <button type="button" class="secundario" [disabled]="cargandoUsuario" (click)="cargarUsuario()">
+                <button type="button" class="secundario" [disabled]="cargandoUsuario || editorBloqueado"
+                    (click)="cargarUsuario()">
                     Reintentar
                 </button>
             </div>
         </div>
 
-        <fieldset class="bloque-editor" [disabled]="generando">
+        <fieldset class="bloque-editor" [disabled]="editorBloqueado">
             <div class="tarjeta">
                 <h2>Seleccionar productos</h2>
 
@@ -88,19 +105,27 @@
                 <div class="filtros-acciones">
                     <label class="check-stock">
                         <input type="checkbox" [(ngModel)]="soloDisponibles" />
-                        Solo productos con stock
+                        Solo productos con stock disponible
                     </label>
 
                     <button type="button" class="secundario" (click)="limpiarFiltros()">
                         Limpiar filtros
                     </button>
+
+                    <button type="button" class="secundario" [disabled]="cargando" (click)="cargarProductos()">
+                        {{ cargando ? 'Actualizando…' : 'Actualizar stock' }}
+                    </button>
                 </div>
 
                 <p class="ayuda">
-                    Puedes combinar filtros y escribir varias palabras, en cualquier orden.
+                    Puedes combinar filtros y escribir varias palabras,
+                    en cualquier orden. Las unidades se descuentan
+                    definitivamente al cobrar.
                 </p>
 
-                <p *ngIf="cargando" role="status">Cargando productos…</p>
+                <p *ngIf="cargando" role="status">
+                    Cargando productos…
+                </p>
 
                 <div class="error" role="alert" *ngIf="errorProductos">
                     <p>{{ errorProductos }}</p>
@@ -116,19 +141,24 @@
                     </p>
 
                     <div class="resultados">
-                        <button type="button" class="producto" *ngFor="let producto of resultados"
-                            (click)="agregar(producto)">
+                        <button type="button" class="producto" *ngFor="let producto of resultados" [disabled]="
+                editorBloqueado ||
+                producto.id == null ||
+                disponibles(producto) < 1
+              " (click)="agregar(producto)">
                             <span class="producto-info">
                                 <strong>
                                     {{ producto.descripcion || producto.modelo }}
                                 </strong>
 
                                 <small>
-                                    Ref. {{ producto.referencia }} · {{ producto.marca }}
+                                    Ref. {{ producto.referencia }} ·
+                                    {{ producto.marca }}
                                 </small>
 
                                 <small>
-                                    {{ producto.familia }} · Stock: {{ producto.unidades }}
+                                    {{ producto.familia }} ·
+                                    Disponible: {{ disponibles(producto) }}
                                 </small>
                             </span>
 
@@ -136,8 +166,16 @@
                                 <strong>
                                     {{ dinero(precioProducto(producto)) }} €
                                 </strong>
+
                                 <small>IVA 21 % incluido</small>
-                                <span>Añadir +</span>
+
+                                <span>
+                                    {{
+                                    disponibles(producto) > 0
+                                    ? 'Añadir +'
+                                    : 'Sin stock disponible'
+                                    }}
+                                </span>
                             </span>
                         </button>
                     </div>
@@ -150,6 +188,10 @@
                 <button type="button" class="secundario" (click)="agregarManual()">
                     + Añadir artículo manual
                 </button>
+
+                <p class="ayuda">
+                    Los artículos manuales no están vinculados al inventario.
+                </p>
             </div>
 
             <div class="tarjeta">
@@ -177,17 +219,22 @@
                         <tbody>
                             <tr *ngFor="let linea of lineas; let i = index">
                                 <td>
-                                    <input [(ngModel)]="linea.articulo" aria-label="Artículo" />
+                                    <input [(ngModel)]="linea.articulo" maxlength="1000" aria-label="Artículo" />
+
+                                    <small class="ayuda" *ngIf="linea.productoId != null">
+                                        Stock máximo: {{ maximoLinea(linea) }}
+                                    </small>
                                 </td>
 
                                 <td>
-                                    <input type="number" min="1" step="1" [(ngModel)]="linea.cantidad"
+                                    <input type="number" min="1" step="1" [max]="maximoLinea(linea)"
+                                        [ngModel]="linea.cantidad" (ngModelChange)="cambiarCantidad(linea, $event)"
                                         aria-label="Cantidad" />
                                 </td>
 
                                 <td>
-                                    <input type="number" min="0" step="0.01" [(ngModel)]="linea.precio"
-                                        aria-label="Precio con IVA" />
+                                    <input type="number" min="0" max="999999999.99" step="0.01"
+                                        [(ngModel)]="linea.precio" aria-label="Precio con IVA" />
                                 </td>
 
                                 <td>
@@ -239,8 +286,13 @@
                     Cambio: <strong>{{ dinero(cambio) }} €</strong>
                 </p>
 
-                <button type="button" class="principal" [disabled]="generando || !empleado || !lineas.length"
-                    (click)="generar()">
+                <button type="button" class="principal" [disabled]="
+            editorBloqueado ||
+            cargando ||
+            !!errorProductos ||
+            !empleado ||
+            !lineas.length
+          " (click)="generar()">
                     {{ generando ? 'Registrando cobro…' : 'Cobrar y generar ticket' }}
                 </button>
             </div>
@@ -248,10 +300,6 @@
     </section>
 
     <div class="acciones pantalla" *ngIf="vistaPrevia">
-        <button type="button" class="secundario" (click)="vistaPrevia = false">
-            Volver a editar
-        </button>
-
         <button type="button" class="secundario" (click)="nuevoTicket()">
             Nueva venta
         </button>
@@ -268,7 +316,11 @@
 
                 <h2>{{ empresa.nombre }}</h2>
                 <p>{{ empresa.direccion }}</p>
-                <p>{{ empresa.codigoPostal }} · {{ empresa.poblacion }}</p>
+
+                <p>
+                    {{ empresa.codigoPostal }} · {{ empresa.poblacion }}
+                </p>
+
                 <p>{{ empresa.provincia }}</p>
                 <p>CIF: {{ empresa.cif }}</p>
             </header>

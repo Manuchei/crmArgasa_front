@@ -4,6 +4,8 @@ import {
   OnChanges,
   OnInit,
   SimpleChanges,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -25,6 +27,12 @@ import {
   styleUrls: ['./facturar-v2.component.css'],
 })
 export class FacturarV2Component implements OnInit, OnChanges {
+  @Output() cobroRegistrado = new EventEmitter<void>();
+
+  dialogoCobro = false;
+  metodoCobro = 'TPV';
+  private facturaIdCobro: number | null = null;
+
   @Input() clienteId!: number;
 
   pendientes: PendientesFacturacionDTO | null = null;
@@ -693,27 +701,60 @@ export class FacturarV2Component implements OnInit, OnChanges {
     }
 
     if (this.factura.estado !== 'EMITIDA') {
-      this.error = 'Solo se puede marcar como pagada una factura emitida';
+      this.error = 'Solo se puede marcar como cobrada una factura emitida.';
+      return;
+    }
+
+    this.error = null;
+    this.metodoCobro = 'TPV';
+    this.facturaIdCobro = this.factura.id;
+    this.dialogoCobro = true;
+  }
+
+  cancelarCobro(): void {
+    if (this.loading) return;
+
+    this.dialogoCobro = false;
+    this.facturaIdCobro = null;
+  }
+
+  confirmarCobro(): void {
+    if (
+      this.facturaIdCobro == null ||
+      this.loading ||
+      this.preparandoFacturaDirecta
+    ) {
+      return;
+    }
+
+    if (!['TPV', 'EFECTIVO', 'TRANSFERENCIA'].includes(this.metodoCobro)) {
+      this.error = 'Selecciona una forma de pago válida.';
       return;
     }
 
     this.loading = true;
     this.error = null;
 
-    this.factService.marcarComoPagada(this.factura.id).subscribe({
-      next: (pagada) => {
-        this.factura = pagada;
-        this.loading = false;
-        this.cargarFacturasCliente();
-      },
-      error: (err) => {
-        this.loading = false;
-        this.error = this.mensajeError(
-          err,
-          'Error marcando factura como pagada',
-        );
-      },
-    });
+    this.factService
+      .marcarComoPagada(this.facturaIdCobro, this.metodoCobro)
+      .subscribe({
+        next: (pagada) => {
+          this.factura = pagada;
+          this.loading = false;
+          this.dialogoCobro = false;
+          this.facturaIdCobro = null;
+
+          this.cargarFacturasCliente();
+          this.cobroRegistrado.emit();
+        },
+        error: (err) => {
+          this.loading = false;
+          this.error = this.mensajeError(
+            err,
+            'No se ha podido registrar el cobro de la factura.',
+          );
+        },
+      });
   }
 
   prepararFacturaDirecta(): void {

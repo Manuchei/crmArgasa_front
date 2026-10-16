@@ -693,7 +693,12 @@ export class ClienteDetalleComponent implements OnInit {
         },
         error: (err) => {
           this.logHttpError('eliminar albarán', err);
-          alert('No se pudo eliminar el albarán.');
+          const mensaje =
+            typeof err?.error === 'string'
+              ? err.error
+              : err?.error?.message || err?.error?.detail;
+
+          alert(mensaje || 'No se pudo crear el albarán.');
         },
       });
   }
@@ -735,5 +740,9 @@ export class ClienteDetalleComponent implements OnInit {
 
   formatearIbanVisual(iban?: string): string {
     return (iban || '').match(/.{1,4}/g)?.join(' ') || '';
+  }
+
+  actualizarTrasCobroFactura(): void {
+    this.cargarPagos();
   }
 }

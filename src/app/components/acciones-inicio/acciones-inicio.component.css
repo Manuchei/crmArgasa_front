@@ -1,0 +1,124 @@
+
+      :host {
+        display: block;
+        margin-bottom: 24px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      .acciones-inicio {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+      }
+
+      .accion-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 22px;
+        background: #fff;
+        border: 1px solid #dfe6ef;
+        border-radius: 12px;
+      }
+
+      .accion-info,
+      .accion-botones {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .accion-info {
+        min-width: 0;
+      }
+
+      .etiqueta {
+        color: #718096;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      strong {
+        color: #1a2940;
+        font-size: 20px;
+      }
+
+      small {
+        color: #718096;
+        font-size: 12px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+
+      .texto-error {
+        color: #9f2534;
+      }
+
+      .accion-botones {
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      .boton {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 44px;
+        padding: 11px 18px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--color-primario, #d71920);
+        color: #fff;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 750;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .boton:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      a:not(.boton) {
+        color: #61728a;
+        font-size: 11px;
+        text-decoration: none;
+      }
+
+      a:not(.boton):hover {
+        text-decoration: underline;
+      }
+
+      .aviso {
+        color: #237457;
+        font-size: 13px;
+      }
+
+      button:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #94a3b8;
+        outline-offset: 3px;
+      }
+
+      @media (max-width: 600px) {
+        .acciones-inicio {
+          grid-template-columns: 1fr;
+        }
+
+        .accion-card {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .accion-botones {
+          align-items: stretch;
+          width: 100%;
+        }
+    }

@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { RutaService } from '../../services/ruta.service';
-import { Ruta } from '../../interfaces/iruta';
 import { FormsModule } from '@angular/forms';
 import { NgIf, NgFor } from '@angular/common';
+
+import { RutaService } from '../../services/ruta.service';
+import { Ruta } from '../../interfaces/iruta';
 import { AuthService } from '../../services/auth.service';
 import { AccionesInicioComponent } from '../../components/acciones-inicio/acciones-inicio.component';
 
@@ -32,18 +33,17 @@ export class RutasListComponent implements OnInit {
   rutasBase: Ruta[] = [];
   grouped: GrupoFecha[] = [];
 
-  filtroEstado: string = 'pendiente';
-  filtroNombre: string = '';
-  filtroFecha: string = '';
+  filtroEstado = '';
+  filtroNombre = '';
+  filtroFecha = '';
 
   cargando = false;
   error = '';
   openIndex: number | null = null;
 
-  emailUsuario: string = '';
-  rolUsuario: string = '';
-  esAdminODebug: boolean = false;
-  esTransportista: boolean = false;
+  emailUsuario = '';
+  esTransportista = false;
+  puedeGestionar = false;
 
   constructor(
     private rutaService: RutaService,
@@ -57,81 +57,35 @@ export class RutasListComponent implements OnInit {
     this.cargarRutas();
   }
 
-  toggle(i: number): void {
-    this.openIndex = this.openIndex === i ? null : i;
-  }
-
   private inicializarUsuario(): void {
-    const usuario = this.authService.getUsuario?.();
-    const rol = this.authService.getRol?.();
+    const usuario = this.authService.getUsuario();
 
     this.emailUsuario = (usuario?.email || '').trim().toLowerCase();
-    this.rolUsuario = (rol || '').trim().toUpperCase();
 
-    this.esAdminODebug =
-      this.rolUsuario.includes('ADMIN') ||
-      this.rolUsuario.includes('DEVELOPER');
+    this.esTransportista = this.authService.hasRole('TRANSPORTISTA');
 
-    this.esTransportista = !this.esAdminODebug;
+    this.puedeGestionar = this.authService.hasRole(
+      'USER',
+      'ADMIN',
+      'DEVELOPER',
+    );
   }
 
   private inicializarFiltrosPorDefecto(): void {
-    const hoy = new Date();
-    this.filtroFecha = this.toInputDate(hoy);
-
-    if (this.esTransportista) {
-      this.filtroEstado = 'pendiente';
-    } else {
-      this.filtroEstado = '';
-    }
+    this.filtroFecha = this.toInputDate(new Date());
+    this.filtroEstado = this.esTransportista ? 'pendiente' : '';
   }
 
   private toInputDate(fecha: Date): string {
     const year = fecha.getFullYear();
     const month = String(fecha.getMonth() + 1).padStart(2, '0');
     const day = String(fecha.getDate()).padStart(2, '0');
+
     return `${year}-${month}-${day}`;
   }
 
-  private setRutasBase(rutas: Ruta[] | null | undefined): void {
-    this.rutasBase = Array.isArray(rutas) ? rutas : [];
-    this.aplicarFiltrosLocales();
-  }
-
-  private setRutasFiltradas(rutas: Ruta[]): void {
-    this.rutas = Array.isArray(rutas) ? rutas : [];
-    this.grouped = this.agruparRutas(this.rutas);
-
-    if (this.grouped.length > 0) {
-      this.openIndex = 0;
-    } else {
-      this.openIndex = null;
-    }
-  }
-
-  private getErrorMessage(err: any, fallback: string): string {
-    console.error('Detalle error:', err);
-
-    if (typeof err?.error === 'string' && err.error.trim() !== '') {
-      return err.error;
-    }
-
-    if (
-      typeof err?.error?.message === 'string' &&
-      err.error.message.trim() !== ''
-    ) {
-      return err.error.message;
-    }
-
-    if (typeof err?.message === 'string' && err.message.trim() !== '') {
-      return err.message;
-    }
-
-    if (err?.status) {
-      return `${fallback} (HTTP ${err.status})`;
-    }
-
-    return fallback;
+  toggle(i: number): void {
+    this.openIndex = this.openIndex === i ? null : i;
   }
 
   cargarRutas(): void {
@@ -141,71 +95,70 @@ export class RutasListComponent implements OnInit {
 
     this.rutaService.getRutas().subscribe({
       next: (data) => {
-        this.setRutasBase(data);
+        this.rutasBase = Array.isArray(data) ? data : [];
+        this.aplicarFiltrosLocales();
         this.cargando = false;
       },
       error: (err) => {
         this.error = this.getErrorMessage(err, 'Error al cargar las rutas');
-        this.setRutasBase([]);
+
+        this.rutasBase = [];
+        this.aplicarFiltrosLocales();
         this.cargando = false;
       },
     });
   }
 
   aplicarFiltrosLocales(): void {
-    let rutasFiltradas = [...this.rutasBase];
+    let resultado = [...this.rutasBase];
 
-    // 1. Si NO es admin/developer, solo ve sus rutas
     if (this.esTransportista) {
-      rutasFiltradas = rutasFiltradas.filter((r: any) => {
-        const emailRuta = (r?.emailTransportista || '')
-          .toString()
+      resultado = resultado.filter((ruta) => {
+        const emailRuta = String((ruta as any)?.emailTransportista || '')
           .trim()
           .toLowerCase();
-        return emailRuta === this.emailUsuario;
+
+        return !!this.emailUsuario && emailRuta === this.emailUsuario;
       });
+    } else if (!this.puedeGestionar) {
+      resultado = [];
     }
 
-    // 2. Filtro por fecha
     if (this.filtroFecha) {
-      rutasFiltradas = rutasFiltradas.filter((r) => {
-        const fechaRuta = this.getFechaKey(r);
-        return fechaRuta === this.filtroFecha;
-      });
-    }
-
-    // 3. Filtro por estado
-    if (this.filtroEstado) {
-      rutasFiltradas = rutasFiltradas.filter(
-        (r) => r.estado === this.filtroEstado,
+      resultado = resultado.filter(
+        (ruta) => this.getFechaKey(ruta) === this.filtroFecha,
       );
     }
 
-    // 4. Filtro por nombre/transportista/búsqueda
-    if (this.filtroNombre && this.filtroNombre.trim() !== '') {
-      const texto = this.filtroNombre.trim().toLowerCase();
+    if (this.filtroEstado) {
+      resultado = resultado.filter((ruta) => ruta.estado === this.filtroEstado);
+    }
 
-      rutasFiltradas = rutasFiltradas.filter((r: any) => {
-        const cliente =
-          `${r?.cliente?.nombreApellidos || ''} ${r?.cliente?.nombreComercial || ''}`.toLowerCase();
-        const transportista = (r?.nombreTransportista || '').toLowerCase();
-        const emailTransportista = (r?.emailTransportista || '').toLowerCase();
-        const destino = (r?.destino || '').toLowerCase();
-        const observaciones = (r?.observaciones || '').toLowerCase();
-        const tarea = (r?.tarea || '').toLowerCase();
+    const texto = this.filtroNombre.trim().toLowerCase();
 
-        return (
-          cliente.includes(texto) ||
-          transportista.includes(texto) ||
-          emailTransportista.includes(texto) ||
-          destino.includes(texto) ||
-          observaciones.includes(texto) ||
-          tarea.includes(texto)
+    if (texto) {
+      resultado = resultado.filter((ruta: any) => {
+        const campos = [
+          ruta?.cliente?.nombreApellidos,
+          ruta?.cliente?.nombreComercial,
+          ruta?.nombreTransportista,
+          ruta?.emailTransportista,
+          ruta?.destino,
+          ruta?.observaciones,
+          ruta?.tarea,
+        ];
+
+        return campos.some((valor) =>
+          String(valor || '')
+            .toLowerCase()
+            .includes(texto),
         );
       });
     }
 
-    this.setRutasFiltradas(rutasFiltradas);
+    this.rutas = resultado;
+    this.grouped = this.agruparRutas(resultado);
+    this.openIndex = this.grouped.length ? 0 : null;
   }
 
   filtrarNombre(): void {
@@ -222,14 +175,8 @@ export class RutasListComponent implements OnInit {
 
   limpiarFiltros(): void {
     this.filtroNombre = '';
-
-    if (this.esTransportista) {
-      this.filtroEstado = 'pendiente';
-      this.filtroFecha = this.toInputDate(new Date());
-    } else {
-      this.filtroEstado = '';
-      this.filtroFecha = '';
-    }
+    this.filtroEstado = this.esTransportista ? 'pendiente' : '';
+    this.filtroFecha = this.esTransportista ? this.toInputDate(new Date()) : '';
 
     this.aplicarFiltrosLocales();
   }
@@ -243,7 +190,7 @@ export class RutasListComponent implements OnInit {
   }
 
   editarRuta(ruta: Ruta): void {
-    if (ruta?.id != null) {
+    if (ruta.id != null) {
       this.router.navigate(['/app/rutas/editar', ruta.id]);
     }
   }
@@ -253,160 +200,165 @@ export class RutasListComponent implements OnInit {
   }
 
   eliminarRuta(ruta: Ruta): void {
-    if (!ruta?.id) return;
+    if (!this.puedeGestionarTodo() || ruta.id == null) return;
 
-    if (confirm(`¿Seguro que quieres eliminar la ruta ${ruta.id}?`)) {
-      this.rutaService.eliminarRuta(ruta.id).subscribe({
-        next: () => this.cargarRutas(),
-        error: (err) => {
-          alert(this.getErrorMessage(err, 'Error al eliminar la ruta'));
-        },
-      });
+    if (!confirm(`¿Seguro que quieres eliminar la ruta ${ruta.id}?`)) {
+      return;
     }
+
+    this.rutaService.eliminarRuta(ruta.id).subscribe({
+      next: () => this.cargarRutas(),
+      error: (err) => {
+        alert(this.getErrorMessage(err, 'Error al eliminar la ruta'));
+      },
+    });
   }
 
   cerrarRuta(ruta: Ruta): void {
-    if (!ruta?.id) return;
+    if (ruta.id == null || ruta.estado === 'cerrada') return;
 
-    if (confirm(`¿Cerrar la ruta ${ruta.id}?`)) {
-      this.rutaService.cerrarRuta(ruta.id).subscribe({
-        next: () => this.cargarRutas(),
-        error: (err) => {
-          alert(this.getErrorMessage(err, 'Error al cerrar la ruta'));
-        },
-      });
-    }
+    if (!confirm(`¿Cerrar la ruta ${ruta.id}?`)) return;
+
+    this.rutaService.cerrarRuta(ruta.id).subscribe({
+      next: () => this.cargarRutas(),
+      error: (err) => {
+        alert(this.getErrorMessage(err, 'Error al cerrar la ruta'));
+      },
+    });
   }
 
   puedeGestionarTodo(): boolean {
-    return this.esAdminODebug;
+    return this.puedeGestionar;
   }
 
-  getTituloPantalla(): string {
-    return this.esAdminODebug ? 'Gestión de Rutas' : 'Mis Rutas';
+  private getErrorMessage(err: any, fallback: string): string {
+    if (typeof err?.error === 'string' && err.error.trim()) {
+      return err.error;
+    }
+
+    if (typeof err?.error?.message === 'string' && err.error.message.trim()) {
+      return err.error.message;
+    }
+
+    if (err?.status === 0) {
+      return 'No se pudo contactar con el servidor.';
+    }
+
+    if (err?.status === 403) {
+      return 'No tienes permiso para realizar esta operación.';
+    }
+
+    return fallback;
+  }
+
+  private getFechaKey(ruta: Ruta): string {
+    const fecha = String(ruta?.fecha || '').trim();
+    return fecha ? fecha.substring(0, 10) : 'Sin fecha';
   }
 
   private formatFechaLabel(fechaKey: string): string {
-    const [y, m, d] = (fechaKey || '').split('-');
-    if (!y || !m || !d) return fechaKey || 'Sin fecha';
-    return `${d}/${m}/${y}`;
-  }
+    const [year, month, day] = fechaKey.split('-');
 
-  private getFechaKey(r: Ruta): string {
-    const fecha = (r?.fecha || '').toString().trim();
-    if (!fecha) return 'Sin fecha';
-    return fecha.substring(0, 10);
-  }
-
-  private getTransportistaKey(r: Ruta): string {
-    return (r?.nombreTransportista || 'Sin transportista').toString().trim();
-  }
-
-  private getTransportistaEmail(r: Ruta): string | undefined {
-    const email = (r as any)?.emailTransportista;
-    return email ? String(email) : undefined;
+    return year && month && day ? `${day}/${month}/${year}` : 'Sin fecha';
   }
 
   private agruparRutas(rutas: Ruta[]): GrupoFecha[] {
-    const mapFecha = new Map<string, Map<string, GrupoTransportista>>();
+    const fechas = new Map<string, Map<string, GrupoTransportista>>();
 
-    for (const r of rutas) {
-      const fechaKey = this.getFechaKey(r);
-      const transportistaKey = this.getTransportistaKey(r);
+    for (const ruta of rutas) {
+      const fecha = this.getFechaKey(ruta);
+      const nombre =
+        String(ruta.nombreTransportista || '').trim() || 'Sin transportista';
 
-      if (!mapFecha.has(fechaKey)) {
-        mapFecha.set(fechaKey, new Map<string, GrupoTransportista>());
+      const email = String((ruta as any).emailTransportista || '').trim();
+
+      const claveTransportista = email.toLowerCase() || nombre.toLowerCase();
+
+      if (!fechas.has(fecha)) {
+        fechas.set(fecha, new Map());
       }
 
-      const mapTransportistas = mapFecha.get(fechaKey)!;
+      const transportistas = fechas.get(fecha)!;
 
-      if (!mapTransportistas.has(transportistaKey)) {
-        mapTransportistas.set(transportistaKey, {
-          nombre: transportistaKey,
-          email: this.getTransportistaEmail(r),
+      if (!transportistas.has(claveTransportista)) {
+        transportistas.set(claveTransportista, {
+          nombre,
+          email: email || undefined,
           rutas: [],
         });
       }
 
-      mapTransportistas.get(transportistaKey)!.rutas.push(r);
+      transportistas.get(claveTransportista)!.rutas.push(ruta);
     }
 
-    const fechasOrdenadas = Array.from(mapFecha.keys()).sort((a, b) =>
-      b.localeCompare(a),
-    );
+    return [...fechas.keys()]
+      .sort((a, b) => b.localeCompare(a))
+      .map((fechaKey) => {
+        const transportistas = [...fechas.get(fechaKey)!.values()]
+          .map((transportista) => ({
+            ...transportista,
+            rutas: [...transportista.rutas].sort(
+              (a, b) => (a.id ?? 0) - (b.id ?? 0),
+            ),
+          }))
+          .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-    return fechasOrdenadas.map((fechaKey) => {
-      const transportistasMap = mapFecha.get(fechaKey)!;
-
-      const transportistas = Array.from(transportistasMap.values())
-        .map((t) => ({
-          ...t,
-          rutas: [...t.rutas].sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
-        }))
-        .sort((a, b) => a.nombre.localeCompare(b.nombre));
-
-      const total = transportistas.reduce((acc, t) => acc + t.rutas.length, 0);
-
-      return {
-        fechaKey,
-        fechaLabel: this.formatFechaLabel(fechaKey),
-        transportistas,
-        total,
-      };
-    });
+        return {
+          fechaKey,
+          fechaLabel: this.formatFechaLabel(fechaKey),
+          transportistas,
+          total: transportistas.reduce(
+            (total, transportista) => total + transportista.rutas.length,
+            0,
+          ),
+        };
+      });
   }
 
   private nombreProductoFromLinea(linea: any): string {
-    const p = linea?.producto;
+    const producto = linea?.producto;
 
-    if (p?.codigo && p?.nombre) return `${p.codigo} - ${p.nombre}`;
-    if (p?.nombre) return p.nombre;
+    if (producto?.codigo && producto?.nombre) {
+      return `${producto.codigo} - ${producto.nombre}`;
+    }
+
+    if (producto?.nombre) return producto.nombre;
     if (linea?.nombreProducto) return linea.nombreProducto;
     if (linea?.productoId) return `Producto ${linea.productoId}`;
 
     return 'Producto';
   }
 
-  getResumenEntrega(ruta: any, maxItems: number = 2): string | null {
+  getResumenEntrega(ruta: any, maxItems = 2): string | null {
     const lineas = ruta?.lineas;
 
-    if (!Array.isArray(lineas) || lineas.length === 0) return null;
+    if (!Array.isArray(lineas) || !lineas.length) return null;
 
-    const parts = lineas
+    const partes = lineas
       .slice(0, maxItems)
       .map(
-        (l: any) => `${l?.cantidad ?? 1}x ${this.nombreProductoFromLinea(l)}`,
+        (linea: any) =>
+          `${linea?.cantidad ?? 1}x ${this.nombreProductoFromLinea(linea)}`,
       );
 
     const extra =
       lineas.length > maxItems ? ` +${lineas.length - maxItems}` : '';
 
-    return `📦 Entrega: ${parts.join(', ')}${extra}`;
+    return `📦 Entrega: ${partes.join(', ')}${extra}`;
   }
 
   getResumenTarea(ruta: any): string | null {
-    const tarea = (ruta?.tarea ?? '').toString().trim();
-    if (!tarea) return null;
-    return `🛠 Tarea: ${tarea}`;
+    const tarea = String(ruta?.tarea || '').trim();
+
+    return tarea ? `🛠 Tarea: ${tarea}` : null;
   }
 
   getResumenPrincipal(ruta: any): string {
-    const entrega = this.getResumenEntrega(ruta, 2);
-    const tarea = this.getResumenTarea(ruta);
-
-    if (entrega) return entrega;
-    if (tarea) return tarea;
-
-    return '—';
+    return this.getResumenEntrega(ruta) || this.getResumenTarea(ruta) || '—';
   }
 
   getResumenSecundario(ruta: any): string | null {
-    const entrega = this.getResumenEntrega(ruta, 2);
-    const tarea = this.getResumenTarea(ruta);
-
-    if (entrega && tarea) return tarea;
-
-    return null;
+    return this.getResumenEntrega(ruta) ? this.getResumenTarea(ruta) : null;
   }
 
   get rutasPendientes(): number {

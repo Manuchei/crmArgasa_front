@@ -18,6 +18,21 @@ interface LineaTicket {
   iva: number;
 }
 
+interface SolicitudTicket {
+  solicitud: string;
+  cliente: string;
+  fecha: string;
+  formaPago: string;
+  entregado: number | null;
+  lineas: {
+    productoId: number | null;
+    articulo: string;
+    cantidad: number;
+    precio: number;
+    iva: number;
+  }[];
+}
+
 @Component({
   selector: 'app-venta-rapida',
   standalone: true,
@@ -54,6 +69,20 @@ export class VentaRapidaComponent implements OnInit {
 
   private solicitudTicket = crypto.randomUUID();
 
+  /*
+   * Conserva los datos exactos ante una respuesta incierta.
+   * Así un reintento no crea otra venta.
+   */
+  private solicitudPendiente: SolicitudTicket | null = null;
+
+  get cobroPendiente(): boolean {
+    return this.solicitudPendiente !== null && !this.numero;
+  }
+
+  get editorBloqueado(): boolean {
+    return this.generando || !!this.numero || this.cobroPendiente;
+  }
+
   constructor(
     private productosService: ProductoServiceService,
     private auth: AuthService,
@@ -80,14 +109,16 @@ export class VentaRapidaComponent implements OnInit {
   }
 
   cargarUsuario(): void {
+    if (this.editorBloqueado) return;
+
     this.cargandoUsuario = true;
     this.errorUsuario = '';
     this.empleado = '';
 
     this.http
-      .get<{ nombre: string }>(`${environment.apiUrl}/auth/me`, {
-        headers: this.cabeceras(),
-      })
+      .get<{
+        nombre: string;
+      }>(`${environment.apiUrl}/auth/me`, { headers: this.cabeceras() })
       .subscribe({
         next: (usuario) => {
           this.cargandoUsuario = false;
@@ -105,12 +136,14 @@ export class VentaRapidaComponent implements OnInit {
   }
 
   cargarProductos(): void {
+    if (this.cargando) return;
+
     this.cargando = true;
     this.errorProductos = '';
 
     this.productosService.getProductos().subscribe({
       next: (productos) => {
-        this.productos = productos;
+        this.productos = productos || [];
         this.cargando = false;
       },
       error: () => {
@@ -122,7 +155,6 @@ export class VentaRapidaComponent implements OnInit {
 
   private fechaLocal(): string {
     const ahora = new Date();
-
     const local = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000);
 
     return local.toISOString().slice(0, 16);
@@ -191,7 +223,7 @@ export class VentaRapidaComponent implements OnInit {
         this.normalizar(producto.referencia).includes(referencia) &&
         (!this.filtroMarca || producto.marca === this.filtroMarca) &&
         (!this.filtroFamilia || producto.familia === this.filtroFamilia) &&
-        (!this.soloDisponibles || Number(producto.unidades) > 0)
+        (!this.soloDisponibles || this.disponibles(producto) > 0)
       );
     });
   }
@@ -208,7 +240,71 @@ export class VentaRapidaComponent implements OnInit {
     return this.redondear(Number(producto.precioSinIva) * 1.21);
   }
 
+  private stockProducto(producto: IProducto): number {
+    const stock = Number(producto.unidades);
+
+    return Number.isFinite(stock) ? Math.max(0, Math.floor(stock)) : 0;
+  }
+
+  disponibles(producto: IProducto): number {
+    if (producto.id == null) return 0;
+
+    const cantidadTicket = this.lineas
+      .filter((linea) => linea.productoId === producto.id)
+      .reduce((total, linea) => total + Number(linea.cantidad || 0), 0);
+
+    return Math.max(0, this.stockProducto(producto) - cantidadTicket);
+  }
+
+  maximoLinea(linea: LineaTicket): number {
+    if (linea.productoId == null) return 1000000;
+
+    const producto = this.productos.find(
+      (item) => item.id === linea.productoId,
+    );
+
+    if (!producto) return 0;
+
+    const otrasUnidades = this.lineas
+      .filter((item) => item !== linea && item.productoId === linea.productoId)
+      .reduce((total, item) => total + Number(item.cantidad || 0), 0);
+
+    return Math.max(0, this.stockProducto(producto) - otrasUnidades);
+  }
+
+  cambiarCantidad(linea: LineaTicket, valor: number | string | null): void {
+    if (this.editorBloqueado) return;
+
+    const cantidad = Number(valor);
+    const maximo = this.maximoLinea(linea);
+
+    if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > 1000000) {
+      this.error = 'Introduce una cantidad entera mayor que cero.';
+      return;
+    }
+
+    if (cantidad > maximo) {
+      this.error = `Solo hay ${maximo} unidades disponibles para este artículo.`;
+      return;
+    }
+
+    linea.cantidad = cantidad;
+    this.error = '';
+  }
+
   agregar(producto: IProducto): void {
+    if (this.editorBloqueado || this.cargando) return;
+
+    if (producto.id == null) {
+      this.error = 'El producto no tiene un identificador válido.';
+      return;
+    }
+
+    if (this.disponibles(producto) < 1) {
+      this.error = 'No quedan unidades disponibles de este producto.';
+      return;
+    }
+
     const precio = this.precioProducto(producto);
 
     if (!Number.isFinite(precio) || precio < 0) {
@@ -217,7 +313,7 @@ export class VentaRapidaComponent implements OnInit {
     }
 
     const existente = this.lineas.find(
-      (linea) => producto.id != null && linea.productoId === producto.id,
+      (linea) => linea.productoId === producto.id,
     );
 
     if (existente) {
@@ -237,7 +333,43 @@ export class VentaRapidaComponent implements OnInit {
     this.error = '';
   }
 
+  validarStock(): boolean {
+    const cantidades = new Map<number, number>();
+
+    for (const linea of this.lineas) {
+      if (linea.productoId == null) continue;
+
+      const cantidad = Number(linea.cantidad);
+
+      if (!Number.isInteger(cantidad) || cantidad <= 0) {
+        this.error = 'Revisa las cantidades del ticket.';
+        return false;
+      }
+
+      cantidades.set(
+        linea.productoId,
+        (cantidades.get(linea.productoId) || 0) + cantidad,
+      );
+    }
+
+    for (const [id, cantidad] of cantidades) {
+      const producto = this.productos.find((item) => item.id === id);
+
+      if (!producto || cantidad > this.stockProducto(producto)) {
+        this.error = `Stock insuficiente para ${
+          producto?.descripcion || 'uno de los productos'
+        }. Actualiza los productos y revisa las cantidades.`;
+
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   agregarManual(): void {
+    if (this.editorBloqueado) return;
+
     this.lineas.push({
       articulo: '',
       cantidad: 1,
@@ -247,7 +379,10 @@ export class VentaRapidaComponent implements OnInit {
   }
 
   eliminar(indice: number): void {
+    if (this.editorBloqueado) return;
+
     this.lineas.splice(indice, 1);
+    this.error = '';
   }
 
   private redondear(valor: number): number {
@@ -266,7 +401,11 @@ export class VentaRapidaComponent implements OnInit {
     );
   }
 
-  get desglose(): { iva: number; base: number; cuota: number }[] {
+  get desglose(): {
+    iva: number;
+    base: number;
+    cuota: number;
+  }[] {
     const grupos = new Map<number, number>();
 
     for (const linea of this.lineas) {
@@ -305,10 +444,8 @@ export class VentaRapidaComponent implements OnInit {
     switch (this.formaPago) {
       case 'TPV':
         return 'Tarjeta / TPV';
-
       case 'TRANSFERENCIA':
         return 'Transferencia';
-
       default:
         return 'Efectivo';
     }
@@ -324,31 +461,46 @@ export class VentaRapidaComponent implements OnInit {
   validar(): boolean {
     this.error = '';
 
-    if (!this.cliente.trim()) {
-      this.error = 'Introduce el cliente.';
+    if (!this.cliente.trim() || this.cliente.trim().length > 250) {
+      this.error = 'Introduce un cliente de hasta 250 caracteres.';
     } else if (!this.empleado.trim()) {
       this.error = 'No se ha podido identificar al empleado.';
     } else if (!this.fecha || Number.isNaN(new Date(this.fecha).getTime())) {
       this.error = 'Introduce una fecha válida.';
-    } else if (!this.lineas.length) {
-      this.error = 'Añade al menos un artículo.';
+    } else if (!this.lineas.length || this.lineas.length > 500) {
+      this.error = 'Añade entre 1 y 500 artículos.';
     } else if (
-      this.lineas.some(
-        (linea) =>
+      this.lineas.some((linea) => {
+        const precio = Number(linea.precio);
+        const cantidad = Number(linea.cantidad);
+        const iva = Number(linea.iva);
+
+        return (
           !linea.articulo.trim() ||
-          !Number.isInteger(Number(linea.cantidad)) ||
-          Number(linea.cantidad) <= 0 ||
+          linea.articulo.trim().length > 1000 ||
+          !Number.isInteger(cantidad) ||
+          cantidad <= 0 ||
+          cantidad > 1000000 ||
           linea.precio == null ||
-          !Number.isFinite(Number(linea.precio)) ||
-          Number(linea.precio) < 0 ||
+          !Number.isFinite(precio) ||
+          precio < 0 ||
+          precio > 999999999.99 ||
+          Math.abs(precio - this.redondear(precio)) > 0.0000001 ||
           linea.iva == null ||
-          !Number.isFinite(Number(linea.iva)) ||
-          Number(linea.iva) < 0 ||
-          Number(linea.iva) > 100,
-      )
+          !Number.isFinite(iva) ||
+          iva < 0 ||
+          iva > 100
+        );
+      })
     ) {
-      this.error = 'Revisa los artículos, cantidades, precios e IVA.';
-    } else if (!Number.isFinite(this.total)) {
+      this.error =
+        'Revisa artículos, cantidades, precios e IVA. ' +
+        'Los precios admiten dos decimales.';
+    } else if (
+      !Number.isFinite(this.total) ||
+      this.total <= 0 ||
+      this.total > 99999999999999.99
+    ) {
       this.error = 'El importe total no es válido.';
     } else if (!['EFECTIVO', 'TPV', 'TRANSFERENCIA'].includes(this.formaPago)) {
       this.error = 'Selecciona una forma de pago válida.';
@@ -364,87 +516,117 @@ export class VentaRapidaComponent implements OnInit {
     return !this.error;
   }
 
-generar(): void {
-  if (this.generando) return;
+  generar(): void {
+    if (this.generando) return;
 
-  if (this.numero) {
-    this.vistaPrevia = true;
-    return;
-  }
+    if (this.numero) {
+      this.vistaPrevia = true;
+      return;
+    }
 
-  if (!this.validar()) return;
+    /*
+     * Un reintento utiliza la misma solicitud sin volver a
+     * comprobar stock local: el cobro podría haberse guardado.
+     */
+    if (!this.solicitudPendiente) {
+      if (this.cargando || this.errorProductos) {
+        this.error = 'Carga los productos antes de confirmar la venta.';
+        return;
+      }
 
-  if (this.total <= 0) {
-    this.error = 'El total debe ser mayor que cero.';
-    return;
-  }
+      if (!this.validar() || !this.validarStock()) return;
 
-  this.generando = true;
-  this.error = '';
-
-  this.http
-    .post<{ numero: string; total: number }>(
-      `${environment.apiUrl}/tickets/cobrar`,
-      {
+      this.solicitudPendiente = {
         solicitud: this.solicitudTicket,
         cliente: this.cliente.trim(),
         fecha: this.fecha,
         formaPago: this.formaPago,
         entregado:
-          this.formaPago === 'EFECTIVO'
-            ? Number(this.entregado)
-            : null,
+          this.formaPago === 'EFECTIVO' ? Number(this.entregado) : null,
         lineas: this.lineas.map((linea) => ({
           productoId: linea.productoId ?? null,
           articulo: linea.articulo.trim(),
           cantidad: Number(linea.cantidad),
-          precio: Number(linea.precio),
+          precio: this.redondear(Number(linea.precio)),
           iva: Number(linea.iva),
         })),
-      },
-      { headers: this.cabeceras() },
-    )
-    .subscribe({
-      next: (respuesta) => {
-        this.generando = false;
+      };
+    }
 
-        if (!respuesta.numero?.trim()) {
+    this.generando = true;
+    this.error = '';
+
+    this.http
+      .post<{
+        numero: string;
+        total: number;
+      }>(`${environment.apiUrl}/tickets/cobrar`, this.solicitudPendiente, { headers: this.cabeceras() })
+      .subscribe({
+        next: (respuesta) => {
+          this.generando = false;
+
+          if (!respuesta.numero?.trim()) {
+            this.error =
+              'No se ha recibido el número. ' +
+              'Pulsa Reintentar cobro sin iniciar otra venta.';
+            return;
+          }
+
+          this.numero = respuesta.numero;
+          this.solicitudPendiente = null;
+          this.vistaPrevia = true;
+        },
+        error: (error) => {
+          this.generando = false;
+
+          /*
+           * Un 400/403/422 o un conflicto de validación permite
+           * corregir la venta. Un conflicto por venta ya cobrada
+           * conserva la solicitud para no tratarla como una nueva.
+           */
+          const mensaje = String(error.error?.message || '');
+          const conflictoCorregible =
+            error.status === 409 && !mensaje.includes('Esta venta ya se cobró');
+
+          if ([400, 403, 422].includes(error.status) || conflictoCorregible) {
+            this.solicitudPendiente = null;
+          }
+
           this.error =
-            'No se ha recibido el número. Reintenta sin iniciar otra venta.';
-          return;
-        }
-
-        this.numero = respuesta.numero;
-        this.vistaPrevia = true;
-      },
-      error: (error) => {
-        this.generando = false;
-        this.error =
-          error.error?.message ||
-          'No se ha podido confirmar el cobro. Reintenta esta misma venta.';
-      },
-    });
-}
+            mensaje ||
+            'No se ha podido confirmar el cobro. ' +
+              'Reintenta esta misma venta.';
+        },
+      });
+  }
 
   nuevoTicket(): void {
+    if (this.generando || this.cobroPendiente) return;
+
     if (!confirm('¿Empezar otro ticket? Se limpiará el contenido actual.')) {
       return;
     }
 
     this.numero = '';
     this.solicitudTicket = crypto.randomUUID();
+    this.solicitudPendiente = null;
+
     this.lineas = [];
     this.cliente = 'CLIENTES CONTADO';
     this.fecha = this.fechaLocal();
     this.formaPago = 'EFECTIVO';
     this.entregado = null;
+
     this.error = '';
     this.vistaPrevia = false;
+
     this.limpiarFiltros();
+    this.cargarProductos();
   }
 
   async imprimir(): Promise<void> {
-    if (!this.numero || !this.validar()) return;
+    // Reimprimir no consulta ni modifica el inventario.
+    if (!this.numero) return;
 
     const ticket = document.querySelector<HTMLElement>(
       'app-venta-rapida .ticket',
@@ -457,7 +639,6 @@ generar(): void {
 
     const copia = ticket.cloneNode(true) as HTMLElement;
 
-    // Usamos direcciones absolutas para cargar los logos en el documento.
     copia.querySelectorAll<HTMLImageElement>('img').forEach((imagen) => {
       imagen.src = new URL(
         imagen.getAttribute('src') || '',
@@ -490,183 +671,149 @@ generar(): void {
 
     documento.open();
     documento.write(`
-    <!DOCTYPE html>
-    <html lang="es">
-      <head>
-        <meta charset="utf-8">
-        <title>Ticket</title>
+      <!DOCTYPE html>
+      <html lang="es">
+        <head>
+          <meta charset="utf-8">
+          <title>Ticket</title>
+          <style>
+            @page { size: auto; margin: 0; }
+            * { box-sizing: border-box; }
 
-        <style>
-          @page {
-            size: auto;
-            margin: 0;
-          }
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: white;
+              color: black;
+            }
 
-          * {
-            box-sizing: border-box;
-          }
+            body {
+              width: 100%;
+              font-family: Arial, sans-serif;
+              font-size: 11px;
+              line-height: 1.45;
+            }
 
-          html,
-          body {
-            margin: 0;
-            padding: 0;
-            background: white;
-            color: black;
-          }
+            .ticket {
+              width: 100%;
+              max-width: 80mm;
+              margin: 0 auto;
+              padding: 4mm;
+              overflow-wrap: anywhere;
+            }
 
-          body {
-            width: 100%;
-            font-family: Arial, sans-serif;
-            font-size: 11px;
-            line-height: 1.45;
-          }
+            .empresa-ticket {
+              display: block !important;
+              visibility: visible !important;
+              text-align: center;
+            }
 
-          .ticket {
-            width: 100%;
-            max-width: 80mm;
-            margin: 0 auto;
-            padding: 4mm;
-            overflow-wrap: anywhere;
-          }
+            .empresa-ticket img {
+              display: block !important;
+              visibility: visible !important;
+              width: 44mm;
+              max-width: 100%;
+              height: auto;
+              max-height: 22mm;
+              object-fit: contain;
+              margin: 0 auto 4mm;
+            }
 
-          .empresa-ticket {
-            display: block !important;
-            visibility: visible !important;
-            text-align: center;
-          }
+            .empresa-ticket h2 {
+              margin: 0 0 2mm;
+              font-size: 13px;
+            }
 
-          .empresa-ticket img {
-            display: block !important;
-            visibility: visible !important;
-            width: 44mm;
-            max-width: 100%;
-            height: auto;
-            max-height: 22mm;
-            object-fit: contain;
-            margin: 0 auto 4mm;
-          }
+            p { margin: 2px 0; }
 
-          .empresa-ticket h2 {
-            margin: 0 0 2mm;
-            font-size: 13px;
-          }
+            .datos-ticket {
+              margin-top: 4mm;
+              padding-top: 3mm;
+              border-top: 1px dashed black;
+            }
 
-          p {
-            margin: 2px 0;
-          }
+            .datos-ticket > small,
+            .datos-ticket > strong {
+              display: block;
+            }
 
-          .datos-ticket {
-            margin-top: 4mm;
-            padding-top: 3mm;
-            border-top: 1px dashed black;
-          }
+            .datos-ticket > strong { margin-bottom: 3mm; }
+            .numero-ticket { font-weight: bold; }
 
-          .datos-ticket > small,
-          .datos-ticket > strong {
-            display: block;
-          }
+            .fila {
+              display: flex;
+              justify-content: space-between;
+              gap: 8px;
+            }
 
-          .datos-ticket > strong {
-            margin-bottom: 3mm;
-          }
+            table {
+              width: 100%;
+              margin-top: 4mm;
+              border-collapse: collapse;
+              font-size: inherit;
+            }
 
-          .numero-ticket {
-            font-weight: bold;
-          }
+            th, td {
+              padding: 2mm 1mm;
+              text-align: left;
+              vertical-align: top;
+            }
 
-          .fila {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-          }
+            th {
+              border-bottom: 1px solid black;
+              font-size: 10px;
+            }
 
-          table {
-            width: 100%;
-            margin-top: 4mm;
-            border-collapse: collapse;
-            font-size: inherit;
-          }
+            .articulos-ticket td:first-child { width: 9mm; }
 
-          th,
-          td {
-            padding: 2mm 1mm;
-            text-align: left;
-            vertical-align: top;
-          }
+            .articulos-ticket th:last-child,
+            .articulos-ticket td:last-child,
+            .iva-ticket th:not(:first-child),
+            .iva-ticket td:not(:first-child) {
+              text-align: right;
+            }
 
-          th {
-            border-bottom: 1px solid black;
-            font-size: 10px;
-          }
+            .articulos-ticket td:last-child {
+              white-space: nowrap;
+            }
 
-          .articulos-ticket td:first-child {
-            width: 9mm;
-          }
+            .total-ticket {
+              margin-top: 4mm;
+              padding: 3mm 0;
+              border-top: 2px solid black;
+              border-bottom: 1px solid black;
+              font-size: 13px;
+            }
 
-          .articulos-ticket th:last-child,
-          .articulos-ticket td:last-child,
-          .iva-ticket th:not(:first-child),
-          .iva-ticket td:not(:first-child) {
-            text-align: right;
-          }
+            .total-ticket > strong:last-child {
+              white-space: nowrap;
+            }
 
-          .articulos-ticket td:last-child {
-            white-space: nowrap;
-          }
+            .pago-ticket { margin-top: 3mm; }
+            .pago-ticket .fila { margin: 2mm 0; }
+            .pago-ticket .fila > :last-child { text-align: right; }
+            .iva-ticket { font-size: 10px; }
 
-          .total-ticket {
-            margin-top: 4mm;
-            padding: 3mm 0;
-            border-top: 2px solid black;
-            border-bottom: 1px solid black;
-            font-size: 13px;
-          }
+            footer {
+              display: block;
+              margin-top: 7mm;
+              text-align: center;
+              font-size: 10px;
+              font-weight: bold;
+              letter-spacing: 1px;
+            }
 
-          .total-ticket > strong:last-child {
-            white-space: nowrap;
-          }
+            thead { display: table-header-group; }
 
-          .pago-ticket {
-            margin-top: 3mm;
-          }
-
-          .pago-ticket .fila {
-            margin: 2mm 0;
-          }
-
-          .pago-ticket .fila > :last-child {
-            text-align: right;
-          }
-
-          .iva-ticket {
-            font-size: 10px;
-          }
-
-          footer {
-            display: block;
-            margin-top: 7mm;
-            text-align: center;
-            font-size: 10px;
-            font-weight: bold;
-            letter-spacing: 1px;
-          }
-
-          thead {
-            display: table-header-group;
-          }
-
-          tr,
-          .empresa-ticket,
-          .total-ticket,
-          .pago-ticket,
-          footer {
-            break-inside: avoid;
-          }
-        </style>
-      </head>
-      <body></body>
-    </html>
-  `);
+            tr, .empresa-ticket, .total-ticket,
+            .pago-ticket, footer {
+              break-inside: avoid;
+            }
+          </style>
+        </head>
+        <body></body>
+      </html>
+    `);
     documento.close();
 
     documento.body.appendChild(documento.importNode(copia, true));
@@ -674,7 +821,6 @@ generar(): void {
     try {
       await documento.fonts.ready;
 
-      // Esperamos a que el logo esté cargado antes de imprimir.
       await Promise.all(
         Array.from(documento.images).map((imagen) => imagen.decode()),
       );
@@ -694,7 +840,8 @@ generar(): void {
     } catch {
       marco.remove();
       this.error =
-        'No se ha podido cargar el logo. Revisa la ruta de la imagen en empresa-config.ts.';
+        'No se ha podido cargar el logo. ' +
+        'Revisa la imagen en empresa-config.ts.';
     }
   }
 }

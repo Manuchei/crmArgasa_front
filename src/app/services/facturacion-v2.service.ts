@@ -84,10 +84,10 @@ export class FacturacionV2Service {
     return this.http.get<FacturaV2Response>(`${this.baseUrl}/facturas/${id}`);
   }
 
-  marcarComoPagada(id: number): Observable<FacturaV2Response> {
+  marcarComoPagada(id: number, metodo: string): Observable<FacturaV2Response> {
     return this.http.post<FacturaV2Response>(
       `${this.baseUrl}/facturas/${id}/marcar-pagada`,
-      {},
+      { metodo },
     );
   }
 

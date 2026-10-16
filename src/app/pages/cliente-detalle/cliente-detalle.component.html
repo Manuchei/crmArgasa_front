@@ -332,7 +332,8 @@
 
       <h5 class="mb-3">Facturación</h5>
 
-      <app-facturar-v2 *ngIf="cliente?.id" [clienteId]="cliente.id"></app-facturar-v2>
+      <app-facturar-v2 *ngIf="cliente?.id" [clienteId]="cliente.id"
+        (cobroRegistrado)="actualizarTrasCobroFactura()"></app-facturar-v2>
 
     </div>
 

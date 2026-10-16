@@ -1,23 +1,22 @@
 <section class="routes-page" aria-labelledby="routes-title">
-
   <header class="page-heading">
     <div>
       <span class="page-eyebrow">NOVEXAPP / LOGÍSTICA</span>
 
       <h1 id="routes-title">
-        {{ puedeGestionarTodo() ? 'Rutas' : 'Mis rutas' }}
+        {{ esTransportista ? 'Mis rutas' : 'Rutas' }}
       </h1>
 
       <p>
         {{
-        puedeGestionarTodo()
-        ? 'Organiza las entregas y consulta el trabajo de los transportistas.'
-        : 'Consulta tus entregas y gestiona las rutas asignadas.'
+        esTransportista
+        ? 'Consulta tus entregas y gestiona las rutas asignadas.'
+        : 'Organiza las entregas y consulta el trabajo de los transportistas.'
         }}
       </p>
     </div>
 
-    <div *ngIf="puedeGestionarTodo()" class="heading-actions">
+    <div class="heading-actions">
       <button type="button" class="action-secondary" (click)="crearRutasDia()">
         Crear rutas del día
       </button>
@@ -29,7 +28,8 @@
     </div>
   </header>
 
-
+  <!-- Solo aparece en esta página para el perfil transportista. -->
+  <app-acciones-inicio *ngIf="esTransportista" [soloFichaje]="true"></app-acciones-inicio>
 
   <div class="summary-grid" *ngIf="!cargando && !error">
     <div class="summary-card">
@@ -68,16 +68,18 @@
     <div class="filters-grid">
       <div class="field search-field">
         <label for="route-search">Buscar</label>
+
         <input id="route-search" type="search" class="form-control" [(ngModel)]="filtroNombre"
           (ngModelChange)="filtrarNombre()" [placeholder]="
-            puedeGestionarTodo()
-              ? 'Cliente, transportista, destino…'
-              : 'Cliente, destino, tarea…'
+            esTransportista
+              ? 'Cliente, destino, tarea…'
+              : 'Cliente, transportista, destino…'
           " />
       </div>
 
       <div class="field">
         <label for="route-status">Estado</label>
+
         <select id="route-status" class="form-select" [(ngModel)]="filtroEstado" (ngModelChange)="filtrarEstado()">
           <option value="">Todos los estados</option>
           <option value="pendiente">Pendiente</option>
@@ -88,12 +90,13 @@
 
       <div class="field">
         <label for="route-date">Fecha</label>
+
         <input id="route-date" type="date" class="form-control" [(ngModel)]="filtroFecha"
           (ngModelChange)="filtrarFecha()" />
       </div>
 
       <button type="button" class="action-secondary reset-button" (click)="limpiarFiltros()">
-        {{ puedeGestionarTodo() ? 'Limpiar filtros' : 'Restablecer filtros' }}
+        {{ esTransportista ? 'Restablecer filtros' : 'Limpiar filtros' }}
       </button>
     </div>
   </section>
@@ -106,7 +109,7 @@
   <div *ngIf="!cargando && error" class="error-panel" role="alert">
     <div>
       <strong>No se pudieron cargar las rutas</strong>
-      <p>Inténtalo de nuevo en unos instantes.</p>
+      <p>{{ error }}</p>
     </div>
 
     <button type="button" class="action-secondary" (click)="cargarRutas()">
@@ -117,6 +120,7 @@
   <div *ngIf="!cargando && !error && grouped.length > 0">
     <div class="results-heading">
       <h2>Listado de rutas</h2>
+
       <span aria-live="polite">
         {{ rutas.length }} rutas · {{ grouped.length }} fechas
       </span>
@@ -128,8 +132,10 @@
           [attr.aria-controls]="'routes-date-' + i" (click)="toggle(i)">
           <span class="date-info">
             <strong>{{ g.fechaLabel }}</strong>
+
             <span>
-              {{ g.transportistas.length }} transportistas · {{ g.total }} rutas
+              {{ g.transportistas.length }} transportistas ·
+              {{ g.total }} rutas
             </span>
           </span>
 
@@ -220,9 +226,9 @@
                         Editar
                       </button>
 
-                      <button type="button" class="row-button close-button"
-                        [disabled]="ruta.estado === 'cerrada' || ruta.id == null" (click)="cerrarRuta(ruta)"
-                        [attr.aria-label]="'Cerrar ruta ' + ruta.id">
+                      <button type="button" class="row-button close-button" [disabled]="
+                          ruta.estado === 'cerrada' || ruta.id == null
+                        " (click)="cerrarRuta(ruta)" [attr.aria-label]="'Cerrar ruta ' + ruta.id">
                         Cerrar
                       </button>
 
@@ -247,8 +253,7 @@
     <p>Prueba con otra fecha, estado o término de búsqueda.</p>
 
     <button type="button" class="action-secondary" (click)="limpiarFiltros()">
-      {{ puedeGestionarTodo() ? 'Limpiar filtros' : 'Restablecer filtros' }}
+      {{ esTransportista ? 'Restablecer filtros' : 'Limpiar filtros' }}
     </button>
   </div>
-
 </section>
